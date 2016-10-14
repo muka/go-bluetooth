@@ -1,0 +1,5 @@
+package: github.com/muka/bluetooth-client
+import:
+- package: github.com/muka/device-manager
+  subpackages:
+  - client
