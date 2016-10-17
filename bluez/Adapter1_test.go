@@ -7,7 +7,7 @@ import (
 func TestNewAdapter1(t *testing.T) {
 	t.Log("Create Adapter1")
 
-	a := NewAdapter1(0)
+	a := NewAdapter1("hci0")
 
 	t.Log("Start Discovery")
 	err := a.StartDiscovery()

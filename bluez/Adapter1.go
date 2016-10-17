@@ -7,24 +7,47 @@ import (
 )
 
 // NewAdapter1 create a new Adapter1 client
-func NewAdapter1(idx string) *Adapter1 {
+func NewAdapter1(hostID string) *Adapter1 {
 	a := new(Adapter1)
 	a.client = client.NewClient(
 		&client.Config{
 			Name:  "org.bluez",
 			Iface: "org.bluez.Adapter1",
-			Path:  "/org/bluez/hci" + idx,
+			Path:  "/org/bluez/" + hostID,
 			Bus:   client.SystemBus,
 		},
 	)
-	a.client.Connect()
+	a.Properties = new(Adapter1Properties)
 	return a
 }
 
 // Adapter1 client
 type Adapter1 struct {
-	client *client.Client
-	logger *log.Logger
+	client     *client.Client
+	logger     *log.Logger
+	Properties *Adapter1Properties
+}
+
+//Adapter1Properties contains the exposed properties of an interface
+type Adapter1Properties struct {
+	UUIDs               []string
+	Discoverable        bool
+	Discovering         bool
+	Pairable            bool
+	Powered             bool
+	Address             string
+	Alias               string
+	Modalias            string
+	Name                string
+	Class               uint32
+	DiscoverableTimeout uint32
+	PairableTimeout     uint32
+}
+
+//GetProperties load all available properties
+func (a *Adapter1) GetProperties() (*Adapter1Properties, error) {
+	err := a.client.GetProperties(a.Properties)
+	return a.Properties, err
 }
 
 //StartDiscovery on the adapter

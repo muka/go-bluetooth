@@ -7,15 +7,26 @@ import (
 
 func main() {
 
-	hci0 := bluez.NewAdapter1("0")
+	adapter := bluez.NewAdapter1("hci0")
 
-	fmt.Println("Started discovery")
-	hci0.StartDiscovery()
+	fmt.Println("GetProperties:")
+	props, err := adapter.GetProperties()
 
-	fmt.Println("Stop discovery")
-	hci0.StopDiscovery()
+	if err != nil {
+		panic(err)
+	}
 
-	fmt.Println("RM dev")
-	hci0.RemoveDevice("device")
+	fmt.Printf("Name: %s\n", props.Name)
+	fmt.Printf("Modalias: %s\n", props.Modalias)
+
+	//
+	// fmt.Println("Started discovery")
+	// adapter.StartDiscovery()
+	//
+	// fmt.Println("Stop discovery")
+	// adapter.StopDiscovery()
+	//
+	// fmt.Println("RM dev")
+	// adapter.RemoveDevice("device")
 
 }
