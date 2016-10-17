@@ -2,22 +2,23 @@ package bluez
 
 import (
 	"github.com/godbus/dbus"
+	"github.com/muka/bluez-client/util"
 	"github.com/muka/device-manager/client"
 	"log"
-	"strings"
 )
 
 // NewDevice1 create a new Device1 client
-func NewDevice1(hostID string, deviceID string) *Device1 {
+func NewDevice1(path string) *Device1 {
 	a := new(Device1)
 	a.client = client.NewClient(
 		&client.Config{
 			Name:  "org.bluez",
 			Iface: "org.bluez.Device1",
-			Path:  "/org/bluez/" + hostID + "/dev_" + strings.Replace(deviceID, "-", "_", 0),
+			Path:  path,
 			Bus:   client.SystemBus,
 		},
 	)
+	a.logger = util.NewLogger(path)
 	a.Properties = new(Device1Properties)
 	return a
 }

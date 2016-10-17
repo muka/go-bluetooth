@@ -2,6 +2,7 @@ package bluez
 
 import (
 	"github.com/godbus/dbus"
+	"github.com/muka/bluez-client/util"
 	"github.com/muka/device-manager/client"
 	"log"
 )
@@ -18,6 +19,7 @@ func NewAdapter1(hostID string) *Adapter1 {
 		},
 	)
 	a.Properties = new(Adapter1Properties)
+	a.logger = util.NewLogger(hostID)
 	return a
 }
 
