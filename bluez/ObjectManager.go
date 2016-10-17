@@ -27,8 +27,8 @@ type ObjectManager struct {
 }
 
 // GetManagedObjects return a list of all available objects registered
-func (o *ObjectManager) GetManagedObjects() (map[dbus.ObjectPath]map[string]dbus.Variant, error) {
-	objects := make(map[dbus.ObjectPath]map[string]dbus.Variant)
-	err := o.client.Call("GetManagedObjects", dbus.FlagNoReplyExpected).Store(objects)
+func (o *ObjectManager) GetManagedObjects() (map[dbus.ObjectPath]map[string]map[string]dbus.Variant, error) {
+	objects := make(map[dbus.ObjectPath]map[string]map[string]dbus.Variant)
+	err := o.client.Call("GetManagedObjects", 0).Store(&objects)
 	return objects, err
 }

@@ -1,4 +1,4 @@
-package bluetooth
+package api
 
 import (
 	"github.com/muka/bluez-client/bluez"
