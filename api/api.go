@@ -1,7 +1,6 @@
 package api
 
 import (
-	// "github.com/godbus/dbus"
 	"github.com/muka/bluez-client/bluez"
 	"github.com/muka/device-manager/util"
 )

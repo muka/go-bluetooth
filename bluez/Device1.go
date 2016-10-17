@@ -1,10 +1,11 @@
 package bluez
 
 import (
+	"log"
+
 	"github.com/godbus/dbus"
 	"github.com/muka/bluez-client/util"
 	"github.com/muka/device-manager/client"
-	"log"
 )
 
 // NewDevice1 create a new Device1 client
@@ -57,30 +58,30 @@ func (d *Device1) GetProperties() (*Device1Properties, error) {
 
 //CancelParing stop the pairing process
 func (d *Device1) CancelParing() error {
-	return d.client.Call("CancelParing", dbus.FlagNoReplyExpected).Store()
+	return d.client.Call("CancelParing", 0).Store()
 }
 
 //Connect to the device
 func (d *Device1) Connect() error {
-	return d.client.Call("Connect", dbus.FlagNoReplyExpected).Store()
+	return d.client.Call("Connect", 0).Store()
 }
 
 //ConnectProfile connect to the specific profile
 func (d *Device1) ConnectProfile(uuid string) error {
-	return d.client.Call("ConnectProfile", dbus.FlagNoReplyExpected, uuid).Store()
+	return d.client.Call("ConnectProfile", 0, uuid).Store()
 }
 
 //Disconnect from the device
 func (d *Device1) Disconnect() error {
-	return d.client.Call("Disconnect", dbus.FlagNoReplyExpected).Store()
+	return d.client.Call("Disconnect", 0).Store()
 }
 
 //DisconnectProfile from the device
 func (d *Device1) DisconnectProfile(uuid string) error {
-	return d.client.Call("DisconnectProfile", dbus.FlagNoReplyExpected, uuid).Store()
+	return d.client.Call("DisconnectProfile", 0, uuid).Store()
 }
 
 //Pair with the device
 func (d *Device1) Pair() error {
-	return d.client.Call("Pair", dbus.FlagNoReplyExpected).Store()
+	return d.client.Call("Pair", 0).Store()
 }

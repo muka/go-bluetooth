@@ -1,4 +1,4 @@
-package api
+package emitter
 
 import (
 	"github.com/muka/bluez-client/util"

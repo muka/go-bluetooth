@@ -16,12 +16,12 @@ func TestNewAdapter1(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// t.Log("Stop Discovery")
-	// err = a.StopDiscovery()
-	// if err != nil {
-	// 	t.Log("Error on StartDiscovery")
-	// 	t.Fatal(err)
-	// }
+	t.Log("Stop Discovery")
+	err = a.StopDiscovery()
+	if err != nil {
+		t.Log("Error on StartDiscovery")
+		t.Fatal(err)
+	}
 
 	t.Skipped()
 
