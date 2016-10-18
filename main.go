@@ -42,11 +42,17 @@ func main() {
 	emitter.On("discovery", func(ev emitter.Event) {
 		info := ev.GetData().(api.DiscoveredDevice)
 		if info.Status == api.DeviceAdded {
-			log.Printf("Found device %s", info.Device.GetProperties().Name)
+
+			log.Printf("Found device %s, watching for property change", info.Device.GetProperties().Name)
+
+			info.Device.On("change", func(ev emitter.Event) {
+				changed := ev.GetData().(api.PropertyChanged)
+				log.Printf("%s: set %s = %s", info.Device.GetProperties().Name, changed.Field, changed.Value)
+			})
+
 		} else {
 			log.Printf("Removed device %s", info.Path)
 		}
-
 	})
 
 	log.Println("Waiting...")

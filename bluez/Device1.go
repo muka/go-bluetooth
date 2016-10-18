@@ -55,6 +55,16 @@ func (d *Device1) Close() {
 	d.client.Disconnect()
 }
 
+//Register for changes signalling
+func (d *Device1) Register() (chan *dbus.Signal, error) {
+	return d.client.Register(d.client.Config.Path, PropertiesInterface)
+}
+
+//Unregister for changes signalling
+func (d *Device1) Unregister() error {
+	return d.client.Unregister(d.client.Config.Path, PropertiesInterface)
+}
+
 //GetProperties load all available properties
 func (d *Device1) GetProperties() (*Device1Properties, error) {
 	err := d.client.GetProperties(d.Properties)

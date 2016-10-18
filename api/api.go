@@ -7,15 +7,6 @@ import (
 	utilb "github.com/muka/bluez-client/util"
 )
 
-const (
-	//Device1Interface the bluez interface for Device1
-	Device1Interface = "org.bluez.Device1"
-	//InterfacesRemoved the DBus signal member for InterfacesRemoved
-	InterfacesRemoved = "org.freedesktop.DBus.ObjectManager.InterfacesRemoved"
-	//InterfacesAdded the DBus signal member for InterfacesAdded
-	InterfacesAdded = "org.freedesktop.DBus.ObjectManager.InterfacesAdded"
-)
-
 var log = utilb.NewLogger("api")
 
 var manager = bluez.NewObjectManager()
@@ -52,7 +43,7 @@ func GetDevices() ([]Device, error) {
 	for path, ifaces := range objects {
 		for iface, props := range ifaces {
 			switch iface {
-			case Device1Interface:
+			case bluez.Device1Interface:
 				{
 					dev := ParseDevice(path, props)
 					devices = append(devices, *dev)
@@ -148,21 +139,23 @@ func WatchDiscovery() error {
 	log.Println("Waiting for devices discovery")
 	go (func() {
 		for {
+
 			if channel == nil {
 				log.Println("Quitting discovery listener")
 				break
 			}
+
 			v := <-channel
 
-			log.Printf("Received %s %s", v.Name, v.Path)
-
 			switch v.Name {
-			case InterfacesRemoved:
+			case bluez.InterfacesRemoved:
+
+				log.Printf("Removed %s %s", v.Name, v.Path)
 
 				path := v.Body[0].(dbus.ObjectPath)
 				ifaces := v.Body[1].([]string)
 				for _, iF := range ifaces {
-					if iF == Device1Interface {
+					if iF == bluez.Device1Interface {
 						log.Printf("%s : %s", path, ifaces)
 						devInfo := DiscoveredDevice{string(path), DeviceRemoved, nil}
 						emitter.Emit("discovery", devInfo)
@@ -170,11 +163,13 @@ func WatchDiscovery() error {
 				}
 
 				break
-			case InterfacesAdded:
+			case bluez.InterfacesAdded:
+
+				log.Printf("Added %s %s", v.Name, v.Path)
 
 				path := v.Body[0].(dbus.ObjectPath)
 				props := v.Body[1].(map[string]map[string]dbus.Variant)
-				dev := ParseDevice(path, props[Device1Interface])
+				dev := ParseDevice(path, props[bluez.Device1Interface])
 				devInfo := DiscoveredDevice{string(path), DeviceAdded, dev}
 				emitter.Emit("discovery", devInfo)
 
