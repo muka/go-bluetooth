@@ -10,9 +10,25 @@ var log = util.NewLogger("events")
 type Callback func(ev Event)
 
 //Event contains information about what happened
-type Event struct {
-	Name string
-	Data interface{}
+type Event interface {
+	GetName() string
+	GetData() interface{}
+}
+
+//BaseEvent contains unspecialized information about what happened
+type BaseEvent struct {
+	name string
+	data interface{}
+}
+
+//GetName return the event name
+func (e BaseEvent) GetName() string {
+	return e.name
+}
+
+//GetData return the event data
+func (e BaseEvent) GetData() interface{} {
+	return e.data
 }
 
 var pipe chan Event
@@ -27,14 +43,14 @@ func loop() {
 		}
 		ev := <-pipe
 		//log.Printf("loop: Trigger event %s\n", ev.Name)
-		if events[ev.Name] != nil {
-			size := len(events[ev.Name])
+		if events[ev.GetName()] != nil {
+			size := len(events[ev.GetName()])
 			if size == 0 {
 				return
 			}
 			for i := 0; i < size; i++ {
 				//log.Printf("Call fn\n")
-				events[ev.Name][i](ev)
+				events[ev.GetName()][i](ev)
 			}
 		}
 	}
@@ -64,10 +80,10 @@ func On(event string, callback Callback) {
 }
 
 // Emit an event
-func Emit(event string, data interface{}) {
-	//log.Printf("Emit event %s\n", event)
+func Emit(name string, data interface{}) {
+	//log.Printf("Emit event %s\n", name)
 	getPipe()
-	ev := Event{event, data}
+	ev := BaseEvent{name, data}
 	pipe <- ev
 }
 

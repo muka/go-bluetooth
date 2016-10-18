@@ -46,6 +46,11 @@ type Adapter1Properties struct {
 	PairableTimeout     uint32
 }
 
+// Close the connection
+func (a *Adapter1) Close() {
+	a.client.Disconnect()
+}
+
 //GetProperties load all available properties
 func (a *Adapter1) GetProperties() (*Adapter1Properties, error) {
 	err := a.client.GetProperties(a.Properties)

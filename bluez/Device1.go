@@ -50,6 +50,11 @@ type Device1Properties struct {
 	Class         uint32
 }
 
+// Close the connection
+func (d *Device1) Close() {
+	d.client.Disconnect()
+}
+
 //GetProperties load all available properties
 func (d *Device1) GetProperties() (*Device1Properties, error) {
 	err := d.client.GetProperties(d.Properties)

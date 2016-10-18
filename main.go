@@ -1,39 +1,54 @@
 package main
 
 import (
-	"fmt"
-	"os"
-
-	"github.com/godbus/dbus"
+	"github.com/muka/bluez-client/api"
+	"github.com/muka/bluez-client/emitter"
 	"github.com/muka/bluez-client/util"
 )
 
 var log = util.NewLogger("main")
 
 func main() {
-	//
-	// emitter.On("device", func(ev emitter.Event) {
-	// 	log.Printf("Got event %s: %s", ev.Name, ev.Data)
-	// })
-	//
-	// err := api.StartDiscovery()
-	// if err != nil {
-	// 	panic(err)
-	// }
 
-	conn, err := dbus.SessionBus()
+	defer api.Exit()
+
+	var err error
+
+	devices, err := api.GetDevices()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "Failed to connect to session bus:", err)
-		os.Exit(1)
+		panic(err)
 	}
 
-	conn.BusObject().Call("org.freedesktop.DBus.AddMatch", 0,
-		"type='signal',path='/org/freedesktop/DBus',interface='org.freedesktop.DBus',sender='org.freedesktop.DBus'")
-
-	c := make(chan *dbus.Signal, 10)
-	conn.Signal(c)
-	for v := range c {
-		fmt.Println(v)
+	hci0, err := api.GetAdapter("hci0")
+	if err != nil {
+		panic(err)
 	}
 
+	for _, device := range devices {
+		log.Printf("Dropping %s", device.Path)
+		go hci0.RemoveDevice(device.Path)
+	}
+
+	err = api.StopDiscovery()
+	if err != nil {
+		log.Println(err)
+	}
+
+	err = api.StartDiscovery()
+	if err != nil {
+		panic(err)
+	}
+
+	emitter.On("discovery", func(ev emitter.Event) {
+		info := ev.GetData().(api.DiscoveredDevice)
+		if info.Status == api.DeviceAdded {
+			log.Printf("Found device %s", info.Device.GetProperties().Name)
+		} else {
+			log.Printf("Removed device %s", info.Path)
+		}
+
+	})
+
+	log.Println("Waiting...")
+	select {}
 }

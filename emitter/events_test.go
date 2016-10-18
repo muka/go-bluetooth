@@ -8,7 +8,7 @@ func TestEmitterSimple(t *testing.T) {
 
 	t.Log("On")
 	On("test", func(ev Event) {
-		if ev.Data == "Hello World" {
+		if ev.GetData() == "Hello World" {
 			t.Log("Event received")
 		}
 	})
