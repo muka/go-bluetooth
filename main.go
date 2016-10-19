@@ -6,32 +6,59 @@ import (
 	"github.com/muka/bluez-client/util"
 )
 
-var log = util.NewLogger("main")
+var logger = util.NewLogger("main")
 
 func main() {
 
 	defer api.Exit()
 
-	var err error
+	adapterID := "hci0"
 
+	if exists, err := api.AdapterExists(adapterID); !exists {
+		if err != nil {
+			panic(err)
+		}
+		logger.Println("Waiting for adapter hci0")
+		emitter.On("adapter", func(ev emitter.Event) {
+			info := ev.GetData().(api.AdapterEvent)
+
+			if info.Status == api.DeviceAdded {
+				logger.Printf("Adapter %s added\n", info.Name)
+				discoverDevices(info.Name)
+
+			} else {
+				logger.Printf("Adapter %s removed\n", info.Name)
+			}
+		})
+	} else {
+		discoverDevices(adapterID)
+	}
+
+	select {}
+}
+
+func discoverDevices(adapterID string) {
+
+	logger.Printf("Starting discovery on adapter %s\n", adapterID)
+
+	var err error
 	devices, err := api.GetDevices()
 	if err != nil {
 		panic(err)
 	}
 
-	hci0, err := api.GetAdapter("hci0")
+	hci0, err := api.GetAdapter(adapterID)
 	if err != nil {
 		panic(err)
 	}
-
 	for _, device := range devices {
-		log.Printf("Dropping %s", device.Path)
+		logger.Printf("Dropping %s", device.Path)
 		go hci0.RemoveDevice(device.Path)
 	}
 
 	err = api.StopDiscovery()
 	if err != nil {
-		log.Println(err)
+		logger.Println(err)
 	}
 
 	err = api.StartDiscovery()
@@ -40,21 +67,19 @@ func main() {
 	}
 
 	emitter.On("discovery", func(ev emitter.Event) {
-		info := ev.GetData().(api.DiscoveredDevice)
+		info := ev.GetData().(api.DiscoveredDeviceEvent)
 		if info.Status == api.DeviceAdded {
-
-			log.Printf("Found device %s, watching for property change", info.Device.GetProperties().Name)
-
-			info.Device.On("change", func(ev emitter.Event) {
-				changed := ev.GetData().(api.PropertyChanged)
-				log.Printf("%s: set %s = %s", info.Device.GetProperties().Name, changed.Field, changed.Value)
-			})
-
+			//
+			// 		logger.Printf("Found device %s, watching for property change", info.Device.GetProperties().Name)
+			//
+			// 		info.Device.On("change", func(ev emitter.Event) {
+			// 			changed := ev.GetData().(api.PropertyChanged)
+			// 			logger.Printf("%s: set %s = %s", info.Device.GetProperties().Name, changed.Field, changed.Value)
+			// 		})
+			//
 		} else {
-			log.Printf("Removed device %s", info.Path)
+			logger.Printf("Removed device %s", info.Path)
 		}
 	})
 
-	log.Println("Waiting...")
-	select {}
 }

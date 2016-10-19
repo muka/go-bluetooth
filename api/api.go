@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/godbus/dbus"
 	"github.com/muka/bluez-client/bluez"
@@ -11,31 +12,32 @@ import (
 
 var logger = utilb.NewLogger("api")
 
-var manager = bluez.NewObjectManager()
-var adapters = make(map[string]*bluez.Adapter1, 0)
+var manager *bluez.ObjectManager
 
 var registrations map[string]*dbus.Signal
+
+var watchChangesEnabled = false
 
 //Exit performs a clean exit
 func Exit() {
 	GetManager().Unregister()
 	GetManager().Close()
-	for _, adapter := range adapters {
-		// adapter.Unregister()
-		adapter.Close()
-	}
 	logger.Println("Bye.")
 }
 
 //GetManager return the object manager reference
 func GetManager() *bluez.ObjectManager {
+	if manager == nil {
+		manager = bluez.NewObjectManager()
+		WatchManagerChanges()
+	}
 	return manager
 }
 
 //GetDevices returns a list of bluetooth discovered Devices
 func GetDevices() ([]Device, error) {
 
-	objects, err := manager.GetManagedObjects()
+	objects, err := GetManager().GetManagedObjects()
 
 	if err != nil {
 		return nil, err
@@ -77,10 +79,7 @@ func GetAdapter(adapterID string) (*bluez.Adapter1, error) {
 		return nil, errors.New("Adapter " + adapterID + " not found")
 	}
 
-	if adapters[adapterID] == nil {
-		adapters[adapterID] = bluez.NewAdapter1(adapterID)
-	}
-	return adapters[adapterID], nil
+	return bluez.NewAdapter1(adapterID), nil
 }
 
 //StartDiscovery on adapter hci0
@@ -109,7 +108,7 @@ func StartDiscoveryOn(adapterID string) error {
 	}
 
 	// register for manager signals, return chan *dbus.Signal
-	err = WatchDiscovery()
+	err = WatchManagerChanges()
 	if err != nil {
 		return err
 	}
@@ -126,8 +125,8 @@ func StopDiscoveryOn(adapterID string) error {
 	return adapter.StopDiscovery()
 }
 
-// UnwatchDiscovery regitster for signals from the ObjectManager
-func UnwatchDiscovery() error {
+// UnWatchManagerChanges regitster for signals from the ObjectManager
+func UnWatchManagerChanges() error {
 	return GetManager().Unregister()
 }
 
@@ -141,61 +140,104 @@ const (
 	DeviceRemoved
 )
 
-//DiscoveredDevice contains detail regarding an ongoing discovery operation
-type DiscoveredDevice struct {
+//DiscoveredDeviceEvent contains detail regarding an ongoing discovery operation
+type DiscoveredDeviceEvent struct {
 	Path   string
 	Status DeviceStatus
 	Device *Device
 }
 
-// WatchDiscovery regitster for signals from the ObjectManager
-func WatchDiscovery() error {
+// AdapterEvent reports the availability of a bluetooth adapter
+type AdapterEvent struct {
+	Name   string
+	Path   string
+	Status DeviceStatus
+}
+
+// WatchManagerChanges regitster for signals from the ObjectManager
+func WatchManagerChanges() error {
+
+	if watchChangesEnabled {
+		return nil
+	}
 
 	channel, err := GetManager().Register()
 	if err != nil {
 		return err
 	}
 
-	logger.Println("Waiting for devices discovery")
+	// ensure is done once
+	watchChangesEnabled = true
+
 	go (func() {
 		for {
 
 			if channel == nil {
-				logger.Println("Quitting discovery listener")
+				logger.Println("Quitting manager listener")
 				break
 			}
 
 			v := <-channel
 
 			switch v.Name {
-			case bluez.InterfacesRemoved:
+			case bluez.InterfacesAdded:
+				{
 
-				logger.Printf("Removed %s %s", v.Name, v.Path)
+					// logger.Printf("Added %s %s", v.Name, v.Path)
+					// logger.Printf("\n+++Body %s\n", v.Body)
 
-				path := v.Body[0].(dbus.ObjectPath)
-				ifaces := v.Body[1].([]string)
-				for _, iF := range ifaces {
-					if iF == bluez.Device1Interface {
-						logger.Printf("%s : %s", path, ifaces)
-						devInfo := DiscoveredDevice{string(path), DeviceRemoved, nil}
+					path := v.Body[0].(dbus.ObjectPath)
+					props := v.Body[1].(map[string]map[string]dbus.Variant)
+
+					//device added
+					if props[bluez.Device1Interface] != nil {
+						dev := ParseDevice(path, props[bluez.Device1Interface])
+						logger.Printf("Added device %s", path)
+						devInfo := DiscoveredDeviceEvent{string(path), DeviceAdded, dev}
 						emitter.Emit("discovery", devInfo)
 					}
+					//adapter added
+					if props[bluez.Adapter1Interface] != nil {
+						strpath := string(path)
+						parts := strings.Split(strpath, "/")
+						name := parts[len(parts)-1:][0]
+						logger.Printf("Added adapter %s", name)
+						adapterInfo := AdapterEvent{name, strpath, DeviceAdded}
+						emitter.Emit("adapter", adapterInfo)
+					}
+
 				}
+			case bluez.InterfacesRemoved:
+				{
 
-				break
-			case bluez.InterfacesAdded:
+					// logger.Printf("Removed %s %s", v.Name, v.Path)
+					// logger.Printf("\n+++Body %s\n", v.Body)
 
-				logger.Printf("Added %s %s", v.Name, v.Path)
+					path := v.Body[0].(dbus.ObjectPath)
+					ifaces := v.Body[1].([]string)
+					for _, iF := range ifaces {
+						// device removed
+						if iF == bluez.Device1Interface {
+							// logger.Printf("%s : %s", path, ifaces)
+							logger.Printf("Removed device %s", path)
+							devInfo := DiscoveredDeviceEvent{string(path), DeviceRemoved, nil}
+							emitter.Emit("discovery", devInfo)
+						}
+						//adapter removed
+						if iF == bluez.Adapter1Interface {
+							// logger.Printf("%s : %s", path, ifaces)
+							strpath := string(path)
+							parts := strings.Split(strpath, "/")
+							name := parts[len(parts)-1:][0]
+							logger.Printf("Removed adapter %s", name)
+							adapterInfo := AdapterEvent{name, strpath, DeviceRemoved}
+							emitter.Emit("adapter", adapterInfo)
+						}
 
-				path := v.Body[0].(dbus.ObjectPath)
-				props := v.Body[1].(map[string]map[string]dbus.Variant)
-				dev := ParseDevice(path, props[bluez.Device1Interface])
-				devInfo := DiscoveredDevice{string(path), DeviceAdded, dev}
-				emitter.Emit("discovery", devInfo)
+					}
 
-				break
+				}
 			}
-
 		}
 	})()
 
