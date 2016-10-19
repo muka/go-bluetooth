@@ -6,11 +6,8 @@ import (
 	"github.com/godbus/dbus"
 	"github.com/muka/bluez-client/bluez"
 	"github.com/muka/bluez-client/emitter"
-	utilb "github.com/muka/bluez-client/util"
 	"github.com/muka/device-manager/util"
 )
-
-var logger = utilb.NewLogger("Device")
 
 // NewDevice creates a new Device
 func NewDevice(path string) *Device {

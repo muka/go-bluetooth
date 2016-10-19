@@ -1,13 +1,15 @@
 package api
 
 import (
+	"errors"
+
 	"github.com/godbus/dbus"
 	"github.com/muka/bluez-client/bluez"
 	"github.com/muka/bluez-client/emitter"
 	utilb "github.com/muka/bluez-client/util"
 )
 
-var log = utilb.NewLogger("api")
+var logger = utilb.NewLogger("api")
 
 var manager = bluez.NewObjectManager()
 var adapters = make(map[string]*bluez.Adapter1, 0)
@@ -22,7 +24,7 @@ func Exit() {
 		// adapter.Unregister()
 		adapter.Close()
 	}
-	log.Println("Bye.")
+	logger.Println("Bye.")
 }
 
 //GetManager return the object manager reference
@@ -55,8 +57,26 @@ func GetDevices() ([]Device, error) {
 	return devices, nil
 }
 
+//AdapterExists checks if an adapter is available
+func AdapterExists(adapterID string) (bool, error) {
+	objects, err := GetManager().GetManagedObjects()
+	if err != nil {
+		return false, err
+	}
+	path := dbus.ObjectPath("/org/bluez/" + adapterID)
+	return objects[path] != nil, nil
+}
+
 //GetAdapter return an adapter object instance
 func GetAdapter(adapterID string) (*bluez.Adapter1, error) {
+
+	if exists, err := AdapterExists(adapterID); !exists {
+		if err != nil {
+			return nil, err
+		}
+		return nil, errors.New("Adapter " + adapterID + " not found")
+	}
+
 	if adapters[adapterID] == nil {
 		adapters[adapterID] = bluez.NewAdapter1(adapterID)
 	}
@@ -136,12 +156,12 @@ func WatchDiscovery() error {
 		return err
 	}
 
-	log.Println("Waiting for devices discovery")
+	logger.Println("Waiting for devices discovery")
 	go (func() {
 		for {
 
 			if channel == nil {
-				log.Println("Quitting discovery listener")
+				logger.Println("Quitting discovery listener")
 				break
 			}
 
@@ -150,13 +170,13 @@ func WatchDiscovery() error {
 			switch v.Name {
 			case bluez.InterfacesRemoved:
 
-				log.Printf("Removed %s %s", v.Name, v.Path)
+				logger.Printf("Removed %s %s", v.Name, v.Path)
 
 				path := v.Body[0].(dbus.ObjectPath)
 				ifaces := v.Body[1].([]string)
 				for _, iF := range ifaces {
 					if iF == bluez.Device1Interface {
-						log.Printf("%s : %s", path, ifaces)
+						logger.Printf("%s : %s", path, ifaces)
 						devInfo := DiscoveredDevice{string(path), DeviceRemoved, nil}
 						emitter.Emit("discovery", devInfo)
 					}
@@ -165,7 +185,7 @@ func WatchDiscovery() error {
 				break
 			case bluez.InterfacesAdded:
 
-				log.Printf("Added %s %s", v.Name, v.Path)
+				logger.Printf("Added %s %s", v.Name, v.Path)
 
 				path := v.Body[0].(dbus.ObjectPath)
 				props := v.Body[1].(map[string]map[string]dbus.Variant)
