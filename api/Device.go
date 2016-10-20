@@ -149,3 +149,13 @@ func (d *Device) Off(name string) {
 func (d *Device) Emit(name string, data interface{}) {
 	emitter.Emit(d.Path+"."+name, data)
 }
+
+//GetService return a GattService
+func (d *Device) GetService(path string) *profile.GattService1 {
+	return profile.NewGattService1(path)
+}
+
+//GetChar return a GattService
+func (d *Device) GetChar(path string) *profile.GattCharacteristic1 {
+	return profile.NewGattCharacteristic1(path)
+}

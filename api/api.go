@@ -190,7 +190,7 @@ func WatchManagerChanges() error {
 					//device added
 					if props[bluez.Device1Interface] != nil {
 						dev := ParseDevice(path, props[bluez.Device1Interface])
-						logger.Printf("Added device %s", path)
+						// logger.Printf("Added device %s", path)
 						devInfo := DiscoveredDeviceEvent{string(path), DeviceAdded, dev}
 						emitter.Emit("discovery", devInfo)
 					}
@@ -199,7 +199,7 @@ func WatchManagerChanges() error {
 						strpath := string(path)
 						parts := strings.Split(strpath, "/")
 						name := parts[len(parts)-1:][0]
-						logger.Printf("Added adapter %s", name)
+						// logger.Printf("Added adapter %s", name)
 						adapterInfo := AdapterEvent{name, strpath, DeviceAdded}
 						emitter.Emit("adapter", adapterInfo)
 					}
@@ -214,7 +214,7 @@ func WatchManagerChanges() error {
 						// device removed
 						if iF == bluez.Device1Interface {
 							// logger.Printf("%s : %s", path, ifaces)
-							logger.Printf("Removed device %s", path)
+							// logger.Printf("Removed device %s", path)
 							devInfo := DiscoveredDeviceEvent{string(path), DeviceRemoved, nil}
 							emitter.Emit("discovery", devInfo)
 						}

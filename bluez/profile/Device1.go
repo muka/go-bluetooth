@@ -33,21 +33,25 @@ type Device1 struct {
 
 // Device1Properties exposed properties for Device1
 type Device1Properties struct {
-	UUIDs         []string
-	Blocked       bool
-	Connected     bool
-	LegacyPairing bool
-	Paired        bool
-	Trusted       bool
-	RSSI          int16
-	Adapter       dbus.ObjectPath
-	Address       string
-	Alias         string
-	Icon          string
-	Modalias      string
-	Name          string
-	Appearance    uint16
-	Class         uint32
+	GattServices     []dbus.ObjectPath
+	UUIDs            []string
+	Blocked          bool
+	Connected        bool
+	LegacyPairing    bool
+	Paired           bool
+	Trusted          bool
+	ServiceData      map[string]dbus.Variant
+	ManufacturerData map[uint16]dbus.Variant
+	RSSI             int16
+	TxPower          int16
+	Adapter          dbus.ObjectPath
+	Address          string
+	Alias            string
+	Icon             string
+	Modalias         string
+	Name             string
+	Appearance       uint16
+	Class            uint32
 }
 
 // Close the connection
