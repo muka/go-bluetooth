@@ -2,6 +2,8 @@
 
 Golang bluetooth client based on bluez DBus interfaces
 
+See here for reference https://git.kernel.org/cgit/bluetooth/bluez.git/tree/doc
+
 About
 ---
 

@@ -5,15 +5,16 @@ import (
 
 	"github.com/godbus/dbus"
 	"github.com/muka/bluez-client/bluez"
+	"github.com/muka/bluez-client/bluez/profile"
 	"github.com/muka/bluez-client/emitter"
-	"github.com/muka/device-manager/util"
+	"github.com/muka/bluez-client/util"
 )
 
 // NewDevice creates a new Device
 func NewDevice(path string) *Device {
 	d := new(Device)
 	d.Path = path
-	d.client = bluez.NewDevice1(path)
+	d.client = profile.NewDevice1(path)
 	return d
 }
 
@@ -22,9 +23,9 @@ func ParseDevice(path dbus.ObjectPath, propsMap map[string]dbus.Variant) *Device
 
 	d := new(Device)
 	d.Path = string(path)
-	d.client = bluez.NewDevice1(d.Path)
+	d.client = profile.NewDevice1(d.Path)
 
-	props := new(bluez.Device1Properties)
+	props := new(profile.Device1Properties)
 	util.MapToStruct(props, propsMap)
 	d.client.Properties = props
 
@@ -36,7 +37,7 @@ type PropertyChanged struct {
 	Iface      string
 	Field      string
 	Value      interface{}
-	Properties *bluez.Device1Properties
+	Properties *profile.Device1Properties
 }
 
 func (d *Device) watchProperties() error {
@@ -109,20 +110,18 @@ func (d *Device) unwatchProperties() error {
 //Device return an API to interact with a DBus device
 type Device struct {
 	Path string
-	// Properties *bluez.Device1Properties
-	client *bluez.Device1
+	// Properties *profile.Device1Properties
+	client *profile.Device1
 }
 
 //GetClient return a DBus Device1 interface client
-func (d *Device) GetClient() *bluez.Device1 {
+func (d *Device) GetClient() *profile.Device1 {
 	return d.client
 }
 
 //GetProperties return the properties for the device
-func (d *Device) GetProperties() *bluez.Device1Properties {
-	if d.client.Properties == nil {
-		d.client.GetProperties()
-	}
+func (d *Device) GetProperties() *profile.Device1Properties {
+	d.client.GetProperties()
 	return d.client.Properties
 }
 

@@ -1,21 +1,21 @@
-package bluez
+package profile
 
 import (
 	"github.com/godbus/dbus"
+	"github.com/muka/bluez-client/bluez"
 	"github.com/muka/bluez-client/util"
-	"github.com/muka/device-manager/client"
 	"log"
 )
 
 // NewAdapter1 create a new Adapter1 client
 func NewAdapter1(hostID string) *Adapter1 {
 	a := new(Adapter1)
-	a.client = client.NewClient(
-		&client.Config{
+	a.client = bluez.NewClient(
+		&bluez.Config{
 			Name:  "org.bluez",
 			Iface: "org.bluez.Adapter1",
 			Path:  "/org/bluez/" + hostID,
-			Bus:   client.SystemBus,
+			Bus:   bluez.SystemBus,
 		},
 	)
 	a.Properties = new(Adapter1Properties)
@@ -25,7 +25,7 @@ func NewAdapter1(hostID string) *Adapter1 {
 
 // Adapter1 client
 type Adapter1 struct {
-	client     *client.Client
+	client     *bluez.Client
 	logger     *log.Logger
 	Properties *Adapter1Properties
 }

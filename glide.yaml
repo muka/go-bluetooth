@@ -1,7 +1,3 @@
 package: github.com/muka/bluez-client
 import:
 - package: github.com/godbus/dbus
-- package: github.com/muka/device-manager
-  subpackages:
-  - client
-  - util

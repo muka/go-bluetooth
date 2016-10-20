@@ -6,13 +6,14 @@ import (
 
 	"github.com/godbus/dbus"
 	"github.com/muka/bluez-client/bluez"
+	"github.com/muka/bluez-client/bluez/profile"
 	"github.com/muka/bluez-client/emitter"
 	utilb "github.com/muka/bluez-client/util"
 )
 
 var logger = utilb.NewLogger("api")
 
-var manager *bluez.ObjectManager
+var manager *profile.ObjectManager
 
 var registrations map[string]*dbus.Signal
 
@@ -26,9 +27,9 @@ func Exit() {
 }
 
 //GetManager return the object manager reference
-func GetManager() *bluez.ObjectManager {
+func GetManager() *profile.ObjectManager {
 	if manager == nil {
-		manager = bluez.NewObjectManager()
+		manager = profile.NewObjectManager()
 		WatchManagerChanges()
 	}
 	return manager
@@ -70,7 +71,7 @@ func AdapterExists(adapterID string) (bool, error) {
 }
 
 //GetAdapter return an adapter object instance
-func GetAdapter(adapterID string) (*bluez.Adapter1, error) {
+func GetAdapter(adapterID string) (*profile.Adapter1, error) {
 
 	if exists, err := AdapterExists(adapterID); !exists {
 		if err != nil {
@@ -79,7 +80,7 @@ func GetAdapter(adapterID string) (*bluez.Adapter1, error) {
 		return nil, errors.New("Adapter " + adapterID + " not found")
 	}
 
-	return bluez.NewAdapter1(adapterID), nil
+	return profile.NewAdapter1(adapterID), nil
 }
 
 //StartDiscovery on adapter hci0
@@ -182,13 +183,10 @@ func WatchManagerChanges() error {
 			switch v.Name {
 			case bluez.InterfacesAdded:
 				{
-
 					// logger.Printf("Added %s %s", v.Name, v.Path)
 					// logger.Printf("\n+++Body %s\n", v.Body)
-
 					path := v.Body[0].(dbus.ObjectPath)
 					props := v.Body[1].(map[string]map[string]dbus.Variant)
-
 					//device added
 					if props[bluez.Device1Interface] != nil {
 						dev := ParseDevice(path, props[bluez.Device1Interface])
@@ -205,14 +203,11 @@ func WatchManagerChanges() error {
 						adapterInfo := AdapterEvent{name, strpath, DeviceAdded}
 						emitter.Emit("adapter", adapterInfo)
 					}
-
 				}
 			case bluez.InterfacesRemoved:
 				{
-
 					// logger.Printf("Removed %s %s", v.Name, v.Path)
 					// logger.Printf("\n+++Body %s\n", v.Body)
-
 					path := v.Body[0].(dbus.ObjectPath)
 					ifaces := v.Body[1].([]string)
 					for _, iF := range ifaces {
@@ -233,13 +228,28 @@ func WatchManagerChanges() error {
 							adapterInfo := AdapterEvent{name, strpath, DeviceRemoved}
 							emitter.Emit("adapter", adapterInfo)
 						}
-
 					}
-
 				}
 			}
 		}
 	})()
-
 	return nil
+}
+
+//Event triggered
+type Event emitter.Event
+
+//Callback to be called on event
+type Callback func(ev Event)
+
+//On add an event handler
+func On(name string, fn Callback) {
+	emitter.On(name, func(ev emitter.Event) {
+		fn(ev)
+	})
+}
+
+//Off remove an event handler
+func Off(name string) {
+	emitter.Off(name)
 }

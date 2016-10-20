@@ -1,4 +1,4 @@
-package bluez
+package profile
 
 import (
 	"testing"

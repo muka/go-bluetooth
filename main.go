@@ -69,7 +69,17 @@ func discoverDevices(adapterID string) {
 	emitter.On("discovery", func(ev emitter.Event) {
 		info := ev.GetData().(api.DiscoveredDeviceEvent)
 		if info.Status == api.DeviceAdded {
-			//
+
+			name := info.Device.GetProperties().Name
+
+			if name != "MI Band 2" {
+				return
+			}
+
+			logger.Printf("Found device %s, connecting profiles", name)
+
+			connectProfiles(info.Device)
+
 			// 		logger.Printf("Found device %s, watching for property change", info.Device.GetProperties().Name)
 			//
 			// 		info.Device.On("change", func(ev emitter.Event) {
@@ -82,4 +92,13 @@ func discoverDevices(adapterID string) {
 		}
 	})
 
+}
+
+func connectProfiles(dev *api.Device) {
+
+	for _, uuid := range dev.GetProperties().UUIDs {
+
+		logger.Printf("Connecting profile %s", uuid)
+
+	}
 }

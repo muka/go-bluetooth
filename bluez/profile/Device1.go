@@ -1,22 +1,22 @@
-package bluez
+package profile
 
 import (
 	"log"
 
 	"github.com/godbus/dbus"
+	"github.com/muka/bluez-client/bluez"
 	"github.com/muka/bluez-client/util"
-	"github.com/muka/device-manager/client"
 )
 
 // NewDevice1 create a new Device1 client
 func NewDevice1(path string) *Device1 {
 	a := new(Device1)
-	a.client = client.NewClient(
-		&client.Config{
+	a.client = bluez.NewClient(
+		&bluez.Config{
 			Name:  "org.bluez",
 			Iface: "org.bluez.Device1",
 			Path:  path,
-			Bus:   client.SystemBus,
+			Bus:   bluez.SystemBus,
 		},
 	)
 	a.logger = util.NewLogger(path)
@@ -26,7 +26,7 @@ func NewDevice1(path string) *Device1 {
 
 // Device1 client
 type Device1 struct {
-	client     *client.Client
+	client     *bluez.Client
 	logger     *log.Logger
 	Properties *Device1Properties
 }
@@ -57,12 +57,12 @@ func (d *Device1) Close() {
 
 //Register for changes signalling
 func (d *Device1) Register() (chan *dbus.Signal, error) {
-	return d.client.Register(d.client.Config.Path, PropertiesInterface)
+	return d.client.Register(d.client.Config.Path, bluez.PropertiesInterface)
 }
 
 //Unregister for changes signalling
 func (d *Device1) Unregister() error {
-	return d.client.Unregister(d.client.Config.Path, PropertiesInterface)
+	return d.client.Unregister(d.client.Config.Path, bluez.PropertiesInterface)
 }
 
 //GetProperties load all available properties

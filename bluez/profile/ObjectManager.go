@@ -1,20 +1,21 @@
-package bluez
+package profile
 
 import (
-	"github.com/godbus/dbus"
-	"github.com/muka/device-manager/client"
 	"log"
+
+	"github.com/godbus/dbus"
+	"github.com/muka/bluez-client/bluez"
 )
 
 // NewObjectManager create a new Device1 client
 func NewObjectManager() *ObjectManager {
 	a := new(ObjectManager)
-	a.client = client.NewClient(
-		&client.Config{
+	a.client = bluez.NewClient(
+		&bluez.Config{
 			Name:  "org.bluez",
 			Iface: "org.freedesktop.DBus.ObjectManager",
 			Path:  "/",
-			Bus:   client.SystemBus,
+			Bus:   bluez.SystemBus,
 		},
 	)
 	return a
@@ -22,7 +23,7 @@ func NewObjectManager() *ObjectManager {
 
 // ObjectManager manges the list of all available objects
 type ObjectManager struct {
-	client *client.Client
+	client *bluez.Client
 	logger *log.Logger
 }
 
