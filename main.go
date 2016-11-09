@@ -13,20 +13,22 @@ var logger = logging.MustGetLogger("main")
 
 var adapterID = "hci0"
 
+var DumpAddress = "B0:B4:48:C9:4B:01"
+
 func main() {
 
 	defer api.Exit()
 
-	logger.Debugf("Turning OFF device %s", adapterID)
-	err := api.TurnOffAdapter(adapterID)
+	logger.Debugf("Turning OFF bluetooth")
+	err := api.TurnOffBluetooth()
 	if err != nil {
 		panic(err)
 	}
 
 	go waitAdapter()
 
-	logger.Debugf("Turning ON device %s", adapterID)
-	err = api.TurnOnAdapter(adapterID)
+	logger.Debugf("Turning ON bluetooth")
+	err = api.TurnOnBluetooth()
 	if err != nil {
 		panic(err)
 	}
@@ -72,8 +74,9 @@ func discoverDevices(adapterID string) {
 		if err != nil {
 			panic(err)
 		}
-		if props.Name == "MI Band 2" {
-			logger.Debug("Found MI Band 2")
+
+		if props.Address == DumpAddress {
+			logger.Debugf("Found %s [addr:%s]", props.Name, props.Address)
 			connectProfiles(&dev)
 		}
 	}
@@ -127,14 +130,24 @@ func discoverDevices(adapterID string) {
 
 func connectProfiles(dev *api.Device) {
 
+	logger.Debug("Loading properties")
+
+	err := dev.Connect()
+	if err != nil {
+		panic(err)
+	}
+
+	logger.Debug("Connected")
+
 	props, err := dev.GetProperties()
 	if err != nil {
 		panic(err)
 	}
 
+	logger.Debugf("Got %d GattServices", len(props.GattServices))
 	for _, path := range props.GattServices {
 
-		// logger.Debug("Get Gatt service %s", path)
+		logger.Debugf("Get Gatt service %s", path)
 		service := dev.GetService(string(path))
 		serviceProps, err := service.GetProperties()
 		if err != nil {
@@ -142,11 +155,10 @@ func connectProfiles(dev *api.Device) {
 			continue
 		}
 
-		// logger.Debug("Got service %s\n", serviceProps.UUID)
-
+		logger.Debug("Got service %s\n", serviceProps.UUID)
 		for _, charpath := range serviceProps.Characteristics {
 
-			// logger.Debug("Get Gatt char %s", charpath)
+			logger.Debug("Get Gatt char %s", charpath)
 			char := dev.GetChar(string(charpath))
 			charProps, err := char.GetProperties()
 
@@ -156,7 +168,6 @@ func connectProfiles(dev *api.Device) {
 			}
 
 			logger.Debugf("Got char %s\n", charProps.UUID)
-
 			b, err := char.ReadValue()
 			if err != nil {
 				logger.Error(err)
@@ -164,7 +175,7 @@ func connectProfiles(dev *api.Device) {
 			}
 
 			if len(b) == 0 {
-				// logger.Debug("Empty bytearray")
+				logger.Debug("Empty bytearray")
 				continue
 			}
 
@@ -189,4 +200,6 @@ func connectProfiles(dev *api.Device) {
 		}
 
 	}
+
+	logger.Debug("Done.")
 }

@@ -35,28 +35,34 @@ var events = make(map[string][]Callback, 0)
 func loop() {
 	dbg("loop: Started")
 	for {
+
 		if pipe == nil {
 			dbg("loop: Closed")
 			return
 		}
+
+		dbg("loop: Waiting for events")
 		ev := <-pipe
-		dbg("loop: Trigger event %s", ev.GetName())
+		dbg("loop: Trigger event `%s`", ev.GetName())
+
 		if events[ev.GetName()] != nil {
 			size := len(events[ev.GetName()])
 			if size == 0 {
-				return
-			}
-			for i := 0; i < size; i++ {
-				dbg("Call fn")
-				events[ev.GetName()][i](ev)
+				dbg("No callback available")
+			} else {
+				for i := 0; i < size; i++ {
+					go events[ev.GetName()][i](ev)
+				}
 			}
 		}
+		dbg("loop: done event trigger")
 	}
 }
 
 func getPipe() {
 	if pipe == nil {
-		pipe = make(chan Event)
+		dbg("Init pipe")
+		pipe = make(chan Event, 1)
 		go loop()
 	}
 }
@@ -79,14 +85,16 @@ func On(event string, callback Callback) {
 
 // Emit an event
 func Emit(name string, data interface{}) {
-	dbg("Emit event %s\n", name)
+	dbg("Emit event `%s` -> %v", name, data)
 	getPipe()
 	ev := BaseEvent{name, data}
+	dbg("Send to pipe")
 	pipe <- ev
 }
 
 //Off Removes all callbacks from an event
 func Off(name string) {
+
 	dbg("Off %s", name)
 	if name == "*" {
 		for name := range events {

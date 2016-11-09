@@ -64,11 +64,10 @@ func (d *Device) watchProperties() error {
 				continue
 			}
 
-			// logger.Debug("Device property changed")
-			// for i := 0; i < len(sig.Body); i++ {
-			// 	logger.Debug(reflect.TypeOf(sig.Body[i]))
-			// 	logger.Debug(sig.Body[i])
-			// }
+			dbg("Device property changed")
+			for i := 0; i < len(sig.Body); i++ {
+				dbg("%s -> %s", reflect.TypeOf(sig.Body[i]), sig.Body[i])
+			}
 
 			// logger.Debug("----------------------")
 
@@ -128,6 +127,7 @@ func (d *Device) GetClient() (*profile.Device1, error) {
 
 //GetProperties return the properties for the device
 func (d *Device) GetProperties() (*profile.Device1Properties, error) {
+
 	if d == nil {
 		return nil, errors.New("Empty device pointer")
 	}
@@ -135,7 +135,9 @@ func (d *Device) GetProperties() (*profile.Device1Properties, error) {
 	if err != nil {
 		return nil, err
 	}
+	dbg("Load properties")
 	c.GetProperties()
+	dbg("Loaded	 properties")
 	return c.Properties, nil
 }
 
@@ -187,4 +189,14 @@ func (d *Device) GetService(path string) *profile.GattService1 {
 //GetChar return a GattService
 func (d *Device) GetChar(path string) *profile.GattCharacteristic1 {
 	return profile.NewGattCharacteristic1(path)
+}
+
+//Connect to device
+func (d *Device) Connect() error {
+	c, err := d.GetClient()
+	if err != nil {
+		return err
+	}
+	c.Connect()
+	return nil
 }

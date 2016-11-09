@@ -2,8 +2,8 @@ package profile
 
 import (
 	"github.com/godbus/dbus"
-	"github.com/op/go-logging"
 	"github.com/muka/bluez-client/bluez"
+	"github.com/op/go-logging"
 )
 
 // NewGattService1 create a new GattService1 client

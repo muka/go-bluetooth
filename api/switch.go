@@ -5,19 +5,22 @@ import (
 	"strconv"
 
 	"github.com/muka/bluez-client/linux"
+	"github.com/tj/go-debug"
 )
+
+var dbgSwitch = debug.Debug("bluez:switch")
 
 var rfclass = [...]string{
 	"bluetooth",
 	"wifi",
 }
 
-const ()
-
 var rfkill = linux.NewRFKill()
 
 // GetAdapterStatus return the status of an adapter
 func GetAdapterStatus(adapterID string) (*linux.RFKillResult, error) {
+
+	dbgSwitch("Get adapter %s", adapterID)
 
 	if !rfkill.IsInstalled() {
 		return nil, errors.New("rfkill is not available")
@@ -27,9 +30,11 @@ func GetAdapterStatus(adapterID string) (*linux.RFKillResult, error) {
 	if err != nil {
 		return nil, err
 	}
+
 	for _, adapter := range list {
+		dbgSwitch("adapter %v", adapter)
 		if adapter.Description == adapterID {
-			logger.Debugf("Matching adapter index %d desc: %s type: %s hard-block: %t soft-block: %t",
+			dbgSwitch("Got adapter index %d desc: %s type: %s hard-block: %t soft-block: %t",
 				adapter.Index,
 				adapter.Description,
 				adapter.IdentifierType,
@@ -40,22 +45,27 @@ func GetAdapterStatus(adapterID string) (*linux.RFKillResult, error) {
 			return &adapter, nil
 		}
 	}
+
 	return nil, errors.New("Adapter not found")
 }
 
 // ToggleAdapter Swap Off/On a device
 func ToggleAdapter(adapterID string) error {
-	adapter, err := GetAdapterStatus(adapterID)
-	if err != nil {
-		return err
+
+	dbgSwitch("Toggle adapter")
+
+	var identifier string
+	if isRFClass(adapterID) {
+		identifier = adapterID
+	} else {
+		adapter, err := GetAdapterStatus(adapterID)
+		if err != nil {
+			return err
+		}
+		identifier = strconv.Itoa(adapter.Index)
 	}
 
-	identifier := strconv.Itoa(adapter.Index)
-	if isRFClass(adapter) {
-		identifier = adapter.IdentifierType
-	}
-
-	err = TurnOffAdapter(identifier)
+	err := TurnOffAdapter(identifier)
 	if err != nil {
 		return err
 	}
@@ -66,14 +76,17 @@ func ToggleAdapter(adapterID string) error {
 // TurnOnAdapter Enable a rfkill managed device
 func TurnOnAdapter(adapterID string) error {
 
-	adapter, err := GetAdapterStatus(adapterID)
-	if err != nil {
-		return err
-	}
+	dbgSwitch("Turn ON adapter %s", adapterID)
 
-	identifier := strconv.Itoa(adapter.Index)
-	if isRFClass(adapter) {
-		identifier = adapter.IdentifierType
+	var identifier string
+	if isRFClass(adapterID) {
+		identifier = adapterID
+	} else {
+		adapter, err := GetAdapterStatus(adapterID)
+		if err != nil {
+			return err
+		}
+		identifier = strconv.Itoa(adapter.Index)
 	}
 
 	if rfkill.IsSoftBlocked(adapterID) {
@@ -91,14 +104,17 @@ func TurnOnAdapter(adapterID string) error {
 // TurnOffAdapter Enable a rfkill managed device
 func TurnOffAdapter(adapterID string) error {
 
-	adapter, err := GetAdapterStatus(adapterID)
-	if err != nil {
-		return err
-	}
+	dbgSwitch("Turn OFF adapter %s", adapterID)
 
-	identifier := strconv.Itoa(adapter.Index)
-	if isRFClass(adapter) {
-		identifier = adapter.IdentifierType
+	var identifier string
+	if isRFClass(adapterID) {
+		identifier = adapterID
+	} else {
+		adapter, err := GetAdapterStatus(adapterID)
+		if err != nil {
+			return err
+		}
+		identifier = strconv.Itoa(adapter.Index)
 	}
 
 	if !rfkill.IsSoftBlocked(adapterID) {
@@ -110,9 +126,9 @@ func TurnOffAdapter(adapterID string) error {
 	return nil
 }
 
-func isRFClass(res *linux.RFKillResult) bool {
+func isRFClass(id string) bool {
 	for _, class := range rfclass {
-		if class == res.IdentifierType {
+		if class == id {
 			return true
 		}
 	}
@@ -121,24 +137,19 @@ func isRFClass(res *linux.RFKillResult) bool {
 
 // TurnOnBluetooth turn on bluetooth support
 func TurnOnBluetooth() error {
-	err := rfkill.SoftUnblock("bluetooth")
-	if err != nil {
-		return err
-	}
-	return nil
+	dbgSwitch("Turn ON bluetooth")
+	return TurnOnAdapter("bluetooth")
 }
 
 // TurnOffBluetooth turn on bluetooth support
 func TurnOffBluetooth() error {
-	err := rfkill.SoftBlock("bluetooth")
-	if err != nil {
-		return err
-	}
-	return nil
+	dbgSwitch("Turn OFF bluetooth")
+	return TurnOffAdapter("bluetooth")
 }
 
 // ToggleBluetooth toggle off/on the bluetooth support
 func ToggleBluetooth() error {
+	dbgSwitch("Toggle bluetooth")
 	err := TurnOffBluetooth()
 	if err != nil {
 		return err

@@ -6,6 +6,7 @@ import (
 
 	"github.com/godbus/dbus"
 	"github.com/op/go-logging"
+	"github.com/tj/go-debug"
 
 	"github.com/muka/bluez-client/bluez"
 	"github.com/muka/bluez-client/bluez/profile"
@@ -16,6 +17,8 @@ var logger = logging.MustGetLogger("api")
 
 var manager *profile.ObjectManager
 
+var dbg = debug.Debug("bluez:api")
+
 var registrations map[string]*dbus.Signal
 
 var watchChangesEnabled = false
@@ -24,7 +27,7 @@ var watchChangesEnabled = false
 func Exit() {
 	GetManager().Unregister()
 	GetManager().Close()
-	logger.Infof("Bye.")
+	dbg("Bye.")
 }
 
 //GetManager return the object manager reference
@@ -160,7 +163,7 @@ func WatchManagerChanges() error {
 		for {
 
 			if channel == nil {
-				logger.Debugf("Quitting manager listener")
+				dbg("Quitting manager listener")
 				break
 			}
 
@@ -173,8 +176,8 @@ func WatchManagerChanges() error {
 			switch v.Name {
 			case bluez.InterfacesAdded:
 				{
-					// logger.Debugf("Added %s %s", v.Name, v.Path)
-					// logger.Debugf("\n+++Body %s\n", v.Body)
+					// dbg("Added %s %s", v.Name, v.Path)
+					// dbg("\n+++Body %s\n", v.Body)
 					path := v.Body[0].(dbus.ObjectPath)
 					props := v.Body[1].(map[string]map[string]dbus.Variant)
 					//device added
@@ -184,7 +187,7 @@ func WatchManagerChanges() error {
 							logger.Fatalf("Failed to parse device: %v\n", err)
 							return
 						}
-						// logger.Debugf("Added device %s", path)
+						// dbg("Added device %s", path)
 						devInfo := DiscoveredDeviceEvent{string(path), DeviceAdded, dev}
 						emitter.Emit("discovery", devInfo)
 					}
@@ -193,32 +196,32 @@ func WatchManagerChanges() error {
 						strpath := string(path)
 						parts := strings.Split(strpath, "/")
 						name := parts[len(parts)-1:][0]
-						// logger.Debugf("Added adapter %s", name)
+						// dbg("Added adapter %s", name)
 						adapterInfo := AdapterEvent{name, strpath, DeviceAdded}
 						emitter.Emit("adapter", adapterInfo)
 					}
 				}
 			case bluez.InterfacesRemoved:
 				{
-					// logger.Debugf("Removed %s %s", v.Name, v.Path)
-					// logger.Debugf("\n+++Body %s\n", v.Body)
+					// dbg("Removed %s %s", v.Name, v.Path)
+					// dbg("\n+++Body %s\n", v.Body)
 					path := v.Body[0].(dbus.ObjectPath)
 					ifaces := v.Body[1].([]string)
 					for _, iF := range ifaces {
 						// device removed
 						if iF == bluez.Device1Interface {
-							// logger.Debugf("%s : %s", path, ifaces)
-							// logger.Debugf("Removed device %s", path)
+							// dbg("%s : %s", path, ifaces)
+							// dbg("Removed device %s", path)
 							devInfo := DiscoveredDeviceEvent{string(path), DeviceRemoved, nil}
 							emitter.Emit("discovery", devInfo)
 						}
 						//adapter removed
 						if iF == bluez.Adapter1Interface {
-							// logger.Debugf("%s : %s", path, ifaces)
+							// dbg("%s : %s", path, ifaces)
 							strpath := string(path)
 							parts := strings.Split(strpath, "/")
 							name := parts[len(parts)-1:][0]
-							logger.Debug("Removed adapter %s", name)
+							dbg("Removed adapter %s", name)
 							adapterInfo := AdapterEvent{name, strpath, DeviceRemoved}
 							emitter.Emit("adapter", adapterInfo)
 						}

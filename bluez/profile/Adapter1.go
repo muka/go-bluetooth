@@ -2,8 +2,8 @@ package profile
 
 import (
 	"github.com/godbus/dbus"
-	"github.com/op/go-logging"
 	"github.com/muka/bluez-client/bluez"
+	"github.com/op/go-logging"
 )
 
 // NewAdapter1 create a new Adapter1 client
