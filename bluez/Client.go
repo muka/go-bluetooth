@@ -2,8 +2,8 @@ package bluez
 
 import (
 	"github.com/godbus/dbus"
-	"github.com/juju/loggo"
 	"github.com/muka/bluez-client/util"
+	"github.com/op/go-logging"
 )
 
 // NewClient create a new client
@@ -12,14 +12,14 @@ func NewClient(config *Config) *Client {
 	c := new(Client)
 
 	c.Config = config
-	c.logger = loggo.GetLogger("client")
+	c.logger = logging.MustGetLogger("client")
 
 	return c
 }
 
 // Client implement a DBus client
 type Client struct {
-	logger     loggo.Logger
+	logger     *logging.Logger
 	conn       *dbus.Conn
 	dbusObject dbus.BusObject
 	Config     *Config
@@ -35,7 +35,7 @@ func (c *Client) Disconnect() {
 		c.conn.Close()
 		c.conn = nil
 		c.dbusObject = nil
-		// c.logger.Println("Client disconnected")
+		// c.logger.Debug("Client disconnected")
 	}
 }
 
@@ -50,7 +50,7 @@ func (c *Client) Connect() error {
 	c.conn = dbusConn
 	c.dbusObject = c.conn.Object(c.Config.Name, dbus.ObjectPath(c.Config.Path))
 
-	// c.logger.Printf("Connected to %s %s\n", c.Config.Name, c.Config.Path)
+	// c.logger.Debug("Connected to %s %s\n", c.Config.Name, c.Config.Path)
 	return nil
 }
 
@@ -69,7 +69,7 @@ func (c *Client) Call(method string, flags dbus.Flags, args ...interface{}) *dbu
 	methodPath := c.Config.Iface + "." + method
 
 	callArgs := args
-	// c.logger.Printf("Call %s( %v )\n", methodPath, callArgs)
+	// c.logger.Debug("Call %s( %v )\n", methodPath, callArgs)
 
 	return c.dbusObject.Call(methodPath, flags, callArgs...)
 }
@@ -106,7 +106,7 @@ func (c *Client) GetProperties(props interface{}) error {
 		}
 	}
 
-	// c.logger.Printf("Loading properties for %s", c.Config.Iface)
+	// c.logger.Debug("Loading properties for %s", c.Config.Iface)
 
 	result := make(map[string]dbus.Variant)
 	err := c.dbusObject.Call("org.freedesktop.DBus.Properties.GetAll", 0, c.Config.Iface).Store(&result)
@@ -132,7 +132,7 @@ func (c *Client) Register(path string, iface string) (chan *dbus.Signal, error) 
 	}
 
 	matchstr := getMatchString(path, iface)
-	// c.logger.Printf("Match on %s", matchstr)
+	// c.logger.Debug("Match on %s", matchstr)
 	c.conn.BusObject().Call("org.freedesktop.DBus.AddMatch", 0, matchstr)
 
 	channel := make(chan *dbus.Signal, 100)

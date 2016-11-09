@@ -2,10 +2,10 @@ package examples
 
 import (
 	"github.com/muka/bluez-client/api"
-	"github.com/muka/bluez-client/util"
+	"github.com/op/go-logging"
 )
 
-var log = util.NewLogger("examples")
+var log = logging.MustGetLogger("examples")
 
 func main() {
 

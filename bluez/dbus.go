@@ -32,7 +32,7 @@ func GetConnection(connType BusType) (*dbus.Conn, error) {
 	case SystemBus:
 		{
 			if conns[SystemBus] == nil {
-				// c.logger.Println("Connecting to SystemBus")
+				// c.logger.Debug("Connecting to SystemBus")
 				conn, err := dbus.SystemBus()
 				if err != nil {
 					return nil, err
@@ -44,7 +44,7 @@ func GetConnection(connType BusType) (*dbus.Conn, error) {
 	case SessionBus:
 		{
 			if conns[SessionBus] == nil {
-				// c.logger.Println("Connecting to SessionBus")
+				// c.logger.Debug("Connecting to SessionBus")
 				conn, err := dbus.SessionBus()
 				if err != nil {
 					return nil, err

@@ -3,14 +3,14 @@ package examples
 import (
 	"fmt"
 	"github.com/muka/bluez-client/bluez"
-	"github.com/muka/bluez-client/util"
+	"github.com/op/go-logging"
 	"strings"
 )
 
 //LoadInfo show basic informations regardinf a device
 func LoadInfo(adapterID string, deviceID string) {
 
-	var log = util.NewLogger(fmt.Sprintf("example:%s:%s", adapterID, deviceID))
+	var log = logging.MustGetLogger(fmt.Sprintf("example:%s:%s", adapterID, deviceID))
 
 	adapter := bluez.NewAdapter1(adapterID)
 

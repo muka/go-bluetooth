@@ -39,7 +39,7 @@ func ParseDevice(path dbus.ObjectPath, propsMap map[string]dbus.Variant) (*Devic
 
 func (d *Device) watchProperties() error {
 
-	// logger.Println("Registering to PropertyChanged")
+	// logger.Debug("Registering to PropertyChanged")
 
 	channel, err := d.client.Register()
 	if err != nil {
@@ -49,32 +49,32 @@ func (d *Device) watchProperties() error {
 	go (func() {
 		for {
 			if channel == nil {
-				// logger.Println("Quit goroutine")
+				// logger.Debug("Quit goroutine")
 				break
 			}
 
-			// logger.Println("Waiting for property change")
+			// logger.Debug("Waiting for property change")
 			sig := <-channel
 
-			// logger.Println("----------------------")
-			// logger.Printf("Name: %s\n", sig.Name)
+			// logger.Debug("----------------------")
+			// logger.Debug("Name: %s\n", sig.Name)
 
 			if sig == nil {
 				return
 			}
 
 			if sig.Name != bluez.PropertiesChanged {
-				// logger.Printf("Skipped %s vs %s\n", sig.Name, bluez.PropertiesInterface)
+				// logger.Debug("Skipped %s vs %s\n", sig.Name, bluez.PropertiesInterface)
 				continue
 			}
 
-			// logger.Println("Device property changed")
+			// logger.Debug("Device property changed")
 			// for i := 0; i < len(sig.Body); i++ {
-			// 	logger.Println(reflect.TypeOf(sig.Body[i]))
-			// 	logger.Println(sig.Body[i])
+			// 	logger.Debug(reflect.TypeOf(sig.Body[i]))
+			// 	logger.Debug(sig.Body[i])
 			// }
 
-			// logger.Println("----------------------")
+			// logger.Debug("----------------------")
 
 			iface := sig.Body[0].(string)
 			changes := sig.Body[1].(map[string]dbus.Variant)
@@ -98,7 +98,7 @@ func (d *Device) watchProperties() error {
 					if f.CanSet() {
 						x := reflect.ValueOf(val.Value())
 						f.Set(x)
-						// logger.Printf("Set props value: %s = %s\n", field, x.Interface())
+						// logger.Debug("Set props value: %s = %s\n", field, x.Interface())
 					}
 				}
 
@@ -163,7 +163,7 @@ func (d *Device) On(name string, fn Callback) {
 		d.watchProperties()
 		break
 	}
-	logger.Printf("Listen on %s\n", d.Path+"."+name)
+	logger.Debug("Listen on %s\n", d.Path+"."+name)
 	emitter.On(d.Path+"."+name, func(ev emitter.Event) {
 		fn(ev)
 	})

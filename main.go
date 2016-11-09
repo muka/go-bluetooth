@@ -3,34 +3,53 @@ package main
 import (
 	"bytes"
 	"encoding/binary"
+
 	"github.com/muka/bluez-client/api"
 	"github.com/muka/bluez-client/emitter"
-	"github.com/muka/bluez-client/util"
+	"github.com/op/go-logging"
 )
 
-var logger = util.NewLogger("main")
+var logger = logging.MustGetLogger("main")
+
+var adapterID = "hci0"
 
 func main() {
 
 	defer api.Exit()
 
-	adapterID := "hci0"
+	logger.Debugf("Turning OFF device %s", adapterID)
+	err := api.TurnOffDevice(adapterID)
+	if err != nil {
+		panic(err)
+	}
 
+	go waitAdapter()
+
+	logger.Debugf("Turning ON device %s", adapterID)
+	err = api.TurnOnDevice(adapterID)
+	if err != nil {
+		panic(err)
+	}
+
+	select {}
+}
+
+func waitAdapter() {
 	if exists, err := api.AdapterExists(adapterID); !exists {
 		if err != nil {
 			panic(err)
 		}
-		logger.Println("Waiting for adapter hci0")
+		logger.Debug("Waiting for adapter hci0")
 		emitter.On("adapter", func(ev emitter.Event) {
 			info := ev.GetData().(api.AdapterEvent)
 
 			if info.Status == api.DeviceAdded {
 
-				logger.Printf("Adapter %s added\n", info.Name)
+				logger.Debugf("Adapter %s added\n", info.Name)
 				discoverDevices(info.Name)
 
 			} else {
-				logger.Printf("Adapter %s removed\n", info.Name)
+				logger.Debugf("Adapter %s removed\n", info.Name)
 			}
 		})
 	} else {
@@ -49,9 +68,12 @@ func discoverDevices(adapterID string) {
 	}
 
 	for _, dev := range devices {
-		props := dev.GetProperties()
+		props, err := dev.GetProperties()
+		if err != nil {
+			panic(err)
+		}
 		if props.Name == "MI Band 2" {
-			logger.Println("Found MI Band 2")
+			logger.Debug("Found MI Band 2")
 			connectProfiles(&dev)
 		}
 	}
@@ -61,16 +83,16 @@ func discoverDevices(adapterID string) {
 	// 	panic(err)
 	// }
 	// for _, device := range devices {
-	// 	logger.Printf("Dropping %s", device.Path)
+	// 	logger.Debug("Dropping %s", device.Path)
 	// 	go hci0.RemoveDevice(device.Path)
 	// }
 	//
 	// err = api.StopDiscovery()
 	// if err != nil {
-	// 	logger.Println(err)
+	// 	logger.Debug(err)
 	// }
 	//
-	// logger.Printf("Starting discovery on adapter %s\n", adapterID)
+	// logger.Debug("Starting discovery on adapter %s\n", adapterID)
 	// err = api.StartDiscovery()
 	// if err != nil {
 	// 	panic(err)
@@ -86,18 +108,18 @@ func discoverDevices(adapterID string) {
 	// 			return
 	// 		}
 	//
-	// 		logger.Printf("Found device %s, connecting profiles", name)
+	// 		logger.Debug("Found device %s, connecting profiles", name)
 	// 		connectProfiles(info.Device)
 	//
-	// 		// 		logger.Printf("Found device %s, watching for property change", info.Device.GetProperties().Name)
+	// 		// 		logger.Debug("Found device %s, watching for property change", info.Device.GetProperties().Name)
 	// 		//
 	// 		// 		info.Device.On("change", func(ev emitter.Event) {
 	// 		// 			changed := ev.GetData().(api.PropertyChanged)
-	// 		// 			logger.Printf("%s: set %s = %s", info.Device.GetProperties().Name, changed.Field, changed.Value)
+	// 		// 			logger.Debug("%s: set %s = %s", info.Device.GetProperties().Name, changed.Field, changed.Value)
 	// 		// 		})
 	// 		//
 	// 	} else {
-	// 		logger.Printf("Removed device %s", info.Path)
+	// 		logger.Debug("Removed device %s", info.Path)
 	// 	}
 	// })
 
@@ -105,9 +127,14 @@ func discoverDevices(adapterID string) {
 
 func connectProfiles(dev *api.Device) {
 
-	for _, path := range dev.GetProperties().GattServices {
+	props, err := dev.GetProperties()
+	if err != nil {
+		panic(err)
+	}
 
-		// logger.Printf("Get Gatt service %s", path)
+	for _, path := range props.GattServices {
+
+		// logger.Debug("Get Gatt service %s", path)
 		service := dev.GetService(string(path))
 		serviceProps, err := service.GetProperties()
 		if err != nil {
@@ -115,50 +142,50 @@ func connectProfiles(dev *api.Device) {
 			continue
 		}
 
-		// logger.Printf("Got service %s\n", serviceProps.UUID)
+		// logger.Debug("Got service %s\n", serviceProps.UUID)
 
 		for _, charpath := range serviceProps.Characteristics {
 
-			// logger.Printf("Get Gatt char %s", charpath)
+			// logger.Debug("Get Gatt char %s", charpath)
 			char := dev.GetChar(string(charpath))
 			charProps, err := char.GetProperties()
 
 			if err != nil {
-				logger.Println(err)
+				logger.Error(err)
 				continue
 			}
 
-			logger.Printf("Got char %s\n", charProps.UUID)
+			logger.Debugf("Got char %s\n", charProps.UUID)
 
 			b, err := char.ReadValue()
 			if err != nil {
-				logger.Println(err)
+				logger.Error(err)
 				continue
 			}
 
 			if len(b) == 0 {
-				// logger.Println("Empty bytearray")
+				// logger.Debug("Empty bytearray")
 				continue
 			}
 
-			logger.Printf("Char value is: %v\n", b)
-			logger.Printf("string: %s\n", b)
+			logger.Debug("Char value is: %v\n", b)
+			logger.Debug("string: %s\n", b)
 
 			var n uint64
 			buf := bytes.NewReader(b)
 			err = binary.Read(buf, binary.LittleEndian, &n)
 			if err != nil {
-				logger.Println("num: ")
-				logger.Println(n)
+				logger.Debug("num: ")
+				logger.Debug(n)
 			}
 
 			// uint64val, err := binary.ReadUvarint(buf)
 			// if err != nil {
-			// 	logger.Println("uint64: ")
-			// 	logger.Println(uint64val)
+			// 	logger.Debug("uint64: ")
+			// 	logger.Debug(uint64val)
 			// }
 
-			logger.Println("---\n ")
+			logger.Debug("---\n ")
 		}
 
 	}

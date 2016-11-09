@@ -2,7 +2,7 @@ package profile
 
 import (
 	"github.com/godbus/dbus"
-	"github.com/juju/loggo"
+	"github.com/op/go-logging"
 	"github.com/muka/bluez-client/bluez"
 )
 
@@ -17,7 +17,7 @@ func NewGattService1(path string) *GattService1 {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	a.logger = loggo.GetLogger(path)
+	a.logger = logging.MustGetLogger(path)
 	a.Properties = new(GattService1Properties)
 	return a
 }
@@ -25,7 +25,7 @@ func NewGattService1(path string) *GattService1 {
 // GattService1 client
 type GattService1 struct {
 	client     *bluez.Client
-	logger     loggo.Logger
+	logger     *logging.Logger
 	Properties *GattService1Properties
 }
 

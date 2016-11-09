@@ -10,10 +10,10 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/juju/loggo"
+	"github.com/op/go-logging"
 )
 
-var logger = loggo.GetLogger("api")
+var logger = logging.MustGetLogger("api")
 
 func limitText(text []byte) string {
 	t := strings.TrimSpace(string(text))

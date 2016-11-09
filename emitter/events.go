@@ -1,8 +1,8 @@
 package emitter
 
-import "github.com/juju/loggo"
+import "github.com/op/go-logging"
 
-var log = loggo.GetLogger("events")
+var log = logging.MustGetLogger("events")
 
 //Callback is a function to be invoked when an event happens
 type Callback func(ev Event)
