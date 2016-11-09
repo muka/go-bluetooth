@@ -1,8 +1,8 @@
 package emitter
 
-import "github.com/op/go-logging"
+import "github.com/tj/go-debug"
 
-var log = logging.MustGetLogger("events")
+var dbg = debug.Debug("dbus:emitter")
 
 //Callback is a function to be invoked when an event happens
 type Callback func(ev Event)
@@ -33,21 +33,21 @@ var pipe chan Event
 var events = make(map[string][]Callback, 0)
 
 func loop() {
-	//log.Printf("loop: Started\n")
+	dbg("loop: Started")
 	for {
 		if pipe == nil {
-			// log.Printf("loop: Closed\n")
+			dbg("loop: Closed")
 			return
 		}
 		ev := <-pipe
-		// log.Printf("loop: Trigger event %s\n", ev.GetName())
+		dbg("loop: Trigger event %s", ev.GetName())
 		if events[ev.GetName()] != nil {
 			size := len(events[ev.GetName()])
 			if size == 0 {
 				return
 			}
 			for i := 0; i < size; i++ {
-				// log.Printf("Call fn\n")
+				dbg("Call fn")
 				events[ev.GetName()][i](ev)
 			}
 		}
@@ -74,12 +74,12 @@ func On(event string, callback Callback) {
 	}
 
 	events[event] = append(events[event], callback)
-	//log.Printf("Added %s events, len is %d\n", event, len(events[event]))
+	dbg("Added %s events, len is %d", event, len(events[event]))
 }
 
 // Emit an event
 func Emit(name string, data interface{}) {
-	//log.Printf("Emit event %s\n", name)
+	dbg("Emit event %s\n", name)
 	getPipe()
 	ev := BaseEvent{name, data}
 	pipe <- ev
@@ -87,7 +87,7 @@ func Emit(name string, data interface{}) {
 
 //Off Removes all callbacks from an event
 func Off(name string) {
-	//log.Printf("Off %s", name)
+	dbg("Off %s", name)
 	if name == "*" {
 		for name := range events {
 			if name != "*" {

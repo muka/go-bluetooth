@@ -18,7 +18,7 @@ func main() {
 	defer api.Exit()
 
 	logger.Debugf("Turning OFF device %s", adapterID)
-	err := api.TurnOffDevice(adapterID)
+	err := api.TurnOffAdapter(adapterID)
 	if err != nil {
 		panic(err)
 	}
@@ -26,7 +26,7 @@ func main() {
 	go waitAdapter()
 
 	logger.Debugf("Turning ON device %s", adapterID)
-	err = api.TurnOnDevice(adapterID)
+	err = api.TurnOnAdapter(adapterID)
 	if err != nil {
 		panic(err)
 	}

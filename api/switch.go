@@ -7,65 +7,25 @@ import (
 	"github.com/muka/bluez-client/linux"
 )
 
+var rfclass = [...]string{
+	"bluetooth",
+	"wifi",
+}
+
+const ()
+
 var rfkill = linux.NewRFKill()
 
-// ToggleDevice Swap Off/On a device
-func ToggleDevice(adapterID string) error {
-	identifier, err := GetRFKillAdapterIndex(adapterID)
-	if err != nil {
-		return err
-	}
-	err = TurnOffDevice(strconv.Itoa(identifier))
-	if err != nil {
-		return err
-	}
-	return TurnOnDevice(adapterID)
-}
+// GetAdapterStatus return the status of an adapter
+func GetAdapterStatus(adapterID string) (*linux.RFKillResult, error) {
 
-// TurnOnDevice Enable a rfkill managed device
-func TurnOnDevice(adapterID string) error {
-	identifier, err := GetRFKillAdapterIndex(adapterID)
-	if err != nil {
-		return err
-	}
 	if !rfkill.IsInstalled() {
-		return errors.New("rfkill is not available")
+		return nil, errors.New("rfkill is not available")
 	}
-	if rfkill.IsSoftBlocked(adapterID) {
-		err := rfkill.SoftUnblock(strconv.Itoa(identifier))
-		if err != nil {
-			return err
-		}
-	}
-	if rfkill.IsHardBlocked(adapterID) {
-		return errors.New("Device is hard locked, check for a physical switch to enable it")
-	}
-	return nil
-}
 
-// TurnOffDevice Enable a rfkill managed device
-func TurnOffDevice(adapterID string) error {
-	identifier, err := GetRFKillAdapterIndex(adapterID)
-	if err != nil {
-		return err
-	}
-	if !rfkill.IsInstalled() {
-		return errors.New("rfkill is not available")
-	}
-	if !rfkill.IsSoftBlocked(adapterID) {
-		err := rfkill.SoftBlock(strconv.Itoa(identifier))
-		if err != nil {
-			return err
-		}
-	}
-	return nil
-}
-
-// GetRFKillAdapterIndex Return the adapter index from its name
-func GetRFKillAdapterIndex(adapterID string) (int, error) {
 	list, err := rfkill.ListAll()
 	if err != nil {
-		return -1, err
+		return nil, err
 	}
 	for _, adapter := range list {
 		if adapter.Description == adapterID {
@@ -77,8 +37,111 @@ func GetRFKillAdapterIndex(adapterID string) (int, error) {
 				adapter.SoftBlocked,
 			)
 
-			return adapter.Index, nil
+			return &adapter, nil
 		}
 	}
-	return -1, errors.New("Adapter name not found")
+	return nil, errors.New("Adapter not found")
+}
+
+// ToggleAdapter Swap Off/On a device
+func ToggleAdapter(adapterID string) error {
+	adapter, err := GetAdapterStatus(adapterID)
+	if err != nil {
+		return err
+	}
+
+	identifier := strconv.Itoa(adapter.Index)
+	if isRFClass(adapter) {
+		identifier = adapter.IdentifierType
+	}
+
+	err = TurnOffAdapter(identifier)
+	if err != nil {
+		return err
+	}
+
+	return TurnOnAdapter(identifier)
+}
+
+// TurnOnAdapter Enable a rfkill managed device
+func TurnOnAdapter(adapterID string) error {
+
+	adapter, err := GetAdapterStatus(adapterID)
+	if err != nil {
+		return err
+	}
+
+	identifier := strconv.Itoa(adapter.Index)
+	if isRFClass(adapter) {
+		identifier = adapter.IdentifierType
+	}
+
+	if rfkill.IsSoftBlocked(adapterID) {
+		err := rfkill.SoftUnblock(identifier)
+		if err != nil {
+			return err
+		}
+	}
+	if rfkill.IsHardBlocked(adapterID) {
+		return errors.New("Adapter is hard locked, check for a physical switch to enable it")
+	}
+	return nil
+}
+
+// TurnOffAdapter Enable a rfkill managed device
+func TurnOffAdapter(adapterID string) error {
+
+	adapter, err := GetAdapterStatus(adapterID)
+	if err != nil {
+		return err
+	}
+
+	identifier := strconv.Itoa(adapter.Index)
+	if isRFClass(adapter) {
+		identifier = adapter.IdentifierType
+	}
+
+	if !rfkill.IsSoftBlocked(adapterID) {
+		err := rfkill.SoftBlock(identifier)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func isRFClass(res *linux.RFKillResult) bool {
+	for _, class := range rfclass {
+		if class == res.IdentifierType {
+			return true
+		}
+	}
+	return false
+}
+
+// TurnOnBluetooth turn on bluetooth support
+func TurnOnBluetooth() error {
+	err := rfkill.SoftUnblock("bluetooth")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// TurnOffBluetooth turn on bluetooth support
+func TurnOffBluetooth() error {
+	err := rfkill.SoftBlock("bluetooth")
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+// ToggleBluetooth toggle off/on the bluetooth support
+func ToggleBluetooth() error {
+	err := TurnOffBluetooth()
+	if err != nil {
+		return err
+	}
+	return TurnOnBluetooth()
 }

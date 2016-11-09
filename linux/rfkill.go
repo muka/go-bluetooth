@@ -11,7 +11,10 @@ import (
 	"strings"
 
 	"github.com/op/go-logging"
+	"github.com/tj/go-debug"
 )
+
+var dbg = debug.Debug("dbus:rfkill")
 
 var logger = logging.MustGetLogger("api")
 
@@ -93,32 +96,32 @@ func (rfkill RFKill) ListAll() ([]RFKillResult, error) {
 
 // SoftBlock RFKill Sets a software block on an identifier
 func (rfkill RFKill) SoftBlock(identifier string) error {
-	logger.Debugf("RFKill: Soft Blocking %v", identifier)
+	dbg("RFKill: Soft Blocking %v", identifier)
 
 	cmd := exec.Command("rfkill", "block", identifier)
-	logger.Debugf("Command Start: %v", cmd.Args)
+	dbg("Command Start: %v", cmd.Args)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		logger.Errorf("Command Error: %v : %v", err, limitText(out))
 		return err
 	}
-	logger.Debugf("Command Return: %v", limitText(out))
+	dbg("Command Return: %v", limitText(out))
 
 	return nil
 }
 
 //SoftUnblock Removes a software block on an identifier
 func (rfkill RFKill) SoftUnblock(identifier string) error {
-	logger.Debugf("RFKill: Soft Unblocking %v", identifier)
+	dbg("RFKill: Soft Unblocking %v", identifier)
 
 	cmd := exec.Command("rfkill", "unblock", identifier)
-	logger.Debugf("Command Start: %v", cmd.Args)
+	dbg("Command Start: %v", cmd.Args)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		logger.Errorf("Command Error: %v : %v", err, limitText(out))
 		return err
 	}
-	logger.Debugf("Command Return: %v", limitText(out))
+	dbg("Command Return: %v", limitText(out))
 
 	return nil
 }

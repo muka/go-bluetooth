@@ -39,8 +39,6 @@ func ParseDevice(path dbus.ObjectPath, propsMap map[string]dbus.Variant) (*Devic
 
 func (d *Device) watchProperties() error {
 
-	// logger.Debug("Registering to PropertyChanged")
-
 	channel, err := d.client.Register()
 	if err != nil {
 		return err
@@ -49,11 +47,9 @@ func (d *Device) watchProperties() error {
 	go (func() {
 		for {
 			if channel == nil {
-				// logger.Debug("Quit goroutine")
 				break
 			}
 
-			// logger.Debug("Waiting for property change")
 			sig := <-channel
 
 			// logger.Debug("----------------------")
@@ -163,7 +159,6 @@ func (d *Device) On(name string, fn Callback) {
 		d.watchProperties()
 		break
 	}
-	logger.Debug("Listen on %s\n", d.Path+"."+name)
 	emitter.On(d.Path+"."+name, func(ev emitter.Event) {
 		fn(ev)
 	})
