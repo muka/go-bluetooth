@@ -75,6 +75,11 @@ func (d *Device1) GetProperties() (*Device1Properties, error) {
 	return d.Properties, err
 }
 
+//GetProperty get a property
+func (d *Device1) GetProperty(name string) (dbus.Variant, error) {
+	return d.client.GetProperty(name)
+}
+
 //CancelParing stop the pairing process
 func (d *Device1) CancelParing() error {
 	return d.client.Call("CancelParing", 0).Store()

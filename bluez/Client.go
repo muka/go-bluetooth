@@ -7,23 +7,6 @@ import (
 	"github.com/muka/bluez-client/util"
 )
 
-const (
-	// SessionBus uses the session bus
-	SessionBus = 0
-	// SystemBus uses the system bus
-	SystemBus = 1
-)
-
-var conns = make([]*dbus.Conn, 2)
-
-// Config pass configuration to a DBUS client
-type Config struct {
-	Name  string
-	Iface string
-	Path  string
-	Bus   int
-}
-
 // NewClient create a new client
 func NewClient(config *Config) *Client {
 
@@ -60,41 +43,7 @@ func (c *Client) Disconnect() {
 // Connect connect to DBus
 func (c *Client) Connect() error {
 
-	var getConn = func() (*dbus.Conn, error) {
-		switch c.Config.Bus {
-		case SystemBus:
-			{
-				if conns[SystemBus] == nil {
-					// c.logger.Println("Connecting to SystemBus")
-					conn, err := dbus.SystemBus()
-					if err != nil {
-						return nil, err
-					}
-					conns[SystemBus] = conn
-				}
-				return conns[SystemBus], nil
-			}
-		case SessionBus:
-			{
-				if conns[SessionBus] == nil {
-					// c.logger.Println("Connecting to SessionBus")
-					conn, err := dbus.SessionBus()
-					if err != nil {
-						return nil, err
-					}
-					conns[SessionBus] = conn
-				}
-				return conns[SessionBus], nil
-			}
-		default:
-			{
-				c.logger.Println("TODO: Unknown Bus, handle other types!")
-				return nil, nil
-			}
-		}
-	}
-
-	dbusConn, err := getConn()
+	dbusConn, err := GetConnection(c.Config.Bus)
 	if err != nil {
 		return err
 	}
@@ -134,7 +83,18 @@ func (c *Client) GetProperty(p string) (dbus.Variant, error) {
 			return dbus.Variant{}, err
 		}
 	}
-	return c.dbusObject.GetProperty(p)
+	return c.dbusObject.GetProperty(c.Config.Iface + "." + p)
+}
+
+//SetProperty set a property value
+func (c *Client) SetProperty(p string, v interface{}) error {
+	if !c.isConnected() {
+		err := c.Connect()
+		if err != nil {
+			return err
+		}
+	}
+	return c.dbusObject.Call("org.freedesktop.DBus.Properties.Set", 0, c.Config.Iface, p, v).Store()
 }
 
 //GetProperties load all the properties for an interface

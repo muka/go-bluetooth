@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/godbus/dbus"
+
 	"github.com/muka/bluez-client/bluez"
 	"github.com/muka/bluez-client/bluez/profile"
 	"github.com/muka/bluez-client/emitter"
@@ -50,7 +51,10 @@ func GetDevices() ([]Device, error) {
 			switch iface {
 			case bluez.Device1Interface:
 				{
-					dev := ParseDevice(path, props)
+					dev, err := ParseDevice(path, props)
+					if err != nil {
+						return nil, err
+					}
 					devices = append(devices, *dev)
 				}
 			}
@@ -131,30 +135,6 @@ func UnWatchManagerChanges() error {
 	return GetManager().Unregister()
 }
 
-// DeviceStatus indicate the status of a device
-type DeviceStatus int
-
-const (
-	//DeviceAdded indicates the device interface appeared
-	DeviceAdded DeviceStatus = iota
-	//DeviceRemoved indicates the device interface disappeared
-	DeviceRemoved
-)
-
-//DiscoveredDeviceEvent contains detail regarding an ongoing discovery operation
-type DiscoveredDeviceEvent struct {
-	Path   string
-	Status DeviceStatus
-	Device *Device
-}
-
-// AdapterEvent reports the availability of a bluetooth adapter
-type AdapterEvent struct {
-	Name   string
-	Path   string
-	Status DeviceStatus
-}
-
 // WatchManagerChanges regitster for signals from the ObjectManager
 func WatchManagerChanges() error {
 
@@ -162,7 +142,13 @@ func WatchManagerChanges() error {
 		return nil
 	}
 
-	channel, err := GetManager().Register()
+	m := GetManager()
+
+	if m == nil {
+		return nil
+	}
+
+	channel, err := m.Register()
 	if err != nil {
 		return err
 	}
@@ -180,6 +166,10 @@ func WatchManagerChanges() error {
 
 			v := <-channel
 
+			if v == nil {
+				return
+			}
+
 			switch v.Name {
 			case bluez.InterfacesAdded:
 				{
@@ -189,7 +179,11 @@ func WatchManagerChanges() error {
 					props := v.Body[1].(map[string]map[string]dbus.Variant)
 					//device added
 					if props[bluez.Device1Interface] != nil {
-						dev := ParseDevice(path, props[bluez.Device1Interface])
+						dev, err := ParseDevice(path, props[bluez.Device1Interface])
+						if err != nil {
+							logger.Fatalf("Failed to parse device: %v\n", err)
+							return
+						}
 						// logger.Printf("Added device %s", path)
 						devInfo := DiscoveredDeviceEvent{string(path), DeviceAdded, dev}
 						emitter.Emit("discovery", devInfo)
@@ -235,12 +229,6 @@ func WatchManagerChanges() error {
 	})()
 	return nil
 }
-
-//Event triggered
-type Event emitter.Event
-
-//Callback to be called on event
-type Callback func(ev Event)
 
 //On add an event handler
 func On(name string, fn Callback) {

@@ -1,3 +1,0 @@
-package: github.com/muka/bluez-client
-import:
-- package: github.com/godbus/dbus

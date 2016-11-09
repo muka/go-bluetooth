@@ -57,6 +57,11 @@ func (a *Adapter1) GetProperties() (*Adapter1Properties, error) {
 	return a.Properties, err
 }
 
+//SetProperty set a property
+func (a *Adapter1) SetProperty(name string, value interface{}) error {
+	return a.client.SetProperty(name, value)
+}
+
 //StartDiscovery on the adapter
 func (a *Adapter1) StartDiscovery() error {
 	return a.client.Call("StartDiscovery", 0).Store()

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"errors"
 	"reflect"
 
 	"github.com/godbus/dbus"
@@ -19,7 +20,7 @@ func NewDevice(path string) *Device {
 }
 
 // ParseDevice parse a Device from a ObjectManager map
-func ParseDevice(path dbus.ObjectPath, propsMap map[string]dbus.Variant) *Device {
+func ParseDevice(path dbus.ObjectPath, propsMap map[string]dbus.Variant) (*Device, error) {
 
 	d := new(Device)
 	d.Path = string(path)
@@ -27,22 +28,18 @@ func ParseDevice(path dbus.ObjectPath, propsMap map[string]dbus.Variant) *Device
 
 	props := new(profile.Device1Properties)
 	util.MapToStruct(props, propsMap)
-	d.client.Properties = props
+	c, err := d.GetClient()
+	if err != nil {
+		return nil, err
+	}
+	c.Properties = props
 
-	return d
-}
-
-// PropertyChanged an object to describe a changed property
-type PropertyChanged struct {
-	Iface      string
-	Field      string
-	Value      interface{}
-	Properties *profile.Device1Properties
+	return d, nil
 }
 
 func (d *Device) watchProperties() error {
 
-	logger.Println("Registering to PropertyChanged")
+	// logger.Println("Registering to PropertyChanged")
 
 	channel, err := d.client.Register()
 	if err != nil {
@@ -62,15 +59,19 @@ func (d *Device) watchProperties() error {
 			// logger.Println("----------------------")
 			// logger.Printf("Name: %s\n", sig.Name)
 
+			if sig == nil {
+				return
+			}
+
 			if sig.Name != bluez.PropertiesChanged {
 				// logger.Printf("Skipped %s vs %s\n", sig.Name, bluez.PropertiesInterface)
 				continue
 			}
 
-			for i := 0; i < len(sig.Body); i++ {
-				logger.Println(reflect.TypeOf(sig.Body[i]))
-				logger.Println(sig.Body[i])
-			}
+			// for i := 0; i < len(sig.Body); i++ {
+			// 	logger.Println(reflect.TypeOf(sig.Body[i]))
+			// 	logger.Println(sig.Body[i])
+			// }
 
 			// logger.Println("----------------------")
 
@@ -79,7 +80,13 @@ func (d *Device) watchProperties() error {
 			for field, val := range changes {
 
 				// updates [*]Properties struct
-				props := d.GetProperties()
+				props, err := d.GetProperties()
+
+				if err != nil {
+					logger.Fatalf("Exception getting properties: %v\n", err)
+					return
+				}
+
 				s := reflect.ValueOf(props).Elem()
 				// exported field
 				f := s.FieldByName(field)
@@ -94,8 +101,8 @@ func (d *Device) watchProperties() error {
 					}
 				}
 
-				propChanged := PropertyChanged{string(iface), field, val.Value(), props}
-				d.Emit("change", propChanged)
+				propChanged := PropertyChangedEvent{string(iface), field, val.Value(), props}
+				d.Emit(d.Path+".changed", propChanged)
 			}
 		}
 	})()
@@ -115,30 +122,52 @@ type Device struct {
 }
 
 //GetClient return a DBus Device1 interface client
-func (d *Device) GetClient() *profile.Device1 {
-	return d.client
+func (d *Device) GetClient() (*profile.Device1, error) {
+	if d.client == nil {
+		return nil, errors.New("Client not available")
+	}
+	return d.client, nil
 }
 
 //GetProperties return the properties for the device
-func (d *Device) GetProperties() *profile.Device1Properties {
-	d.client.GetProperties()
-	return d.client.Properties
+func (d *Device) GetProperties() (*profile.Device1Properties, error) {
+	c, err := d.GetClient()
+	if err != nil {
+		return nil, err
+	}
+	c.GetProperties()
+	return c.Properties, nil
+}
+
+//GetProperty return a property value
+func (d *Device) GetProperty(name string) (data interface{}, err error) {
+	c, err := d.GetClient()
+	if err != nil {
+		return nil, err
+	}
+	val, err := c.GetProperty(name)
+	if err != nil {
+		return nil, err
+	}
+	return val.Value(), nil
 }
 
 //On register callback for event
-func (d *Device) On(name string, fn emitter.Callback) {
+func (d *Device) On(name string, fn Callback) {
 	switch name {
-	case "change":
+	case "changed":
 		d.watchProperties()
 		break
 	}
-	emitter.On(d.Path+"."+name, fn)
+	emitter.On(d.Path+"."+name, func(ev emitter.Event) {
+		fn(ev)
+	})
 }
 
 //Off unregister callback for event
 func (d *Device) Off(name string) {
 	switch name {
-	case "change":
+	case "changed":
 		d.unwatchProperties()
 		break
 	}
