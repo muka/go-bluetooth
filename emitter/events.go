@@ -38,18 +38,18 @@ func loop() {
 	//log.Printf("loop: Started\n")
 	for {
 		if pipe == nil {
-			//log.Printf("loop: Closed\n")
+			// log.Printf("loop: Closed\n")
 			return
 		}
 		ev := <-pipe
-		//log.Printf("loop: Trigger event %s\n", ev.Name)
+		// log.Printf("loop: Trigger event %s\n", ev.GetName())
 		if events[ev.GetName()] != nil {
 			size := len(events[ev.GetName()])
 			if size == 0 {
 				return
 			}
 			for i := 0; i < size; i++ {
-				//log.Printf("Call fn\n")
+				// log.Printf("Call fn\n")
 				events[ev.GetName()][i](ev)
 			}
 		}

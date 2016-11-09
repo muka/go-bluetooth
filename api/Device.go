@@ -68,10 +68,11 @@ func (d *Device) watchProperties() error {
 				continue
 			}
 
-			// for i := 0; i < len(sig.Body); i++ {
-			// 	logger.Println(reflect.TypeOf(sig.Body[i]))
-			// 	logger.Println(sig.Body[i])
-			// }
+			logger.Println("Device property changed")
+			for i := 0; i < len(sig.Body); i++ {
+				logger.Println(reflect.TypeOf(sig.Body[i]))
+				logger.Println(sig.Body[i])
+			}
 
 			// logger.Println("----------------------")
 
@@ -102,7 +103,9 @@ func (d *Device) watchProperties() error {
 				}
 
 				propChanged := PropertyChangedEvent{string(iface), field, val.Value(), props}
-				d.Emit(d.Path+".changed", propChanged)
+				logger.Printf("Changed **** %s: %v\n", field, val.Value())
+				logger.Printf("Emit on %s\n", d.Path+".changed")
+				d.Emit("changed", propChanged)
 			}
 		}
 	})()
@@ -131,6 +134,9 @@ func (d *Device) GetClient() (*profile.Device1, error) {
 
 //GetProperties return the properties for the device
 func (d *Device) GetProperties() (*profile.Device1Properties, error) {
+	if d == nil {
+		return nil, errors.New("Empty device pointer")
+	}
 	c, err := d.GetClient()
 	if err != nil {
 		return nil, err
@@ -159,7 +165,9 @@ func (d *Device) On(name string, fn Callback) {
 		d.watchProperties()
 		break
 	}
+	logger.Printf("Listen on %s\n", d.Path+"."+name)
 	emitter.On(d.Path+"."+name, func(ev emitter.Event) {
+		logger.Printf("Emit %s ************* \n-> %v\n", name, ev)
 		fn(ev)
 	})
 }

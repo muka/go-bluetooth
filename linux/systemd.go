@@ -1,4 +1,4 @@
-package systemd
+package linux
 
 import (
 	"errors"
@@ -60,8 +60,8 @@ func watchOperation() {
 	}
 }
 
-//StartBluetooth by its systemd unit
-func StartBluetooth(fn func(err error)) (int, error) {
+//StartBluetoothUnit by its systemd unit
+func StartBluetoothUnit(fn func(err error)) (int, error) {
 	systemdConn, err := getConnection()
 	if err != nil {
 		return 0, err
@@ -75,8 +75,8 @@ func StartBluetooth(fn func(err error)) (int, error) {
 	return 0, nil
 }
 
-//StopBluetooth by its systemd unit
-func StopBluetooth(fn func(err error)) (int, error) {
+//StopBluetoothUnit by its systemd unit
+func StopBluetoothUnit(fn func(err error)) (int, error) {
 	systemdConn, err := getConnection()
 	if err != nil {
 		return 0, err
@@ -89,8 +89,8 @@ func StopBluetooth(fn func(err error)) (int, error) {
 	return systemdConn.StopUnit(bluetoothUnitName, defaultMode, ch)
 }
 
-//RestartBluetooth by its systemd unit
-func RestartBluetooth(fn func(err error)) (int, error) {
+//RestartBluetoothUnit by its systemd unit
+func RestartBluetoothUnit(fn func(err error)) (int, error) {
 	systemdConn, err := getConnection()
 	if err != nil {
 		return 0, err
