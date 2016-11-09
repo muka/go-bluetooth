@@ -2,9 +2,8 @@ package profile
 
 import (
 	"github.com/godbus/dbus"
+	"github.com/juju/loggo"
 	"github.com/muka/bluez-client/bluez"
-	"github.com/muka/bluez-client/util"
-	"log"
 )
 
 // NewAdapter1 create a new Adapter1 client
@@ -19,14 +18,14 @@ func NewAdapter1(hostID string) *Adapter1 {
 		},
 	)
 	a.Properties = new(Adapter1Properties)
-	a.logger = util.NewLogger(hostID)
+	a.logger = loggo.GetLogger(hostID)
 	return a
 }
 
 // Adapter1 client
 type Adapter1 struct {
 	client     *bluez.Client
-	logger     *log.Logger
+	logger     loggo.Logger
 	Properties *Adapter1Properties
 }
 

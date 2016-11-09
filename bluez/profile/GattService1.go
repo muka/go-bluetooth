@@ -1,11 +1,9 @@
 package profile
 
 import (
-	"log"
-
 	"github.com/godbus/dbus"
+	"github.com/juju/loggo"
 	"github.com/muka/bluez-client/bluez"
-	"github.com/muka/bluez-client/util"
 )
 
 // NewGattService1 create a new GattService1 client
@@ -19,7 +17,7 @@ func NewGattService1(path string) *GattService1 {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	a.logger = util.NewLogger(path)
+	a.logger = loggo.GetLogger(path)
 	a.Properties = new(GattService1Properties)
 	return a
 }
@@ -27,7 +25,7 @@ func NewGattService1(path string) *GattService1 {
 // GattService1 client
 type GattService1 struct {
 	client     *bluez.Client
-	logger     *log.Logger
+	logger     loggo.Logger
 	Properties *GattService1Properties
 }
 

@@ -1,10 +1,8 @@
 package emitter
 
-import (
-	"github.com/muka/bluez-client/util"
-)
+import "github.com/juju/loggo"
 
-var log = util.NewLogger("events")
+var log = loggo.GetLogger("events")
 
 //Callback is a function to be invoked when an event happens
 type Callback func(ev Event)

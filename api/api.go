@@ -5,14 +5,14 @@ import (
 	"strings"
 
 	"github.com/godbus/dbus"
+	"github.com/juju/loggo"
 
 	"github.com/muka/bluez-client/bluez"
 	"github.com/muka/bluez-client/bluez/profile"
 	"github.com/muka/bluez-client/emitter"
-	utilb "github.com/muka/bluez-client/util"
 )
 
-var logger = utilb.NewLogger("api")
+var logger = loggo.GetLogger("api")
 
 var manager *profile.ObjectManager
 
@@ -24,7 +24,7 @@ var watchChangesEnabled = false
 func Exit() {
 	GetManager().Unregister()
 	GetManager().Close()
-	logger.Println("Bye.")
+	logger.Infof("Bye.")
 }
 
 //GetManager return the object manager reference

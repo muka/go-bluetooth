@@ -1,11 +1,9 @@
 package profile
 
 import (
-	"log"
-
 	"github.com/godbus/dbus"
+	"github.com/juju/loggo"
 	"github.com/muka/bluez-client/bluez"
-	"github.com/muka/bluez-client/util"
 )
 
 // NewGattCharacteristic1 create a new GattCharacteristic1 client
@@ -19,7 +17,7 @@ func NewGattCharacteristic1(path string) *GattCharacteristic1 {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	a.logger = util.NewLogger(path)
+	a.logger = loggo.GetLogger(path)
 	a.Properties = new(GattCharacteristic1Properties)
 	return a
 }
@@ -27,7 +25,7 @@ func NewGattCharacteristic1(path string) *GattCharacteristic1 {
 // GattCharacteristic1 client
 type GattCharacteristic1 struct {
 	client     *bluez.Client
-	logger     *log.Logger
+	logger     loggo.Logger
 	Properties *GattCharacteristic1Properties
 }
 

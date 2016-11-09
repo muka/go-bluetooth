@@ -9,7 +9,19 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+
+	"github.com/juju/loggo"
 )
+
+var logger = loggo.GetLogger("api")
+
+func limitText(text []byte) string {
+	t := strings.TrimSpace(string(text))
+	if len(t) > 150 {
+		t = t[0:150] + "..."
+	}
+	return "[" + t + "]"
+}
 
 // RFKill is a wrapper for linux utility: rfkill
 // Checks the status of kill switches. If either is set, the device will be disabled.
@@ -81,32 +93,32 @@ func (rfkill RFKill) ListAll() ([]RFKillResult, error) {
 
 // SoftBlock RFKill Sets a software block on an identifier
 func (rfkill RFKill) SoftBlock(identifier string) error {
-	//logger.Debug("RFKill: Soft Blocking %v", identifier)
+	logger.Debugf("RFKill: Soft Blocking %v", identifier)
 
 	cmd := exec.Command("rfkill", "block", identifier)
-	//logger.Debug("Command Start: %v", cmd.Args)
-	_, err := cmd.CombinedOutput()
+	logger.Debugf("Command Start: %v", cmd.Args)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
-		//logger.Error("Command Error: %v : %v", err, limitText(out))
+		logger.Errorf("Command Error: %v : %v", err, limitText(out))
 		return err
 	}
-	//logger.Debug("Command Return: %v", limitText(out))
+	logger.Debugf("Command Return: %v", limitText(out))
 
 	return nil
 }
 
 //SoftUnblock Removes a software block on an identifier
 func (rfkill RFKill) SoftUnblock(identifier string) error {
-	//logger.Debug("RFKill: Soft Unblocking %v", identifier)
+	logger.Debugf("RFKill: Soft Unblocking %v", identifier)
 
 	cmd := exec.Command("rfkill", "unblock", identifier)
-	//logger.Debug("Command Start: %v", cmd.Args)
-	_, err := cmd.CombinedOutput()
+	logger.Debugf("Command Start: %v", cmd.Args)
+	out, err := cmd.CombinedOutput()
 	if err != nil {
-		//logger.Error("Command Error: %v : %v", err, limitText(out))
+		logger.Errorf("Command Error: %v : %v", err, limitText(out))
 		return err
 	}
-	//logger.Debug("Command Return: %v", limitText(out))
+	logger.Debugf("Command Return: %v", limitText(out))
 
 	return nil
 }

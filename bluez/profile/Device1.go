@@ -1,11 +1,9 @@
 package profile
 
 import (
-	"log"
-
 	"github.com/godbus/dbus"
+	"github.com/juju/loggo"
 	"github.com/muka/bluez-client/bluez"
-	"github.com/muka/bluez-client/util"
 )
 
 // NewDevice1 create a new Device1 client
@@ -19,7 +17,7 @@ func NewDevice1(path string) *Device1 {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	a.logger = util.NewLogger(path)
+	a.logger = loggo.GetLogger(path)
 	a.Properties = new(Device1Properties)
 	return a
 }
@@ -27,7 +25,7 @@ func NewDevice1(path string) *Device1 {
 // Device1 client
 type Device1 struct {
 	client     *bluez.Client
-	logger     *log.Logger
+	logger     loggo.Logger
 	Properties *Device1Properties
 }
 

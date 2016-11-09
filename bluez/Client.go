@@ -1,9 +1,8 @@
 package bluez
 
 import (
-	"log"
-
 	"github.com/godbus/dbus"
+	"github.com/juju/loggo"
 	"github.com/muka/bluez-client/util"
 )
 
@@ -13,14 +12,14 @@ func NewClient(config *Config) *Client {
 	c := new(Client)
 
 	c.Config = config
-	c.logger = util.NewLogger("client")
+	c.logger = loggo.GetLogger("client")
 
 	return c
 }
 
 // Client implement a DBus client
 type Client struct {
-	logger     *log.Logger
+	logger     loggo.Logger
 	conn       *dbus.Conn
 	dbusObject dbus.BusObject
 	Config     *Config
@@ -151,7 +150,7 @@ func (c *Client) Unregister(path string, iface string) error {
 		}
 	}
 	matchstr := getMatchString(path, iface)
-	c.logger.Printf("Match on %s", matchstr)
+	c.logger.Debugf("Match on %s", matchstr)
 	c.conn.BusObject().Call("org.freedesktop.DBus.RemoveMatch", 0, matchstr)
 	return nil
 }

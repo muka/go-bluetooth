@@ -1,11 +1,9 @@
 package profile
 
 import (
-	"log"
-
 	"github.com/godbus/dbus"
+	"github.com/juju/loggo"
 	"github.com/muka/bluez-client/bluez"
-	"github.com/muka/bluez-client/util"
 )
 
 // NewProfileManager1 create a new ProfileManager1 client
@@ -19,14 +17,14 @@ func NewProfileManager1(hostID string) *ProfileManager1 {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	a.logger = util.NewLogger(hostID)
+	a.logger = loggo.GetLogger(hostID)
 	return a
 }
 
 // ProfileManager1 client
 type ProfileManager1 struct {
 	client *bluez.Client
-	logger *log.Logger
+	logger loggo.Logger
 }
 
 // Close the connection
