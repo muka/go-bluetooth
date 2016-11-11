@@ -70,10 +70,9 @@ func (c *Client) Call(method string, flags dbus.Flags, args ...interface{}) *dbu
 
 	methodPath := c.Config.Iface + "." + method
 
-	callArgs := args
-	dbg("Call %s( %v )\n", methodPath, callArgs)
+	dbg("Call %s( %v )\n", methodPath, args)
 
-	return c.dbusObject.Call(methodPath, flags, callArgs...)
+	return c.dbusObject.Call(methodPath, flags, args...)
 }
 
 //GetProperty return a property value

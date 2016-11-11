@@ -20,36 +20,36 @@ var dumpAddress = "B0:B4:48:C9:4B:01"
 
 var sensorTagUUIDs = map[string]string{
 	"AA01": "TemperatureData",
-	"AA02": "TemperatureConfig",
-	"AA03": "TemperaturePeriod",
+	// "AA02": "TemperatureConfig",
+	// "AA03": "TemperaturePeriod",
 	"AA11": "AccelerometerData",
-	"AA12": "AccelerometerConfig",
-	"AA13": "AccelerometerPeriod",
+	// "AA12": "AccelerometerConfig",
+	// "AA13": "AccelerometerPeriod",
 	"AA21": "HumidityData",
-	"AA22": "HumidityConfig",
-	"AA23": "HumidityPeriod",
+	// "AA22": "HumidityConfig",
+	// "AA23": "HumidityPeriod",
 	"AA31": "MagnetometerData",
-	"AA32": "MagnetometerConfig",
-	"AA33": "MagnetometerPeriod",
+	// "AA32": "MagnetometerConfig",
+	// "AA33": "MagnetometerPeriod",
 	"AA41": "BarometerData",
-	"AA42": "BarometerConfig",
-	"AA44": "BarometerPeriod",
-	"AA43": "BarometerCalibration",
+	// "AA42": "BarometerConfig",
+	// "AA44": "BarometerPeriod",
+	// "AA43": "BarometerCalibration",
 	"AA51": "GyroscopeData",
-	"AA52": "GyroscopeConfig",
-	"AA53": "GyroscopePeriod",
-	"AA61": "TestData",
-	"AA62": "TestConfig",
-	"CCC1": "ConnectionParams",
-	"CCC2": "ConnectionReqConnParams",
-	"CCC3": "ConnectionDisconnReq",
-	"FFC1": "OADImageIdentify",
-	"FFC2": "OADImageBlock",
+	// "AA52": "GyroscopeConfig",
+	// "AA53": "GyroscopePeriod",
+	// "AA61": "TestData",
+	// "AA62": "TestConfig",
+	// "CCC1": "ConnectionParams",
+	// "CCC2": "ConnectionReqConnParams",
+	// "CCC3": "ConnectionDisconnReq",
+	// "FFC1": "OADImageIdentify",
+	// "FFC2": "OADImageBlock",
 }
 
 func main() {
-	discoverSensorTag()
-	// loadSensorTag()
+	// discoverSensorTag()
+	loadSensorTag()
 	select {}
 }
 
@@ -165,6 +165,8 @@ func listProfiles(dev *api.Device) {
 
 	logger.Debug("Connected")
 
+	var LOCK = false
+
 	dev.On("char", func(ev api.Event) {
 
 		charEvent := ev.GetData().(api.GattCharacteristicEvent)
@@ -176,15 +178,54 @@ func listProfiles(dev *api.Device) {
 
 		if serviceName != "" {
 
+			if LOCK {
+				return
+			}
+
+			LOCK = true
+
 			logger.Debugf("Found char %s (%s : %s)", serviceName, substr, charEvent.Path)
 
 			gattChar := profile.NewGattCharacteristic1(charEvent.DevicePath)
-			options := make(map[string]dbus.Variant)
+
+			//
+			// ch, err := gattChar.Register()
+			// if err != nil {
+			// 	panic(err)
+			// }
+			//
+			// go func() {
+			// 	for {
+			//
+			// 		if ch == nil {
+			// 			return
+			// 		}
+			//
+			// 		msg := <-ch
+			//
+			// 		if msg == nil {
+			// 			return
+			// 		}
+			//
+			// 		logger.Debug("Message %v", msg)
+			//
+			// 	}
+			// }()
+			//
+			// err = gattChar.StartNotify()
+			// if err != nil {
+			// 	logger.Errorf("StartNotify error %s: %v", serviceName, err)
+			// }
+
+			options := make(map[string]dbus.Variant, 1)
+
+			logger.Debugf("Reading value for %s", serviceName)
+
 			raw, err := gattChar.ReadValue(options)
 
 			if err != nil {
 				logger.Errorf("Error reading %s: %v", serviceName, err)
-				panic(err)
+				return
 			}
 
 			logger.Debugf("Raw data %s: %v", serviceName, raw)
@@ -192,19 +233,6 @@ func listProfiles(dev *api.Device) {
 		}
 
 	})
-	// dev.On("service", func(ev api.Event) {
-	// 	serviceEvent := ev.GetData().(api.GattServiceEvent)
-	// 	serviceProps := serviceEvent.Properties
-	//
-	// 	substr := serviceProps.UUID[4:8]
-	// 	dbg("Check for %s", substr)
-	// 	serviceName := sensorTagUUIDs[substr]
-	//
-	// 	if serviceName != "" {
-	// 		logger.Debug("Found service %s (%s)", serviceName, substr)
-	// 	}
-	//
-	// })
 
 	api.RefreshManagerState()
 	logger.Debug("Listing profiles")

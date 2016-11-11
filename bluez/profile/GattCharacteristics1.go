@@ -62,7 +62,8 @@ func (d *GattCharacteristic1) GetProperties() (*GattCharacteristic1Properties, e
 //ReadValue read a value from a characteristic
 func (d *GattCharacteristic1) ReadValue(options map[string]dbus.Variant) ([]byte, error) {
 	var b []byte
-	err := d.client.Call("ReadValue", 0, options).Store(&b)
+	var o []dbus.Variant
+	err := d.client.Call("ReadValue", 0, o).Store(&b)
 	return b, err
 }
 
