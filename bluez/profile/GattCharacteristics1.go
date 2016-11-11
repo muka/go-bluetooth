@@ -12,7 +12,7 @@ func NewGattCharacteristic1(path string) *GattCharacteristic1 {
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
-			Iface: "org.bluez.GattCharacteristic1",
+			Iface: bluez.GattCharacteristic1Interface,
 			Path:  path,
 			Bus:   bluez.SystemBus,
 		},
@@ -60,14 +60,14 @@ func (d *GattCharacteristic1) GetProperties() (*GattCharacteristic1Properties, e
 }
 
 //ReadValue read a value from a characteristic
-func (d *GattCharacteristic1) ReadValue(options map[string]interface{}) ([]byte, error) {
+func (d *GattCharacteristic1) ReadValue(options map[string]dbus.Variant) ([]byte, error) {
 	var b []byte
 	err := d.client.Call("ReadValue", 0, options).Store(&b)
 	return b, err
 }
 
 //WriteValue write a value to a characteristic
-func (d *GattCharacteristic1) WriteValue(b []byte, options map[string]interface{}) error {
+func (d *GattCharacteristic1) WriteValue(b []byte, options map[string]dbus.Variant) error {
 	err := d.client.Call("WriteValue", 0, b, options).Store()
 	return err
 }

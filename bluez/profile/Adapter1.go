@@ -12,7 +12,7 @@ func NewAdapter1(hostID string) *Adapter1 {
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
-			Iface: "org.bluez.Adapter1",
+			Iface: bluez.Adapter1Interface,
 			Path:  "/org/bluez/" + hostID,
 			Bus:   bluez.SystemBus,
 		},

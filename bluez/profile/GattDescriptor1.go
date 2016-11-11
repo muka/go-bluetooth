@@ -58,14 +58,14 @@ func (d *GattDescriptor1) GetProperties() (*GattDescriptor1Properties, error) {
 }
 
 //ReadValue read a value from a descriptor
-func (d *GattDescriptor1) ReadValue(options map[string]interface{}) ([]byte, error) {
+func (d *GattDescriptor1) ReadValue(options map[string]dbus.Variant) ([]byte, error) {
 	var b []byte
 	err := d.client.Call("ReadValue", 0, options).Store(&b)
 	return b, err
 }
 
 //WriteValue write a value to a characteristic
-func (d *GattDescriptor1) WriteValue(b []byte, options map[string]interface{}) error {
+func (d *GattDescriptor1) WriteValue(b []byte, options map[string]dbus.Variant) error {
 	err := d.client.Call("WriteValue", 0, b, options).Store()
 	return err
 }

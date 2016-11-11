@@ -1,16 +1,19 @@
 package main
 
 import (
+	"strings"
 	"time"
 
+	"github.com/godbus/dbus"
 	"github.com/muka/bluez-client/api"
+	"github.com/muka/bluez-client/bluez/profile"
 	"github.com/muka/bluez-client/emitter"
 	"github.com/op/go-logging"
-	"github.com/tj/go-debug"
+	gd "github.com/tj/go-debug"
 )
 
 var logger = logging.MustGetLogger("main")
-var dbg = debug.Debug("bluez:main")
+var dbg = gd.Debug("bluez:main")
 
 var adapterID = "hci0"
 var dumpAddress = "B0:B4:48:C9:4B:01"
@@ -45,10 +48,21 @@ var sensorTagUUIDs = map[string]string{
 }
 
 func main() {
+	discoverSensorTag()
+	// loadSensorTag()
+	select {}
+}
+
+func loadSensorTag() {
+	defer api.Exit()
+	loadDevices()
+}
+
+func discoverSensorTag() {
 
 	defer api.Exit()
 
-	logger.Debugf("Turning ON bluetooth")
+	logger.Debugf("Reset bluetooth device")
 	err := api.ToggleBluetooth()
 	if err != nil {
 		panic(err)
@@ -151,21 +165,49 @@ func listProfiles(dev *api.Device) {
 
 	logger.Debug("Connected")
 
-	dev.On("service", func(ev api.Event) {
-		serviceEvent := ev.GetData().(api.GattServiceEvent)
-		serviceProps := serviceEvent.Properties
+	dev.On("char", func(ev api.Event) {
 
-		substr := serviceProps.UUID[4:8]
-		dbg("Check for %s", substr)
+		charEvent := ev.GetData().(api.GattCharacteristicEvent)
+		charProps := charEvent.Properties
+
+		substr := strings.ToUpper(charProps.UUID[4:8])
+		dbg("Check for char %s", substr)
 		serviceName := sensorTagUUIDs[substr]
 
 		if serviceName != "" {
-			logger.Debug("Found service %s (%s)", serviceName, substr)
+
+			logger.Debugf("Found char %s (%s : %s)", serviceName, substr, charEvent.Path)
+
+			gattChar := profile.NewGattCharacteristic1(charEvent.DevicePath)
+			options := make(map[string]dbus.Variant)
+			raw, err := gattChar.ReadValue(options)
+
+			if err != nil {
+				logger.Errorf("Error reading %s: %v", serviceName, err)
+				panic(err)
+			}
+
+			logger.Debugf("Raw data %s: %v", serviceName, raw)
+
 		}
 
 	})
+	// dev.On("service", func(ev api.Event) {
+	// 	serviceEvent := ev.GetData().(api.GattServiceEvent)
+	// 	serviceProps := serviceEvent.Properties
+	//
+	// 	substr := serviceProps.UUID[4:8]
+	// 	dbg("Check for %s", substr)
+	// 	serviceName := sensorTagUUIDs[substr]
+	//
+	// 	if serviceName != "" {
+	// 		logger.Debug("Found service %s (%s)", serviceName, substr)
+	// 	}
+	//
+	// })
 
-	logger.Debug("Done.")
+	api.RefreshManagerState()
+	logger.Debug("Listing profiles")
 }
 
 func connectProfiles(dev *api.Device) {

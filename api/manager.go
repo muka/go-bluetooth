@@ -12,6 +12,7 @@ import (
 )
 
 var managerDbg = debug.Debug("bluez:api:manger-watch")
+
 var manager *profile.ObjectManager
 var watchChangesEnabled = false
 
@@ -19,7 +20,6 @@ var watchChangesEnabled = false
 func GetManager() *profile.ObjectManager {
 	if manager == nil {
 		manager = profile.NewObjectManager()
-		EmitManagerState()
 		WatchManagerChanges()
 	}
 	return manager
@@ -60,17 +60,19 @@ func WatchManagerChanges() error {
 
 			if channel == nil {
 				managerDbg("quitting manager listener")
+				watchChangesEnabled = false
 				break
 			}
 
 			v := <-channel
 
-			managerDbg("update received %s from %s", v.Name, v.Sender)
-
 			if v == nil {
-				managerDbg("nil value, exit loop")
+				managerDbg("nil value, abort")
+				watchChangesEnabled = false
 				return
 			}
+
+			managerDbg("update received %s from %s", v.Name, v.Sender)
 
 			switch v.Name {
 			case bluez.InterfacesAdded:
@@ -121,20 +123,19 @@ func WatchManagerChanges() error {
 
 func loadManagedObject(path dbus.ObjectPath, props map[string]map[string]dbus.Variant) {
 
-	//device added
+	//Device1
 	if props[bluez.Device1Interface] != nil {
 		dev, err := ParseDevice(path, props[bluez.Device1Interface])
 		if err != nil {
 			logger.Fatalf("Failed to parse device: %v\n", err)
 			return
 		}
-
 		managerDbg("Added device %s", path)
 		devInfo := DiscoveredDeviceEvent{string(path), DeviceAdded, dev}
 		emitter.Emit("discovery", devInfo)
 	}
 
-	// Adapter added
+	//Adapter1
 	if props[bluez.Adapter1Interface] != nil {
 		strpath := string(path)
 		parts := strings.Split(strpath, "/")
@@ -193,14 +194,14 @@ func loadManagedObject(path dbus.ObjectPath, props map[string]map[string]dbus.Va
 
 		ev := GattDescriptorEvent{strpath, devicePath, srvcProps, StatusAdded}
 
-		emitter.Emit("char", ev)
-		emitter.Emit(devicePath+".char", ev)
+		emitter.Emit("desc", ev)
+		emitter.Emit(devicePath+".desc", ev)
 	}
 
 }
 
-//EmitManagerState emit managed objects properties
-func EmitManagerState() error {
+//RefreshManagerState emit local manager objects and interfaces
+func RefreshManagerState() error {
 
 	objs, err := GetManager().GetManagedObjects()
 	if err != nil {
@@ -208,6 +209,7 @@ func EmitManagerState() error {
 	}
 
 	for path, ifaces := range objs {
+		managerDbg("Managed %s: %v", path, ifaces)
 		loadManagedObject(path, ifaces)
 	}
 
