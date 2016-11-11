@@ -85,7 +85,7 @@ func (d *Device1) CancelParing() error {
 
 //Connect to the device
 func (d *Device1) Connect() error {
-	return d.client.Call("Connect", 1).Store()
+	return d.client.Call("Connect", 0).Store()
 }
 
 //ConnectProfile connect to the specific profile
