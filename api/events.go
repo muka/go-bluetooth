@@ -11,14 +11,24 @@ type Event emitter.Event
 //Callback to be called on event
 type Callback func(ev Event)
 
+//EventStatus indicate the status related to an event
+type EventStatus int
+
 // DeviceStatus indicate the status of a device
-type DeviceStatus int
+type DeviceStatus EventStatus
 
 const (
 	//DeviceAdded indicates the device interface appeared
 	DeviceAdded DeviceStatus = iota
 	//DeviceRemoved indicates the device interface disappeared
 	DeviceRemoved
+)
+
+const (
+	// StatusAdded something has been added
+	StatusAdded EventStatus = iota
+	// StatusRemoved something has been removed
+	StatusRemoved
 )
 
 //DiscoveredDeviceEvent contains detail regarding an ongoing discovery operation
@@ -41,4 +51,28 @@ type PropertyChangedEvent struct {
 	Field      string
 	Value      interface{}
 	Properties *profile.Device1Properties
+}
+
+// GattServiceEvent triggered when a new GattService1 is added or removed
+type GattServiceEvent struct {
+	Path       string
+	DevicePath string
+	Properties *profile.GattService1Properties
+	Status     EventStatus
+}
+
+// GattCharacteristicEvent triggered when a new GattCharacteristic1 is added or removed
+type GattCharacteristicEvent struct {
+	Path       string
+	DevicePath string
+	Properties *profile.GattCharacteristic1Properties
+	Status     EventStatus
+}
+
+// GattDescriptorEvent triggered when a new GattDescriptor1 is added or removed
+type GattDescriptorEvent struct {
+	Path       string
+	DevicePath string
+	Properties *profile.GattDescriptor1Properties
+	Status     EventStatus
 }

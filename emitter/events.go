@@ -2,7 +2,7 @@ package emitter
 
 import "github.com/tj/go-debug"
 
-var dbg = debug.Debug("dbus:emitter")
+var dbg = debug.Debug("bluez:emitter")
 
 //Callback is a function to be invoked when an event happens
 type Callback func(ev Event)

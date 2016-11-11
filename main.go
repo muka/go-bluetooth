@@ -1,37 +1,63 @@
 package main
 
 import (
-	"bytes"
-	"encoding/binary"
+	"time"
 
 	"github.com/muka/bluez-client/api"
 	"github.com/muka/bluez-client/emitter"
 	"github.com/op/go-logging"
+	"github.com/tj/go-debug"
 )
 
 var logger = logging.MustGetLogger("main")
+var dbg = debug.Debug("bluez:main")
 
 var adapterID = "hci0"
+var dumpAddress = "B0:B4:48:C9:4B:01"
 
-var DumpAddress = "B0:B4:48:C9:4B:01"
+var sensorTagUUIDs = map[string]string{
+	"AA01": "TemperatureData",
+	"AA02": "TemperatureConfig",
+	"AA03": "TemperaturePeriod",
+	"AA11": "AccelerometerData",
+	"AA12": "AccelerometerConfig",
+	"AA13": "AccelerometerPeriod",
+	"AA21": "HumidityData",
+	"AA22": "HumidityConfig",
+	"AA23": "HumidityPeriod",
+	"AA31": "MagnetometerData",
+	"AA32": "MagnetometerConfig",
+	"AA33": "MagnetometerPeriod",
+	"AA41": "BarometerData",
+	"AA42": "BarometerConfig",
+	"AA44": "BarometerPeriod",
+	"AA43": "BarometerCalibration",
+	"AA51": "GyroscopeData",
+	"AA52": "GyroscopeConfig",
+	"AA53": "GyroscopePeriod",
+	"AA61": "TestData",
+	"AA62": "TestConfig",
+	"CCC1": "ConnectionParams",
+	"CCC2": "ConnectionReqConnParams",
+	"CCC3": "ConnectionDisconnReq",
+	"FFC1": "OADImageIdentify",
+	"FFC2": "OADImageBlock",
+}
 
 func main() {
 
 	defer api.Exit()
 
-	logger.Debugf("Turning OFF bluetooth")
-	err := api.TurnOffBluetooth()
+	logger.Debugf("Turning ON bluetooth")
+	err := api.ToggleBluetooth()
 	if err != nil {
 		panic(err)
 	}
+
+	// wait a moment for the device to be spawn
+	time.Sleep(time.Second)
 
 	go waitAdapter()
-
-	logger.Debugf("Turning ON bluetooth")
-	err = api.TurnOnBluetooth()
-	if err != nil {
-		panic(err)
-	}
 
 	select {}
 }
@@ -63,143 +89,105 @@ func waitAdapter() {
 
 func discoverDevices(adapterID string) {
 
+	if deviceIsCached() {
+		return
+	}
+
+	err := api.StartDiscovery()
+	if err != nil {
+		panic(err)
+	}
+
+	logger.Debugf("Started discovery")
+	api.On("discovery", func(ev api.Event) {
+
+		discoveryEvent := ev.GetData().(api.DiscoveredDeviceEvent)
+		dev := discoveryEvent.Device
+
+		filterDevice(dev)
+	})
+
+}
+
+func deviceIsCached() bool {
+	return loadDevices()
+}
+
+func loadDevices() bool {
+
 	var err error
 	devices, err := api.GetDevices()
 	if err != nil {
 		panic(err)
 	}
 
-	for _, dev := range devices {
-		props, err := dev.GetProperties()
-		if err != nil {
-			panic(err)
-		}
+	dbg("Loaded devices %d", len(devices))
 
-		if props.Address == DumpAddress {
-			logger.Debugf("Found %s [addr:%s]", props.Name, props.Address)
-			connectProfiles(&dev)
+	for _, dev := range devices {
+		if filterDevice(&dev) {
+			return true
 		}
 	}
 
-	// hci0, err := api.GetAdapter(adapterID)
-	// if err != nil {
-	// 	panic(err)
-	// }
-	// for _, device := range devices {
-	// 	logger.Debug("Dropping %s", device.Path)
-	// 	go hci0.RemoveDevice(device.Path)
-	// }
-	//
-	// err = api.StopDiscovery()
-	// if err != nil {
-	// 	logger.Debug(err)
-	// }
-	//
-	// logger.Debug("Starting discovery on adapter %s\n", adapterID)
-	// err = api.StartDiscovery()
-	// if err != nil {
-	// 	panic(err)
-	// }
-	//
-	// emitter.On("discovery", func(ev emitter.Event) {
-	// 	info := ev.GetData().(api.DiscoveredDeviceEvent)
-	// 	if info.Status == api.DeviceAdded {
-	//
-	// 		name := info.Device.GetProperties().Name
-	//
-	// 		if name != "MI Band 2" {
-	// 			return
-	// 		}
-	//
-	// 		logger.Debug("Found device %s, connecting profiles", name)
-	// 		connectProfiles(info.Device)
-	//
-	// 		// 		logger.Debug("Found device %s, watching for property change", info.Device.GetProperties().Name)
-	// 		//
-	// 		// 		info.Device.On("change", func(ev emitter.Event) {
-	// 		// 			changed := ev.GetData().(api.PropertyChanged)
-	// 		// 			logger.Debug("%s: set %s = %s", info.Device.GetProperties().Name, changed.Field, changed.Value)
-	// 		// 		})
-	// 		//
-	// 	} else {
-	// 		logger.Debug("Removed device %s", info.Path)
-	// 	}
-	// })
-
+	return false
 }
 
-func connectProfiles(dev *api.Device) {
-
-	logger.Debug("Loading properties")
-
-	err := dev.Connect()
+func filterDevice(dev *api.Device) bool {
+	props, err := dev.GetProperties()
 	if err != nil {
 		panic(err)
 	}
 
+	if props.Address == dumpAddress {
+		logger.Debugf("Found %s [addr:%s], list profiles", props.Name, props.Address)
+		connectProfiles(dev)
+		return true
+	}
+
+	return false
+}
+
+func listProfiles(dev *api.Device) {
+
 	logger.Debug("Connected")
+
+	dev.On("service", func(ev api.Event) {
+		serviceEvent := ev.GetData().(api.GattServiceEvent)
+		serviceProps := serviceEvent.Properties
+
+		substr := serviceProps.UUID[4:8]
+		dbg("Check for %s", substr)
+		serviceName := sensorTagUUIDs[substr]
+
+		if serviceName != "" {
+			logger.Debug("Found service %s (%s)", serviceName, substr)
+		}
+
+	})
+
+	logger.Debug("Done.")
+}
+
+func connectProfiles(dev *api.Device) {
 
 	props, err := dev.GetProperties()
 	if err != nil {
 		panic(err)
 	}
 
-	logger.Debugf("Got %d GattServices", len(props.GattServices))
-	for _, path := range props.GattServices {
-
-		logger.Debugf("Get Gatt service %s", path)
-		service := dev.GetService(string(path))
-		serviceProps, err := service.GetProperties()
-		if err != nil {
-			logger.Fatal(err)
-			continue
-		}
-
-		logger.Debug("Got service %s\n", serviceProps.UUID)
-		for _, charpath := range serviceProps.Characteristics {
-
-			logger.Debug("Get Gatt char %s", charpath)
-			char := dev.GetChar(string(charpath))
-			charProps, err := char.GetProperties()
-
-			if err != nil {
-				logger.Error(err)
-				continue
-			}
-
-			logger.Debugf("Got char %s\n", charProps.UUID)
-			b, err := char.ReadValue()
-			if err != nil {
-				logger.Error(err)
-				continue
-			}
-
-			if len(b) == 0 {
-				logger.Debug("Empty bytearray")
-				continue
-			}
-
-			logger.Debug("Char value is: %v\n", b)
-			logger.Debug("string: %s\n", b)
-
-			var n uint64
-			buf := bytes.NewReader(b)
-			err = binary.Read(buf, binary.LittleEndian, &n)
-			if err != nil {
-				logger.Debug("num: ")
-				logger.Debug(n)
-			}
-
-			// uint64val, err := binary.ReadUvarint(buf)
-			// if err != nil {
-			// 	logger.Debug("uint64: ")
-			// 	logger.Debug(uint64val)
-			// }
-
-			logger.Debug("---\n ")
-		}
-
+	logger.Debugf("Connecting device %s", props.Name)
+	err = dev.Connect()
+	if err != nil {
+		panic(err)
 	}
 
-	logger.Debug("Done.")
+	// logger.Debugf("Pairing device %s", props.Name)
+	// err = dev.Pair()
+	// if err != nil {
+	// 	panic(err)
+	// }
+
+	time.Sleep(time.Second * 5)
+	listProfiles(dev)
+
 }

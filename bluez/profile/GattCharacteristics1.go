@@ -31,12 +31,11 @@ type GattCharacteristic1 struct {
 
 // GattCharacteristic1Properties exposed properties for GattCharacteristic1
 type GattCharacteristic1Properties struct {
-	Value       []byte
-	Descriptors []dbus.ObjectPath
-	Flags       []string
-	Notifying   bool
-	Service     dbus.ObjectPath
-	UUID        string
+	Value     []byte
+	Flags     []string
+	Notifying bool
+	Service   dbus.ObjectPath
+	UUID      string
 }
 
 // Close the connection
@@ -61,15 +60,15 @@ func (d *GattCharacteristic1) GetProperties() (*GattCharacteristic1Properties, e
 }
 
 //ReadValue read a value from a characteristic
-func (d *GattCharacteristic1) ReadValue() ([]byte, error) {
-	b := make([]byte, 128)
-	err := d.client.Call("ReadValue", 0).Store(&b)
+func (d *GattCharacteristic1) ReadValue(options map[string]interface{}) ([]byte, error) {
+	var b []byte
+	err := d.client.Call("ReadValue", 0, options).Store(&b)
 	return b, err
 }
 
 //WriteValue write a value to a characteristic
-func (d *GattCharacteristic1) WriteValue(b []byte) error {
-	err := d.client.Call("WriteValue", 0, b).Store()
+func (d *GattCharacteristic1) WriteValue(b []byte, options map[string]interface{}) error {
+	err := d.client.Call("WriteValue", 0, b, options).Store()
 	return err
 }
 

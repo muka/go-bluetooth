@@ -39,6 +39,8 @@ func ParseDevice(path dbus.ObjectPath, propsMap map[string]dbus.Variant) (*Devic
 
 func (d *Device) watchProperties() error {
 
+	dbg("watch-prop: watching properties")
+
 	channel, err := d.client.Register()
 	if err != nil {
 		return err
@@ -46,21 +48,26 @@ func (d *Device) watchProperties() error {
 
 	go (func() {
 		for {
+
 			if channel == nil {
+				dbg("watch-prop: nil channel, exit")
 				break
 			}
 
+			dbg("watch-prop: waiting updates")
 			sig := <-channel
 
 			// logger.Debug("----------------------")
 			// logger.Debug("Name: %s\n", sig.Name)
 
 			if sig == nil {
+				dbg("watch-prop: nil sig, exit")
 				return
 			}
 
+			dbg("watch-prop: signal name %s", sig.Name)
 			if sig.Name != bluez.PropertiesChanged {
-				// logger.Debug("Skipped %s vs %s\n", sig.Name, bluez.PropertiesInterface)
+				dbg("Skipped %s vs %s\n", sig.Name, bluez.PropertiesInterface)
 				continue
 			}
 
@@ -93,10 +100,11 @@ func (d *Device) watchProperties() error {
 					if f.CanSet() {
 						x := reflect.ValueOf(val.Value())
 						f.Set(x)
-						// logger.Debug("Set props value: %s = %s\n", field, x.Interface())
+						dbg("Set props value: %s = %s\n", field, x.Interface())
 					}
 				}
 
+				dbg("Emit change for %s = %s\n", field, val.Value())
 				propChanged := PropertyChangedEvent{string(iface), field, val.Value(), props}
 				d.Emit("changed", propChanged)
 			}
@@ -135,9 +143,7 @@ func (d *Device) GetProperties() (*profile.Device1Properties, error) {
 	if err != nil {
 		return nil, err
 	}
-	dbg("Load properties")
 	c.GetProperties()
-	dbg("Loaded	 properties")
 	return c.Properties, nil
 }
 
@@ -198,5 +204,15 @@ func (d *Device) Connect() error {
 		return err
 	}
 	c.Connect()
+	return nil
+}
+
+//Pair a device
+func (d *Device) Pair() error {
+	c, err := d.GetClient()
+	if err != nil {
+		return err
+	}
+	c.Pair()
 	return nil
 }

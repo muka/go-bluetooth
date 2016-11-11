@@ -31,10 +31,9 @@ type GattService1 struct {
 
 // GattService1Properties exposed properties for GattService1
 type GattService1Properties struct {
-	Characteristics []dbus.ObjectPath
-	Primary         bool
-	Device          dbus.ObjectPath
-	UUID            string
+	Primary bool
+	Device  dbus.ObjectPath
+	UUID    string
 }
 
 // Close the connection

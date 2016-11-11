@@ -31,12 +31,12 @@ type Device1 struct {
 
 // Device1Properties exposed properties for Device1
 type Device1Properties struct {
-	GattServices     []dbus.ObjectPath
 	UUIDs            []string
 	Blocked          bool
 	Connected        bool
 	LegacyPairing    bool
 	Paired           bool
+	ServiceResolved  bool
 	Trusted          bool
 	ServiceData      map[string]dbus.Variant
 	ManufacturerData map[uint16]dbus.Variant
@@ -85,7 +85,7 @@ func (d *Device1) CancelParing() error {
 
 //Connect to the device
 func (d *Device1) Connect() error {
-	return d.client.Call("Connect", 0).Store()
+	return d.client.Call("Connect", 1).Store()
 }
 
 //ConnectProfile connect to the specific profile
