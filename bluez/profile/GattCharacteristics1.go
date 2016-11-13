@@ -3,7 +3,6 @@ package profile
 import (
 	"github.com/godbus/dbus"
 	"github.com/muka/bluez-client/bluez"
-	"github.com/op/go-logging"
 )
 
 // NewGattCharacteristic1 create a new GattCharacteristic1 client
@@ -17,7 +16,6 @@ func NewGattCharacteristic1(path string) *GattCharacteristic1 {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	a.logger = logging.MustGetLogger(path)
 	a.Properties = new(GattCharacteristic1Properties)
 	return a
 }
@@ -25,7 +23,6 @@ func NewGattCharacteristic1(path string) *GattCharacteristic1 {
 // GattCharacteristic1 client
 type GattCharacteristic1 struct {
 	client     *bluez.Client
-	logger     *logging.Logger
 	Properties *GattCharacteristic1Properties
 }
 
@@ -62,8 +59,7 @@ func (d *GattCharacteristic1) GetProperties() (*GattCharacteristic1Properties, e
 //ReadValue read a value from a characteristic
 func (d *GattCharacteristic1) ReadValue(options map[string]dbus.Variant) ([]byte, error) {
 	var b []byte
-	var o []dbus.Variant
-	err := d.client.Call("ReadValue", 0, o).Store(&b)
+	err := d.client.Call("ReadValue", 0, options).Store(&b)
 	return b, err
 }
 

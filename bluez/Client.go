@@ -3,25 +3,18 @@ package bluez
 import (
 	"github.com/godbus/dbus"
 	"github.com/muka/bluez-client/util"
-	"github.com/op/go-logging"
 )
 
 // NewClient create a new client
 func NewClient(config *Config) *Client {
-
 	dbg("Create new client: %v", config)
-
 	c := new(Client)
-
 	c.Config = config
-	c.logger = logging.MustGetLogger("client")
-
 	return c
 }
 
 // Client implement a DBus client
 type Client struct {
-	logger     *logging.Logger
 	conn       *dbus.Conn
 	dbusObject dbus.BusObject
 	Config     *Config
@@ -41,18 +34,15 @@ func (c *Client) Disconnect() {
 	}
 }
 
-// Connect connect to DBus
+// Connect connects to DBus
 func (c *Client) Connect() error {
-
 	dbusConn, err := GetConnection(c.Config.Bus)
 	if err != nil {
 		return err
 	}
-
 	c.conn = dbusConn
 	c.dbusObject = c.conn.Object(c.Config.Name, dbus.ObjectPath(c.Config.Path))
-
-	dbg("Connected to %s %s\n", c.Config.Name, c.Config.Path)
+	dbg("Connected to %s %s", c.Config.Name, c.Config.Path)
 	return nil
 }
 

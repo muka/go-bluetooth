@@ -23,26 +23,69 @@ func Exit() {
 	dbg("Bye.")
 }
 
+//GetDeviceByAddress return a Device object based on its address
+func GetDeviceByAddress(address string) (*Device, error) {
+	list, err := GetDeviceList()
+	if err != nil {
+		return nil, err
+	}
+	for _, path := range list {
+		dbg("Check device %s", path)
+		dev := NewDevice(string(path))
+		props, err := dev.GetProperties()
+		if err != nil {
+			dbg("Cannot load properties %s", path)
+			return nil, err
+		}
+		if props.Address == address {
+			dbg("Address found")
+			return dev, nil
+		}
+	}
+	return nil, nil
+}
+
 //GetDevices returns a list of bluetooth discovered Devices
 func GetDevices() ([]Device, error) {
 
-	objects, err := GetManager().GetManagedObjects()
+	list, err := GetDeviceList()
+	if err != nil {
+		return nil, err
+	}
 
+	objects, err := GetManager().GetManagedObjects()
 	if err != nil {
 		return nil, err
 	}
 
 	var devices = make([]Device, 0)
+	for _, path := range list {
+		props := objects[path][bluez.Device1Interface]
+		dev, err := ParseDevice(path, props)
+		if err != nil {
+			return nil, err
+		}
+		devices = append(devices, *dev)
+	}
+
+	return devices, nil
+}
+
+//GetDeviceList returns a list of discovered Devices paths
+func GetDeviceList() ([]dbus.ObjectPath, error) {
+
+	objects, err := GetManager().GetManagedObjects()
+	if err != nil {
+		return nil, err
+	}
+
+	var devices []dbus.ObjectPath
 	for path, ifaces := range objects {
-		for iface, props := range ifaces {
+		for iface := range ifaces {
 			switch iface {
 			case bluez.Device1Interface:
 				{
-					dev, err := ParseDevice(path, props)
-					if err != nil {
-						return nil, err
-					}
-					devices = append(devices, *dev)
+					devices = append(devices, path)
 				}
 			}
 		}

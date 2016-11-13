@@ -36,7 +36,7 @@ type Device1Properties struct {
 	Connected        bool
 	LegacyPairing    bool
 	Paired           bool
-	ServiceResolved  bool
+	ServicesResolved bool
 	Trusted          bool
 	ServiceData      map[string]dbus.Variant
 	ManufacturerData map[uint16]dbus.Variant

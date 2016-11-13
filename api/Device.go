@@ -3,6 +3,7 @@ package api
 import (
 	"errors"
 	"reflect"
+	"strings"
 
 	"github.com/godbus/dbus"
 	"github.com/muka/bluez-client/bluez"
@@ -11,11 +12,17 @@ import (
 	"github.com/muka/bluez-client/util"
 )
 
+type devstatus struct {
+	Connected bool
+}
+
 // NewDevice creates a new Device
 func NewDevice(path string) *Device {
 	d := new(Device)
 	d.Path = path
 	d.client = profile.NewDevice1(path)
+	d.Properties = d.client.Properties
+	d.status = devstatus{}
 	return d
 }
 
@@ -114,15 +121,16 @@ func (d *Device) watchProperties() error {
 	return nil
 }
 
-func (d *Device) unwatchProperties() error {
-	return d.client.Unregister()
-}
-
 //Device return an API to interact with a DBus device
 type Device struct {
-	Path string
-	// Properties *profile.Device1Properties
-	client *profile.Device1
+	Path       string
+	Properties *profile.Device1Properties
+	client     *profile.Device1
+	status     devstatus
+}
+
+func (d *Device) unwatchProperties() error {
+	return d.client.Unregister()
 }
 
 //GetClient return a DBus Device1 interface client
@@ -135,7 +143,6 @@ func (d *Device) GetClient() (*profile.Device1, error) {
 
 //GetProperties return the properties for the device
 func (d *Device) GetProperties() (*profile.Device1Properties, error) {
-
 	if d == nil {
 		return nil, errors.New("Empty device pointer")
 	}
@@ -143,8 +150,7 @@ func (d *Device) GetProperties() (*profile.Device1Properties, error) {
 	if err != nil {
 		return nil, err
 	}
-	c.GetProperties()
-	return c.Properties, nil
+	return c.GetProperties()
 }
 
 //GetProperty return a property value
@@ -195,6 +201,68 @@ func (d *Device) GetService(path string) *profile.GattService1 {
 //GetChar return a GattService
 func (d *Device) GetChar(path string) *profile.GattCharacteristic1 {
 	return profile.NewGattCharacteristic1(path)
+}
+
+//GetCharByUUID return a GattService by its uuid, return nil if not found
+func (d *Device) GetCharByUUID(uuid string) (*profile.GattCharacteristic1, error) {
+
+	uuid = strings.ToUpper(uuid)
+
+	list, err := d.GetCharsList()
+	if err != nil {
+		return nil, err
+	}
+
+	// dbg("Found %d chars", len(list))
+
+	for _, path := range list {
+
+		// dbg("Checking path %s", path)
+
+		char := profile.NewGattCharacteristic1(string(path))
+		props, err := char.GetProperties()
+
+		if err != nil {
+			return nil, err
+		}
+
+		cuuid := strings.ToUpper(props.UUID)
+		// dbg("Current char uuid %s", cuuid)
+		if cuuid == uuid {
+			// dbg("Found char %s", uuid)
+			return char, nil
+		}
+	}
+
+	// dbg("Cannot find %s ", uuid)
+	return nil, errors.New("Characteristic not found")
+}
+
+//GetCharsList return a device characteristics
+func (d *Device) GetCharsList() ([]dbus.ObjectPath, error) {
+
+	list, err := GetManager().GetManagedObjects()
+	if err != nil {
+		return nil, err
+	}
+
+	var chars []dbus.ObjectPath
+	for objpath := range list {
+		path := string(objpath)
+		if !strings.HasPrefix(path, d.Path) {
+			continue
+		}
+		charPos := strings.Index(path, "char")
+		if charPos == -1 {
+			continue
+		}
+		if strings.Index(path[charPos:], "desc") != -1 {
+			continue
+		}
+		chars = append(chars, objpath)
+	}
+
+	return chars, nil
 }
 
 //Connect to device
