@@ -2,7 +2,7 @@ package examples
 
 import (
 	"fmt"
-	"github.com/muka/bluez-client/bluez"
+	"github.com/muka/go-bluetooth/bluez"
 	"github.com/op/go-logging"
 	"strings"
 )

@@ -4,7 +4,7 @@ import (
 	"log"
 
 	"github.com/godbus/dbus"
-	"github.com/muka/bluez-client/bluez"
+	"github.com/muka/go-bluetooth/bluez"
 )
 
 // NewObjectManager create a new Device1 client

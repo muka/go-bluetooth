@@ -1,4 +1,4 @@
-# bluez-client
+# go-bluetooth
 
 Golang bluetooth client based on bluez DBus interfaces
 

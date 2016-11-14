@@ -4,8 +4,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/muka/bluez-client/api"
-	"github.com/muka/bluez-client/emitter"
+	"github.com/muka/go-bluetooth/api"
+	"github.com/muka/go-bluetooth/emitter"
 	"github.com/op/go-logging"
 	gd "github.com/tj/go-debug"
 )

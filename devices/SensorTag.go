@@ -5,8 +5,8 @@ import (
 	"encoding/binary"
 
 	"github.com/godbus/dbus"
-	"github.com/muka/bluez-client/api"
-	"github.com/muka/bluez-client/bluez/profile"
+	"github.com/muka/go-bluetooth/api"
+	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/op/go-logging"
 	"github.com/tj/go-debug"
 )

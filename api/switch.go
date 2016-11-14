@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strconv"
 
-	"github.com/muka/bluez-client/linux"
+	"github.com/muka/go-bluetooth/linux"
 	"github.com/tj/go-debug"
 )
 

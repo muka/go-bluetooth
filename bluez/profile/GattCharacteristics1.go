@@ -2,7 +2,7 @@ package profile
 
 import (
 	"github.com/godbus/dbus"
-	"github.com/muka/bluez-client/bluez"
+	"github.com/muka/go-bluetooth/bluez"
 )
 
 // NewGattCharacteristic1 create a new GattCharacteristic1 client

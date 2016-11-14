@@ -1,8 +1,8 @@
 package api
 
 import (
-	"github.com/muka/bluez-client/bluez/profile"
-	"github.com/muka/bluez-client/emitter"
+	"github.com/muka/go-bluetooth/bluez/profile"
+	"github.com/muka/go-bluetooth/emitter"
 )
 
 //Event triggered

@@ -6,10 +6,10 @@ import (
 	"strings"
 
 	"github.com/godbus/dbus"
-	"github.com/muka/bluez-client/bluez"
-	"github.com/muka/bluez-client/bluez/profile"
-	"github.com/muka/bluez-client/emitter"
-	"github.com/muka/bluez-client/util"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/bluez/profile"
+	"github.com/muka/go-bluetooth/emitter"
+	"github.com/muka/go-bluetooth/util"
 )
 
 type devstatus struct {

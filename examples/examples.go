@@ -1,7 +1,7 @@
 package examples
 
 import (
-	"github.com/muka/bluez-client/api"
+	"github.com/muka/go-bluetooth/api"
 	"github.com/op/go-logging"
 )
 

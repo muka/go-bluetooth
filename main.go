@@ -3,8 +3,8 @@ package main
 import (
 	"log"
 
-	"github.com/muka/bluez-client/api"
-	"github.com/muka/bluez-client/devices"
+	"github.com/muka/go-bluetooth/api"
+	"github.com/muka/go-bluetooth/devices"
 	"github.com/op/go-logging"
 	"github.com/tj/go-debug"
 )
