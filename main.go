@@ -36,10 +36,22 @@ func main() {
 		panic(err)
 	}
 
-	temp, err := sensorTag.Temperature.Read()
-	if err != nil {
-		panic(err)
+	// var readTemperature = func() {
+	// 	temp, err := sensorTag.Temperature.Read()
+	// 	if err != nil {
+	// 		panic(err)
+	// 	}
+	// 	log.Printf("Temperature %v°", temp)
+	// }
+
+	var notifyTemperature = func(fn func(temperature float64)) {
+		sensorTag.Temperature.StartNotify(fn)
+		select {}
 	}
 
-	log.Printf("Temperature %v°", temp)
+	// readTemperature()
+	notifyTemperature(func(t float64) {
+		log.Printf("Temperature update: %f", t)
+	})
+
 }

@@ -54,17 +54,15 @@ func WatchManagerChanges() error {
 	watchChangesEnabled = true
 
 	go (func() {
-		for {
+		managerDbg("waiting for updates")
+		for v := range channel {
 
-			managerDbg("waiting for updates")
-
-			if channel == nil {
-				managerDbg("quitting manager listener")
-				watchChangesEnabled = false
-				break
-			}
-
-			v := <-channel
+			// if channel == nil {
+			// 	managerDbg("quitting manager listener")
+			// 	watchChangesEnabled = false
+			// 	break
+			// }
+			// v := <-channel
 
 			if v == nil {
 				managerDbg("nil value, abort")
