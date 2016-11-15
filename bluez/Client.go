@@ -126,7 +126,7 @@ func (c *Client) Register(path string, iface string) (chan *dbus.Signal, error) 
 	dbg("Match on %s", matchstr)
 	c.conn.BusObject().Call("org.freedesktop.DBus.AddMatch", 0, matchstr)
 
-	channel := make(chan *dbus.Signal, 100)
+	channel := make(chan *dbus.Signal, 1)
 	c.conn.Signal(channel)
 
 	return channel, nil
@@ -143,5 +143,6 @@ func (c *Client) Unregister(path string, iface string) error {
 	matchstr := getMatchString(path, iface)
 	dbg("Match on %s", matchstr)
 	c.conn.BusObject().Call("org.freedesktop.DBus.RemoveMatch", 0, matchstr)
+
 	return nil
 }

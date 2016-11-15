@@ -3,6 +3,8 @@ package devices
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
+	"time"
 
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/api"
@@ -69,26 +71,47 @@ func getUUID(name string) string {
 }
 
 func newTemperatureSensor(dev *api.Device) (TemperatureSensor, error) {
+	var retry = 3
 
-	dbgtag("Load temp cfg")
-	cfg, err := dev.GetCharByUUID(getUUID("TemperatureConfig"))
-	if err != nil {
-		return TemperatureSensor{}, err
+	var loadChars func() (TemperatureSensor, error)
+
+	loadChars = func() (TemperatureSensor, error) {
+
+		dbgtag("Load temp cfg")
+		cfg, err := dev.GetCharByUUID(getUUID("TemperatureConfig"))
+		if err != nil {
+			return TemperatureSensor{}, err
+		}
+
+		if cfg == nil {
+
+			if retry == 0 {
+				return TemperatureSensor{}, errors.New("Cannot find cfg characteristic")
+			}
+
+			retry--
+			time.Sleep(time.Second * 2)
+			dbgtag("Char not found, try to reload")
+
+			return loadChars()
+		}
+
+		dbgtag("Load temp data")
+		data, err := dev.GetCharByUUID(getUUID("TemperatureData"))
+		if err != nil {
+			return TemperatureSensor{}, err
+		}
+
+		dbgtag("Load temp period")
+		period, err := dev.GetCharByUUID(getUUID("TemperaturePeriod"))
+		if err != nil {
+			return TemperatureSensor{}, err
+		}
+
+		return TemperatureSensor{cfg, data, period}, err
 	}
 
-	dbgtag("Load temp data")
-	data, err := dev.GetCharByUUID(getUUID("TemperatureData"))
-	if err != nil {
-		return TemperatureSensor{}, err
-	}
-
-	dbgtag("Load temp period")
-	period, err := dev.GetCharByUUID(getUUID("TemperaturePeriod"))
-	if err != nil {
-		return TemperatureSensor{}, err
-	}
-
-	return TemperatureSensor{cfg, data, period}, err
+	return loadChars()
 }
 
 //Sensor generic sensor interface
@@ -244,7 +267,7 @@ func (s *TemperatureSensor) StartNotify(fn func(temperature float64)) error {
 				return
 			}
 
-			dbgtag("Event received %v", event.Body)
+			dbgtag("Received body type does not match: %v", event.Body[1])
 
 			// path := event.Body[0].(dbus.ObjectPath)
 			props := event.Body[1].(map[string]dbus.Variant)
@@ -278,7 +301,9 @@ func (s *TemperatureSensor) StopNotify() error {
 		return err
 	}
 
-	close(notifications)
+	if notifications != nil {
+		close(notifications)
+	}
 
 	return s.data.StopNotify()
 }

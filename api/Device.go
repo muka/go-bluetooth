@@ -100,7 +100,7 @@ func (d *Device) watchProperties() error {
 					}
 				}
 
-				dbg("Emit change for %s = %s\n", field, val.Value())
+				dbg("Emit change for %s = %v\n", field, val.Value())
 				propChanged := PropertyChangedEvent{string(iface), field, val.Value(), props, d}
 				d.Emit("changed", propChanged)
 			}
@@ -228,7 +228,7 @@ func (d *Device) GetCharByUUID(uuid string) (*profile.GattCharacteristic1, error
 	}
 
 	// dbg("Cannot find %s ", uuid)
-	return nil, errors.New("Characteristic not found")
+	return nil, nil
 }
 
 //GetCharsList return a device characteristics
