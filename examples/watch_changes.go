@@ -117,6 +117,11 @@ func discoverDevices(adapterID string) {
 		discoveryEvent := ev.GetData().(api.DiscoveredDeviceEvent)
 		dev := discoveryEvent.Device
 
+		if dev == nil {
+			dbg("Device removed!")
+			return
+		}
+
 		filterDevice(dev)
 	})
 
@@ -146,11 +151,7 @@ func loadDevices() bool {
 }
 
 func filterDevice(dev *api.Device) bool {
-	props, err := dev.GetProperties()
-	if err != nil {
-		panic(err)
-	}
-
+	props := dev.Properties
 	if props.Address == dumpAddress {
 		logger.Debugf("Found %s [addr:%s], list profiles", props.Name, props.Address)
 		connectProfiles(dev)
@@ -233,10 +234,7 @@ func listProfiles(dev *api.Device) {
 
 func connectProfiles(dev *api.Device) {
 
-	props, err := dev.GetProperties()
-	if err != nil {
-		panic(err)
-	}
+	props := dev.Properties
 
 	logger.Debugf("Connecting device %s", props.Name)
 	err = dev.Connect()

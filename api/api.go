@@ -32,12 +32,7 @@ func GetDeviceByAddress(address string) (*Device, error) {
 	for _, path := range list {
 		dbg("Check device %s", path)
 		dev := NewDevice(string(path))
-		props, err := dev.GetProperties()
-		if err != nil {
-			dbg("Cannot load properties %s", path)
-			return nil, err
-		}
-		if props.Address == address {
+		if dev.Properties.Address == address {
 			dbg("Address found")
 			return dev, nil
 		}

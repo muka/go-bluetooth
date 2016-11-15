@@ -48,8 +48,9 @@ func loop() {
 		if events[ev.GetName()] != nil {
 			size := len(events[ev.GetName()])
 			if size == 0 {
-				dbg("No callback available")
+				dbg("loop: No callback(s)")
 			} else {
+				dbg("loop: %d callback(s)", size)
 				for i := 0; i < size; i++ {
 					go events[ev.GetName()][i](ev)
 				}
@@ -80,7 +81,7 @@ func On(event string, callback Callback) {
 	}
 
 	events[event] = append(events[event], callback)
-	dbg("Added %s events, len is %d", event, len(events[event]))
+	dbg("Added to `%s` event, len is %d", event, len(events[event]))
 }
 
 // Emit an event

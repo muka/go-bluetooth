@@ -2,9 +2,10 @@ package examples
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/op/go-logging"
-	"strings"
 )
 
 //LoadInfo show basic informations regardinf a device
@@ -13,11 +14,6 @@ func LoadInfo(adapterID string, deviceID string) {
 	var log = logging.MustGetLogger(fmt.Sprintf("example:%s:%s", adapterID, deviceID))
 
 	adapter := bluez.NewAdapter1(adapterID)
-
-	_, err := adapter.GetProperties()
-	if err != nil {
-		panic(err)
-	}
 
 	log.Println("Adapter info\n---")
 	log.Printf("Name: %s\n", adapter.Properties.Name)
@@ -31,12 +27,6 @@ func LoadInfo(adapterID string, deviceID string) {
 			strings.Replace(deviceID, ":", "_", -1),
 		),
 	)
-
-	_, err = device.GetProperties()
-
-	if err != nil {
-		panic(err)
-	}
 
 	log.Println("Device info\n---")
 	log.Printf("Name: %s\n", device.Properties.Name)

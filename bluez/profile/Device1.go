@@ -19,6 +19,7 @@ func NewDevice1(path string) *Device1 {
 	)
 	a.logger = logging.MustGetLogger(path)
 	a.Properties = new(Device1Properties)
+	a.GetProperties()
 	return a
 }
 

@@ -3,7 +3,6 @@ package profile
 import (
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
-	"github.com/op/go-logging"
 )
 
 // NewGattService1 create a new GattService1 client
@@ -17,15 +16,14 @@ func NewGattService1(path string) *GattService1 {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	a.logger = logging.MustGetLogger(path)
 	a.Properties = new(GattService1Properties)
+	a.GetProperties()
 	return a
 }
 
 // GattService1 client
 type GattService1 struct {
 	client     *bluez.Client
-	logger     *logging.Logger
 	Properties *GattService1Properties
 }
 

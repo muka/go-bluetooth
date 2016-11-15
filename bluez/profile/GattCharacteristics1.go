@@ -17,6 +17,7 @@ func NewGattCharacteristic1(path string) *GattCharacteristic1 {
 		},
 	)
 	a.Properties = new(GattCharacteristic1Properties)
+	a.GetProperties()
 	return a
 }
 

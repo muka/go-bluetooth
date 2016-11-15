@@ -3,7 +3,6 @@ package profile
 import (
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
-	"github.com/op/go-logging"
 )
 
 // NewProfileManager1 create a new ProfileManager1 client
@@ -17,14 +16,12 @@ func NewProfileManager1(hostID string) *ProfileManager1 {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	a.logger = logging.MustGetLogger(hostID)
 	return a
 }
 
 // ProfileManager1 client
 type ProfileManager1 struct {
 	client *bluez.Client
-	logger *logging.Logger
 }
 
 // Close the connection

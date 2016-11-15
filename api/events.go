@@ -51,6 +51,7 @@ type PropertyChangedEvent struct {
 	Field      string
 	Value      interface{}
 	Properties *profile.Device1Properties
+	Device     *Device
 }
 
 // GattServiceEvent triggered when a new GattService1 is added or removed

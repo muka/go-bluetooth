@@ -12,17 +12,13 @@ import (
 	"github.com/muka/go-bluetooth/util"
 )
 
-type devstatus struct {
-	Connected bool
-}
-
 // NewDevice creates a new Device
 func NewDevice(path string) *Device {
 	d := new(Device)
 	d.Path = path
 	d.client = profile.NewDevice1(path)
+	d.client.GetProperties()
 	d.Properties = d.client.Properties
-	d.status = devstatus{}
 	return d
 }
 
@@ -83,19 +79,12 @@ func (d *Device) watchProperties() error {
 				dbg("%s -> %s", reflect.TypeOf(sig.Body[i]), sig.Body[i])
 			}
 
-			// logger.Debug("----------------------")
-
 			iface := sig.Body[0].(string)
 			changes := sig.Body[1].(map[string]dbus.Variant)
 			for field, val := range changes {
 
 				// updates [*]Properties struct
-				props, err := d.GetProperties()
-
-				if err != nil {
-					logger.Criticalf("Exception getting properties: %v\n", err)
-					return
-				}
+				props := d.Properties
 
 				s := reflect.ValueOf(props).Elem()
 				// exported field
@@ -112,7 +101,7 @@ func (d *Device) watchProperties() error {
 				}
 
 				dbg("Emit change for %s = %s\n", field, val.Value())
-				propChanged := PropertyChangedEvent{string(iface), field, val.Value(), props}
+				propChanged := PropertyChangedEvent{string(iface), field, val.Value(), props, d}
 				d.Emit("changed", propChanged)
 			}
 		}
@@ -126,7 +115,6 @@ type Device struct {
 	Path       string
 	Properties *profile.Device1Properties
 	client     *profile.Device1
-	status     devstatus
 }
 
 func (d *Device) unwatchProperties() error {
@@ -143,14 +131,24 @@ func (d *Device) GetClient() (*profile.Device1, error) {
 
 //GetProperties return the properties for the device
 func (d *Device) GetProperties() (*profile.Device1Properties, error) {
+
 	if d == nil {
 		return nil, errors.New("Empty device pointer")
 	}
+
 	c, err := d.GetClient()
 	if err != nil {
 		return nil, err
 	}
-	return c.GetProperties()
+
+	props, err := c.GetProperties()
+
+	if err != nil {
+		return nil, err
+	}
+
+	d.Properties = props
+	return d.Properties, err
 }
 
 //GetProperty return a property value
@@ -213,23 +211,18 @@ func (d *Device) GetCharByUUID(uuid string) (*profile.GattCharacteristic1, error
 		return nil, err
 	}
 
-	// dbg("Found %d chars", len(list))
+	dbg("Found %d chars", len(list))
 
 	for _, path := range list {
 
 		// dbg("Checking path %s", path)
 
 		char := profile.NewGattCharacteristic1(string(path))
-		props, err := char.GetProperties()
-
-		if err != nil {
-			return nil, err
-		}
-
+		props := char.Properties
 		cuuid := strings.ToUpper(props.UUID)
 		// dbg("Current char uuid %s", cuuid)
 		if cuuid == uuid {
-			// dbg("Found char %s", uuid)
+			dbg("Found char %s", uuid)
 			return char, nil
 		}
 	}
@@ -265,13 +258,40 @@ func (d *Device) GetCharsList() ([]dbus.ObjectPath, error) {
 	return chars, nil
 }
 
+//IsConnected check if connected to the device
+func (d *Device) IsConnected() bool {
+
+	props, _ := d.GetProperties()
+
+	if props == nil {
+		return false
+	}
+
+	return props.Connected
+}
+
 //Connect to device
 func (d *Device) Connect() error {
+
 	c, err := d.GetClient()
 	if err != nil {
 		return err
 	}
-	c.Connect()
+
+	err = c.Connect()
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+//Disconnect from a device
+func (d *Device) Disconnect() error {
+	c, err := d.GetClient()
+	if err != nil {
+		return err
+	}
+	c.Disconnect()
 	return nil
 }
 

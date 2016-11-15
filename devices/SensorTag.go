@@ -14,9 +14,6 @@ import (
 var logger = logging.MustGetLogger("main")
 var dbgtag = debug.Debug("bluez:sensortag")
 
-var adapterID = "hci0"
-var dumpAddress = "B0:B4:48:C9:4B:01"
-
 var notifications chan dbus.Signal
 
 var sensorTagUUIDs = map[string]string{
@@ -288,6 +285,13 @@ func (s *TemperatureSensor) StopNotify() error {
 
 // NewSensorTag creates a new sensortag instance
 func NewSensorTag(d *api.Device) (*SensorTag, error) {
+
+	if !d.IsConnected() {
+		err := d.Connect()
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	temp, err := newTemperatureSensor(d)
 	if err != nil {

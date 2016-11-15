@@ -3,7 +3,6 @@ package profile
 import (
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
-	"github.com/op/go-logging"
 )
 
 // NewAdapter1 create a new Adapter1 client
@@ -18,14 +17,13 @@ func NewAdapter1(hostID string) *Adapter1 {
 		},
 	)
 	a.Properties = new(Adapter1Properties)
-	a.logger = logging.MustGetLogger(hostID)
+	a.GetProperties()
 	return a
 }
 
 // Adapter1 client
 type Adapter1 struct {
 	client     *bluez.Client
-	logger     *logging.Logger
 	Properties *Adapter1Properties
 }
 
