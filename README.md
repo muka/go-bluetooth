@@ -39,7 +39,7 @@ Use `glide install` to install dependencies
 
 See in `scripts/` how to upgrade bluez to 5.43
 
-Giving access to hciconfig to any user (check security implications)
+Give access to `hciconfig` to any user (may have [security implications](https://www.insecure.ws/linux/getcap_setcap.html))
 
 ```
 sudo setcap 'cap_net_raw,cap_net_admin+eip' `which hciconfig`
