@@ -37,6 +37,8 @@ Tested with
 
 Use `glide install` to install dependencies
 
+See in `scripts/` how to upgrade bluez to 5.43
+
 Todo
 ---
 
