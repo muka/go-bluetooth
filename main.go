@@ -1,57 +1,27 @@
 package main
 
 import (
-	"log"
-
-	"github.com/muka/go-bluetooth/api"
-	"github.com/muka/go-bluetooth/devices"
-	"github.com/op/go-logging"
+	"github.com/muka/go-bluetooth/linux"
 	"github.com/tj/go-debug"
 )
 
-var logger = logging.MustGetLogger("main")
 var dbg = debug.Debug("bluez:main")
 
 var adapterID = "hci0"
-var tagAddress = "B0:B4:48:C9:4B:01"
 
 func main() {
 
-	dev, err := api.GetDeviceByAddress(tagAddress)
+	hciconfig := linux.HCIConfig{}
+	res, err := hciconfig.Up(adapterID)
 	if err != nil {
 		panic(err)
 	}
+	dbg("Address %s, enabled %t", res.Address, res.Enabled)
 
-	if dev == nil {
-		panic("Device not found")
-	}
-
-	err = dev.Connect()
+	res, err = hciconfig.Down(adapterID)
 	if err != nil {
 		panic(err)
 	}
-
-	sensorTag, err := devices.NewSensorTag(dev)
-	if err != nil {
-		panic(err)
-	}
-
-	// var readTemperature = func() {
-	// 	temp, err := sensorTag.Temperature.Read()
-	// 	if err != nil {
-	// 		panic(err)
-	// 	}
-	// 	log.Printf("Temperature %v°", temp)
-	// }
-
-	var notifyTemperature = func(fn func(temperature float64)) {
-		sensorTag.Temperature.StartNotify(fn)
-		select {}
-	}
-
-	// readTemperature()
-	notifyTemperature(func(t float64) {
-		log.Printf("Temperature update: %f", t)
-	})
+	dbg("Address %s, enabled %t", res.Address, res.Enabled)
 
 }

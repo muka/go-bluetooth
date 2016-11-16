@@ -18,7 +18,7 @@ Features
 - [x] GATT Service and characteristics interface
 - [x] Adapter on/off via `rfkill`
 - [x] Handle systemd `bluetooth.service` unit
-- [ ] Handle `hciconfig` command via CLI
+- [x] Expose `hciconfig` basic API
 - [ ] Expose bluetooth services via bluez DBus API
 
 Usage
@@ -38,6 +38,12 @@ Tested with
 Use `glide install` to install dependencies
 
 See in `scripts/` how to upgrade bluez to 5.43
+
+Giving access to hciconfig to any user (check security implications)
+
+```
+sudo setcap 'cap_net_raw,cap_net_admin+eip' `which hciconfig`
+```
 
 Todo
 ---
