@@ -18,11 +18,13 @@ Features
 - [x] GATT Service and characteristics interface
 - [x] Adapter on/off via `rfkill`
 - [x] Handle systemd `bluetooth.service` unit
+- [ ] Handle `hciconfig` command via CLI
+- [ ] Expose bluetooth services via bluez DBus API
 
 Usage
 ---
 
-Check in `main.go` or in `examples` for an initial overview of the API
+Check in `main.go` or in `examples/` for an initial overview of the API
 
 Setup
 ---
