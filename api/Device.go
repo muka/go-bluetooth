@@ -10,7 +10,10 @@ import (
 	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/muka/go-bluetooth/emitter"
 	"github.com/muka/go-bluetooth/util"
+	"github.com/tj/go-debug"
 )
+
+var dbgDevice = debug.Debug("bluez:api:Device")
 
 // NewDevice creates a new Device
 func NewDevice(path string) *Device {
@@ -46,7 +49,7 @@ func ParseDevice(path dbus.ObjectPath, propsMap map[string]dbus.Variant) (*Devic
 
 func (d *Device) watchProperties() error {
 
-	dbg("watch-prop: watching properties")
+	dbgDevice("watch-prop: watching properties")
 
 	channel, err := d.client.Register()
 	if err != nil {
@@ -57,27 +60,27 @@ func (d *Device) watchProperties() error {
 		for {
 
 			if channel == nil {
-				dbg("watch-prop: nil channel, exit")
+				dbgDevice("watch-prop: nil channel, exit")
 				break
 			}
 
-			dbg("watch-prop: waiting updates")
+			dbgDevice("watch-prop: waiting updates")
 			sig := <-channel
 
 			if sig == nil {
-				dbg("watch-prop: nil sig, exit")
+				dbgDevice("watch-prop: nil sig, exit")
 				return
 			}
 
-			dbg("watch-prop: signal name %s", sig.Name)
+			dbgDevice("watch-prop: signal name %s", sig.Name)
 			if sig.Name != bluez.PropertiesChanged {
-				dbg("Skipped %s vs %s\n", sig.Name, bluez.PropertiesInterface)
+				dbgDevice("Skipped %s vs %s\n", sig.Name, bluez.PropertiesInterface)
 				continue
 			}
 
-			dbg("Device property changed")
+			dbgDevice("Device property changed")
 			for i := 0; i < len(sig.Body); i++ {
-				dbg("%s -> %s", reflect.TypeOf(sig.Body[i]), sig.Body[i])
+				dbgDevice("%s -> %s", reflect.TypeOf(sig.Body[i]), sig.Body[i])
 			}
 
 			iface := sig.Body[0].(string)
@@ -97,11 +100,11 @@ func (d *Device) watchProperties() error {
 					if f.CanSet() {
 						x := reflect.ValueOf(val.Value())
 						f.Set(x)
-						dbg("Set props value: %s = %s\n", field, x.Interface())
+						dbgDevice("Set props value: %s = %s\n", field, x.Interface())
 					}
 				}
 
-				dbg("Emit change for %s = %v\n", field, val.Value())
+				dbgDevice("Emit change for %s = %v\n", field, val.Value())
 				propChanged := PropertyChangedEvent{string(iface), field, val.Value(), props, d}
 				d.Emit("changed", propChanged)
 			}
@@ -212,23 +215,23 @@ func (d *Device) GetCharByUUID(uuid string) (*profile.GattCharacteristic1, error
 		return nil, err
 	}
 
-	dbg("Found %d chars", len(list))
+	dbgDevice("Found %d chars", len(list))
 
 	for _, path := range list {
 
-		// dbg("Checking path %s", path)
+		// dbgDevice("Checking path %s", path)
 
 		char := profile.NewGattCharacteristic1(string(path))
 		props := char.Properties
 		cuuid := strings.ToUpper(props.UUID)
-		// dbg("Current char uuid %s", cuuid)
+		// dbgDevice("Current char uuid %s", cuuid)
 		if cuuid == uuid {
-			dbg("Found char %s", uuid)
+			dbgDevice("Found char %s", uuid)
 			return char, nil
 		}
 	}
 
-	// dbg("Cannot find %s ", uuid)
+	// dbgDevice("Cannot find %s ", uuid)
 	return nil, nil
 }
 
@@ -253,6 +256,7 @@ func (d *Device) GetCharsList() ([]dbus.ObjectPath, error) {
 		if strings.Index(path[charPos:], "desc") != -1 {
 			continue
 		}
+		dbgDevice("Added char %v", objpath)
 		chars = append(chars, objpath)
 	}
 

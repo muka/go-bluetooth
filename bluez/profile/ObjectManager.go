@@ -36,6 +36,7 @@ func (o *ObjectManager) Close() {
 func (o *ObjectManager) GetManagedObjects() (map[dbus.ObjectPath]map[string]map[string]dbus.Variant, error) {
 	objects := make(map[dbus.ObjectPath]map[string]map[string]dbus.Variant)
 	err := o.client.Call("GetManagedObjects", 0).Store(&objects)
+	// dbg("Retrieved managed objects: %v, %v", objects, err)
 	return objects, err
 }
 

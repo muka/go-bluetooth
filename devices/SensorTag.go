@@ -75,7 +75,8 @@ func newTemperatureSensor(tag *SensorTag) (TemperatureSensor, error) {
 
 	dev := tag.Device
 
-	var retry = 3
+	retry := 3
+	tries := 0
 	var loadChars func() (TemperatureSensor, error)
 
 	loadChars = func() (TemperatureSensor, error) {
@@ -88,12 +89,12 @@ func newTemperatureSensor(tag *SensorTag) (TemperatureSensor, error) {
 
 		if cfg == nil {
 
-			if retry == 0 {
+			if tries == retry {
 				return TemperatureSensor{}, errors.New("Cannot find cfg characteristic")
 			}
 
-			retry--
-			time.Sleep(time.Second * 2)
+			tries++
+			time.Sleep(time.Second * time.Duration(5*tries))
 			dbgtag("Char not found, try to reload")
 
 			return loadChars()

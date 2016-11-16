@@ -96,7 +96,8 @@ func AdapterExists(adapterID string) (bool, error) {
 		return false, err
 	}
 	path := dbus.ObjectPath("/org/bluez/" + adapterID)
-	return objects[path] != nil, nil
+	exists := objects[path] != nil
+	return exists, nil
 }
 
 //GetAdapter return an adapter object instance

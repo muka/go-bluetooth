@@ -60,7 +60,7 @@ func (c *Client) Call(method string, flags dbus.Flags, args ...interface{}) *dbu
 
 	methodPath := c.Config.Iface + "." + method
 
-	dbg("Call %s( %v )\n", methodPath, args)
+	dbg("Call %s( %v )", methodPath, args)
 
 	return c.dbusObject.Call(methodPath, flags, args...)
 }
