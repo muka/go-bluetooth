@@ -25,6 +25,7 @@ func NewGattCharacteristic1(path string) *GattCharacteristic1 {
 type GattCharacteristic1 struct {
 	client     *bluez.Client
 	Properties *GattCharacteristic1Properties
+	channel    chan *dbus.Signal
 }
 
 // GattCharacteristic1Properties exposed properties for GattCharacteristic1
@@ -43,11 +44,21 @@ func (d *GattCharacteristic1) Close() {
 
 //Register for changes signalling
 func (d *GattCharacteristic1) Register() (chan *dbus.Signal, error) {
-	return d.client.Register(d.client.Config.Path, bluez.PropertiesInterface)
+	if d.channel == nil {
+		channel, err := d.client.Register(d.client.Config.Path, bluez.PropertiesInterface)
+		if err != nil {
+			return nil, err
+		}
+		d.channel = channel
+	}
+	return d.channel, nil
 }
 
 //Unregister for changes signalling
 func (d *GattCharacteristic1) Unregister() error {
+	if d.channel != nil {
+		close(d.channel)
+	}
 	return d.client.Unregister(d.client.Config.Path, bluez.PropertiesInterface)
 }
 

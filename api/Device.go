@@ -17,8 +17,12 @@ func NewDevice(path string) *Device {
 	d := new(Device)
 	d.Path = path
 	d.client = profile.NewDevice1(path)
+
 	d.client.GetProperties()
 	d.Properties = d.client.Properties
+
+	// d.watchProperties()
+
 	return d
 }
 
@@ -59,9 +63,6 @@ func (d *Device) watchProperties() error {
 
 			dbg("watch-prop: waiting updates")
 			sig := <-channel
-
-			// logger.Debug("----------------------")
-			// logger.Debug("Name: %s\n", sig.Name)
 
 			if sig == nil {
 				dbg("watch-prop: nil sig, exit")

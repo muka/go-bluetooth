@@ -8,6 +8,7 @@ import (
 
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/api"
+	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/op/go-logging"
 	"github.com/tj/go-debug"
@@ -70,9 +71,11 @@ func getUUID(name string) string {
 	return "F000" + sensorTagUUIDs[name] + "-0451-4000-B000-000000000000"
 }
 
-func newTemperatureSensor(dev *api.Device) (TemperatureSensor, error) {
-	var retry = 3
+func newTemperatureSensor(tag *SensorTag) (TemperatureSensor, error) {
 
+	dev := tag.Device
+
+	var retry = 3
 	var loadChars func() (TemperatureSensor, error)
 
 	loadChars = func() (TemperatureSensor, error) {
@@ -108,7 +111,7 @@ func newTemperatureSensor(dev *api.Device) (TemperatureSensor, error) {
 			return TemperatureSensor{}, err
 		}
 
-		return TemperatureSensor{cfg, data, period}, err
+		return TemperatureSensor{tag, cfg, data, period}, err
 	}
 
 	return loadChars()
@@ -124,6 +127,7 @@ type Sensor interface {
 
 //TemperatureSensor the temperature sensor
 type TemperatureSensor struct {
+	tag    *SensorTag
 	cfg    *profile.GattCharacteristic1
 	data   *profile.GattCharacteristic1
 	period *profile.GattCharacteristic1
@@ -267,9 +271,19 @@ func (s *TemperatureSensor) StartNotify(fn func(temperature float64)) error {
 				return
 			}
 
-			dbgtag("Received body type does not match: %v", event.Body[1])
+			switch event.Body[0].(type) {
+			case dbus.ObjectPath:
+				// dbgtag("Received body type does not match: [0] %v -> [1] %v", event.Body[0], event.Body[1])
+				continue
+			case string:
+				// dbgtag("body type match")
+			}
 
-			// path := event.Body[0].(dbus.ObjectPath)
+			if event.Body[0] != bluez.GattCharacteristic1Interface {
+				// dbgtag("Skip interface %s", event.Body[0])
+				continue
+			}
+
 			props := event.Body[1].(map[string]dbus.Variant)
 
 			if _, ok := props["Value"]; !ok {
@@ -318,14 +332,16 @@ func NewSensorTag(d *api.Device) (*SensorTag, error) {
 		}
 	}
 
-	temp, err := newTemperatureSensor(d)
+	s := new(SensorTag)
+	s.Device = d
+
+	temp, err := newTemperatureSensor(s)
 	if err != nil {
 		return nil, err
 	}
+	s.Temperature = temp
 
-	s := SensorTag{d, temp}
-
-	return &s, nil
+	return s, nil
 }
 
 //SensorTag a SensorTag object representation
