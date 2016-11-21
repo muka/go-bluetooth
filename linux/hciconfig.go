@@ -6,8 +6,12 @@ import (
 	"strings"
 )
 
-//HCIAdapterInfo contains details for an adapter
-type HCIAdapterInfo struct {
+func NewHCIConfig(adapterID string) *HCIConfig {
+	return &HCIConfig{adapterID}
+}
+
+//HCIConfigResult contains details for an adapter
+type HCIConfigResult struct {
 	Enabled bool
 	Address string
 	Type    string
@@ -16,18 +20,20 @@ type HCIAdapterInfo struct {
 
 // HCIConfig an hciconfig command wrapper
 type HCIConfig struct {
+	adapterID string
 }
 
-func getAdapterStatus(adapterID string) (HCIAdapterInfo, error) {
+//Status return status information for a hci device
+func (h *HCIConfig) Status() (HCIConfigResult, error) {
 
-	cfg := HCIAdapterInfo{}
+	cfg := HCIConfigResult{}
 
-	cmd := exec.Command("hciconfig", adapterID)
+	cmd := exec.Command("hciconfig", h.adapterID)
 	var out bytes.Buffer
 	cmd.Stdout = &out
 	err := cmd.Run()
 	if err != nil {
-		return HCIAdapterInfo{}, err
+		return HCIConfigResult{}, err
 	}
 
 	s := strings.Replace(out.String()[6:], "\t", "", -1)
@@ -59,27 +65,26 @@ func getAdapterStatus(adapterID string) (HCIAdapterInfo, error) {
 			}
 		}
 	}
-	// log.Printf("%v", strings.Join(parts, ","))
 
 	return cfg, nil
 }
 
 // Up Turn on an HCI device
-func (h *HCIConfig) Up(adapterID string) (HCIAdapterInfo, error) {
-	cmd := exec.Command("hciconfig", adapterID, "up")
+func (h *HCIConfig) Up() (HCIConfigResult, error) {
+	cmd := exec.Command("hciconfig", h.adapterID, "up")
 	err := cmd.Run()
 	if err != nil {
-		return HCIAdapterInfo{}, err
+		return HCIConfigResult{}, err
 	}
-	return getAdapterStatus(adapterID)
+	return h.Status()
 }
 
 // Down Turn down an HCI device
-func (h *HCIConfig) Down(adapterID string) (HCIAdapterInfo, error) {
-	cmd := exec.Command("hciconfig", adapterID, "down")
+func (h *HCIConfig) Down() (HCIConfigResult, error) {
+	cmd := exec.Command("hciconfig", h.adapterID, "down")
 	err := cmd.Run()
 	if err != nil {
-		return HCIAdapterInfo{}, err
+		return HCIConfigResult{}, err
 	}
-	return getAdapterStatus(adapterID)
+	return h.Status()
 }

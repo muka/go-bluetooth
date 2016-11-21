@@ -17,6 +17,11 @@ var rfclass = [...]string{
 
 var rfkill = linux.NewRFKill()
 
+// GetHCIConfig return an HCIConfig struct
+func GetHCIConfig(adapterID string) *linux.HCIConfig {
+	return linux.NewHCIConfig(adapterID)
+}
+
 // GetAdapterStatus return the status of an adapter
 func GetAdapterStatus(adapterID string) (*linux.RFKillResult, error) {
 

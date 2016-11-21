@@ -91,12 +91,17 @@ func GetDeviceList() ([]dbus.ObjectPath, error) {
 
 //AdapterExists checks if an adapter is available
 func AdapterExists(adapterID string) (bool, error) {
+
 	objects, err := GetManager().GetManagedObjects()
+
 	if err != nil {
 		return false, err
 	}
+
 	path := dbus.ObjectPath("/org/bluez/" + adapterID)
-	exists := objects[path] != nil
+	_, exists := objects[path]
+
+	dbg("Adapter %s exists ? %f", exists)
 	return exists, nil
 }
 

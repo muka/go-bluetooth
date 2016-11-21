@@ -15,8 +15,16 @@ import (
 
 var dbgDevice = debug.Debug("bluez:api:Device")
 
+var deviceRegistry = make(map[string]*Device)
+
 // NewDevice creates a new Device
 func NewDevice(path string) *Device {
+
+	if _, ok := deviceRegistry[path]; ok {
+		dbgDevice("Reusing cache instance %s", path)
+		return deviceRegistry[path]
+	}
+
 	d := new(Device)
 	d.Path = path
 	d.client = profile.NewDevice1(path)
@@ -24,9 +32,27 @@ func NewDevice(path string) *Device {
 	d.client.GetProperties()
 	d.Properties = d.client.Properties
 
+	deviceRegistry[path] = d
+
 	// d.watchProperties()
 
 	return d
+}
+
+//ClearDevice free a device struct
+func ClearDevice(d *Device) {
+
+	d.Disconnect()
+	d.unwatchProperties()
+	c, err := d.GetClient()
+	if err == nil {
+		c.Close()
+	}
+
+	if _, ok := deviceRegistry[d.Path]; ok {
+		delete(deviceRegistry, d.Path)
+	}
+
 }
 
 // ParseDevice parse a Device from a ObjectManager map

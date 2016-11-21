@@ -77,3 +77,11 @@ type GattDescriptorEvent struct {
 	Properties *profile.GattDescriptor1Properties
 	Status     EventStatus
 }
+
+// DataEvent triggered when a new data value is available
+type DataEvent struct {
+	Device *Device
+	Sensor string
+	Value  interface{}
+	Unit   string
+}
