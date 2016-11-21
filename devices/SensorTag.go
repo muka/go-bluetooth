@@ -261,54 +261,63 @@ func (s *TemperatureSensor) StartNotify() error {
 		return err
 	}
 
-	// notifications, err := s.data.Register()
-	_, err = s.data.Register()
+	notifications, err := s.data.Register()
+	// _, err = s.data.Register()
 	if err != nil {
 		return err
 	}
 
-	// go func() {
-	// 	for event := range notifications {
-	//
-	// 		if event == nil {
-	// 			return
-	// 		}
-	//
-	// 		dbgtag("Got update %v", event)
-	//
-	// 		switch event.Body[0].(type) {
-	// 		case dbus.ObjectPath:
-	// 			dbgtag("Received body type does not match: [0] %v -> [1] %v", event.Body[0], event.Body[1])
-	// 			continue
-	// 		case string:
-	// 			// dbgtag("body type match")
-	// 		}
-	//
-	// 		if event.Body[0] != bluez.GattCharacteristic1Interface {
-	// 			// dbgtag("Skip interface %s", event.Body[0])
-	// 			continue
-	// 		}
-	//
-	// 		props := event.Body[1].(map[string]dbus.Variant)
-	//
-	// 		if _, ok := props["Value"]; !ok {
-	// 			// dbgtag("Cannot read Value property %v", props)
-	// 			continue
-	// 		}
-	//
-	// 		b := props["Value"].Value().([]byte)
-	//
-	// 		dbgtag("Read data: %v", b)
-	//
-	// 		amb := binary.LittleEndian.Uint16(b[2:])
-	// 		ambientValue := calcTmpLocal(uint16(amb))
-	//
-	// 		// die := binary.LittleEndian.Uint16(b[0:2])
-	// 		// dieValue := calcTmpTarget(uint16(die))
-	//
-	// 		fn(ambientValue)
-	// 	}
-	// }()
+	go func() {
+		for event := range notifications {
+
+			if event == nil {
+				return
+			}
+
+			dbgtag("Got update %v", event)
+
+			switch event.Body[0].(type) {
+			case dbus.ObjectPath:
+				dbgtag("Received body type does not match: [0] %v -> [1] %v", event.Body[0], event.Body[1])
+				continue
+			case string:
+				// dbgtag("body type match")
+			}
+
+			if event.Body[0] != bluez.GattCharacteristic1Interface {
+				// dbgtag("Skip interface %s", event.Body[0])
+				continue
+			}
+
+			props := event.Body[1].(map[string]dbus.Variant)
+
+			if _, ok := props["Value"]; !ok {
+				// dbgtag("Cannot read Value property %v", props)
+				continue
+			}
+
+			b := props["Value"].Value().([]byte)
+
+			dbgtag("Read data: %v", b)
+
+			amb := binary.LittleEndian.Uint16(b[2:])
+			ambientValue := calcTmpLocal(uint16(amb))
+
+			// die := binary.LittleEndian.Uint16(b[0:2])
+			// dieValue := calcTmpTarget(uint16(die))
+
+			dbgtag("Got data %v", ambientValue)
+
+			dataEvent := api.DataEvent{
+				Device: s.tag.Device,
+				Sensor: "temperature",
+				Value:  ambientValue,
+				Unit:   "C",
+			}
+			s.tag.Device.Emit("data", dataEvent)
+
+		}
+	}()
 
 	return s.data.StartNotify()
 }
@@ -346,19 +355,8 @@ func NewSensorTag(d *api.Device) (*SensorTag, error) {
 	d.On("changed", func(ev api.Event) {
 
 		changed := ev.GetData().(api.PropertyChangedEvent)
-		dbgtag("Property change %v", changed)
+		// dbgtag("Property change %v", changed)
 
-		if changed.Field == "Value" && changed.Iface == bluez.GattCharacteristic1Interface {
-
-			b := changed.Value.([]byte)
-			// die := binary.LittleEndian.Uint16(b[0:2])
-			amb := binary.LittleEndian.Uint16(b[2:])
-			// dieValue := calcTmpTarget(uint16(die))
-			ambientValue := calcTmpLocal(uint16(amb))
-
-			dataEvent := api.DataEvent{d, "temperature", ambientValue, "C"}
-			d.Emit("data", dataEvent)
-		}
 		if changed.Field == "Connected" {
 			conn := changed.Value.(bool)
 			if !conn {
@@ -369,6 +367,7 @@ func NewSensorTag(d *api.Device) (*SensorTag, error) {
 				}
 			}
 		}
+
 	})
 
 	connect(d)
