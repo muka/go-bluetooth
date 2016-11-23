@@ -195,25 +195,23 @@ func (d *Device) GetProperty(name string) (data interface{}, err error) {
 }
 
 //On register callback for event
-func (d *Device) On(name string, fn Callback) {
+func (d *Device) On(name string, fn *emitter.Callback) {
 	switch name {
 	case "changed":
 		d.watchProperties()
 		break
 	}
-	emitter.On(d.Path+"."+name, func(ev emitter.Event) {
-		fn(ev)
-	})
+	emitter.On(d.Path+"."+name, fn)
 }
 
 //Off unregister callback for event
-func (d *Device) Off(name string) {
+func (d *Device) Off(name string, cb *emitter.Callback) {
 	switch name {
 	case "changed":
 		d.unwatchProperties()
 		break
 	}
-	emitter.Off(d.Path + "." + name)
+	emitter.Off(d.Path+"."+name, cb)
 }
 
 //Emit an event

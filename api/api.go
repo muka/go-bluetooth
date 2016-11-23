@@ -162,13 +162,11 @@ func StopDiscoveryOn(adapterID string) error {
 }
 
 //On add an event handler
-func On(name string, fn Callback) {
-	emitter.On(name, func(ev emitter.Event) {
-		fn(ev)
-	})
+func On(name string, fn *emitter.Callback) {
+	emitter.On(name, fn)
 }
 
 //Off remove an event handler
-func Off(name string) {
-	emitter.Off(name)
+func Off(name string, fn *emitter.Callback) {
+	emitter.Off(name, fn)
 }

@@ -30,7 +30,7 @@ func (e BaseEvent) GetData() interface{} {
 }
 
 var pipe chan Event
-var events = make(map[string][]Callback, 0)
+var events = make(map[string][]*Callback, 0)
 
 func loop() {
 	dbg("loop: Started")
@@ -52,7 +52,8 @@ func loop() {
 			} else {
 				dbg("loop: %d callback(s)", size)
 				for i := 0; i < size; i++ {
-					go events[ev.GetName()][i](ev)
+					cb := *events[ev.GetName()][i]
+					go cb(ev)
 				}
 			}
 		}
@@ -68,8 +69,14 @@ func getPipe() {
 	}
 }
 
+// NewCallback creates a new Callback to be passed to the emitter
+func NewCallback(fn func(ev Event)) *Callback {
+	cb := Callback(fn)
+	return &cb
+}
+
 //On registers to an event
-func On(event string, callback Callback) {
+func On(event string, callback *Callback) {
 
 	if event == "" {
 		panic("Cannot use an empty string as event name")
@@ -77,7 +84,7 @@ func On(event string, callback Callback) {
 
 	if events[event] == nil {
 		getPipe()
-		events[event] = make([]Callback, 0)
+		events[event] = make([]*Callback, 0)
 	}
 
 	events[event] = append(events[event], callback)
@@ -94,19 +101,29 @@ func Emit(name string, data interface{}) {
 }
 
 //Off Removes all callbacks from an event
-func Off(name string) {
+func Off(name string, callback *Callback) {
 
 	dbg("Off %s", name)
+
 	if name == "*" {
 		for name := range events {
 			if name != "*" {
-				Off(name)
+				Off(name, nil)
 			}
 		}
 	}
 
-	if events[name] != nil {
+	if callback == nil {
 		delete(events, name)
+	}
+
+	if _, ok := events[name]; ok {
+		for i, cb := range events[name] {
+			// compare pointers to see if the exactly same function
+			if cb == callback {
+				events[name] = append(events[name][:i], events[name][i+1:]...)
+			}
+		}
 	}
 
 	if len(events) == 0 {

@@ -112,7 +112,7 @@ func discoverDevices(adapterID string) {
 	}
 
 	logger.Debugf("Started discovery")
-	api.On("discovery", func(ev api.Event) {
+	api.On("discovery", func(ev emitter.Event) {
 
 		discoveryEvent := ev.GetData().(api.DiscoveredDeviceEvent)
 		dev := discoveryEvent.Device
@@ -167,7 +167,7 @@ func listProfiles(dev *api.Device) {
 
 	// var LOCK = false
 
-	dev.On("char", func(ev api.Event) {
+	dev.On("char", func(ev emitter.Event) {
 
 		charEvent := ev.GetData().(api.GattCharacteristicEvent)
 		charProps := charEvent.Properties

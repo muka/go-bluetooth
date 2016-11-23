@@ -1,15 +1,6 @@
 package api
 
-import (
-	"github.com/muka/go-bluetooth/bluez/profile"
-	"github.com/muka/go-bluetooth/emitter"
-)
-
-//Event triggered
-type Event emitter.Event
-
-//Callback to be called on event
-type Callback func(ev Event)
+import "github.com/muka/go-bluetooth/bluez/profile"
 
 //EventStatus indicate the status related to an event
 type EventStatus int

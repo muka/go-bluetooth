@@ -10,6 +10,7 @@ import (
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
+	"github.com/muka/go-bluetooth/emitter"
 	"github.com/op/go-logging"
 	"github.com/tj/go-debug"
 )
@@ -274,11 +275,11 @@ func (s *TemperatureSensor) StartNotify() error {
 				return
 			}
 
-			dbgtag("Got update %v", event)
+			// dbgtag("Got update %v", event)
 
 			switch event.Body[0].(type) {
 			case dbus.ObjectPath:
-				dbgtag("Received body type does not match: [0] %v -> [1] %v", event.Body[0], event.Body[1])
+				// dbgtag("Received body type does not match: [0] %v -> [1] %v", event.Body[0], event.Body[1])
 				continue
 			case string:
 				// dbgtag("body type match")
@@ -352,7 +353,7 @@ func NewSensorTag(d *api.Device) (*SensorTag, error) {
 		return nil
 	}
 
-	d.On("changed", func(ev api.Event) {
+	d.On("changed", emitter.NewCallback(func(ev emitter.Event) {
 
 		changed := ev.GetData().(api.PropertyChangedEvent)
 		// dbgtag("Property change %v", changed)
@@ -368,7 +369,7 @@ func NewSensorTag(d *api.Device) (*SensorTag, error) {
 			}
 		}
 
-	})
+	}))
 
 	connect(d)
 
