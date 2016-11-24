@@ -34,6 +34,7 @@ Tested with
 - golang >= `v1.6.2`
 - bluez bluetooth `v5.43` (**Note** this version is the minimum supported one!)
 - ubuntu 16.10 kernel `4.8.0-27-generic`
+- raspbian and hypirot (debian 8) armv7 `4.4.x`  
 
 Use `glide install` to install dependencies
 
