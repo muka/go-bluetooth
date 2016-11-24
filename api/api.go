@@ -18,7 +18,6 @@ var dbg = debug.Debug("bluez:api")
 
 //Exit performs a clean exit
 func Exit() {
-	GetManager().Unregister()
 	GetManager().Close()
 	dbg("Bye.")
 }
@@ -30,10 +29,10 @@ func GetDeviceByAddress(address string) (*Device, error) {
 		return nil, err
 	}
 	for _, path := range list {
-		dbg("Check device %s", path)
+		// dbg("Check device %s", path)
 		dev := NewDevice(string(path))
 		if dev.Properties.Address == address {
-			dbg("Address found")
+			// dbg("Address found")
 			return dev, nil
 		}
 	}
@@ -48,14 +47,11 @@ func GetDevices() ([]Device, error) {
 		return nil, err
 	}
 
-	objects, err := GetManager().GetManagedObjects()
-	if err != nil {
-		return nil, err
-	}
+	objects := GetManager().GetObjects()
 
 	var devices = make([]Device, 0)
 	for _, path := range list {
-		props := objects[path][bluez.Device1Interface]
+		props := (*objects)[path][bluez.Device1Interface]
 		dev, err := ParseDevice(path, props)
 		if err != nil {
 			return nil, err
@@ -69,13 +65,9 @@ func GetDevices() ([]Device, error) {
 //GetDeviceList returns a list of discovered Devices paths
 func GetDeviceList() ([]dbus.ObjectPath, error) {
 
-	objects, err := GetManager().GetManagedObjects()
-	if err != nil {
-		return nil, err
-	}
-
+	objects := GetManager().GetObjects()
 	var devices []dbus.ObjectPath
-	for path, ifaces := range objects {
+	for path, ifaces := range *objects {
 		for iface := range ifaces {
 			switch iface {
 			case bluez.Device1Interface:
@@ -92,16 +84,12 @@ func GetDeviceList() ([]dbus.ObjectPath, error) {
 //AdapterExists checks if an adapter is available
 func AdapterExists(adapterID string) (bool, error) {
 
-	objects, err := GetManager().GetManagedObjects()
-
-	if err != nil {
-		return false, err
-	}
+	objects := GetManager().GetObjects()
 
 	path := dbus.ObjectPath("/org/bluez/" + adapterID)
-	_, exists := objects[path]
+	_, exists := (*objects)[path]
 
-	dbg("Adapter %s exists ? %f", exists)
+	dbg("Adapter %s exists ? %t", adapterID, exists)
 	return exists, nil
 }
 
@@ -139,12 +127,6 @@ func StartDiscoveryOn(adapterID string) error {
 
 	err = adapter.StartDiscovery()
 
-	if err != nil {
-		return err
-	}
-
-	// register for manager signals, return chan *dbus.Signal
-	err = WatchManagerChanges()
 	if err != nil {
 		return err
 	}

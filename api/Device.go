@@ -21,7 +21,7 @@ var deviceRegistry = make(map[string]*Device)
 func NewDevice(path string) *Device {
 
 	if _, ok := deviceRegistry[path]; ok {
-		dbgDevice("Reusing cache instance %s", path)
+		// dbgDevice("Reusing cache instance %s", path)
 		return deviceRegistry[path]
 	}
 
@@ -31,6 +31,7 @@ func NewDevice(path string) *Device {
 
 	d.client.GetProperties()
 	d.Properties = d.client.Properties
+	d.chars = make(map[dbus.ObjectPath]*profile.GattCharacteristic1, 0)
 
 	deviceRegistry[path] = d
 
@@ -145,6 +146,7 @@ type Device struct {
 	Path       string
 	Properties *profile.Device1Properties
 	client     *profile.Device1
+	chars      map[dbus.ObjectPath]*profile.GattCharacteristic1
 }
 
 func (d *Device) unwatchProperties() error {
@@ -234,41 +236,54 @@ func (d *Device) GetCharByUUID(uuid string) (*profile.GattCharacteristic1, error
 
 	uuid = strings.ToUpper(uuid)
 
-	list, err := d.GetCharsList()
-	if err != nil {
-		return nil, err
-	}
+	list := d.GetCharsList()
 
-	dbgDevice("Found %d chars", len(list))
+	dbgDevice("Find by uuid, char list %d, cached list %d", len(list), len(d.chars))
+
+	var deviceFound *profile.GattCharacteristic1
 
 	for _, path := range list {
 
-		// dbgDevice("Checking path %s", path)
+		// use cache
+		_, ok := d.chars[path]
+		if !ok {
+			d.chars[path] = profile.NewGattCharacteristic1(string(path))
+		}
 
-		char := profile.NewGattCharacteristic1(string(path))
-		props := char.Properties
+		props := d.chars[path].Properties
 		cuuid := strings.ToUpper(props.UUID)
-		// dbgDevice("Current char uuid %s", cuuid)
+
 		if cuuid == uuid {
 			dbgDevice("Found char %s", uuid)
-			return char, nil
+			deviceFound = d.chars[path]
 		}
 	}
 
-	// dbgDevice("Cannot find %s ", uuid)
-	return nil, nil
+	if deviceFound == nil {
+		dbgDevice("Characteristic not Found: %s ", uuid)
+	}
+
+	return deviceFound, nil
 }
 
 //GetCharsList return a device characteristics
-func (d *Device) GetCharsList() ([]dbus.ObjectPath, error) {
-
-	list, err := GetManager().GetManagedObjects()
-	if err != nil {
-		return nil, err
-	}
+func (d *Device) GetCharsList() []dbus.ObjectPath {
 
 	var chars []dbus.ObjectPath
-	for objpath := range list {
+
+	if len(d.chars) != 0 {
+
+		for objpath := range d.chars {
+			chars = append(chars, objpath)
+		}
+
+		dbgDevice("Cached %d chars", len(chars))
+		return chars
+	}
+
+	dbgDevice("Scanning chars by ObjectPath")
+	list := GetManager().GetObjects()
+	for objpath := range *list {
 		path := string(objpath)
 		if !strings.HasPrefix(path, d.Path) {
 			continue
@@ -280,11 +295,12 @@ func (d *Device) GetCharsList() ([]dbus.ObjectPath, error) {
 		if strings.Index(path[charPos:], "desc") != -1 {
 			continue
 		}
-		dbgDevice("Added char %v", objpath)
+
 		chars = append(chars, objpath)
 	}
 
-	return chars, nil
+	dbgDevice("Found %d chars", len(chars))
+	return chars
 }
 
 //IsConnected check if connected to the device

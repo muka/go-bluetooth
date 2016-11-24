@@ -1,16 +1,14 @@
 package profile
 
 import (
-	"log"
-
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
 )
 
 // NewObjectManager create a new Device1 client
 func NewObjectManager() *ObjectManager {
-	a := new(ObjectManager)
-	a.client = bluez.NewClient(
+	om := new(ObjectManager)
+	om.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
 			Iface: "org.freedesktop.DBus.ObjectManager",
@@ -18,13 +16,13 @@ func NewObjectManager() *ObjectManager {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	return a
+
+	return om
 }
 
 // ObjectManager manges the list of all available objects
 type ObjectManager struct {
 	client *bluez.Client
-	logger *log.Logger
 }
 
 // Close the connection
@@ -34,10 +32,9 @@ func (o *ObjectManager) Close() {
 
 // GetManagedObjects return a list of all available objects registered
 func (o *ObjectManager) GetManagedObjects() (map[dbus.ObjectPath]map[string]map[string]dbus.Variant, error) {
-	objects := make(map[dbus.ObjectPath]map[string]map[string]dbus.Variant)
-	err := o.client.Call("GetManagedObjects", 0).Store(&objects)
-	// dbg("Retrieved managed objects: %v, %v", objects, err)
-	return objects, err
+	var objs map[dbus.ObjectPath]map[string]map[string]dbus.Variant
+	err := o.client.Call("GetManagedObjects", 0).Store(&objs)
+	return objs, err
 }
 
 //Register watch for signal events

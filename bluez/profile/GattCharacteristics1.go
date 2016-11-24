@@ -7,8 +7,8 @@ import (
 
 // NewGattCharacteristic1 create a new GattCharacteristic1 client
 func NewGattCharacteristic1(path string) *GattCharacteristic1 {
-	a := new(GattCharacteristic1)
-	a.client = bluez.NewClient(
+	g := new(GattCharacteristic1)
+	g.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
 			Iface: bluez.GattCharacteristic1Interface,
@@ -16,9 +16,15 @@ func NewGattCharacteristic1(path string) *GattCharacteristic1 {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	a.Properties = new(GattCharacteristic1Properties)
-	a.GetProperties()
-	return a
+
+	g.Properties = new(GattCharacteristic1Properties)
+
+	_, err := g.GetProperties()
+	if err != nil {
+		panic(err)
+	}
+
+	return g
 }
 
 // GattCharacteristic1 client

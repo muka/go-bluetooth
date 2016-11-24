@@ -16,7 +16,7 @@ import (
 )
 
 var logger = logging.MustGetLogger("main")
-var dbgtag = debug.Debug("bluez:sensortag")
+var dbgTag = debug.Debug("bluez:sensortag")
 
 var notifications chan dbus.Signal
 
@@ -76,14 +76,42 @@ func newTemperatureSensor(tag *SensorTag) (TemperatureSensor, error) {
 
 	dev := tag.Device
 
+	TemperatureConfigUUID := getUUID("TemperatureConfig")
+	TemperatureDataUUID := getUUID("TemperatureData")
+	TemperaturePeriodUUID := getUUID("TemperaturePeriod")
+
+	var charCallback = emitter.NewCallback(func(ev emitter.Event) {
+
+		charEvent := ev.GetData().(api.GattCharacteristicEvent)
+
+		dbgTag("Got char event %v", charEvent)
+
+		if charEvent.Properties.UUID == TemperatureConfigUUID {
+			dbgTag("Found TemperatureConfig UUID %s", TemperatureConfigUUID)
+
+		}
+		if charEvent.Properties.UUID == TemperatureDataUUID {
+			dbgTag("Found TemperatureData UUID %s", TemperatureDataUUID)
+
+		}
+		if charEvent.Properties.UUID == TemperaturePeriodUUID {
+			dbgTag("Found TemperaturePeriod UUID %s", TemperaturePeriodUUID)
+
+		}
+
+	})
+
+	dev.On("char", charCallback)
+
 	retry := 3
 	tries := 0
 	var loadChars func() (TemperatureSensor, error)
 
 	loadChars = func() (TemperatureSensor, error) {
 
-		dbgtag("Load temp cfg")
+		dbgTag("Load temp cfg")
 		cfg, err := dev.GetCharByUUID(getUUID("TemperatureConfig"))
+
 		if err != nil {
 			return TemperatureSensor{}, err
 		}
@@ -91,26 +119,32 @@ func newTemperatureSensor(tag *SensorTag) (TemperatureSensor, error) {
 		if cfg == nil {
 
 			if tries == retry {
-				return TemperatureSensor{}, errors.New("Cannot find cfg characteristic")
+				return TemperatureSensor{}, errors.New("Cannot find TemperatureConfig characteristic " + getUUID("TemperatureConfig"))
 			}
 
 			tries++
 			time.Sleep(time.Second * time.Duration(5*tries))
-			dbgtag("Char not found, try to reload")
+			dbgTag("Char not found, try to reload")
 
 			return loadChars()
 		}
 
-		dbgtag("Load temp data")
+		dbgTag("Load temp data")
 		data, err := dev.GetCharByUUID(getUUID("TemperatureData"))
 		if err != nil {
 			return TemperatureSensor{}, err
 		}
+		if data == nil {
+			return TemperatureSensor{}, errors.New("Cannot find TemperatureData characteristic " + getUUID("TemperatureData"))
+		}
 
-		dbgtag("Load temp period")
+		dbgTag("Load temp period")
 		period, err := dev.GetCharByUUID(getUUID("TemperaturePeriod"))
 		if err != nil {
 			return TemperatureSensor{}, err
+		}
+		if period == nil {
+			return TemperatureSensor{}, errors.New("Cannot find TemperaturePeriod characteristic " + getUUID("TemperaturePeriod"))
 		}
 
 		return TemperatureSensor{tag, cfg, data, period}, err
@@ -226,7 +260,7 @@ var calcTmpLocal = func(raw uint16) float64 {
 //Read value from the sensor
 func (s *TemperatureSensor) Read() (float64, error) {
 
-	dbgtag("Reading temperature sensor")
+	dbgTag("Reading temperature sensor")
 
 	err := s.Enable()
 	if err != nil {
@@ -236,7 +270,7 @@ func (s *TemperatureSensor) Read() (float64, error) {
 	options := make(map[string]dbus.Variant)
 	b, err := s.data.ReadValue(options)
 
-	dbgtag("Read data: %v", b)
+	dbgTag("Read data: %v", b)
 
 	if err != nil {
 		return 0, err
@@ -255,7 +289,7 @@ func (s *TemperatureSensor) Read() (float64, error) {
 // func (s *TemperatureSensor) StartNotify(fn func(temperature float64)) error {
 func (s *TemperatureSensor) StartNotify() error {
 
-	dbgtag("Enabling notifications")
+	dbgTag("Enabling notifications")
 
 	err := s.Enable()
 	if err != nil {
@@ -275,31 +309,31 @@ func (s *TemperatureSensor) StartNotify() error {
 				return
 			}
 
-			// dbgtag("Got update %v", event)
+			// dbgTag("Got update %v", event)
 
 			switch event.Body[0].(type) {
 			case dbus.ObjectPath:
-				// dbgtag("Received body type does not match: [0] %v -> [1] %v", event.Body[0], event.Body[1])
+				// dbgTag("Received body type does not match: [0] %v -> [1] %v", event.Body[0], event.Body[1])
 				continue
 			case string:
-				// dbgtag("body type match")
+				// dbgTag("body type match")
 			}
 
 			if event.Body[0] != bluez.GattCharacteristic1Interface {
-				// dbgtag("Skip interface %s", event.Body[0])
+				// dbgTag("Skip interface %s", event.Body[0])
 				continue
 			}
 
 			props := event.Body[1].(map[string]dbus.Variant)
 
 			if _, ok := props["Value"]; !ok {
-				// dbgtag("Cannot read Value property %v", props)
+				// dbgTag("Cannot read Value property %v", props)
 				continue
 			}
 
 			b := props["Value"].Value().([]byte)
 
-			dbgtag("Read data: %v", b)
+			dbgTag("Read data: %v", b)
 
 			amb := binary.LittleEndian.Uint16(b[2:])
 			ambientValue := calcTmpLocal(uint16(amb))
@@ -307,7 +341,7 @@ func (s *TemperatureSensor) StartNotify() error {
 			// die := binary.LittleEndian.Uint16(b[0:2])
 			// dieValue := calcTmpTarget(uint16(die))
 
-			dbgtag("Got data %v", ambientValue)
+			dbgTag("Got data %v", ambientValue)
 
 			dataEvent := api.DataEvent{
 				Device: s.tag.Device,
@@ -326,7 +360,7 @@ func (s *TemperatureSensor) StartNotify() error {
 //StopNotify disable notifications
 func (s *TemperatureSensor) StopNotify() error {
 
-	dbgtag("Disabling notifications")
+	dbgTag("Disabling notifications")
 
 	err := s.Enable()
 	if err != nil {
@@ -356,12 +390,12 @@ func NewSensorTag(d *api.Device) (*SensorTag, error) {
 	d.On("changed", emitter.NewCallback(func(ev emitter.Event) {
 
 		changed := ev.GetData().(api.PropertyChangedEvent)
-		// dbgtag("Property change %v", changed)
+		// dbgTag("Property change %v", changed)
 
 		if changed.Field == "Connected" {
 			conn := changed.Value.(bool)
 			if !conn {
-				dbgtag("Reconnecting to device %s", d.Properties.Address)
+				dbgTag("Reconnecting to device %s", d.Properties.Address)
 				err := connect(d)
 				if err != nil {
 					logger.Warningf("Reconnection failed! %s", err)

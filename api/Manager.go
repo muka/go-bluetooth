@@ -11,92 +11,120 @@ import (
 	"github.com/tj/go-debug"
 )
 
-var managerDbg = debug.Debug("bluez:api:manger-watch")
-
-var manager *profile.ObjectManager
-var watchChangesEnabled = false
+var dbgManager = debug.Debug("bluez:api:Manager")
+var manager *Manager
 
 //GetManager return the object manager reference
-func GetManager() *profile.ObjectManager {
+func GetManager() *Manager {
 	if manager == nil {
-		manager = profile.NewObjectManager()
-		WatchManagerChanges()
+		manager = NewManager()
 	}
 	return manager
 }
 
-// UnWatchManagerChanges regitster for signals from the ObjectManager
-func UnWatchManagerChanges() error {
-	return GetManager().Unregister()
+// NewManager creates a new manager instance
+func NewManager() *Manager {
+	m := new(Manager)
+	m.objectManager = profile.NewObjectManager()
+	m.objects = make(map[dbus.ObjectPath]map[string]map[string]dbus.Variant)
+
+	// watch for signaling from ObjectManager
+	m.watchChanges()
+
+	// Load initial object cache and emit events
+	err := m.LoadObjects()
+	if err != nil {
+		panic(err)
+	}
+
+	dbgManager("Manager initialized")
+	return m
 }
 
-// WatchManagerChanges regitster for signals from the ObjectManager
-func WatchManagerChanges() error {
+// Manager track changes in the bluez dbus tree reflecting protocol updates
+type Manager struct {
+	objectManager       *profile.ObjectManager
+	watchChangesEnabled bool
+	objects             map[dbus.ObjectPath]map[string]map[string]dbus.Variant
+	channel             chan *dbus.Signal
+}
 
-	if watchChangesEnabled {
+// unwatchChanges register for signals from the ObjectManager
+func (m *Manager) unwatchChanges() error {
+	if m.channel != nil {
+		close(m.channel)
+	}
+	m.watchChangesEnabled = false
+	return m.objectManager.Unregister()
+}
+
+// watchChanges regitster for signals from the ObjectManager
+func (m *Manager) watchChanges() error {
+
+	if m.watchChangesEnabled {
 		return nil
 	}
 
-	managerDbg("Watching manager changes")
-
-	m := GetManager()
+	dbgManager("Watching manager changes")
 
 	if m == nil {
 		return nil
 	}
 
-	channel, err := m.Register()
+	channel, err := m.objectManager.Register()
 	if err != nil {
 		return err
 	}
+	m.channel = channel
 
 	// ensure is done once
-	watchChangesEnabled = true
+	m.watchChangesEnabled = true
 
 	go (func() {
-		managerDbg("waiting for updates")
+		dbgManager("waiting updates")
 		for v := range channel {
 
-			// if channel == nil {
-			// 	managerDbg("quitting manager listener")
-			// 	watchChangesEnabled = false
-			// 	break
-			// }
-			// v := <-channel
-
 			if v == nil {
-				managerDbg("nil value, abort")
-				watchChangesEnabled = false
+				dbgManager("nil value, abort")
+				m.watchChangesEnabled = false
 				return
 			}
 
-			managerDbg("update received %s from %s", v.Name, v.Sender)
+			dbgManager("update received %s from %s", v.Name, v.Sender)
 
 			switch v.Name {
 			case bluez.InterfacesAdded:
 				{
-					managerDbg("Added %s %s", v.Name, v.Path)
+					dbgManager("Added %s %s", v.Name, v.Path)
 
-					// dbg("\n+++Body %s\n", v.Body)
 					path := v.Body[0].(dbus.ObjectPath)
 					props := v.Body[1].(map[string]map[string]dbus.Variant)
 
-					managerDbg("Body %v", props)
-					loadManagedObject(path, props)
+					// keep cache up to date
+					m.objects[path] = props
+
+					dbgManager("Body %v", props)
+					emitChanges(path, props)
 				}
 			case bluez.InterfacesRemoved:
 				{
 
-					managerDbg("Removed %s %s", v.Name, v.Path)
+					dbgManager("Removed %s %s", v.Name, v.Path)
 
 					// dbg("\n+++Body %s\n", v.Body)
 					path := v.Body[0].(dbus.ObjectPath)
 					ifaces := v.Body[1].([]string)
+
+					// keep cache up to date
+					if _, ok := m.objects[path]; ok {
+						delete(m.objects, path)
+					}
+
 					for _, iF := range ifaces {
 						// device removed
 						if iF == bluez.Device1Interface {
 							// dbg("%s : %s", path, ifaces)
-							managerDbg("Removed device %s", path)
+							dbgManager("Removed device %s", path)
 							devInfo := DiscoveredDeviceEvent{string(path), DeviceRemoved, nil}
 							emitter.Emit("discovery", devInfo)
 						}
@@ -107,7 +135,7 @@ func WatchManagerChanges() error {
 							parts := strings.Split(strpath, "/")
 							name := parts[len(parts)-1:][0]
 
-							managerDbg("Removed adapter %s", name)
+							dbgManager("Removed adapter %s", name)
 							adapterInfo := AdapterEvent{name, strpath, DeviceRemoved}
 							emitter.Emit("adapter", adapterInfo)
 						}
@@ -119,7 +147,7 @@ func WatchManagerChanges() error {
 	return nil
 }
 
-func loadManagedObject(path dbus.ObjectPath, props map[string]map[string]dbus.Variant) {
+func emitChanges(path dbus.ObjectPath, props map[string]map[string]dbus.Variant) {
 
 	//Device1
 	if props[bluez.Device1Interface] != nil {
@@ -128,7 +156,7 @@ func loadManagedObject(path dbus.ObjectPath, props map[string]map[string]dbus.Va
 			logger.Fatalf("Failed to parse device: %v\n", err)
 			return
 		}
-		managerDbg("Added device %s", path)
+		dbgManager("Added device %s", path)
 		devInfo := DiscoveredDeviceEvent{string(path), DeviceAdded, dev}
 		emitter.Emit("discovery", devInfo)
 	}
@@ -139,7 +167,7 @@ func loadManagedObject(path dbus.ObjectPath, props map[string]map[string]dbus.Va
 		parts := strings.Split(strpath, "/")
 		name := parts[len(parts)-1:][0]
 
-		managerDbg("Added adapter %s", name)
+		dbgManager("Added adapter %s", name)
 		adapterInfo := AdapterEvent{name, strpath, DeviceAdded}
 		emitter.Emit("adapter", adapterInfo)
 	}
@@ -151,7 +179,7 @@ func loadManagedObject(path dbus.ObjectPath, props map[string]map[string]dbus.Va
 		parts := strings.Split(strpath, "/")
 		devicePath := strings.Join(parts[:len(parts)-1], "/")
 
-		managerDbg("Added GattService1 %s", strpath)
+		dbgManager("Added GattService1 %s", strpath)
 
 		srvcProps := new(profile.GattService1Properties)
 		util.MapToStruct(srvcProps, props[bluez.GattService1Interface])
@@ -169,7 +197,7 @@ func loadManagedObject(path dbus.ObjectPath, props map[string]map[string]dbus.Va
 		parts := strings.Split(strpath, "/")
 		devicePath := strings.Join(parts[:len(parts)-2], "/")
 
-		managerDbg("Added GattCharacteristic1 %s", strpath)
+		dbgManager("Added GattCharacteristic1 %s", strpath)
 
 		srvcProps := new(profile.GattCharacteristic1Properties)
 		util.MapToStruct(srvcProps, props[bluez.GattCharacteristic1Interface])
@@ -185,7 +213,7 @@ func loadManagedObject(path dbus.ObjectPath, props map[string]map[string]dbus.Va
 		parts := strings.Split(strpath, "/")
 		devicePath := strings.Join(parts[:len(parts)-3], "/")
 
-		managerDbg("Added GattDescriptor1 %s", strpath)
+		dbgManager("Added GattDescriptor1 %s", strpath)
 
 		srvcProps := new(profile.GattDescriptor1Properties)
 		util.MapToStruct(srvcProps, props[bluez.GattDescriptor1Interface])
@@ -198,18 +226,42 @@ func loadManagedObject(path dbus.ObjectPath, props map[string]map[string]dbus.Va
 
 }
 
-//RefreshManagerState emit local manager objects and interfaces
-func RefreshManagerState() error {
+//LoadObjects force reloading of cache objects list
+func (m *Manager) LoadObjects() error {
+	objs, err := m.objectManager.GetManagedObjects()
+	if err != nil {
+		return err
+	}
+	m.objects = objs
+	dbg("Loaded %d objects", len(m.objects))
+	return nil
+}
 
-	objs, err := GetManager().GetManagedObjects()
+//GetObjects return the cached list of objects from the ObjectManager
+func (m *Manager) GetObjects() *map[dbus.ObjectPath]map[string]map[string]dbus.Variant {
+	return &m.objects
+}
+
+//RefreshState emit local manager objects and interfaces
+func (m *Manager) RefreshState() error {
+
+	err := m.LoadObjects()
 	if err != nil {
 		return err
 	}
 
-	for path, ifaces := range objs {
-		managerDbg("Managed %s: %v", path, ifaces)
-		loadManagedObject(path, ifaces)
+	dbgManager("Refreshing object state")
+	objs := m.GetObjects()
+	for path, ifaces := range *objs {
+		emitChanges(path, ifaces)
 	}
 
 	return nil
+}
+
+//Close Close the Manager and free underlying resources
+func (m *Manager) Close() {
+	m.objectManager.Unregister()
+	m.objectManager.Close()
+	m.objectManager = nil
 }
