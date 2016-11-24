@@ -213,7 +213,13 @@ func (d *Device) Off(name string, cb *emitter.Callback) {
 		d.unwatchProperties()
 		break
 	}
-	emitter.Off(d.Path+"."+name, cb)
+
+	pattern := d.Path + "." + name
+	if name != "*" {
+		emitter.Off(pattern, cb)
+	} else {
+		emitter.RemoveListeners(pattern, nil)
+	}
 }
 
 //Emit an event

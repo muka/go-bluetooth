@@ -1,6 +1,12 @@
 package emitter
 
-import "github.com/tj/go-debug"
+import (
+	"regexp"
+	"strings"
+	"sync"
+
+	"github.com/tj/go-debug"
+)
 
 var dbg = debug.Debug("bluez:emitter")
 
@@ -31,6 +37,7 @@ func (e BaseEvent) GetData() interface{} {
 
 var pipe chan Event
 var events = make(map[string][]*Callback, 0)
+var mutex = &sync.Mutex{}
 
 func loop() {
 	dbg("loop: Started")
@@ -45,7 +52,8 @@ func loop() {
 		ev := <-pipe
 		dbg("loop: Trigger event `%s`", ev.GetName())
 
-		if events[ev.GetName()] != nil {
+		mutex.Lock()
+		if _, ok := events[ev.GetName()]; ok {
 			size := len(events[ev.GetName()])
 			if size == 0 {
 				dbg("loop: No callback(s)")
@@ -57,6 +65,7 @@ func loop() {
 				}
 			}
 		}
+		mutex.Unlock()
 		dbg("loop: done event trigger")
 	}
 }
@@ -82,12 +91,15 @@ func On(event string, callback *Callback) {
 		panic("Cannot use an empty string as event name")
 	}
 
-	if events[event] == nil {
+	mutex.Lock()
+
+	if _, ok := events[event]; !ok {
 		getPipe()
 		events[event] = make([]*Callback, 0)
 	}
 
 	events[event] = append(events[event], callback)
+	mutex.Unlock()
 	dbg("Added to `%s` event, len is %d", event, len(events[event]))
 }
 
@@ -98,6 +110,28 @@ func Emit(name string, data interface{}) {
 	ev := BaseEvent{name, data}
 	dbg("Send to pipe")
 	pipe <- ev
+}
+
+//MatchListeners return a list of matching event names
+// replacing * with any char and assuming a namespacing built with dots (.)
+// eg. device_name.uu-id-val
+func MatchListeners(path string) []string {
+	var foundMatches []string
+	reg := regexp.MustCompile("^" + strings.Replace(path, "*", ".*", -1) + "$")
+	for name := range events {
+		if reg.MatchString(name) {
+			foundMatches = append(foundMatches, name)
+		}
+	}
+	return foundMatches
+}
+
+//RemoveListeners drop a list of listeners by event name
+func RemoveListeners(pattern string, callback *Callback) {
+	paths := MatchListeners(pattern)
+	for _, name := range paths {
+		Off(name, callback)
+	}
 }
 
 //Off Removes all callbacks from an event
@@ -113,6 +147,8 @@ func Off(name string, callback *Callback) {
 		}
 	}
 
+	mutex.Lock()
+
 	if callback == nil {
 		delete(events, name)
 	}
@@ -121,10 +157,13 @@ func Off(name string, callback *Callback) {
 		for i, cb := range events[name] {
 			// compare pointers to see if the exactly same function
 			if cb == callback {
+				dbg("Drop callback for `%s`", name)
 				events[name] = append(events[name][:i], events[name][i+1:]...)
 			}
 		}
 	}
+
+	mutex.Unlock()
 
 	if len(events) == 0 {
 		close(pipe)

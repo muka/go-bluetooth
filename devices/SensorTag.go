@@ -386,7 +386,7 @@ func NewSensorTag(d *api.Device) (*SensorTag, error) {
 
 	err := connect(d)
 	if err != nil {
-		logger.Warning("Connection failed %s", err)
+		logger.Warning("SensorTag connection failed: %v", err)
 		return nil, err
 	}
 
