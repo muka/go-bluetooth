@@ -50,6 +50,11 @@ func loop() {
 
 		dbg("loop: Waiting for events")
 		ev := <-pipe
+		if ev == nil {
+			dbg("loop: nil event, quit")
+			return
+		}
+
 		dbg("loop: Trigger event `%s`", ev.GetName())
 
 		mutex.Lock()

@@ -203,6 +203,15 @@ func (s *TemperatureSensor) IsEnabled() (bool, error) {
 	return (enabled == 1), nil
 }
 
+//IsNotifying check if notyfing
+func (s *TemperatureSensor) IsNotifying() (bool, error) {
+	n, err := s.data.GetProperty("Notifying")
+	if err != nil {
+		return false, err
+	}
+	return n.(bool), nil
+}
+
 // Port from http://processors.wiki.ti.com/index.php/SensorTag_User_Guide#IR_Temperature_Sensor
 var calcTmpLocal = func(raw uint16) float64 {
 	return float64(raw) / 128.0
@@ -331,7 +340,14 @@ func (s *TemperatureSensor) StartNotify() error {
 		}
 	}()
 
-	return s.data.StartNotify()
+	n, err := s.IsNotifying()
+	if err != nil {
+		return err
+	}
+	if !n {
+		return s.data.StartNotify()
+	}
+	return nil
 }
 
 //StopNotify disable temperatureDataChannel
@@ -348,7 +364,14 @@ func (s *TemperatureSensor) StopNotify() error {
 		close(temperatureDataChannel)
 	}
 
-	return s.data.StopNotify()
+	n, err := s.IsNotifying()
+	if err != nil {
+		return err
+	}
+	if n {
+		return s.data.StopNotify()
+	}
+	return nil
 }
 
 // NewSensorTag creates a new sensortag instance
@@ -375,7 +398,6 @@ func NewSensorTag(d *api.Device) (*SensorTag, error) {
 				dbgTag("Device disconnected")
 
 				// TODO clean up properly
-
 				if temperatureDataChannel != nil {
 					close(temperatureDataChannel)
 				}

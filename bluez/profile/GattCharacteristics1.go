@@ -74,6 +74,15 @@ func (d *GattCharacteristic1) GetProperties() (*GattCharacteristic1Properties, e
 	return d.Properties, err
 }
 
+//GetProperty load a single property
+func (d *GattCharacteristic1) GetProperty(name string) (interface{}, error) {
+	val, err := d.client.GetProperty(name)
+	if err != nil {
+		return nil, err
+	}
+	return val.Value(), nil
+}
+
 //ReadValue read a value from a characteristic
 func (d *GattCharacteristic1) ReadValue(options map[string]dbus.Variant) ([]byte, error) {
 	var b []byte
