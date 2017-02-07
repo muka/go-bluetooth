@@ -5,20 +5,20 @@ import (
 	"github.com/tj/go-debug"
 )
 
-var dbg = debug.Debug("bluez:main")
-
 var adapterID = "hci0"
 
 func main() {
 
+	var dbg = debug.Debug("bluez:main")
+
 	hciconfig := linux.HCIConfig{}
-	res, err := hciconfig.Up(adapterID)
+	res, err := hciconfig.Up()
 	if err != nil {
 		panic(err)
 	}
 	dbg("Address %s, enabled %t", res.Address, res.Enabled)
 
-	res, err = hciconfig.Down(adapterID)
+	res, err = hciconfig.Down()
 	if err != nil {
 		panic(err)
 	}
