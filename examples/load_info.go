@@ -4,23 +4,40 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/bluez-client/api"
+	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/op/go-logging"
 )
 
-//LoadInfo show basic informations regardinf a device
-func LoadInfo(adapterID string, deviceID string) {
+//ShowInfoExample show informations for hardcoded MiBand2 on hci0
+func ShowInfoExample() {
+
+	// Load adapter and device info
+	adapterID := "hci0"
+	deviceID := "ED:4B:79:DC:D4:D4" // MI Band 2
+	LoadInfoExample(adapterID, deviceID)
+
+	devices, err := api.GetDevices()
+	if err != nil {
+		panic(err)
+	}
+	log.Info(devices)
+
+}
+
+//LoadInfoExample show basic informations regarding a device
+func LoadInfoExample(adapterID string, deviceID string) {
 
 	var log = logging.MustGetLogger(fmt.Sprintf("example:%s:%s", adapterID, deviceID))
 
-	adapter := bluez.NewAdapter1(adapterID)
+	adapter := profile.NewAdapter1(adapterID)
 
-	log.Println("Adapter info\n---")
-	log.Printf("Name: %s\n", adapter.Properties.Name)
-	log.Printf("Modalias: %s\n", adapter.Properties.Modalias)
-	log.Printf("Devices: %s\n", adapter.Properties.UUIDs)
+	log.Info("Adapter info\n---")
+	log.Infof("Name: %s\n", adapter.Properties.Name)
+	log.Infof("Modalias: %s\n", adapter.Properties.Modalias)
+	log.Infof("Devices: %s\n", adapter.Properties.UUIDs)
 
-	device := bluez.NewDevice1(
+	device := profile.NewDevice1(
 		fmt.Sprintf(
 			"/org/bluez/%s/dev_%s",
 			adapterID,
@@ -28,8 +45,8 @@ func LoadInfo(adapterID string, deviceID string) {
 		),
 	)
 
-	log.Println("Device info\n---")
-	log.Printf("Name: %s\n", device.Properties.Name)
-	log.Printf("Modalias: %s\n", device.Properties.Modalias)
+	log.Info("Device info\n---")
+	log.Infof("Name: %s\n", device.Properties.Name)
+	log.Infof("Modalias: %s\n", device.Properties.Modalias)
 
 }

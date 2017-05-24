@@ -1,7 +1,8 @@
 package examples
 
 import (
-	"github.com/muka/go-bluetooth/api"
+	"os"
+
 	"github.com/op/go-logging"
 )
 
@@ -9,15 +10,23 @@ var log = logging.MustGetLogger("examples")
 
 func main() {
 
-	// Load adapter and device info
-	adapterID := "hci0"
-	deviceID := "ED:4B:79:DC:D4:D4" // MI Band 2
-	LoadInfo(adapterID, deviceID)
+	switch os.Args[1] {
+	case "info":
+		ShowInfoExample()
+		break
 
-	devices, err := api.GetDevices()
-	if err != nil {
-		panic(err)
+	case "sensortag":
+		SensorTagTemperatureExample()
+		break
+
+	case "watch":
+		WatchChangesExample()
+		break
+
+	default:
+		log.Info("Sample code, may need configuration to work\n\nUsage: \n - info\n - sensortag\n - watch\n")
+		break
+
 	}
-	log.Println(devices)
 
 }

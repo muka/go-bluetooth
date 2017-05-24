@@ -1,10 +1,10 @@
-package main
+package examples
 
 import (
-	"log"
-
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/devices"
+	logging "github.com/op/go-logging"
+	debug "github.com/tj/go-debug"
 )
 
 var logger = logging.MustGetLogger("main")
@@ -13,7 +13,8 @@ var dbg = debug.Debug("bluez:main")
 var adapterID = "hci0"
 var tagAddress = "B0:B4:48:C9:4B:01"
 
-func main() {
+//SensorTagTemperatureExample example of reading temperature from a TI sensortag
+func SensorTagTemperatureExample() {
 
 	dev, err := api.GetDeviceByAddress(tagAddress)
 	if err != nil {
@@ -43,13 +44,13 @@ func main() {
 	// }
 
 	var notifyTemperature = func(fn func(temperature float64)) {
-		sensorTag.Temperature.StartNotify(fn)
+		sensorTag.Temperature.StartNotify()
 		select {}
 	}
 
 	// readTemperature()
 	notifyTemperature(func(t float64) {
-		log.Printf("Temperature update: %f", t)
+		logger.Infof("Temperature update: %f", t)
 	})
 
 }

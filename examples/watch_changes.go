@@ -1,4 +1,4 @@
-package main
+package examples
 
 import (
 	"strings"
@@ -6,14 +6,8 @@ import (
 
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/emitter"
-	"github.com/op/go-logging"
-	gd "github.com/tj/go-debug"
 )
 
-var logger = logging.MustGetLogger("main")
-var dbg = gd.Debug("bluez:main")
-
-var adapterID = "hci0"
 var dumpAddress = "B0:B4:48:C9:4B:01"
 
 var sensorTagUUIDs = map[string]string{
@@ -45,7 +39,8 @@ var sensorTagUUIDs = map[string]string{
 	"FFC2": "OADImageBlock",
 }
 
-func main() {
+//WatchChangesExample example events receival
+func WatchChangesExample() {
 	if !loadDevice() {
 		discoverDevice()
 	}
@@ -81,7 +76,7 @@ func waitAdapter() {
 			panic(err)
 		}
 		logger.Debug("Waiting for adapter hci0")
-		emitter.On("adapter", func(ev emitter.Event) {
+		emitter.On("adapter", emitter.NewCallback(func(ev emitter.Event) {
 			info := ev.GetData().(api.AdapterEvent)
 
 			if info.Status == api.DeviceAdded {
@@ -92,7 +87,7 @@ func waitAdapter() {
 			} else {
 				logger.Debugf("Adapter %s removed\n", info.Name)
 			}
-		})
+		}))
 	} else {
 		discoverDevices(adapterID)
 	}
@@ -112,7 +107,7 @@ func discoverDevices(adapterID string) {
 	}
 
 	logger.Debugf("Started discovery")
-	api.On("discovery", func(ev emitter.Event) {
+	api.On("discovery", emitter.NewCallback(func(ev emitter.Event) {
 
 		discoveryEvent := ev.GetData().(api.DiscoveredDeviceEvent)
 		dev := discoveryEvent.Device
@@ -123,7 +118,7 @@ func discoverDevices(adapterID string) {
 		}
 
 		filterDevice(dev)
-	})
+	}))
 
 }
 
@@ -167,7 +162,7 @@ func listProfiles(dev *api.Device) {
 
 	// var LOCK = false
 
-	dev.On("char", func(ev emitter.Event) {
+	dev.On("char", emitter.NewCallback(func(ev emitter.Event) {
 
 		charEvent := ev.GetData().(api.GattCharacteristicEvent)
 		charProps := charEvent.Properties
@@ -227,9 +222,8 @@ func listProfiles(dev *api.Device) {
 
 		}
 
-	})
+	}))
 
-	api.RefreshManagerState()
 }
 
 func connectProfiles(dev *api.Device) {
@@ -237,7 +231,7 @@ func connectProfiles(dev *api.Device) {
 	props := dev.Properties
 
 	logger.Debugf("Connecting device %s", props.Name)
-	err = dev.Connect()
+	err := dev.Connect()
 	if err != nil {
 		panic(err)
 	}
