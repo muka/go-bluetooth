@@ -31,12 +31,10 @@ Setup
 
 Tested with
 
-- golang >= `v1.6.2`
+- golang `1.8` (minimum `v1.6`)
 - bluez bluetooth `v5.43` (**Note** this version is the minimum supported one!)
 - ubuntu 16.10 kernel `4.8.0-27-generic`
 - raspbian and hypirot (debian 8) armv7 `4.4.x`  
-
-Use `glide install` to install dependencies
 
 See in `scripts/` how to upgrade bluez to 5.43
 
@@ -53,7 +51,7 @@ Todo
  - Add Device read / write
  - Add unit tests
  - Add Travis integration
- - Add and generate docs
+ - Add and generate docs with examples
 
 License
 ---
