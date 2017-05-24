@@ -8,7 +8,7 @@ import (
 var dbg = debug.Debug("dbus:test")
 
 // read sensor tag temperature
-func main() {
+func testrun() {
 
 	conn, err := dbus.SystemBus()
 	if err != nil {
