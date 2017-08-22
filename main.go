@@ -1,27 +1,30 @@
 package main
 
 import (
+	"log"
+
 	"github.com/muka/go-bluetooth/linux"
-	"github.com/tj/go-debug"
 )
 
 var adapterID = "hci0"
 
 func main() {
 
-	var dbg = debug.Debug("bluez:main")
+	log.Printf("Starting adapter %s", adapterID)
 
 	hciconfig := linux.HCIConfig{}
 	res, err := hciconfig.Up()
 	if err != nil {
-		panic(err)
+		log.Printf("Failed to start device %s: %s", adapterID, err.Error())
+		return
 	}
-	dbg("Address %s, enabled %t", res.Address, res.Enabled)
+	log.Printf("Address %s, enabled %t", res.Address, res.Enabled)
 
 	res, err = hciconfig.Down()
 	if err != nil {
-		panic(err)
+		log.Printf("Failed to stop device %s: %s", adapterID, err.Error())
+		return
 	}
-	dbg("Address %s, enabled %t", res.Address, res.Enabled)
+	log.Printf("Address %s, enabled %t", res.Address, res.Enabled)
 
 }

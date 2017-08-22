@@ -14,7 +14,7 @@ import (
 	"github.com/tj/go-debug"
 )
 
-var dbg = debug.Debug("bluez:rfkill")
+var dbg = debug.Debug("bluez:linux")
 
 var logger = logging.MustGetLogger("api")
 

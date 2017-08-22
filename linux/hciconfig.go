@@ -2,6 +2,7 @@ package linux
 
 import (
 	"bytes"
+	"errors"
 	"os/exec"
 	"strings"
 )
@@ -24,19 +25,23 @@ type HCIConfig struct {
 }
 
 //Status return status information for a hci device
-func (h *HCIConfig) Status() (HCIConfigResult, error) {
+func (h *HCIConfig) Status() (*HCIConfigResult, error) {
 
-	cfg := HCIConfigResult{}
+	cfg := &HCIConfigResult{}
 
 	cmd := exec.Command("hciconfig", h.adapterID)
-	var out bytes.Buffer
-	cmd.Stdout = &out
+	var outbuf, errbuf bytes.Buffer
+	cmd.Stdout = &outbuf
+	cmd.Stderr = &errbuf
 	err := cmd.Run()
 	if err != nil {
-		return HCIConfigResult{}, err
+		out := errbuf.String()
+		err = errors.New(string(out))
+		dbg("hciconfig %s status: %s", h.adapterID, err.Error())
+		return nil, err
 	}
 
-	s := strings.Replace(out.String()[6:], "\t", "", -1)
+	s := strings.Replace(outbuf.String()[6:], "\t", "", -1)
 	lines := strings.Split(s, "\n")
 	// var parts []string
 	for i, line := range lines {
@@ -70,21 +75,31 @@ func (h *HCIConfig) Status() (HCIConfigResult, error) {
 }
 
 // Up Turn on an HCI device
-func (h *HCIConfig) Up() (HCIConfigResult, error) {
+func (h *HCIConfig) Up() (*HCIConfigResult, error) {
+	var errbuf bytes.Buffer
 	cmd := exec.Command("hciconfig", h.adapterID, "up")
+	cmd.Stderr = &errbuf
 	err := cmd.Run()
 	if err != nil {
-		return HCIConfigResult{}, err
+		out := errbuf.String()
+		err = errors.New(string(out))
+		dbg("hciconfig %s up: %s", h.adapterID, err.Error())
+		return nil, err
 	}
 	return h.Status()
 }
 
 // Down Turn down an HCI device
-func (h *HCIConfig) Down() (HCIConfigResult, error) {
+func (h *HCIConfig) Down() (*HCIConfigResult, error) {
+	var errbuf bytes.Buffer
 	cmd := exec.Command("hciconfig", h.adapterID, "down")
+	cmd.Stderr = &errbuf
 	err := cmd.Run()
 	if err != nil {
-		return HCIConfigResult{}, err
+		out := errbuf.String()
+		err = errors.New(string(out))
+		dbg("hciconfig %s down: %s", h.adapterID, err.Error())
+		return nil, err
 	}
 	return h.Status()
 }
