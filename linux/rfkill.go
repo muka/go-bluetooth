@@ -14,7 +14,7 @@ import (
 	"github.com/tj/go-debug"
 )
 
-var dbg = debug.Debug("bluez:linux")
+var dbg = debug.Debug("bluetooth:linux")
 
 var logger = logging.MustGetLogger("api")
 

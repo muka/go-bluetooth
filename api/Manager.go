@@ -11,7 +11,7 @@ import (
 	"github.com/tj/go-debug"
 )
 
-var dbgManager = debug.Debug("bluez:api:Manager")
+var dbgManager = debug.Debug("bluetooth:api:Manager")
 var manager *Manager
 
 //GetManager return the object manager reference

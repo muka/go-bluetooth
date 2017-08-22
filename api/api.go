@@ -14,7 +14,7 @@ import (
 
 var logger = logging.MustGetLogger("api")
 
-var dbg = debug.Debug("bluez:api")
+var dbg = debug.Debug("bluetooth:api")
 
 //Exit performs a clean exit
 func Exit() {

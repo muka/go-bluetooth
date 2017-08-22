@@ -7,7 +7,12 @@ import (
 	"github.com/tj/go-debug"
 )
 
-var dbg = debug.Debug("bluez:dbus")
+var dbg = debug.Debug("bluetooth:bluez:dbus")
+
+//Properties dbus serializable struct
+type Properties interface {
+	ToMap() map[string]interface{}
+}
 
 //BusType a type of DBus connection
 type BusType int

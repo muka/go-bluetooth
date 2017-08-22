@@ -1,4 +1,4 @@
-package main
+package examples
 
 import (
 	"log"
@@ -8,7 +8,7 @@ import (
 
 var adapterID = "hci0"
 
-func main() {
+func HciUpDown() {
 
 	log.Printf("Starting adapter %s", adapterID)
 

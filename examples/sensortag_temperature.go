@@ -8,7 +8,7 @@ import (
 )
 
 var logger = logging.MustGetLogger("main")
-var dbg = debug.Debug("bluez:main")
+var dbg = debug.Debug("bluetooth:main")
 
 var adapterID = "hci0"
 var tagAddress = "B0:B4:48:C9:4B:01"

@@ -16,7 +16,7 @@ import (
 )
 
 var logger = logging.MustGetLogger("main")
-var dbgTag = debug.Debug("bluez:sensortag")
+var dbgTag = debug.Debug("bluetooth:sensortag")
 
 var temperatureDataChannel chan dbus.Signal
 
