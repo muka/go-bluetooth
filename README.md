@@ -17,7 +17,7 @@ The features implemented are
 - [x] Adapter on/off via `rfkill`
 - [x] Handle systemd `bluetooth.service` unit
 - [x] Expose `hciconfig` basic API
-- [] _WIP_ Expose bluetooth services via bluez DBus API
+- [ ] _WIP_ Expose bluetooth services via bluez DBus API
 
 ## Examples
 
