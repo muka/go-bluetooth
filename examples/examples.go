@@ -3,10 +3,8 @@ package examples
 import (
 	"os"
 
-	"github.com/op/go-logging"
+	log "github.com/Sirupsen/logrus"
 )
-
-var log = logging.MustGetLogger("examples")
 
 func main() {
 
@@ -23,8 +21,19 @@ func main() {
 		WatchChangesExample()
 		break
 
+	case "hci":
+		HciUpDownExample("hci0")
+		break
+
 	default:
-		log.Info("Sample code, may need configuration to work\n\nUsage: \n - info\n - sensortag\n - watch\n")
+		log.Info(`
+Sample code, may need configuration to work
+Usage:
+  - info
+  - sensortag
+  - watch
+  - hci
+`)
 		break
 
 	}

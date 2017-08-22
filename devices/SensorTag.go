@@ -6,16 +6,15 @@ import (
 	"errors"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/muka/go-bluetooth/emitter"
-	"github.com/op/go-logging"
 	"github.com/tj/go-debug"
 )
 
-var logger = logging.MustGetLogger("main")
 var dbgTag = debug.Debug("bluetooth:sensortag")
 
 var temperatureDataChannel chan dbus.Signal
@@ -408,7 +407,7 @@ func NewSensorTag(d *api.Device) (*SensorTag, error) {
 
 	err := connect(d)
 	if err != nil {
-		logger.Warning("SensorTag connection failed: %v", err)
+		log.Warning("SensorTag connection failed: %v", err)
 		return nil, err
 	}
 

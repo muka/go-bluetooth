@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/muka/bluez-client/api"
+	log "github.com/Sirupsen/logrus"
+	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez/profile"
-	"github.com/op/go-logging"
 )
 
 //ShowInfoExample show informations for hardcoded MiBand2 on hci0
@@ -27,8 +27,6 @@ func ShowInfoExample() {
 
 //LoadInfoExample show basic informations regarding a device
 func LoadInfoExample(adapterID string, deviceID string) {
-
-	var log = logging.MustGetLogger(fmt.Sprintf("example:%s:%s", adapterID, deviceID))
 
 	adapter := profile.NewAdapter1(adapterID)
 

@@ -1,7 +1,7 @@
+package linux
+
 // Code based on rfkill.go from skycoin/skycoin project
 // https://github.com/skycoin/skycoin/blob/master/src/aether/wifi/linux/rfkill.go
-
-package linux
 
 import (
 	"fmt"
@@ -10,13 +10,11 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/op/go-logging"
+	log "github.com/Sirupsen/logrus"
 	"github.com/tj/go-debug"
 )
 
 var dbg = debug.Debug("bluetooth:linux")
-
-var logger = logging.MustGetLogger("api")
 
 func limitText(text []byte) string {
 	t := strings.TrimSpace(string(text))
@@ -102,7 +100,7 @@ func (rfkill RFKill) SoftBlock(identifier string) error {
 	dbg("Command Start: %v", cmd.Args)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		logger.Errorf("Command Error: %v : %v", err, limitText(out))
+		log.Errorf("Command Error: %v : %v", err, limitText(out))
 		return err
 	}
 	dbg("Command Return: %v", limitText(out))
@@ -118,7 +116,7 @@ func (rfkill RFKill) SoftUnblock(identifier string) error {
 	dbg("Command Start: %v", cmd.Args)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
-		logger.Errorf("Command Error: %v : %v", err, limitText(out))
+		log.Errorf("Command Error: %v : %v", err, limitText(out))
 		return err
 	}
 	dbg("Command Return: %v", limitText(out))

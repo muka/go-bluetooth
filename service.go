@@ -1,8 +1,8 @@
 package main
 
 import (
+	log "github.com/Sirupsen/logrus"
 	"github.com/muka/go-bluetooth/service"
-	"github.com/prometheus/common/log"
 )
 
 func main() {

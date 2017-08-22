@@ -3,11 +3,10 @@ package examples
 import (
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/devices"
-	logging "github.com/op/go-logging"
+	"github.com/prometheus/common/log"
 	debug "github.com/tj/go-debug"
 )
 
-var logger = logging.MustGetLogger("main")
 var dbg = debug.Debug("bluetooth:main")
 
 var adapterID = "hci0"
@@ -50,7 +49,7 @@ func SensorTagTemperatureExample() {
 
 	// readTemperature()
 	notifyTemperature(func(t float64) {
-		logger.Infof("Temperature update: %f", t)
+		log.Infof("Temperature update: %f", t)
 	})
 
 }

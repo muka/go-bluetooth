@@ -3,7 +3,6 @@ package profile
 import (
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
-	"github.com/op/go-logging"
 )
 
 // NewDevice1 create a new Device1 client
@@ -17,7 +16,6 @@ func NewDevice1(path string) *Device1 {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	a.logger = logging.MustGetLogger(path)
 	a.Properties = new(Device1Properties)
 	a.GetProperties()
 	return a
@@ -26,7 +24,6 @@ func NewDevice1(path string) *Device1 {
 // Device1 client
 type Device1 struct {
 	client     *bluez.Client
-	logger     *logging.Logger
 	Properties *Device1Properties
 }
 

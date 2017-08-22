@@ -3,6 +3,7 @@ package api
 import (
 	"strings"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
@@ -153,7 +154,7 @@ func emitChanges(path dbus.ObjectPath, props map[string]map[string]dbus.Variant)
 	if props[bluez.Device1Interface] != nil {
 		dev, err := ParseDevice(path, props[bluez.Device1Interface])
 		if err != nil {
-			logger.Fatalf("Failed to parse device: %v\n", err)
+			log.Fatalf("Failed to parse device: %v\n", err)
 			return
 		}
 		dbgManager("Added device %s", path)
