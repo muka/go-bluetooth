@@ -4,13 +4,11 @@ Golang bluetooth client based on bluez DBus interfaces
 
 See here for reference https://git.kernel.org/cgit/bluetooth/bluez.git/tree/doc
 
-Status
----
+## Status
 
-The code is still unstable but mostly working. The API and code is of `alpha` quality and may change without notice
+The current API is unstable and may change in the future.
 
-Features
----
+The features implemented are
 
 - [x] Discovery
 - [x] Adapter support
@@ -19,41 +17,44 @@ Features
 - [x] Adapter on/off via `rfkill`
 - [x] Handle systemd `bluetooth.service` unit
 - [x] Expose `hciconfig` basic API
-- [ ] Expose bluetooth services via bluez DBus API
+- [~] _WIP_ Expose bluetooth services via bluez DBus API
 
-Usage
----
+## Examples
 
-Check in `main.go` or in `examples/` for an initial overview of the API
+Check `main.go` or in `examples/` for an initial overview of the API
 
-Setup
----
+## Setup
 
-Tested with
+The library has been tested with
 
 - golang `1.8` (minimum `v1.6`)
-- bluez bluetooth `v5.43` (**Note** this version is the minimum supported one!)
+- bluez bluetooth `v5.46` (**Note** `v5.43` is the minimum supported one)
 - ubuntu 16.10 kernel `4.8.0-27-generic`
 - raspbian and hypirot (debian 8) armv7 `4.4.x`  
 
-See in `scripts/` how to upgrade bluez to 5.43
+### bluez upgrade
 
-Give access to `hciconfig` to any user (may have [security implications](https://www.insecure.ws/linux/getcap_setcap.html))
+Bluez, the linux bluetooth implementation, has introduced GATT support from `v5.43`
 
-```
-sudo setcap 'cap_net_raw,cap_net_admin+eip' `which hciconfig`
-```
+Ensure you are using an up to date version with `bluetoothd -v`
 
-Todo
----
+See in `scripts/` how to upgrade bluez
 
- - Refactor DBus interface implementation
- - Add Device read / write
- - Add unit tests
- - Add Travis integration
- - Add and generate docs with examples
+### Development notes
 
-License
----
+-   Give access to `hciconfig` to any user (may have [security implications](https://www.insecure.ws/linux/getcap_setcap.html))
 
-MIT
+    ```
+    sudo setcap 'cap_net_raw,cap_net_admin+eip' `which hciconfig`
+    ```
+
+## Help wanted
+
+-   Add docs with examples
+-   Server (central) mode
+-   Add Device read / write and custom data converters
+-   Unit tests coverage
+
+## License
+
+MIT License

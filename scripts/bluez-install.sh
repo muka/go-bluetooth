@@ -28,3 +28,6 @@ sudo service bluetooth restart
 
 cd ../
 rm -rf /tmp/bluez-up
+
+echo "Bluez installation completed. Ensure `bluetoothd -v` print the correct version ($vv)."
+echo "If not, try to locate the legacy version and remove / substitute them. Eg. `whereis bluetoothd`"
