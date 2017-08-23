@@ -2,9 +2,12 @@ package service
 
 import (
 	"errors"
+	"strconv"
 
 	"github.com/godbus/dbus"
 	"github.com/godbus/dbus/introspect"
+	"github.com/muka/go-bluetooth/bluez/profile"
+	"github.com/satori/go.uuid"
 	"github.com/tj/go-debug"
 )
 
@@ -37,9 +40,10 @@ func NewApplication(config *ApplicationConfig) (*Application, error) {
 
 // ApplicationConfig configuration for the bluetooth service
 type ApplicationConfig struct {
-	conn       *dbus.Conn
-	objectName string
-	objectPath dbus.ObjectPath
+	conn         *dbus.Conn
+	objectName   string
+	objectPath   dbus.ObjectPath
+	serviceIndex int
 }
 
 // Application a bluetooth service exposed by bluez
@@ -47,6 +51,11 @@ type Application struct {
 	config        *ApplicationConfig
 	objectManager *ObjectManager
 	services      map[dbus.ObjectPath]*GattService1
+}
+
+//GetObjectManager return the object manager
+func (app *Application) GetObjectManager() *ObjectManager {
+	return app.objectManager
 }
 
 //expose dbus interfaces
@@ -78,6 +87,11 @@ func (app *Application) expose() error {
 	return nil
 }
 
+//Path return the object path
+func (app *Application) Path() dbus.ObjectPath {
+	return app.config.objectPath
+}
+
 //Run start the application
 func (app *Application) Run() error {
 	return nil
@@ -102,4 +116,22 @@ func (app *Application) RemoveService(service *GattService1) error {
 	}
 
 	return nil
+}
+
+// GenerateUUID generate a UUIDv4
+func (app *Application) GenerateUUID() string {
+	return uuid.NewV4().String()
+}
+
+//CreateService create a new GattService1 instance
+func (app *Application) CreateService(props *profile.GattService1Properties) (*GattService1, error) {
+	path := string(app.config.objectPath) + strconv.Itoa(app.config.serviceIndex)
+	c := &GattService1Config{
+		app:      app,
+		basePath: dbus.ObjectPath(path),
+		ID:       app.config.serviceIndex,
+	}
+	app.config.serviceIndex++
+	s := NewGattService1(c, props)
+	return s, nil
 }

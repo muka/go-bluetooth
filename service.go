@@ -2,6 +2,7 @@ package main
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/muka/go-bluetooth/service"
 )
 
@@ -14,7 +15,21 @@ func main() {
 		return
 	}
 
-	// err := app.AddService()
+	props := &profile.GattService1Properties{
+		Primary: true,
+		UUID:    app.GenerateUUID(),
+	}
+
+	service1, err := app.CreateService(props)
+	if err != nil {
+		log.Errorf("Failed to create service: %s", err.Error())
+		return
+	}
+	err = app.AddService(service1)
+	if err != nil {
+		log.Errorf("Failed to add service: %s", err.Error())
+		return
+	}
 
 	err = app.Run()
 	if err != nil {

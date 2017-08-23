@@ -15,7 +15,7 @@ cd /tmp/bluez-up
 
 wget "http://www.kernel.org/pub/linux/bluetooth/bluez-$vv.tar.xz" && \
     tar xJvf bluez-$vv.tar.xz && cd bluez-$vv && \
-    ./configure --prefix=/usr/local && \
+    ./configure --prefix=/usr/local --enable-experimental && \
     make -j 2 && \
     sudo make install
 
@@ -29,5 +29,8 @@ sudo service bluetooth restart
 cd ../
 rm -rf /tmp/bluez-up
 
-echo "Bluez installation completed. Ensure `bluetoothd -v` print the correct version ($vv)."
-echo "If not, try to locate the legacy version and remove / substitute them. Eg. `whereis bluetoothd`"
+
+echo ""
+echo "---"
+echo "Bluez installation completed. Ensure \`bluetoothd -v\` print the correct version (Eg. `bluetoothd -v` == $vv)."
+echo "If not, try to locate the legacy version and remove / substitute them. Eg. \`whereis bluetoothd\` : `whereis bluetoothd`"

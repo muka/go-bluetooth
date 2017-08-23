@@ -1,6 +1,7 @@
 package profile
 
 import (
+	"github.com/fatih/structs"
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
 )
@@ -32,6 +33,11 @@ type GattDescriptor1Properties struct {
 	Value          []byte
 	Characteristic dbus.ObjectPath
 	UUID           string
+}
+
+//ToMap serialize properties
+func (d *GattDescriptor1Properties) ToMap() map[string]interface{} {
+	return structs.Map(d)
 }
 
 // Close the connection

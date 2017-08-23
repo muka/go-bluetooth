@@ -30,9 +30,10 @@ type GattService1 struct {
 
 // GattService1Properties exposed properties for GattService1
 type GattService1Properties struct {
-	Primary bool
-	Device  dbus.ObjectPath
-	UUID    string
+	Primary         bool
+	Device          dbus.ObjectPath
+	Characteristics []dbus.ObjectPath
+	UUID            string
 }
 
 //ToMap serialize a properties struct to a map
