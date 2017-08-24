@@ -8,7 +8,12 @@ import (
 
 func main() {
 
-	cfg := &service.ApplicationConfig{}
+	log.SetLevel(log.DebugLevel)
+
+	cfg := &service.ApplicationConfig{
+		ObjectName: "go.bluetooth",
+		ObjectPath: "/",
+	}
 	app, err := service.NewApplication(cfg)
 	if err != nil {
 		log.Errorf("Failed to initialize app: %s", err.Error())
@@ -37,6 +42,6 @@ func main() {
 		return
 	}
 
-	log.Error("Application started, waiting for connections")
+	log.Info("Application started, waiting for connections")
 	select {}
 }

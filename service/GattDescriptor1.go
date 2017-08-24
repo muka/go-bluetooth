@@ -1,6 +1,7 @@
 package service
 
 import (
+	log "github.com/Sirupsen/logrus"
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
@@ -42,10 +43,12 @@ func (s *GattDescriptor1) Properties() map[string]bluez.Properties {
 
 //ReadValue read a value
 func (s *GattDescriptor1) ReadValue(options map[string]interface{}) []byte {
+	log.Debug("Descriptor.ReadValue")
 	b := make([]byte, 0)
 	return b
 }
 
 //WriteValue write a value
 func (s *GattDescriptor1) WriteValue(value []byte, options map[string]interface{}) {
+	log.Debug("Descriptor.ReadValue")
 }

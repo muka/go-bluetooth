@@ -3,10 +3,10 @@ package service
 import (
 	"strconv"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
-	"github.com/prometheus/common/log"
 )
 
 // NewGattCharacteristic1 create a new GattCharacteristic1 client
@@ -93,23 +93,26 @@ func (s *GattCharacteristic1) RemoveDescriptor(char *GattDescriptor1) {
 
 //ReadValue read a value
 func (s *GattCharacteristic1) ReadValue(options map[string]interface{}) []byte {
+	log.Debug("Characteristic.ReadValue")
 	b := make([]byte, 0)
 	return b
 }
 
 //WriteValue write a value
 func (s *GattCharacteristic1) WriteValue(value []byte, options map[string]interface{}) {
+	log.Debug("Characteristic.WriteValue")
 }
 
 //StartNotify start notification
 func (s *GattCharacteristic1) StartNotify() error {
+	log.Debug("Characteristic.StartNotify")
 	s.notifying = true
 	return nil
 }
 
 //StopNotify stop notification
 func (s *GattCharacteristic1) StopNotify() error {
+	log.Debug("Characteristic.StopNotify")
 	s.notifying = false
-	log.Infof("Stop notifying")
 	return nil
 }
