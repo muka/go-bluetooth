@@ -3,11 +3,12 @@ package service
 import (
 	"strconv"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/godbus/dbus"
 	"github.com/godbus/dbus/introspect"
+	"github.com/godbus/dbus/prop"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
-	"github.com/prometheus/common/log"
 )
 
 // NewGattService1 create a new instance of GattService1
@@ -115,37 +116,48 @@ func (s *GattService1) RemoveCharacteristic(char *GattCharacteristic1) error {
 	return nil
 }
 
+//Hello world
+func (s *GattService1) Hello() *dbus.Error {
+
+	return nil
+}
+
 //Expose the service to dbus
 func (s *GattService1) Expose() error {
 
 	log.Debugf("GATT Service path %s", s.Path())
 	conn := s.config.conn
+
 	err := conn.Export(s, s.Path(), bluez.GattService1Interface)
 	if err != nil {
 		return err
 	}
 
-	serviceNode := &introspect.Node{
+	node := &introspect.Node{
 		Interfaces: []introspect.Interface{
 			//Introspect
 			introspect.IntrospectData,
-
-			{
-				Name:    bluez.GattService1Interface,
-				Methods: introspect.Methods(s),
-			},
+			//Properties
+			prop.IntrospectData,
+			//GattService1
+			bluez.GattService1IntrospectData,
 		},
 	}
 
+	log.Debug("Exposing Properties interface")
+	for iface, props := range s.Properties() {
+		s.PropertiesInterface.AddProperties(iface, props)
+	}
+
+	s.PropertiesInterface.Expose(s.Path())
+
 	err = conn.Export(
-		introspect.NewIntrospectable(serviceNode),
+		introspect.NewIntrospectable(node),
 		s.Path(),
 		"org.freedesktop.DBus.Introspectable")
 	if err != nil {
 		return err
 	}
-
-	s.PropertiesInterface.Expose(s.Path())
 
 	log.Debugf("Exposed GATT service %s", s.Path())
 

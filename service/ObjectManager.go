@@ -32,7 +32,7 @@ func (o *ObjectManager) SignalAdded(path dbus.ObjectPath) error {
 	if err != nil {
 		return err
 	}
-	log.Debugf("%v", props)
+
 	return o.conn.Emit(path, bluez.InterfacesAdded, props)
 }
 

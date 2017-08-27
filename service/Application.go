@@ -8,7 +8,6 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/godbus/dbus"
 	"github.com/godbus/dbus/introspect"
-	"github.com/godbus/dbus/prop"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/satori/go.uuid"
@@ -40,16 +39,16 @@ func NewApplication(config *ApplicationConfig) (*Application, error) {
 		return nil, err
 	}
 
-	props, err := NewProperties(config.conn)
-	if err != nil {
-		return nil, err
-	}
+	// props, err := NewProperties(config.conn)
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	s := &Application{
 		config:        config,
 		objectManager: om,
-		properties:    props,
-		services:      make(map[dbus.ObjectPath]*GattService1),
+		// properties:    props,
+		services: make(map[dbus.ObjectPath]*GattService1),
 	}
 
 	return s, nil
@@ -122,13 +121,10 @@ func (app *Application) AddService(service *GattService1) error {
 		return err
 	}
 
+	log.Debug("Exposing service to ObjectManager")
 	err = app.GetObjectManager().AddObject(service.Path(), service.Properties())
 	if err != nil {
 		return err
-	}
-
-	for iface, props := range service.Properties() {
-		app.GetProperties().AddProperties(iface, props)
 	}
 
 	return err
@@ -151,18 +147,6 @@ func (app *Application) RemoveService(service *GattService1) error {
 //GetServices return the registered services
 func (app *Application) GetServices() map[dbus.ObjectPath]*GattService1 {
 	return app.services
-}
-
-func getNode(idata []introspect.Interface) *introspect.Node {
-	rootNode := &introspect.Node{
-		Interfaces: append([]introspect.Interface{
-			//Introspect
-			introspect.IntrospectData,
-			//Properties
-			prop.IntrospectData,
-		}, idata...),
-	}
-	return rootNode
 }
 
 //expose dbus interfaces
@@ -189,18 +173,22 @@ func (app *Application) expose() error {
 	if err != nil {
 		return err
 	}
-	err = conn.Export(app.properties, "/", bluez.PropertiesInterface)
-	if err != nil {
-		return err
+	// err = conn.Export(app.properties, "/", bluez.PropertiesInterface)
+	// if err != nil {
+	// 	return err
+	// }
+
+	node := &introspect.Node{
+		Interfaces: []introspect.Interface{
+			//Introspect
+			introspect.IntrospectData,
+			//ObjectManager
+			bluez.ObjectManagerIntrospectData,
+		},
 	}
 
-	rootNode := getNode([]introspect.Interface{
-		//ObjectManager
-		bluez.ObjectManagerIntrospectData,
-	})
-
 	err = conn.Export(
-		introspect.NewIntrospectable(rootNode),
+		introspect.NewIntrospectable(node),
 		app.Path(),
 		"org.freedesktop.DBus.Introspectable")
 	if err != nil {
@@ -220,7 +208,7 @@ func (app *Application) Run() error {
 		return err
 	}
 
-	app.properties.Expose(app.Path())
+	// app.properties.Expose(app.Path())
 
 	return nil
 }

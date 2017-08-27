@@ -49,7 +49,7 @@ func main() {
 
 	log.Info("Application started, waiting for connections")
 
-	createClient(objectName, objectPath)
+	// createClient(objectName, objectPath)
 
 	select {}
 }
