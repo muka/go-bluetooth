@@ -229,7 +229,7 @@ func (d *Device) Emit(name string, data interface{}) {
 
 //GetService return a GattService
 func (d *Device) GetService(path string) *profile.GattService1 {
-	return profile.NewGattService1(path)
+	return profile.NewGattService1(path, "org.bluez")
 }
 
 //GetChar return a GattService

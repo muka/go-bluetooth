@@ -34,6 +34,11 @@ func (s *GattDescriptor1) Path() dbus.ObjectPath {
 	return s.config.objectPath
 }
 
+//Iface return the Dbus interface
+func (s *GattDescriptor1) Iface() string {
+	return bluez.GattDescriptor1Interface
+}
+
 //Properties return the properties of the service
 func (s *GattDescriptor1) Properties() map[string]bluez.Properties {
 	p := make(map[string]bluez.Properties)

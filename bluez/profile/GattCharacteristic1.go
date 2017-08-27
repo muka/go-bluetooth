@@ -1,6 +1,8 @@
 package profile
 
 import (
+	"errors"
+
 	"github.com/fatih/structs"
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
@@ -46,8 +48,16 @@ type GattCharacteristic1Properties struct {
 }
 
 //ToMap serialize properties
-func (d *GattCharacteristic1Properties) ToMap() map[string]interface{} {
-	return structs.Map(d)
+func (d *GattCharacteristic1Properties) ToMap() (map[string]interface{}, error) {
+	if !d.Service.IsValid() {
+		return nil, errors.New("GattCharacteristic1Properties: Service ObjectPath is not valid")
+	}
+	for i := 0; i < len(d.Descriptors); i++ {
+		if d.Descriptors[i].IsValid() {
+			return nil, errors.New("GattCharacteristic1Properties: Descriptors contains an ObjectPath that is not valid")
+		}
+	}
+	return structs.Map(d), nil
 }
 
 // Close the connection

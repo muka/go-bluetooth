@@ -8,6 +8,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/godbus/dbus"
 	"github.com/godbus/dbus/introspect"
+	"github.com/godbus/dbus/prop"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/satori/go.uuid"
@@ -45,10 +46,10 @@ func NewApplication(config *ApplicationConfig) (*Application, error) {
 	}
 
 	s := &Application{
-		config,
-		om,
-		props,
-		make(map[dbus.ObjectPath]*GattService1),
+		config:        config,
+		objectManager: om,
+		properties:    props,
+		services:      make(map[dbus.ObjectPath]*GattService1),
 	}
 
 	return s, nil
@@ -97,22 +98,39 @@ func (app *Application) GenerateUUID() string {
 
 //CreateService create a new GattService1 instance
 func (app *Application) CreateService(props *profile.GattService1Properties) (*GattService1, error) {
-	path := string(app.Path()) + strconv.Itoa(app.config.serviceIndex)
-	c := &GattService1Config{
-		app:      app,
-		basePath: dbus.ObjectPath(path),
-		ID:       app.config.serviceIndex,
-	}
 	app.config.serviceIndex++
-	s := NewGattService1(c, props)
-	return s, nil
+	path := string(app.Path()) + "service" + strconv.Itoa(app.config.serviceIndex)
+	c := &GattService1Config{
+		app:        app,
+		objectPath: dbus.ObjectPath(path),
+		ID:         app.config.serviceIndex,
+		conn:       app.config.conn,
+	}
+	s, err := NewGattService1(c, props)
+	log.Debugf("Created service %s", path)
+	return s, err
 }
 
 //AddService add service to expose
 func (app *Application) AddService(service *GattService1) error {
+
 	log.Debugf("Adding service %s", service.Path())
 	app.services[service.Path()] = service
-	err := app.objectManager.AddObject(service.Path(), service.Properties())
+
+	err := service.Expose()
+	if err != nil {
+		return err
+	}
+
+	err = app.GetObjectManager().AddObject(service.Path(), service.Properties())
+	if err != nil {
+		return err
+	}
+
+	for iface, props := range service.Properties() {
+		app.GetProperties().AddProperties(iface, props)
+	}
+
 	return err
 }
 
@@ -121,20 +139,37 @@ func (app *Application) RemoveService(service *GattService1) error {
 	log.Debugf("Removing service %s", service.Path())
 	if _, ok := app.services[service.Path()]; ok {
 		delete(app.services, service.Path())
+		err := app.GetObjectManager().RemoveObject(service.Path())
 		//TODO: remove chars + descritptors too
-		err := app.objectManager.RemoveObject(service.Path())
 		if err != nil {
 			return err
 		}
 	}
-
 	return nil
+}
+
+//GetServices return the registered services
+func (app *Application) GetServices() map[dbus.ObjectPath]*GattService1 {
+	return app.services
+}
+
+func getNode(idata []introspect.Interface) *introspect.Node {
+	rootNode := &introspect.Node{
+		Interfaces: append([]introspect.Interface{
+			//Introspect
+			introspect.IntrospectData,
+			//Properties
+			prop.IntrospectData,
+		}, idata...),
+	}
+	return rootNode
 }
 
 //expose dbus interfaces
 func (app *Application) expose() error {
 
 	log.Debugf("Exposing object %s", app.Name())
+
 	conn := app.config.conn
 	reply, err := conn.RequestName(app.Name(), dbus.NameFlagDoNotQueue)
 	if err != nil {
@@ -147,26 +182,30 @@ func (app *Application) expose() error {
 		return fmt.Errorf("Requested name has been already taken (%d)", reply)
 	}
 
-	conn.Export(app.objectManager, "/", bluez.ObjectManagerInterface)
-	conn.Export(app.properties, "/", bluez.PropertiesInterface)
+	log.Debugf("Exposing path %s", app.Path())
 
-	node := &introspect.Node{
-		Interfaces: []introspect.Interface{
-			//Properties
-			bluez.PropertiesIntrospectData,
-			//ObjectManager
-			bluez.ObjectManagerIntrospectData,
-			//Introspect
-			introspect.IntrospectData,
-		},
+	// / path
+	err = conn.Export(app.objectManager, "/", bluez.ObjectManagerInterface)
+	if err != nil {
+		return err
+	}
+	err = conn.Export(app.properties, "/", bluez.PropertiesInterface)
+	if err != nil {
+		return err
 	}
 
-	log.Debugf("Exposing dbus service\n%s\n", node)
+	rootNode := getNode([]introspect.Interface{
+		//ObjectManager
+		bluez.ObjectManagerIntrospectData,
+	})
 
-	conn.Export(
-		introspect.NewIntrospectable(node),
+	err = conn.Export(
+		introspect.NewIntrospectable(rootNode),
 		app.Path(),
 		"org.freedesktop.DBus.Introspectable")
+	if err != nil {
+		return err
+	}
 
 	dbg("Listening on %s %s", app.Name(), app.Path())
 
@@ -180,6 +219,8 @@ func (app *Application) Run() error {
 	if err != nil {
 		return err
 	}
+
+	app.properties.Expose(app.Path())
 
 	return nil
 }

@@ -47,11 +47,18 @@ See in `scripts/` how to upgrade bluez
     ```
     sudo setcap 'cap_net_raw,cap_net_admin+eip' `which hciconfig`
     ```
+- Create a dbus profile
 
-## Help wanted
+    ```sh
+    ln -s `pwd`/scripts/dbus-dev.conf /etc/dbus1/system.d/go-bluetooth.config
+    ```
+- Monitor activity
+
+    `sudo dbus-monitor --system "type=error"`
+
+## TODO List / Help wanted
 
 -   Add docs with examples
--   Server (central) mode
 -   Add Device read / write and custom data converters
 -   Unit tests coverage
 

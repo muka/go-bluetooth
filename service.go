@@ -6,13 +6,18 @@ import (
 	"github.com/muka/go-bluetooth/service"
 )
 
+const (
+	objectName = "go.bluetooth"
+	objectPath = "/"
+)
+
 func main() {
 
 	log.SetLevel(log.DebugLevel)
 
 	cfg := &service.ApplicationConfig{
-		ObjectName: "go.bluetooth",
-		ObjectPath: "/",
+		ObjectName: objectName,
+		ObjectPath: objectPath,
 	}
 	app, err := service.NewApplication(cfg)
 	if err != nil {
@@ -23,6 +28,12 @@ func main() {
 	props := &profile.GattService1Properties{
 		Primary: true,
 		UUID:    app.GenerateUUID(),
+	}
+
+	err = app.Run()
+	if err != nil {
+		log.Errorf("Failed to run: %s", err.Error())
+		return
 	}
 
 	service1, err := app.CreateService(props)
@@ -36,12 +47,22 @@ func main() {
 		return
 	}
 
-	err = app.Run()
+	log.Info("Application started, waiting for connections")
+
+	createClient(objectName, objectPath)
+
+	select {}
+}
+
+func createClient(name string, path string) {
+
+	om := profile.NewObjectManager(name, path)
+	objs, err := om.GetManagedObjects()
+
 	if err != nil {
-		log.Errorf("Failed to run: %s", err.Error())
+		log.Errorf("Error getting objects: %s", err.Error())
 		return
 	}
 
-	log.Info("Application started, waiting for connections")
-	select {}
+	log.Infof("Got objects: %v", objs)
 }

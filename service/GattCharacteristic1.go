@@ -39,6 +39,11 @@ func (s *GattCharacteristic1) Path() dbus.ObjectPath {
 	return s.config.objectPath
 }
 
+//Iface return the Dbus interface
+func (s *GattCharacteristic1) Iface() string {
+	return bluez.GattCharacteristic1Interface
+}
+
 //Properties return the properties of the service
 func (s *GattCharacteristic1) Properties() map[string]bluez.Properties {
 	p := make(map[string]bluez.Properties)
@@ -48,12 +53,8 @@ func (s *GattCharacteristic1) Properties() map[string]bluez.Properties {
 }
 
 //GetDescriptors return the characteristics of the service
-func (s *GattCharacteristic1) GetDescriptors() []*GattDescriptor1 {
-	descs := make([]*GattDescriptor1, 0)
-	for _, desc := range s.descriptors {
-		descs = append(descs, desc)
-	}
-	return descs
+func (s *GattCharacteristic1) GetDescriptors() map[dbus.ObjectPath]*GattDescriptor1 {
+	return s.descriptors
 }
 
 //GetDescriptorPaths return the characteristics object paths
@@ -67,28 +68,31 @@ func (s *GattCharacteristic1) GetDescriptorPaths() []dbus.ObjectPath {
 
 //CreateDescriptor create a new characteristic
 func (s *GattCharacteristic1) CreateDescriptor(props *profile.GattDescriptor1Properties) *GattDescriptor1 {
+	s.descIndex++
 	path := string(s.config.objectPath) + "/desc" + strconv.Itoa(s.descIndex)
 	config := &GattDescriptor1Config{
 		ID:         s.descIndex,
 		objectPath: dbus.ObjectPath(path),
 	}
-	s.descIndex++
 	char := NewGattDescriptor1(config, props)
 	return char
 }
 
 //AddDescriptor add a characteristic
-func (s *GattCharacteristic1) AddDescriptor(char *GattDescriptor1) {
+func (s *GattCharacteristic1) AddDescriptor(char *GattDescriptor1) error {
 	s.descriptors[char.Path()] = char
-	s.config.service.GetApp().GetObjectManager().AddObject(char.Path(), char.Properties())
+	om := s.config.service.GetApp().GetObjectManager()
+	return om.AddObject(char.Path(), char.Properties())
 }
 
 //RemoveDescriptor remove a characteristic
-func (s *GattCharacteristic1) RemoveDescriptor(char *GattDescriptor1) {
+func (s *GattCharacteristic1) RemoveDescriptor(char *GattDescriptor1) error {
 	if _, ok := s.descriptors[char.Path()]; ok {
 		delete(s.descriptors, char.Path())
-		s.config.service.GetApp().GetObjectManager().RemoveObject(char.Path())
+		om := s.config.service.GetApp().GetObjectManager()
+		return om.RemoveObject(char.Path())
 	}
+	return nil
 }
 
 //ReadValue read a value

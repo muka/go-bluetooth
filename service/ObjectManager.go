@@ -1,6 +1,9 @@
 package service
 
 import (
+	"errors"
+
+	log "github.com/Sirupsen/logrus"
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
 )
@@ -22,8 +25,39 @@ type ObjectManager struct {
 	objects map[dbus.ObjectPath]map[string]bluez.Properties
 }
 
+// SignalAdded notify of interfaces being added
+func (o *ObjectManager) SignalAdded(path dbus.ObjectPath) error {
+
+	props, err := o.GetManagedObject(path)
+	if err != nil {
+		return err
+	}
+	log.Debugf("%v", props)
+	return o.conn.Emit(path, bluez.InterfacesAdded, props)
+}
+
+// SignalRemoved notify of interfaces being removed
+func (o *ObjectManager) SignalRemoved(path dbus.ObjectPath, ifaces []string) error {
+	if ifaces == nil {
+		ifaces = make([]string, 0)
+	}
+	return o.conn.Emit(path, bluez.InterfacesRemoved, ifaces)
+}
+
+// GetManagedObject return an up to date view of a single object state
+func (o *ObjectManager) GetManagedObject(objpath dbus.ObjectPath) (map[string]map[string]dbus.Variant, error) {
+	props, err := o.GetManagedObjects()
+	if err != nil {
+		return nil, err
+	}
+	if p, ok := props[objpath]; ok {
+		return p, nil
+	}
+	return nil, errors.New("Object not found")
+}
+
 // GetManagedObjects return an up to date view of the object state
-func (o *ObjectManager) GetManagedObjects() (map[dbus.ObjectPath]map[string]map[string]dbus.Variant, error) {
+func (o *ObjectManager) GetManagedObjects() (map[dbus.ObjectPath]map[string]map[string]dbus.Variant, *dbus.Error) {
 
 	props := make(map[dbus.ObjectPath]map[string]map[string]dbus.Variant)
 	for path, ifs := range o.objects {
@@ -34,9 +68,14 @@ func (o *ObjectManager) GetManagedObjects() (map[dbus.ObjectPath]map[string]map[
 			if _, ok := props[path][i]; !ok {
 				props[path][i] = make(map[string]dbus.Variant)
 			}
-			l := m.ToMap()
+			l, err := m.ToMap()
+			if err != nil {
+				log.Errorf("Failed to serialize properties: %s", err.Error())
+				return nil, DbusErr
+			}
 			for k, v := range l {
-				props[path][i][k] = dbus.MakeVariant(v)
+				vrt := dbus.MakeVariant(v)
+				props[path][i][k] = vrt
 			}
 		}
 	}
@@ -47,24 +86,18 @@ func (o *ObjectManager) GetManagedObjects() (map[dbus.ObjectPath]map[string]map[
 //AddObject add an object to the list
 func (o *ObjectManager) AddObject(path dbus.ObjectPath, val map[string]bluez.Properties) error {
 	o.objects[path] = val
-
-	// signal to the bus
-	o.conn.BusObject().Call(bluez.InterfacesAdded, 0,
-		"type='signal',path='/org/freedesktop/DBus',interface='org.freedesktop.DBus',sender='org.freedesktop.DBus'")
-
-	//TODO: handle dbus.Call error
-
-	return nil
+	return o.SignalAdded(path)
 }
 
 //RemoveObject remove an object from the list
 func (o *ObjectManager) RemoveObject(path dbus.ObjectPath) error {
-	if _, ok := o.objects[path]; ok {
+	if s, ok := o.objects[path]; ok {
 		delete(o.objects, path)
-		// signal to the bus
-		o.conn.BusObject().Call(bluez.InterfacesRemoved, 0,
-			"type='signal',path='/org/freedesktop/DBus',interface='org.freedesktop.DBus',sender='org.freedesktop.DBus'")
-		//TODO: handle dbus.Call error
+		ifaces := make([]string, len(s))
+		for i := range s {
+			ifaces = append(ifaces, i)
+		}
+		return o.SignalRemoved(path, ifaces)
 	}
 	return nil
 }

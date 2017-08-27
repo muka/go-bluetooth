@@ -6,13 +6,13 @@ import (
 )
 
 // NewObjectManager create a new Device1 client
-func NewObjectManager() *ObjectManager {
+func NewObjectManager(name string, path string) *ObjectManager {
 	om := new(ObjectManager)
 	om.client = bluez.NewClient(
 		&bluez.Config{
-			Name:  "org.bluez",
+			Name:  name,
 			Iface: "org.freedesktop.DBus.ObjectManager",
-			Path:  "/",
+			Path:  path,
 			Bus:   bluez.SystemBus,
 		},
 	)

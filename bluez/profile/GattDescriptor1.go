@@ -1,6 +1,8 @@
 package profile
 
 import (
+	"errors"
+
 	"github.com/fatih/structs"
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
@@ -36,8 +38,11 @@ type GattDescriptor1Properties struct {
 }
 
 //ToMap serialize properties
-func (d *GattDescriptor1Properties) ToMap() map[string]interface{} {
-	return structs.Map(d)
+func (d *GattDescriptor1Properties) ToMap() (map[string]interface{}, error) {
+	if !d.Characteristic.IsValid() {
+		return nil, errors.New("GattDescriptor1Properties: Characteristic ObjectPath is not valid")
+	}
+	return structs.Map(d), nil
 }
 
 // Close the connection

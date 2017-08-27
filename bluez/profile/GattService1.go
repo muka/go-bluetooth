@@ -7,11 +7,11 @@ import (
 )
 
 // NewGattService1 create a new GattService1 client
-func NewGattService1(path string) *GattService1 {
+func NewGattService1(path string, name string) *GattService1 {
 	a := new(GattService1)
 	a.client = bluez.NewClient(
 		&bluez.Config{
-			Name:  "org.bluez",
+			Name:  name,
 			Iface: "org.bluez.GattService1",
 			Path:  path,
 			Bus:   bluez.SystemBus,
@@ -32,13 +32,28 @@ type GattService1 struct {
 type GattService1Properties struct {
 	Primary         bool
 	Device          dbus.ObjectPath
-	Characteristics []dbus.ObjectPath
+	Characteristics []dbus.ObjectPath `dbus:"emit"`
 	UUID            string
 }
 
 //ToMap serialize a properties struct to a map
-func (p *GattService1Properties) ToMap() map[string]interface{} {
-	return structs.Map(p)
+func (p *GattService1Properties) ToMap() (map[string]interface{}, error) {
+
+	m := structs.Map(p)
+
+	if !p.Device.IsValid() {
+		delete(m, "Device")
+	}
+
+	chars := make([]dbus.ObjectPath, 0)
+	for _, c := range p.Characteristics {
+		if c.IsValid() {
+			chars = append(chars, c)
+		}
+	}
+	m["Characteristics"] = chars
+
+	return m, nil
 }
 
 // Close the connection

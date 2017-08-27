@@ -26,7 +26,7 @@ func GetManager() *Manager {
 // NewManager creates a new manager instance
 func NewManager() *Manager {
 	m := new(Manager)
-	m.objectManager = profile.NewObjectManager()
+	m.objectManager = profile.NewObjectManager("org.bluez", "/")
 	m.objects = make(map[dbus.ObjectPath]map[string]map[string]dbus.Variant)
 
 	// watch for signaling from ObjectManager
