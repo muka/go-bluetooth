@@ -25,25 +25,41 @@ func main() {
 		return
 	}
 
-	props := &profile.GattService1Properties{
-		Primary: true,
-		UUID:    app.GenerateUUID(),
-	}
-
 	err = app.Run()
 	if err != nil {
 		log.Errorf("Failed to run: %s", err.Error())
 		return
 	}
 
-	service1, err := app.CreateService(props)
+	serviceProps := &profile.GattService1Properties{
+		Primary: true,
+		UUID:    app.GenerateUUID(),
+	}
+
+	service1, err := app.CreateService(serviceProps)
 	if err != nil {
 		log.Errorf("Failed to create service: %s", err.Error())
 		return
 	}
+
 	err = app.AddService(service1)
 	if err != nil {
 		log.Errorf("Failed to add service: %s", err.Error())
+		return
+	}
+
+	charProps := &profile.GattCharacteristic1Properties{
+		UUID: app.GenerateUUID(),
+	}
+	char, err := service1.CreateCharacteristic(charProps)
+	if err != nil {
+		log.Errorf("Failed to create char: %s", err.Error())
+		return
+	}
+
+	err = service1.AddCharacteristic(char)
+	if err != nil {
+		log.Errorf("Failed to add char: %s", err.Error())
 		return
 	}
 

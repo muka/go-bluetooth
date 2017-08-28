@@ -47,8 +47,7 @@ func NewApplication(config *ApplicationConfig) (*Application, error) {
 	s := &Application{
 		config:        config,
 		objectManager: om,
-		// properties:    props,
-		services: make(map[dbus.ObjectPath]*GattService1),
+		services:      make(map[dbus.ObjectPath]*GattService1),
 	}
 
 	return s, nil
@@ -66,18 +65,12 @@ type ApplicationConfig struct {
 type Application struct {
 	config        *ApplicationConfig
 	objectManager *ObjectManager
-	properties    *Properties
 	services      map[dbus.ObjectPath]*GattService1
 }
 
 //GetObjectManager return the object manager interface handler
 func (app *Application) GetObjectManager() *ObjectManager {
 	return app.objectManager
-}
-
-//GetProperties return the properties interface handler
-func (app *Application) GetProperties() *Properties {
-	return app.properties
 }
 
 //Path return the object path
@@ -121,6 +114,11 @@ func (app *Application) AddService(service *GattService1) error {
 		return err
 	}
 
+	err = app.exportTree()
+	if err != nil {
+		return err
+	}
+
 	log.Debug("Exposing service to ObjectManager")
 	err = app.GetObjectManager().AddObject(service.Path(), service.Properties())
 	if err != nil {
@@ -134,9 +132,16 @@ func (app *Application) AddService(service *GattService1) error {
 func (app *Application) RemoveService(service *GattService1) error {
 	log.Debugf("Removing service %s", service.Path())
 	if _, ok := app.services[service.Path()]; ok {
+
 		delete(app.services, service.Path())
 		err := app.GetObjectManager().RemoveObject(service.Path())
+
 		//TODO: remove chars + descritptors too
+		if err != nil {
+			return err
+		}
+
+		err = app.exportTree()
 		if err != nil {
 			return err
 		}
@@ -173,24 +178,8 @@ func (app *Application) expose() error {
 	if err != nil {
 		return err
 	}
-	// err = conn.Export(app.properties, "/", bluez.PropertiesInterface)
-	// if err != nil {
-	// 	return err
-	// }
 
-	node := &introspect.Node{
-		Interfaces: []introspect.Interface{
-			//Introspect
-			introspect.IntrospectData,
-			//ObjectManager
-			bluez.ObjectManagerIntrospectData,
-		},
-	}
-
-	err = conn.Export(
-		introspect.NewIntrospectable(node),
-		app.Path(),
-		"org.freedesktop.DBus.Introspectable")
+	err = app.exportTree()
 	if err != nil {
 		return err
 	}
@@ -200,6 +189,47 @@ func (app *Application) expose() error {
 	return nil
 }
 
+func (app *Application) exportTree() error {
+
+	childrenNode := make([]introspect.Node, 0)
+
+	for servicePath, service := range app.GetServices() {
+		childrenNode = append(childrenNode, introspect.Node{
+			Name: string(servicePath)[1:],
+		})
+		for charPath, char := range service.GetCharacteristics() {
+			childrenNode = append(childrenNode, introspect.Node{
+				Name: string(charPath)[1:],
+			})
+			for descPath := range char.GetDescriptors() {
+				childrenNode = append(childrenNode, introspect.Node{
+					Name: string(descPath)[1:],
+				})
+			}
+		}
+	}
+
+	log.Debugf("child %v", childrenNode)
+
+	// must include also child nodes
+	node := &introspect.Node{
+		Interfaces: []introspect.Interface{
+			//Introspect
+			introspect.IntrospectData,
+			//ObjectManager
+			bluez.ObjectManagerIntrospectData,
+		},
+		Children: childrenNode,
+	}
+
+	err := app.config.conn.Export(
+		introspect.NewIntrospectable(node),
+		app.Path(),
+		"org.freedesktop.DBus.Introspectable")
+
+	return err
+}
+
 //Run start the application
 func (app *Application) Run() error {
 
@@ -207,8 +237,6 @@ func (app *Application) Run() error {
 	if err != nil {
 		return err
 	}
-
-	// app.properties.Expose(app.Path())
 
 	return nil
 }

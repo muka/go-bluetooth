@@ -23,9 +23,10 @@ func NewGattService1(config *GattService1Config, props *profile.GattService1Prop
 		config:              config,
 		props:               props,
 		PropertiesInterface: propInterface,
+		characteristics:     make(map[dbus.ObjectPath]*GattCharacteristic1, 0),
 	}
 
-	err = propInterface.AddProperties(bluez.GattService1Interface, props)
+	err = propInterface.AddProperties(s.Interface(), props)
 	if err != nil {
 		return nil, err
 	}
@@ -50,6 +51,11 @@ type GattService1 struct {
 	PropertiesInterface *Properties
 }
 
+//Interface return the dbus interface name
+func (s *GattService1) Interface() string {
+	return bluez.GattService1Interface
+}
+
 //GetApp return the parent app
 func (s *GattService1) GetApp() *Application {
 	return s.config.app
@@ -60,16 +66,11 @@ func (s *GattService1) Path() dbus.ObjectPath {
 	return s.config.objectPath
 }
 
-//Iface return the Dbus interface
-func (s *GattService1) Iface() string {
-	return bluez.GattService1Interface
-}
-
 //Properties return the properties of the service
 func (s *GattService1) Properties() map[string]bluez.Properties {
 	p := make(map[string]bluez.Properties)
 	s.props.Characteristics = s.GetCharacteristicPaths()
-	p[bluez.GattService1Interface] = s.props
+	p[s.Interface()] = s.props
 	return p
 }
 
@@ -88,20 +89,37 @@ func (s *GattService1) GetCharacteristicPaths() []dbus.ObjectPath {
 }
 
 //CreateCharacteristic create a new characteristic
-func (s *GattService1) CreateCharacteristic(props *profile.GattCharacteristic1Properties) *GattCharacteristic1 {
+func (s *GattService1) CreateCharacteristic(props *profile.GattCharacteristic1Properties) (*GattCharacteristic1, error) {
 	s.charIndex++
 	path := string(s.config.objectPath) + "/char" + strconv.Itoa(s.charIndex)
 	config := &GattCharacteristic1Config{
 		ID:         s.charIndex,
 		objectPath: dbus.ObjectPath(path),
+		conn:       s.config.conn,
+		service:    s,
 	}
-	char := NewGattCharacteristic1(config, props)
-	return char
+
+	props.Service = s.Path()
+
+	char, err := NewGattCharacteristic1(config, props)
+	return char, err
 }
 
 //AddCharacteristic add a characteristic
 func (s *GattService1) AddCharacteristic(char *GattCharacteristic1) error {
+
 	s.characteristics[char.Path()] = char
+
+	err := char.Expose()
+	if err != nil {
+		return err
+	}
+
+	err = s.GetApp().exportTree()
+	if err != nil {
+		return err
+	}
+
 	om := s.config.app.GetObjectManager()
 	return om.AddObject(char.Path(), char.Properties())
 }
@@ -116,32 +134,15 @@ func (s *GattService1) RemoveCharacteristic(char *GattCharacteristic1) error {
 	return nil
 }
 
-//Hello world
-func (s *GattService1) Hello() *dbus.Error {
-
-	return nil
-}
-
 //Expose the service to dbus
 func (s *GattService1) Expose() error {
 
 	log.Debugf("GATT Service path %s", s.Path())
 	conn := s.config.conn
 
-	err := conn.Export(s, s.Path(), bluez.GattService1Interface)
+	err := conn.Export(s, s.Path(), s.Interface())
 	if err != nil {
 		return err
-	}
-
-	node := &introspect.Node{
-		Interfaces: []introspect.Interface{
-			//Introspect
-			introspect.IntrospectData,
-			//Properties
-			prop.IntrospectData,
-			//GattService1
-			bluez.GattService1IntrospectData,
-		},
 	}
 
 	log.Debug("Exposing Properties interface")
@@ -150,6 +151,21 @@ func (s *GattService1) Expose() error {
 	}
 
 	s.PropertiesInterface.Expose(s.Path())
+
+	node := &introspect.Node{
+		Interfaces: []introspect.Interface{
+			//Introspect
+			introspect.IntrospectData,
+			//Properties
+			prop.IntrospectData,
+			//GattService1
+			{
+				Name:       s.Interface(),
+				Methods:    introspect.Methods(s),
+				Properties: s.PropertiesInterface.Introspection(s.Interface()),
+			},
+		},
+	}
 
 	err = conn.Export(
 		introspect.NewIntrospectable(node),

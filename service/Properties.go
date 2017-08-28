@@ -7,6 +7,7 @@ import (
 	log "github.com/Sirupsen/logrus"
 	"github.com/fatih/structs"
 	"github.com/godbus/dbus"
+	"github.com/godbus/dbus/introspect"
 	"github.com/godbus/dbus/prop"
 	"github.com/muka/go-bluetooth/bluez"
 )
@@ -56,7 +57,6 @@ func (p *Properties) parseTag(conf *prop.Prop, tag string) {
 			}
 		}
 	}
-
 }
 
 func (p *Properties) parseProperties() error {
@@ -68,6 +68,12 @@ func (p *Properties) parseProperties() error {
 
 		t := structs.New(ifaceVal)
 		for _, field := range t.Fields() {
+
+			if _, ok := field.Value().(dbus.ObjectPath); ok && field.IsZero() {
+				log.Debugf("parseProperties: skip empty ObjectPath %s", field.Name())
+				continue
+			}
+
 			propConf := &prop.Prop{
 				Value:    field.Value(),
 				Emit:     prop.EmitFalse,
@@ -80,7 +86,7 @@ func (p *Properties) parseProperties() error {
 				p.parseTag(propConf, tag)
 			}
 
-			// log.Debugf("parseProperties: %s: `%s` %v", field.Name(), tag, propConf)
+			log.Debugf("parseProperties: %s: `%s` %v", field.Name(), tag, propConf)
 			p.propsConfig[iface][field.Name()] = propConf
 		}
 	}
@@ -103,6 +109,16 @@ func (p *Properties) onChange(ev *prop.Change) *dbus.Error {
 		}
 	}
 	return nil
+}
+
+//Instance return the props instance
+func (p *Properties) Instance() *prop.Properties {
+	return p.instance
+}
+
+//Introspection return the props instance
+func (p *Properties) Introspection(iface string) []introspect.Property {
+	return p.instance.Introspection(iface)
 }
 
 //Expose expose the properties interface
