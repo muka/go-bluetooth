@@ -63,6 +63,21 @@ func main() {
 		return
 	}
 
+	descProps := &profile.GattDescriptor1Properties{
+		UUID: app.GenerateUUID(),
+	}
+	desc, err := char.CreateDescriptor(descProps)
+	if err != nil {
+		log.Errorf("Failed to create char: %s", err.Error())
+		return
+	}
+
+	err = char.AddDescriptor(desc)
+	if err != nil {
+		log.Errorf("Failed to add desc: %s", err.Error())
+		return
+	}
+
 	log.Info("Application started, waiting for connections")
 
 	// createClient(objectName, objectPath)

@@ -23,6 +23,7 @@ func NewGattCharacteristic1(config *GattCharacteristic1Config, props *profile.Ga
 		config:              config,
 		properties:          props,
 		PropertiesInterface: propInterface,
+		descriptors:         make(map[dbus.ObjectPath]*GattDescriptor1),
 	}
 
 	err = propInterface.AddProperties(s.Interface(), props)
@@ -84,22 +85,39 @@ func (s *GattCharacteristic1) GetDescriptorPaths() []dbus.ObjectPath {
 }
 
 //CreateDescriptor create a new characteristic
-func (s *GattCharacteristic1) CreateDescriptor(props *profile.GattDescriptor1Properties) *GattDescriptor1 {
+func (s *GattCharacteristic1) CreateDescriptor(props *profile.GattDescriptor1Properties) (*GattDescriptor1, error) {
 	s.descIndex++
 	path := string(s.config.objectPath) + "/desc" + strconv.Itoa(s.descIndex)
 	config := &GattDescriptor1Config{
-		ID:         s.descIndex,
-		objectPath: dbus.ObjectPath(path),
+		ID:             s.descIndex,
+		objectPath:     dbus.ObjectPath(path),
+		conn:           s.config.conn,
+		characteristic: s,
 	}
-	char := NewGattDescriptor1(config, props)
-	return char
+
+	props.Characteristic = config.objectPath
+
+	desc, err := NewGattDescriptor1(config, props)
+	return desc, err
 }
 
 //AddDescriptor add a characteristic
-func (s *GattCharacteristic1) AddDescriptor(char *GattDescriptor1) error {
-	s.descriptors[char.Path()] = char
+func (s *GattCharacteristic1) AddDescriptor(desc *GattDescriptor1) error {
+
+	s.descriptors[desc.Path()] = desc
+
+	err := desc.Expose()
+	if err != nil {
+		return err
+	}
+
+	err = s.config.service.GetApp().exportTree()
+	if err != nil {
+		return err
+	}
+
 	om := s.config.service.GetApp().GetObjectManager()
-	return om.AddObject(char.Path(), char.Properties())
+	return om.AddObject(desc.Path(), desc.Properties())
 }
 
 //RemoveDescriptor remove a characteristic
