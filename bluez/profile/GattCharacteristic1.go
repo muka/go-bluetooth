@@ -41,6 +41,8 @@ type GattCharacteristic1 struct {
 type GattCharacteristic1Properties struct {
 	Value       []byte
 	Notifying   bool
+	NotifyAcquired bool
+	WriteAcquired  bool
 	Service     dbus.ObjectPath
 	UUID        string
 	Flags       []string
