@@ -39,14 +39,14 @@ type GattCharacteristic1 struct {
 
 // GattCharacteristic1Properties exposed properties for GattCharacteristic1
 type GattCharacteristic1Properties struct {
-	Value       []byte
-	Notifying   bool
+	Value          []byte
+	Notifying      bool
 	NotifyAcquired bool
 	WriteAcquired  bool
-	Service     dbus.ObjectPath
-	UUID        string
-	Flags       []string
-	Descriptors []dbus.ObjectPath
+	Service        dbus.ObjectPath
+	UUID           string
+	Flags          []string
+	Descriptors    []dbus.ObjectPath
 }
 
 //ToMap serialize properties
@@ -123,4 +123,20 @@ func (d *GattCharacteristic1) StartNotify() error {
 //StopNotify stop notifications
 func (d *GattCharacteristic1) StopNotify() error {
 	return d.client.Call("StopNotify", 0).Store()
+}
+
+//AcquireWrite acquire file descriptor and MTU for writing [experimental]
+func (d *GattCharacteristic1) AcquireWrite() (dbus.UnixFD, uint16, error) {
+	var fd dbus.UnixFD
+	var mtu uint16
+	err := d.client.Call("AcquireWrite", 0).Store(&fd, &mtu)
+	return fd, mtu, err
+}
+
+//AcquireNotify acquire file descriptor and MTU for notify [experimental]
+func (d *GattCharacteristic1) AcquireNotify() (dbus.UnixFD, uint16, error) {
+	var fd dbus.UnixFD
+	var mtu uint16
+	err := d.client.Call("AcquireNotify", 0).Store(&fd, &mtu)
+	return fd, mtu, err
 }
