@@ -2,7 +2,6 @@ package service
 
 import (
 	"errors"
-	"fmt"
 	"strconv"
 
 	log "github.com/Sirupsen/logrus"
@@ -91,7 +90,7 @@ func (app *Application) GenerateUUID() string {
 //CreateService create a new GattService1 instance
 func (app *Application) CreateService(props *profile.GattService1Properties) (*GattService1, error) {
 	app.config.serviceIndex++
-	path := string(app.Path()) + "service" + strconv.Itoa(app.config.serviceIndex)
+	path := string(app.Path()) + "/service" + strconv.Itoa(app.config.serviceIndex)
 	c := &GattService1Config{
 		app:        app,
 		objectPath: dbus.ObjectPath(path),
@@ -160,16 +159,16 @@ func (app *Application) expose() error {
 	log.Debugf("Exposing object %s", app.Name())
 
 	conn := app.config.conn
-	reply, err := conn.RequestName(app.Name(), dbus.NameFlagDoNotQueue)
+	reply, err := conn.RequestName(app.Name(), dbus.NameFlagReplaceExisting)
 	if err != nil {
 		log.Debugf("Error requesting object name: %s", err.Error())
 		return err
 	}
 
 	log.Debugf("Name registration reply %d", reply)
-	if reply != dbus.RequestNameReplyPrimaryOwner {
-		return fmt.Errorf("Requested name has been already taken (%d)", reply)
-	}
+	// if reply != dbus.RequestNameReplyPrimaryOwner {
+	// 	return fmt.Errorf("Requested name has been already taken (%d)", reply)
+	// }
 
 	log.Debugf("Exposing path %s", app.Path())
 
