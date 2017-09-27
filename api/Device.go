@@ -70,6 +70,7 @@ func ParseDevice(path dbus.ObjectPath, propsMap map[string]dbus.Variant) (*Devic
 		return nil, err
 	}
 	c.Properties = props
+	d.chars = make(map[dbus.ObjectPath]*profile.GattCharacteristic1, 0)
 
 	return d, nil
 }
