@@ -1,6 +1,7 @@
 package profile
 
 import (
+	log "github.com/Sirupsen/logrus"
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
 )
@@ -44,6 +45,7 @@ func (a *GattManager1) Close() {
 
 //RegisterApplication add a new bluetooth Application
 func (a *GattManager1) RegisterApplication(app dbus.ObjectPath, options map[string]interface{}) error {
+	log.Debugf("Registering app %s", app)
 	return a.client.Call("RegisterApplication", 0, app, options).Store()
 }
 

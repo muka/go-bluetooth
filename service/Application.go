@@ -165,10 +165,22 @@ func (app *Application) expose() error {
 		return err
 	}
 
-	log.Debugf("Name registration reply %d", reply)
-	// if reply != dbus.RequestNameReplyPrimaryOwner {
-	// 	return fmt.Errorf("Requested name has been already taken (%d)", reply)
-	// }
+	replym := ""
+	switch reply {
+	case dbus.RequestNameReplyAlreadyOwner:
+		replym = "RequestNameReplyAlreadyOwner"
+		break
+	case dbus.RequestNameReplyPrimaryOwner:
+		replym = "RequestNameReplyPrimaryOwner"
+		break
+	case dbus.RequestNameReplyExists:
+		replym = "RequestNameReplyExists"
+		break
+	case dbus.RequestNameReplyInQueue:
+		replym = "RequestNameReplyInQueue"
+		break
+	}
+	log.Debugf("Name registration reply (%d) %s", reply, replym)
 
 	log.Debugf("Exposing path %s", app.Path())
 
@@ -208,7 +220,7 @@ func (app *Application) exportTree() error {
 		}
 	}
 
-	log.Debugf("child %v", childrenNode)
+	// log.Debugf("child %v", childrenNode)
 
 	// must include also child nodes
 	node := &introspect.Node{

@@ -70,7 +70,7 @@ func (p *Properties) parseProperties() error {
 		for _, field := range t.Fields() {
 
 			if _, ok := field.Value().(dbus.ObjectPath); ok && field.IsZero() {
-				log.Debugf("parseProperties: skip empty ObjectPath %s", field.Name())
+				// log.Debugf("parseProperties: skip empty ObjectPath %s", field.Name())
 				continue
 			}
 
@@ -86,7 +86,7 @@ func (p *Properties) parseProperties() error {
 				p.parseTag(propConf, tag)
 			}
 
-			log.Debugf("parseProperties: %s: `%s` %v", field.Name(), tag, propConf)
+			// log.Debugf("parseProperties: %s: `%s` %v", field.Name(), tag, propConf)
 			p.propsConfig[iface][field.Name()] = propConf
 		}
 	}

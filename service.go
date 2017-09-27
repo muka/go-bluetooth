@@ -2,14 +2,15 @@ package main
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/muka/go-bluetooth/service"
 )
 
 const (
-	adapterID  = "hci1"
+	adapterID  = "hci0"
 	objectName = "org.bluez"
-	objectPath = "/org/bluez/bleapp"
+	objectPath = "/org/bluez/example/service"
 )
 
 func main() {
@@ -81,19 +82,20 @@ func main() {
 
 	log.Info("Application started, waiting for connections")
 
-	// //Register Application
-	// gattManager, err := api.GetGattManager(adapterID)
-	// if err != nil {
-	// 	log.Errorf("Failed to get GattManager1: %s", err.Error())
-	// 	return
-	// }
-	//
-	// err = gattManager.RegisterApplication(app.Path(), map[string]interface{}{})
-	// if err != nil {
-	// 	log.Errorf("Failed to register application: %s", err.Error())
-	// 	return
-	// }
-	// createClient(objectName, objectPath)
+	//Register Application
+	gattManager, err := api.GetGattManager(adapterID)
+	if err != nil {
+		log.Errorf("Failed to get GattManager1: %s", err.Error())
+		return
+	}
+
+	err = gattManager.RegisterApplication(app.Path(), map[string]interface{}{})
+	if err != nil {
+		log.Errorf("Failed to register application: %s", err.Error())
+		return
+	}
+
+	createClient(objectName, objectPath)
 
 	select {}
 }
