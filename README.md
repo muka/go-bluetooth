@@ -56,6 +56,10 @@ See in `scripts/` how to upgrade bluez
 
     `sudo dbus-monitor --system "type=error"`
 
+- View `bluetoothd` debug messages
+
+    `sudo bluetoothd -Edn`
+
 ## TODO List / Help wanted
 
 -   Add docs with examples

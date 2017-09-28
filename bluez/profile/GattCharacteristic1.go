@@ -39,14 +39,14 @@ type GattCharacteristic1 struct {
 
 // GattCharacteristic1Properties exposed properties for GattCharacteristic1
 type GattCharacteristic1Properties struct {
-	Value       []byte
-	Notifying   bool
-	NotifyAcquired bool
+	UUID           string
+	Service        dbus.ObjectPath
+	Value          []byte
 	WriteAcquired  bool
-	Service     dbus.ObjectPath
-	UUID        string
-	Flags       []string
-	Descriptors []dbus.ObjectPath
+	NotifyAcquired bool
+	Notifying      bool
+	Flags          []string
+	Descriptors    []dbus.ObjectPath
 }
 
 //ToMap serialize properties
