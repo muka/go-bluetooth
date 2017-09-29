@@ -35,6 +35,7 @@ type GattDescriptor1Properties struct {
 	Value          []byte
 	Characteristic dbus.ObjectPath
 	UUID           string
+	Flags          []string
 }
 
 //ToMap serialize properties

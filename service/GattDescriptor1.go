@@ -59,6 +59,7 @@ func (s *GattDescriptor1) Interface() string {
 //Properties return the properties of the service
 func (s *GattDescriptor1) Properties() map[string]bluez.Properties {
 	p := make(map[string]bluez.Properties)
+	s.properties.Characteristic = s.config.characteristic.Path()
 	p[s.Interface()] = s.properties
 	return p
 }

@@ -2,6 +2,8 @@ package main
 
 import (
 	log "github.com/Sirupsen/logrus"
+	"github.com/muka/go-bluetooth/api"
+	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/muka/go-bluetooth/service"
 )
@@ -57,6 +59,10 @@ func main() {
 
 	charProps := &profile.GattCharacteristic1Properties{
 		UUID: app.GenerateUUID(),
+		Flags: []string{
+			bluez.FlagCharacteristicRead,
+			bluez.FlagCharacteristicWrite,
+		},
 	}
 	char, err := service1.CreateCharacteristic(charProps)
 	if err != nil {
@@ -72,6 +78,10 @@ func main() {
 
 	descProps := &profile.GattDescriptor1Properties{
 		UUID: app.GenerateUUID(),
+		Flags: []string{
+			bluez.FlagDescriptorRead,
+			bluez.FlagDescriptorWrite,
+		},
 	}
 	desc, err := char.CreateDescriptor(descProps)
 	if err != nil {
@@ -88,19 +98,19 @@ func main() {
 	log.Info("Application started, waiting for connections")
 
 	//Register Application
-	// gattManager, err := api.GetGattManager(adapterID)
-	// if err != nil {
-	// 	log.Errorf("Failed to get GattManager1: %s", err.Error())
-	// 	return
-	// }
-	//
-	// err = gattManager.RegisterApplication(app.Path(), map[string]interface{}{})
-	// if err != nil {
-	// 	log.Errorf("Failed to register application: %s", err.Error())
-	// 	return
-	// }
+	gattManager, err := api.GetGattManager(adapterID)
+	if err != nil {
+		log.Errorf("Failed to get GattManager1: %s", err.Error())
+		return
+	}
 
-	createClient(objectName, objectPath)
+	err = gattManager.RegisterApplication(app.Path(), map[string]interface{}{})
+	if err != nil {
+		log.Errorf("Failed to register application: %s", err.Error())
+		return
+	}
+
+	// createClient(objectName, objectPath)
 
 	select {}
 }
