@@ -1,7 +1,6 @@
 package service
 
 import (
-	log "github.com/Sirupsen/logrus"
 	"github.com/godbus/dbus"
 	"github.com/godbus/dbus/introspect"
 	"github.com/godbus/dbus/prop"
@@ -66,20 +65,20 @@ func (s *GattDescriptor1) Properties() map[string]bluez.Properties {
 
 //ReadValue read a value
 func (s *GattDescriptor1) ReadValue(options map[string]interface{}) []byte {
-	log.Debug("Descriptor.ReadValue")
+	dbg("Descriptor.ReadValue")
 	b := make([]byte, 0)
 	return b
 }
 
 //WriteValue write a value
 func (s *GattDescriptor1) WriteValue(value []byte, options map[string]interface{}) {
-	log.Debug("Descriptor.ReadValue")
+	dbg("Descriptor.ReadValue")
 }
 
 //Expose the desc to dbus
 func (s *GattDescriptor1) Expose() error {
 
-	log.Debugf("GATT Descriptor path %s", s.Path())
+	dbg("GATT Descriptor path %s", s.Path())
 	conn := s.config.conn
 
 	err := conn.Export(s, s.Path(), s.Interface())
@@ -87,7 +86,7 @@ func (s *GattDescriptor1) Expose() error {
 		return err
 	}
 
-	log.Debug("Exposing Properties interface")
+	dbg("Exposing Properties interface")
 	for iface, props := range s.Properties() {
 		s.PropertiesInterface.AddProperties(iface, props)
 	}
@@ -117,7 +116,7 @@ func (s *GattDescriptor1) Expose() error {
 		return err
 	}
 
-	log.Debugf("Exposed GATT characteristic %s", s.Path())
+	dbg("Exposed GATT descriptor %s (%s)", s.properties.UUID, s.Path())
 
 	return nil
 }

@@ -8,7 +8,7 @@ import (
 	"github.com/tj/go-debug"
 )
 
-var dbg = debug.Debug("bluez:emitter")
+var dbg = debug.Debug("bluetooth:emitter")
 
 //Callback is a function to be invoked when an event happens
 type Callback func(ev Event)
@@ -66,6 +66,9 @@ func loop() {
 				dbg("loop: %d callback(s)", size)
 				for i := 0; i < size; i++ {
 					cb := *events[ev.GetName()][i]
+					if cb == nil {
+						continue
+					}
 					go cb(ev)
 				}
 			}

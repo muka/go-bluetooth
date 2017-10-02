@@ -3,7 +3,6 @@ package service
 import (
 	"strconv"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/godbus/dbus"
 	"github.com/godbus/dbus/introspect"
 	"github.com/godbus/dbus/prop"
@@ -21,7 +20,7 @@ func NewGattService1(config *GattService1Config, props *profile.GattService1Prop
 
 	s := &GattService1{
 		config:              config,
-		props:               props,
+		properties:          props,
 		PropertiesInterface: propInterface,
 		characteristics:     make(map[dbus.ObjectPath]*GattCharacteristic1, 0),
 	}
@@ -45,7 +44,7 @@ type GattService1Config struct {
 //GattService1 interface implementation
 type GattService1 struct {
 	config              *GattService1Config
-	props               *profile.GattService1Properties
+	properties          *profile.GattService1Properties
 	characteristics     map[dbus.ObjectPath]*GattCharacteristic1
 	charIndex           int
 	PropertiesInterface *Properties
@@ -69,8 +68,8 @@ func (s *GattService1) Path() dbus.ObjectPath {
 //Properties return the properties of the service
 func (s *GattService1) Properties() map[string]bluez.Properties {
 	p := make(map[string]bluez.Properties)
-	s.props.Characteristics = s.GetCharacteristicPaths()
-	p[s.Interface()] = s.props
+	s.properties.Characteristics = s.GetCharacteristicPaths()
+	p[s.Interface()] = s.properties
 	return p
 }
 
@@ -137,7 +136,7 @@ func (s *GattService1) RemoveCharacteristic(char *GattCharacteristic1) error {
 //Expose the service to dbus
 func (s *GattService1) Expose() error {
 
-	log.Debugf("GATT Service path %s", s.Path())
+	dbg("GATT Service path %s", s.Path())
 	conn := s.config.conn
 
 	err := conn.Export(s, s.Path(), s.Interface())
@@ -145,7 +144,7 @@ func (s *GattService1) Expose() error {
 		return err
 	}
 
-	log.Debug("Exposing Properties interface")
+	dbg("Exposing Properties interface")
 	for iface, props := range s.Properties() {
 		s.PropertiesInterface.AddProperties(iface, props)
 	}
@@ -175,7 +174,7 @@ func (s *GattService1) Expose() error {
 		return err
 	}
 
-	log.Debugf("Exposed GATT service %s", s.Path())
+	dbg("Exposed GATT service %s (%s)", s.properties.UUID, s.Path())
 
 	return nil
 }

@@ -17,7 +17,7 @@ The features implemented are
 - [x] Adapter on/off via `rfkill`
 - [x] Handle systemd `bluetooth.service` unit
 - [x] Expose `hciconfig` basic API
-- [ ] Expose bluetooth services via bluez DBus API [See #7](https://github.com/muka/go-bluetooth/issues/7)
+- [x] Expose bluetooth services via bluez GATT API
 
 ## Examples
 
@@ -60,11 +60,28 @@ See in `scripts/` how to upgrade bluez
 
     `sudo bluetoothd -Edn`
 
+- Enable LE advertisement
+
+  ```bash
+    sudo btmgmt -i 0 power off
+    sudo btmgmt -i 0 le on
+    sudo btmgmt -i 0 connectable on
+    sudo btmgmt -i 0 advertising on
+    sudo btmgmt -i 0 power on
+  ```
+
 ## TODO List / Help wanted
 
 -   Add docs with examples
 -   Add Device read / write and custom data converters
 -   Unit tests coverage
+
+## References
+
+- https://git.kernel.org/cgit/bluetooth/bluez.git/tree/doc
+- https://www.bluetooth.com/specifications/gatt/services
+- http://events.linuxfoundation.org/sites/events/files/slides/Bluetooth%20on%20Modern%20Linux_0.pdf
+- https://github.com/nettlep/gobbledegook
 
 ## License
 

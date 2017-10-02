@@ -4,16 +4,17 @@ import (
 	"errors"
 	"strconv"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/godbus/dbus"
 	"github.com/godbus/dbus/introspect"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
-	"github.com/satori/go.uuid"
 	"github.com/tj/go-debug"
 )
 
 var dbg = debug.Debug("bluetooth:server")
+
+//UUIDSuffix fixed 128bit UUID [0000]+[xxxx]+[-0000-1000-8000-00805F9B34FB]
+const UUIDSuffix = "-0000-1000-8000-00805F9B34FB"
 
 //NewApplication instantiate a new application service
 func NewApplication(config *ApplicationConfig) (*Application, error) {
@@ -54,6 +55,8 @@ func NewApplication(config *ApplicationConfig) (*Application, error) {
 
 // ApplicationConfig configuration for the bluetooth service
 type ApplicationConfig struct {
+	UUIDSuffix   string
+	UUID         string
 	conn         *dbus.Conn
 	ObjectName   string
 	ObjectPath   dbus.ObjectPath
@@ -82,9 +85,13 @@ func (app *Application) Name() string {
 	return app.config.ObjectName
 }
 
-// GenerateUUID generate a UUIDv4
-func (app *Application) GenerateUUID() string {
-	return uuid.NewV4().String()
+// GenerateUUID generate a 128bit UUID
+func (app *Application) GenerateUUID(uuidVal string) string {
+	base := "0000"
+	if len(uuidVal) == 8 {
+		base = ""
+	}
+	return base + uuidVal + UUIDSuffix
 }
 
 //CreateService create a new GattService1 instance
@@ -94,7 +101,6 @@ func (app *Application) CreateService(props *profile.GattService1Properties) (*G
 	if appPath == "/" {
 		appPath = ""
 	}
-
 	path := appPath + "/service" + strconv.Itoa(app.config.serviceIndex)
 	c := &GattService1Config{
 		app:        app,
@@ -103,14 +109,14 @@ func (app *Application) CreateService(props *profile.GattService1Properties) (*G
 		conn:       app.config.conn,
 	}
 	s, err := NewGattService1(c, props)
-	log.Debugf("Created service %s", path)
+	dbg("Created service %s", path)
 	return s, err
 }
 
 //AddService add service to expose
 func (app *Application) AddService(service *GattService1) error {
 
-	log.Debugf("Adding service %s", service.Path())
+	dbg("Adding service %s", service.Path())
 	app.services[service.Path()] = service
 
 	err := service.Expose()
@@ -123,7 +129,7 @@ func (app *Application) AddService(service *GattService1) error {
 		return err
 	}
 
-	log.Debug("Exposing service to ObjectManager")
+	dbg("Exposing service to ObjectManager")
 	err = app.GetObjectManager().AddObject(service.Path(), service.Properties())
 	if err != nil {
 		return err
@@ -134,7 +140,7 @@ func (app *Application) AddService(service *GattService1) error {
 
 //RemoveService remove an exposed service
 func (app *Application) RemoveService(service *GattService1) error {
-	log.Debugf("Removing service %s", service.Path())
+	dbg("Removing service %s", service.Path())
 	if _, ok := app.services[service.Path()]; ok {
 
 		delete(app.services, service.Path())
@@ -161,12 +167,12 @@ func (app *Application) GetServices() map[dbus.ObjectPath]*GattService1 {
 //expose dbus interfaces
 func (app *Application) expose() error {
 
-	log.Debugf("Exposing object %s", app.Name())
+	dbg("Exposing object %s", app.Name())
 
 	conn := app.config.conn
 	reply, err := conn.RequestName(app.Name(), dbus.NameFlagDoNotQueue&dbus.NameFlagReplaceExisting)
 	if err != nil {
-		log.Debugf("Error requesting object name: %s", err.Error())
+		dbg("Error requesting object name: %s", err.Error())
 		return err
 	}
 
@@ -185,9 +191,9 @@ func (app *Application) expose() error {
 		replym = "RequestNameReplyInQueue"
 		break
 	}
-	log.Debugf("Name registration reply (%d) %s", reply, replym)
+	dbg("Name registration reply (%d) %s", reply, replym)
 
-	log.Debugf("Exposing path %s", app.Path())
+	dbg("Exposing path %s", app.Path())
 
 	// / path
 	err = conn.Export(app.objectManager, app.Path(), bluez.ObjectManagerInterface)
@@ -225,7 +231,7 @@ func (app *Application) exportTree() error {
 		}
 	}
 
-	// log.Debugf("child %v", childrenNode)
+	// dbg("child %v", childrenNode)
 
 	// must include also child nodes
 	node := &introspect.Node{
