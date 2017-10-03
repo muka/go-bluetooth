@@ -70,6 +70,7 @@ func ParseDevice(path dbus.ObjectPath, propsMap map[string]dbus.Variant) (*Devic
 		return nil, err
 	}
 	c.Properties = props
+	d.chars = make(map[dbus.ObjectPath]*profile.GattCharacteristic1, 0)
 
 	return d, nil
 }
@@ -229,7 +230,7 @@ func (d *Device) Emit(name string, data interface{}) {
 
 //GetService return a GattService
 func (d *Device) GetService(path string) *profile.GattService1 {
-	return profile.NewGattService1(path)
+	return profile.NewGattService1(path, "org.bluez")
 }
 
 //GetChar return a GattService
@@ -237,8 +238,7 @@ func (d *Device) GetChar(path string) *profile.GattCharacteristic1 {
 	return profile.NewGattCharacteristic1(path)
 }
 
-//GetAllServicesAndUUID return a list of uuid's with their corresponding services.....
-
+//GetAllServicesAndUUID return a list of uuid's with their corresponding services
 func (d *Device) GetAllServicesAndUUID() ([]string, error) {
 
 	list := d.GetCharsList()
@@ -258,9 +258,6 @@ func (d *Device) GetAllServicesAndUUID() ([]string, error) {
 
 		uuidAndService = fmt.Sprint(cuuid, ":", service)
 		deviceFound = append(deviceFound, uuidAndService)
-	}
-
-	if deviceFound == nil {
 	}
 
 	return deviceFound, nil
@@ -287,7 +284,7 @@ func (d *Device) GetCharByUUID(uuid string) (*profile.GattCharacteristic1, error
 
 		props := d.chars[path].Properties
 		cuuid := strings.ToUpper(props.UUID)
-		//log.Debug("Properties : ",props)
+
 		if cuuid == uuid {
 			dbgDevice("Found char %s", uuid)
 			deviceFound = d.chars[path]
