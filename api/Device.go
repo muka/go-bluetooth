@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -10,11 +11,12 @@ import (
 	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/muka/go-bluetooth/emitter"
 	"github.com/muka/go-bluetooth/util"
+	logging "github.com/op/go-logging"
 	"github.com/tj/go-debug"
 )
 
+var log = logging.MustGetLogger("examples")
 var dbgDevice = debug.Debug("bluez:api:Device")
-
 var deviceRegistry = make(map[string]*Device)
 
 // NewDevice creates a new Device
@@ -70,7 +72,6 @@ func ParseDevice(path dbus.ObjectPath, propsMap map[string]dbus.Variant) (*Devic
 		return nil, err
 	}
 	c.Properties = props
-	d.chars = make(map[dbus.ObjectPath]*profile.GattCharacteristic1, 0)
 
 	return d, nil
 }
@@ -230,12 +231,41 @@ func (d *Device) Emit(name string, data interface{}) {
 
 //GetService return a GattService
 func (d *Device) GetService(path string) *profile.GattService1 {
-	return profile.NewGattService1(path, "org.bluez")
+	return profile.NewGattService1(path)
 }
 
 //GetChar return a GattService
 func (d *Device) GetChar(path string) *profile.GattCharacteristic1 {
 	return profile.NewGattCharacteristic1(path)
+}
+
+//GetAllServicesAndUUID return a list of uuid's with their corresponding services.....
+
+func (d *Device) GetAllServicesAndUUID() ([]string, error) {
+
+	list := d.GetCharsList()
+
+	var deviceFound []string
+	var uuidAndService string
+	for _, path := range list {
+
+		_, ok := d.chars[path]
+		if !ok {
+			d.chars[path] = profile.NewGattCharacteristic1(string(path))
+		}
+
+		props := d.chars[path].Properties
+		cuuid := strings.ToUpper(props.UUID)
+		service := string(props.Service)
+
+		uuidAndService = fmt.Sprint(cuuid, ":", service)
+		deviceFound = append(deviceFound, uuidAndService)
+	}
+
+	if deviceFound == nil {
+	}
+
+	return deviceFound, nil
 }
 
 //GetCharByUUID return a GattService by its uuid, return nil if not found
@@ -259,7 +289,7 @@ func (d *Device) GetCharByUUID(uuid string) (*profile.GattCharacteristic1, error
 
 		props := d.chars[path].Properties
 		cuuid := strings.ToUpper(props.UUID)
-
+		//log.Debug("Properties : ",props)
 		if cuuid == uuid {
 			dbgDevice("Found char %s", uuid)
 			deviceFound = d.chars[path]
