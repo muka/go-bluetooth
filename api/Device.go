@@ -11,11 +11,9 @@ import (
 	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/muka/go-bluetooth/emitter"
 	"github.com/muka/go-bluetooth/util"
-	logging "github.com/op/go-logging"
 	"github.com/tj/go-debug"
 )
 
-var log = logging.MustGetLogger("examples")
 var dbgDevice = debug.Debug("bluez:api:Device")
 var deviceRegistry = make(map[string]*Device)
 
