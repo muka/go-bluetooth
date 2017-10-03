@@ -9,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	log "github.com/Sirupsen/logrus"
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez"
@@ -17,9 +18,7 @@ import (
 	"github.com/tj/go-debug"
 )
 
-var log = logging.MustGetLogger("examples")
-var logger = logging.MustGetLogger("main")
-var dbgTag = debug.Debug("bluez:sensortag")
+var dbgTag = debug.Debug("bluetooth:sensortag")
 
 var dataChannel chan dbus.Signal
 
@@ -76,6 +75,49 @@ var sensorTagUUIDs = map[string]string{
 	"HARDWARE_REVISION_UUID":  "2A27",
 	"SOFTWARE_REVISION_UUID":  "2A28",
 	"MANUFACTURER_NAME_UUID":  "2A29",
+}
+
+//SensorTagDataEvent contains SensorTagSpecific data structure
+type SensorTagDataEvent struct {
+	Device     *api.Device
+	SensorType string
+
+	AmbientTempValue interface{}
+	AmbientTempUnit  string
+
+	ObjectTempValue interface{}
+	ObjectTempUnit  string
+
+	SensorId string
+
+	BarometericPressureValue interface{}
+	BarometericPressureUnit  string
+
+	BarometericTempValue interface{}
+	BarometericTempUnit  string
+
+	HumidityValue interface{}
+	HumidityUnit  string
+
+	HumidityTempValue interface{}
+	HumidityTempUnit  string
+
+	MpuGyroscopeValue interface{}
+	MpuGyroscopeUnit  string
+
+	MpuAccelerometerValue interface{}
+	MpuAccelerometerUnit  string
+
+	MpuMagnetometerValue interface{}
+	MpuMagnetometerUnit  string
+
+	LuxometerValue interface{}
+	LuxometerUnit  string
+
+	FirmwareVersion string
+	HardwareVersion string
+	Manufacturer    string
+	Model           string
 }
 
 //Period =[Input*10]ms,(lowerlimit 300 ms, max 2500ms),default 1000 ms
@@ -339,7 +381,7 @@ func (s *HumiditySensor) StartNotify(macAddress string) error {
 				temperature := binary.LittleEndian.Uint16(b1[0:2])
 				tempValue := calcTmpFromHumidSensor(uint16(temperature))
 				dbgTag("Got data %v", humidityValue)
-				dataEvent := api.DataEvent{
+				dataEvent := SensorTagDataEvent{
 
 					Device:            s.tag.Device,
 					SensorType:        "humidity",
@@ -669,7 +711,7 @@ func (s *MpuSensor) StartNotify(macAddress string) error {
 				mpuMgX, mpuMgY, mpuMgZ := calcMpuMagnetometer(uint16(mpuXm), uint16(mpuYm), uint16(mpuZm))
 				mpuMagnetometer = fmt.Sprint(mpuMgX, " , ", mpuMgY, " , ", mpuMgZ)
 
-				dataEvent := api.DataEvent{
+				dataEvent := SensorTagDataEvent{
 
 					Device:                s.tag.Device,
 					SensorType:            "mpu",
@@ -988,7 +1030,7 @@ func (s *BarometricSensor) StartNotify(macAddress string) error {
 
 				dbgTag("Got data %v", barometericPressureValue)
 
-				dataEvent := api.DataEvent{
+				dataEvent := SensorTagDataEvent{
 
 					Device:                   s.tag.Device,
 					SensorType:               "pressure",
@@ -1041,20 +1083,15 @@ func (s *BarometricSensor) StopNotify() error {
 // Port from http://processors.wiki.ti.com/index.php/SensorTag_User_Guide#IR_Temperature_Sensor
 
 var calcBarometricPressure = func(raw uint32) float64 {
-
 	//.......barometric pressure......
-
 	pressureMask := (int(raw) >> 8) & 0x00ffffff
 	return float64(pressureMask) / 100.0
 }
 
 var calcBarometricTemperature = func(raw uint32) float64 {
-
 	//.......TEMPERATURE calibiration data comming from barometric sensor...........
-
 	tempMask := int(raw) & 0x00ffffff
 	return float64(tempMask) / 100.0
-
 }
 
 //.................................. end of BarometricSensor ..............................
@@ -1305,7 +1342,7 @@ func (s *TemperatureSensor) StartNotify(macAddress string) error {
 
 				die := binary.LittleEndian.Uint16(b[0:2])
 				dieValue := calcTmpTarget(uint16(die))
-				dataEvent := api.DataEvent{
+				dataEvent := SensorTagDataEvent{
 
 					Device:           s.tag.Device,
 					SensorType:       "temperature",
@@ -1588,7 +1625,7 @@ func (s *LuxometerSensor) StartNotify(macAddress string) error {
 				luxometer := binary.LittleEndian.Uint16(b1[0:])
 				luxometerValue := calcLuxometer(uint16(luxometer))
 
-				dataEvent := api.DataEvent{
+				dataEvent := SensorTagDataEvent{
 
 					Device:         s.tag.Device,
 					SensorType:     "luxometer",
@@ -1686,7 +1723,7 @@ func NewSensorTag(d *api.Device) (*SensorTag, error) {
 
 	err := connect(d)
 	if err != nil {
-		logger.Warning("SensorTag connection failed: %v", err)
+		log.Warning("SensorTag connection failed: %v", err)
 		return nil, err
 	}
 
@@ -1822,8 +1859,7 @@ func newDeviceInfo(tag *SensorTag) (SensorTagDeviceInfo, error) {
 	return loadChars()
 }
 
-//......DeviceInfo sensorTag structure....
-
+//SensorTagDeviceInfo sensorTag structure
 type SensorTagDeviceInfo struct {
 	tag              *SensorTag
 	firmwareInfo     *profile.GattCharacteristic1
@@ -1832,9 +1868,8 @@ type SensorTagDeviceInfo struct {
 	modelInfo        *profile.GattCharacteristic1
 }
 
-//........Read device info from sensorTag........................
-
-func (s *SensorTagDeviceInfo) Read() (api.DataEvent, error) {
+//Read device info from sensorTag
+func (s *SensorTagDeviceInfo) Read() (SensorTagDataEvent, error) {
 
 	options1 := make(map[string]dbus.Variant)
 	fw, err := s.firmwareInfo.ReadValue(options1)
@@ -1848,7 +1883,7 @@ func (s *SensorTagDeviceInfo) Read() (api.DataEvent, error) {
 	options4 := make(map[string]dbus.Variant)
 	model, err := s.modelInfo.ReadValue(options4)
 
-	dataEvent := api.DataEvent{
+	dataEvent := SensorTagDataEvent{
 
 		FirmwareVersion: string(fw),
 		HardwareVersion: string(hw),

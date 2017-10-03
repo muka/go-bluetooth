@@ -71,43 +71,8 @@ type GattDescriptorEvent struct {
 
 // DataEvent triggered when a new data value is available
 type DataEvent struct {
-	Device     *Device
-	SensorType string
-
-	AmbientTempValue interface{}
-	AmbientTempUnit  string
-
-	ObjectTempValue interface{}
-	ObjectTempUnit  string
-
-	SensorId string
-
-	BarometericPressureValue interface{}
-	BarometericPressureUnit  string
-
-	BarometericTempValue interface{}
-	BarometericTempUnit  string
-
-	HumidityValue interface{}
-	HumidityUnit  string
-
-	HumidityTempValue interface{}
-	HumidityTempUnit  string
-
-	MpuGyroscopeValue interface{}
-	MpuGyroscopeUnit  string
-
-	MpuAccelerometerValue interface{}
-	MpuAccelerometerUnit  string
-
-	MpuMagnetometerValue interface{}
-	MpuMagnetometerUnit  string
-
-	LuxometerValue interface{}
-	LuxometerUnit  string
-
-	FirmwareVersion string
-	HardwareVersion string
-	Manufacturer    string
-	Model           string
+	Device *Device
+	Sensor string
+	Value  interface{}
+	Unit   string
 }
