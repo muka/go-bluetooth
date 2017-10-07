@@ -103,6 +103,19 @@ func GetAdapter(adapterID string) (*profile.Adapter1, error) {
 	return profile.NewAdapter1(adapterID), nil
 }
 
+//GetGattManager return an adapter object instance
+func GetGattManager(adapterID string) (*profile.GattManager1, error) {
+
+	if exists, err := AdapterExists(adapterID); !exists {
+		if err != nil {
+			return nil, err
+		}
+		return nil, errors.New("Adapter " + adapterID + " not found")
+	}
+
+	return profile.NewGattManager1(adapterID), nil
+}
+
 //StartDiscovery on adapter hci0
 func StartDiscovery() error {
 	return StartDiscoveryOn("hci0")
