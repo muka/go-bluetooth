@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 	"strings"
 
@@ -237,7 +238,30 @@ func (d *Device) GetService(path string) *profile.GattService1 {
 func (d *Device) GetChar(path string) *profile.GattCharacteristic1 {
 	return profile.NewGattCharacteristic1(path)
 }
+//GetAllServicesAndUUID return a list of uuid's with their corresponding services
+func (d *Device) GetAllServicesAndUUID() ([]string, error) {
 
+	list := d.GetCharsList()
+
+	var deviceFound []string
+	var uuidAndService string
+	for _, path := range list {
+
+		_, ok := d.chars[path]
+		if !ok {
+			d.chars[path] = profile.NewGattCharacteristic1(string(path))
+		}
+
+		props := d.chars[path].Properties
+		cuuid := strings.ToUpper(props.UUID)
+		service := string(props.Service)
+
+		uuidAndService = fmt.Sprint(cuuid, ":", service)
+		deviceFound = append(deviceFound, uuidAndService)
+	}
+
+	return deviceFound, nil
+}
 //GetCharByUUID return a GattService by its uuid, return nil if not found
 func (d *Device) GetCharByUUID(uuid string) (*profile.GattCharacteristic1, error) {
 
