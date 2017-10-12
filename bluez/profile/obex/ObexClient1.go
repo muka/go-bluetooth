@@ -1,7 +1,7 @@
 package obex
 
 import (
-	log "github.com/sirupsen/logrus"
+	log "github.com/Sirupsen/logrus"
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
 )
@@ -23,14 +23,13 @@ func NewObexClient1() *ObexClient1 {
 
 // ObexClient1 client
 type ObexClient1 struct {
-	client     *bluez.Client
+	client *bluez.Client
 }
 
 // Close the connection
 func (a *ObexClient1) Close() {
 	a.client.Disconnect()
 }
-
 
 //	Create a new OBEX session for the given remote address.
 //
@@ -54,14 +53,12 @@ func (a *ObexClient1) Close() {
 // 		- org.bluez.obex.Error.InvalidArguments
 //		- org.bluez.obex.Error.Failed
 //
-func (a *ObexClient1) CreateSession(destination string, options map[string]interface{}) string {
+// TODO: Use ObexSession1 struct instead of generic map for options
+func (a *ObexClient1) CreateSession(destination string, options map[string]interface{}) (string, error) {
 	log.Debugf("CreateSession to %s", destination)
 	var sessionPath string
 	err := a.client.Call("CreateSession", 0, destination, options).Store(&sessionPath)
-	if err != nil {
-			panic(err)
-	}
-	return sessionPath
+	return sessionPath, err
 }
 
 //	Unregister session and abort pending transfers.
@@ -70,6 +67,6 @@ func (a *ObexClient1) CreateSession(destination string, options map[string]inter
 //		- org.bluez.obex.Error.InvalidArguments
 //		- org.bluez.obex.Error.NotAuthorized
 //
-func (a *ObexClient1) RemoveSession(app dbus.ObjectPath) error {
-	return a.client.Call("RemoveSession", 0, app).Store()
+func (a *ObexClient1) RemoveSession(session string) error {
+	return a.client.Call("RemoveSession", 0, dbus.ObjectPath(session)).Store()
 }
