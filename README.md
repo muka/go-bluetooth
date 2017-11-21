@@ -18,6 +18,8 @@ The features implemented are
 - [x] Handle systemd `bluetooth.service` unit
 - [x] Expose `hciconfig` basic API
 - [x] Expose bluetooth services via bluez GATT API
+- [ ] HCI protocol communication
+- [ ] Pairing support
 
 ## Examples
 
