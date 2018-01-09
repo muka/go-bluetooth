@@ -301,7 +301,7 @@ func (s *HumiditySensor) Read() (float64, error) {
 
 //..........StartNotify enable DataChannel for humidity................
 
-func (s *HumiditySensor) StartNotify(macAddress string) error {
+func (s *HumiditySensor) StartNotify() error {
 
 	d := s.tag.Device
 	serv, err1 := d.GetAllServicesAndUUID()
@@ -375,7 +375,7 @@ func (s *HumiditySensor) StartNotify(macAddress string) error {
 					HumidityUnit:      "%RH",
 					HumidityTempValue: tempValue,
 					HumidityTempUnit:  "C",
-					SensorId:          macAddress,
+					SensorId:          s.tag.Properties.Address,
 				}
 				s.tag.Device.Emit("data", dataEvent)
 			}
@@ -1231,7 +1231,7 @@ func (s *TemperatureSensor) Read() (float64, error) {
 
 //StartNotify enable temperature DataChannel
 
-func (s *TemperatureSensor) StartNotify(macAddress string) error {
+func (s *TemperatureSensor) StartNotify() error {
 
 	d := s.tag.Device
 	serv, err1 := d.GetAllServicesAndUUID()
@@ -1293,14 +1293,13 @@ func (s *TemperatureSensor) StartNotify(macAddress string) error {
 				die := binary.LittleEndian.Uint16(b[0:2])
 				dieValue := calcTmpTarget(uint16(die))
 				dataEvent := SensorTagDataEvent{
-
 					Device:           s.tag.Device,
 					SensorType:       "temperature",
 					AmbientTempValue: ambientValue,
 					AmbientTempUnit:  "C",
 					ObjectTempValue:  dieValue,
 					ObjectTempUnit:   "C",
-					SensorId:         macAddress,
+					SensorId:         s.tag.Properties.Address,
 				}
 				s.tag.Device.Emit("data", dataEvent)
 			}

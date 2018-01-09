@@ -4,6 +4,7 @@ import (
 	"strings"
 	"time"
 
+	logger "github.com/Sirupsen/logrus"
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/emitter"
 )

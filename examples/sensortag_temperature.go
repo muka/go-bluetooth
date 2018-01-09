@@ -7,11 +7,10 @@ import (
 	"github.com/muka/go-bluetooth/devices"
 )
 
-var adapterID = "hci0"
-var tagAddress = "B0:B4:48:C9:4B:01"
-
 //SensorTagTemperatureExample example of reading temperature from a TI sensortag
 func SensorTagTemperatureExample() {
+
+	var tagAddress = "B0:B4:48:C9:4B:01"
 
 	dev, err := api.GetDeviceByAddress(tagAddress)
 	if err != nil {

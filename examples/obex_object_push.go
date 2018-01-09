@@ -8,20 +8,19 @@
 //firmware version, hardware version, model
 //and sensor data...
 
-package main
+package examples
 
 import (
-	"github.com/muka/go-bluetooth/api"
-	"github.com/op/go-logging"
+	"os"
 	"sync"
 	"time"
+
+	log "github.com/Sirupsen/logrus"
+	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez/profile/obex"
-	"os"
 )
 
-var log = logging.MustGetLogger("examples")
-
-func main() {
+func ObexPush() {
 	manager := api.NewManager()
 	error := manager.RefreshState()
 	if error != nil {
