@@ -25,3 +25,4 @@ _testmain.go
 logs/*.log
 debug
 
+/vendor

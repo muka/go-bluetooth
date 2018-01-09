@@ -1,9 +1,10 @@
 package examples
 
 import (
+	log "github.com/Sirupsen/logrus"
+
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/devices"
-	"github.com/prometheus/common/log"
 )
 
 var adapterID = "hci0"
