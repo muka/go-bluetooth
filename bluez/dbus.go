@@ -4,10 +4,7 @@ import (
 	"errors"
 
 	"github.com/godbus/dbus"
-	"github.com/tj/go-debug"
 )
-
-var dbg = debug.Debug("bluetooth:bluez:dbus")
 
 //Properties dbus serializable struct
 // Use struct tags to control how the field is handled by Properties interface
@@ -43,7 +40,6 @@ type Config struct {
 
 //GetConnection get a DBus connection
 func GetConnection(connType BusType) (*dbus.Conn, error) {
-	dbg("Get connection %d", connType)
 	switch connType {
 	case SystemBus:
 		{

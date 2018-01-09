@@ -11,10 +11,7 @@ import (
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
-	"github.com/tj/go-debug"
 )
-
-var dbg = debug.Debug("bluetooth:linux")
 
 func limitText(text []byte) string {
 	t := strings.TrimSpace(string(text))
@@ -94,32 +91,26 @@ func (rfkill RFKill) ListAll() ([]RFKillResult, error) {
 
 // SoftBlock RFKill Sets a software block on an identifier
 func (rfkill RFKill) SoftBlock(identifier string) error {
-	dbg("RFKill: Soft Blocking %v", identifier)
 
 	cmd := exec.Command("rfkill", "block", identifier)
-	dbg("Command Start: %v", cmd.Args)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Errorf("Command Error: %v : %v", err, limitText(out))
 		return err
 	}
-	dbg("Command Return: %v", limitText(out))
 
 	return nil
 }
 
 //SoftUnblock Removes a software block on an identifier
 func (rfkill RFKill) SoftUnblock(identifier string) error {
-	dbg("RFKill: Soft Unblocking %v", identifier)
 
 	cmd := exec.Command("rfkill", "unblock", identifier)
-	dbg("Command Start: %v", cmd.Args)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		log.Errorf("Command Error: %v : %v", err, limitText(out))
 		return err
 	}
-	dbg("Command Return: %v", limitText(out))
 
 	return nil
 }

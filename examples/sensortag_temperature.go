@@ -4,10 +4,7 @@ import (
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/devices"
 	"github.com/prometheus/common/log"
-	debug "github.com/tj/go-debug"
 )
-
-var dbg = debug.Debug("bluetooth:main")
 
 var adapterID = "hci0"
 var tagAddress = "B0:B4:48:C9:4B:01"

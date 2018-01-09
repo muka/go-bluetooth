@@ -4,11 +4,7 @@ import (
 	"regexp"
 	"strings"
 	"sync"
-
-	"github.com/tj/go-debug"
 )
-
-var dbg = debug.Debug("bluetooth:emitter")
 
 //Callback is a function to be invoked when an event happens
 type Callback func(ev Event)
@@ -40,47 +36,39 @@ var events = make(map[string][]*Callback, 0)
 var mutex = &sync.Mutex{}
 
 func loop() {
-	dbg("loop: Started")
 	for {
 
 		if pipe == nil {
-			dbg("loop: Closed")
 			return
 		}
 
-		dbg("loop: Waiting for events")
 		ev := <-pipe
 		if ev == nil {
-			dbg("loop: nil event, quit")
 			return
 		}
-
-		dbg("loop: Trigger event `%s`", ev.GetName())
 
 		mutex.Lock()
 		if _, ok := events[ev.GetName()]; ok {
 			size := len(events[ev.GetName()])
-			if size == 0 {
-				dbg("loop: No callback(s)")
-			} else {
-				dbg("loop: %d callback(s)", size)
-				for i := 0; i < size; i++ {
-					cb := *events[ev.GetName()][i]
-					if cb == nil {
-						continue
-					}
-					go cb(ev)
+			// if size == 0 {
+			// 	dbg("loop: No callback(s)")
+			// } else {
+			// 	dbg("loop: %d callback(s)", size)
+			for i := 0; i < size; i++ {
+				cb := *events[ev.GetName()][i]
+				if cb == nil {
+					continue
 				}
+				go cb(ev)
 			}
+			// }
 		}
 		mutex.Unlock()
-		dbg("loop: done event trigger")
 	}
 }
 
 func getPipe() {
 	if pipe == nil {
-		dbg("Init pipe")
 		pipe = make(chan Event, 1)
 		go loop()
 	}

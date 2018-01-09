@@ -9,10 +9,8 @@ import (
 	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/muka/go-bluetooth/emitter"
 	"github.com/muka/go-bluetooth/util"
-	"github.com/tj/go-debug"
 )
 
-var dbgManager = debug.Debug("bluetooth:api:Manager")
 var manager *Manager
 
 //GetManager return the object manager reference
@@ -38,7 +36,6 @@ func NewManager() *Manager {
 		panic(err)
 	}
 
-	dbgManager("Manager initialized")
 	return m
 }
 
@@ -66,8 +63,6 @@ func (m *Manager) watchChanges() error {
 		return nil
 	}
 
-	dbgManager("Watching manager changes")
-
 	if m == nil {
 		return nil
 	}
@@ -82,37 +77,27 @@ func (m *Manager) watchChanges() error {
 	m.watchChangesEnabled = true
 
 	go (func() {
-		dbgManager("waiting updates")
 		for v := range channel {
 
 			if v == nil {
-				dbgManager("nil value, abort")
 				m.watchChangesEnabled = false
 				return
 			}
 
-			dbgManager("update received %s from %s", v.Name, v.Sender)
-
 			switch v.Name {
 			case bluez.InterfacesAdded:
 				{
-					dbgManager("Added %s %s", v.Name, v.Path)
-
 					path := v.Body[0].(dbus.ObjectPath)
 					props := v.Body[1].(map[string]map[string]dbus.Variant)
 
 					// keep cache up to date
 					m.objects[path] = props
 
-					dbgManager("Body %v", props)
 					emitChanges(path, props)
 				}
 			case bluez.InterfacesRemoved:
 				{
 
-					dbgManager("Removed %s %s", v.Name, v.Path)
-
-					// dbg("\n+++Body %s\n", v.Body)
 					path := v.Body[0].(dbus.ObjectPath)
 					ifaces := v.Body[1].([]string)
 
@@ -124,19 +109,17 @@ func (m *Manager) watchChanges() error {
 					for _, iF := range ifaces {
 						// device removed
 						if iF == bluez.Device1Interface {
-							// dbg("%s : %s", path, ifaces)
-							dbgManager("Removed device %s", path)
+
 							devInfo := DiscoveredDeviceEvent{string(path), DeviceRemoved, nil}
 							emitter.Emit("discovery", devInfo)
 						}
 						//adapter removed
 						if iF == bluez.Adapter1Interface {
-							// dbg("%s : %s", path, ifaces)
+
 							strpath := string(path)
 							parts := strings.Split(strpath, "/")
 							name := parts[len(parts)-1:][0]
 
-							dbgManager("Removed adapter %s", name)
 							adapterInfo := AdapterEvent{name, strpath, DeviceRemoved}
 							emitter.Emit("adapter", adapterInfo)
 						}
@@ -157,7 +140,7 @@ func emitChanges(path dbus.ObjectPath, props map[string]map[string]dbus.Variant)
 			log.Fatalf("Failed to parse device: %v\n", err)
 			return
 		}
-		dbgManager("Added device %s", path)
+
 		devInfo := DiscoveredDeviceEvent{string(path), DeviceAdded, dev}
 		emitter.Emit("discovery", devInfo)
 	}
@@ -168,7 +151,6 @@ func emitChanges(path dbus.ObjectPath, props map[string]map[string]dbus.Variant)
 		parts := strings.Split(strpath, "/")
 		name := parts[len(parts)-1:][0]
 
-		dbgManager("Added adapter %s", name)
 		adapterInfo := AdapterEvent{name, strpath, DeviceAdded}
 		emitter.Emit("adapter", adapterInfo)
 	}
@@ -179,8 +161,6 @@ func emitChanges(path dbus.ObjectPath, props map[string]map[string]dbus.Variant)
 		strpath := string(path)
 		parts := strings.Split(strpath, "/")
 		devicePath := strings.Join(parts[:len(parts)-1], "/")
-
-		dbgManager("Added GattService1 %s", strpath)
 
 		srvcProps := new(profile.GattService1Properties)
 		util.MapToStruct(srvcProps, props[bluez.GattService1Interface])
@@ -198,8 +178,6 @@ func emitChanges(path dbus.ObjectPath, props map[string]map[string]dbus.Variant)
 		parts := strings.Split(strpath, "/")
 		devicePath := strings.Join(parts[:len(parts)-2], "/")
 
-		dbgManager("Added GattCharacteristic1 %s", strpath)
-
 		srvcProps := new(profile.GattCharacteristic1Properties)
 		util.MapToStruct(srvcProps, props[bluez.GattCharacteristic1Interface])
 
@@ -213,8 +191,6 @@ func emitChanges(path dbus.ObjectPath, props map[string]map[string]dbus.Variant)
 		strpath := string(path)
 		parts := strings.Split(strpath, "/")
 		devicePath := strings.Join(parts[:len(parts)-3], "/")
-
-		dbgManager("Added GattDescriptor1 %s", strpath)
 
 		srvcProps := new(profile.GattDescriptor1Properties)
 		util.MapToStruct(srvcProps, props[bluez.GattDescriptor1Interface])
@@ -234,7 +210,6 @@ func (m *Manager) LoadObjects() error {
 		return err
 	}
 	m.objects = objs
-	dbg("Loaded %d objects", len(m.objects))
 	return nil
 }
 
@@ -251,7 +226,6 @@ func (m *Manager) RefreshState() error {
 		return err
 	}
 
-	dbgManager("Refreshing object state")
 	objs := m.GetObjects()
 	for path, ifaces := range *objs {
 		emitChanges(path, ifaces)

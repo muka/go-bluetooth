@@ -11,10 +11,7 @@ import (
 	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/muka/go-bluetooth/emitter"
 	"github.com/muka/go-bluetooth/util"
-	"github.com/tj/go-debug"
 )
-
-var dbgDevice = debug.Debug("bluez:api:Device")
 
 var deviceRegistry = make(map[string]*Device)
 
@@ -22,7 +19,6 @@ var deviceRegistry = make(map[string]*Device)
 func NewDevice(path string) *Device {
 
 	if _, ok := deviceRegistry[path]; ok {
-		// dbgDevice("Reusing cache instance %s", path)
 		return deviceRegistry[path]
 	}
 
@@ -78,8 +74,6 @@ func ParseDevice(path dbus.ObjectPath, propsMap map[string]dbus.Variant) (*Devic
 
 func (d *Device) watchProperties() error {
 
-	dbgDevice("watch-prop: watching properties")
-
 	channel, err := d.client.Register()
 	if err != nil {
 		return err
@@ -89,28 +83,22 @@ func (d *Device) watchProperties() error {
 		for {
 
 			if channel == nil {
-				dbgDevice("watch-prop: nil channel, exit")
 				break
 			}
 
-			dbgDevice("watch-prop: waiting updates")
 			sig := <-channel
 
 			if sig == nil {
-				dbgDevice("watch-prop: nil sig, exit")
 				return
 			}
 
-			dbgDevice("watch-prop: signal name %s", sig.Name)
 			if sig.Name != bluez.PropertiesChanged {
-				dbgDevice("Skipped %s vs %s\n", sig.Name, bluez.PropertiesInterface)
 				continue
 			}
 
-			dbgDevice("Device property changed")
-			for i := 0; i < len(sig.Body); i++ {
-				dbgDevice("%s -> %s", reflect.TypeOf(sig.Body[i]), sig.Body[i])
-			}
+			// for i := 0; i < len(sig.Body); i++ {
+			// log.Printf("%s -> %s\n", reflect.TypeOf(sig.Body[i]), sig.Body[i])
+			// }
 
 			iface := sig.Body[0].(string)
 			changes := sig.Body[1].(map[string]dbus.Variant)
@@ -129,11 +117,9 @@ func (d *Device) watchProperties() error {
 					if f.CanSet() {
 						x := reflect.ValueOf(val.Value())
 						f.Set(x)
-						dbgDevice("Set props value: %s = %s\n", field, x.Interface())
 					}
 				}
 
-				dbgDevice("Emit change for %s = %v\n", field, val.Value())
 				propChanged := PropertyChangedEvent{string(iface), field, val.Value(), props, d}
 				d.Emit("changed", propChanged)
 			}
@@ -238,6 +224,7 @@ func (d *Device) GetService(path string) *profile.GattService1 {
 func (d *Device) GetChar(path string) *profile.GattCharacteristic1 {
 	return profile.NewGattCharacteristic1(path)
 }
+
 //GetAllServicesAndUUID return a list of uuid's with their corresponding services
 func (d *Device) GetAllServicesAndUUID() ([]string, error) {
 
@@ -262,14 +249,13 @@ func (d *Device) GetAllServicesAndUUID() ([]string, error) {
 
 	return deviceFound, nil
 }
+
 //GetCharByUUID return a GattService by its uuid, return nil if not found
 func (d *Device) GetCharByUUID(uuid string) (*profile.GattCharacteristic1, error) {
 
 	uuid = strings.ToUpper(uuid)
 
 	list := d.GetCharsList()
-
-	dbgDevice("Find by uuid, char list %d, cached list %d", len(list), len(d.chars))
 
 	var deviceFound *profile.GattCharacteristic1
 
@@ -285,14 +271,13 @@ func (d *Device) GetCharByUUID(uuid string) (*profile.GattCharacteristic1, error
 		cuuid := strings.ToUpper(props.UUID)
 
 		if cuuid == uuid {
-			dbgDevice("Found char %s", uuid)
 			deviceFound = d.chars[path]
 		}
 	}
 
-	if deviceFound == nil {
-		dbgDevice("Characteristic not Found: %s ", uuid)
-	}
+	// if deviceFound == nil {
+	// 	dbgDevice("Characteristic not Found: %s ", uuid)
+	// }
 
 	return deviceFound, nil
 }
@@ -308,11 +293,9 @@ func (d *Device) GetCharsList() []dbus.ObjectPath {
 			chars = append(chars, objpath)
 		}
 
-		dbgDevice("Cached %d chars", len(chars))
 		return chars
 	}
 
-	dbgDevice("Scanning chars by ObjectPath")
 	list := GetManager().GetObjects()
 	for objpath := range *list {
 		path := string(objpath)
@@ -330,7 +313,6 @@ func (d *Device) GetCharsList() []dbus.ObjectPath {
 		chars = append(chars, objpath)
 	}
 
-	dbgDevice("Found %d chars", len(chars))
 	return chars
 }
 

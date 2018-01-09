@@ -4,19 +4,15 @@ import (
 	"errors"
 
 	"github.com/godbus/dbus"
-	"github.com/tj/go-debug"
 
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/muka/go-bluetooth/emitter"
 )
 
-var dbg = debug.Debug("bluetooth:api")
-
 //Exit performs a clean exit
 func Exit() {
 	GetManager().Close()
-	dbg("Bye.")
 }
 
 //GetDeviceByAddress return a Device object based on its address
@@ -26,10 +22,8 @@ func GetDeviceByAddress(address string) (*Device, error) {
 		return nil, err
 	}
 	for _, path := range list {
-		// dbg("Check device %s", path)
 		dev := NewDevice(string(path))
 		if dev.Properties.Address == address {
-			// dbg("Address found")
 			return dev, nil
 		}
 	}
@@ -86,7 +80,6 @@ func AdapterExists(adapterID string) (bool, error) {
 	path := dbus.ObjectPath("/org/bluez/" + adapterID)
 	_, exists := (*objects)[path]
 
-	dbg("Adapter %s exists ? %t", adapterID, exists)
 	return exists, nil
 }
 

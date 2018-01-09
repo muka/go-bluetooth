@@ -8,10 +8,7 @@ import (
 	"github.com/godbus/dbus/introspect"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
-	"github.com/tj/go-debug"
 )
-
-var dbg = debug.Debug("bluetooth:server")
 
 //UUIDSuffix fixed 128bit UUID [0000]+[xxxx]+[-0000-1000-8000-00805F9B34FB]
 const UUIDSuffix = "-0000-1000-8000-00805F9B34FB"
@@ -109,14 +106,12 @@ func (app *Application) CreateService(props *profile.GattService1Properties) (*G
 		conn:       app.config.conn,
 	}
 	s, err := NewGattService1(c, props)
-	dbg("Created service %s", path)
 	return s, err
 }
 
 //AddService add service to expose
 func (app *Application) AddService(service *GattService1) error {
 
-	dbg("Adding service %s", service.Path())
 	app.services[service.Path()] = service
 
 	err := service.Expose()
@@ -129,7 +124,6 @@ func (app *Application) AddService(service *GattService1) error {
 		return err
 	}
 
-	dbg("Exposing service to ObjectManager")
 	err = app.GetObjectManager().AddObject(service.Path(), service.Properties())
 	if err != nil {
 		return err
@@ -140,7 +134,6 @@ func (app *Application) AddService(service *GattService1) error {
 
 //RemoveService remove an exposed service
 func (app *Application) RemoveService(service *GattService1) error {
-	dbg("Removing service %s", service.Path())
 	if _, ok := app.services[service.Path()]; ok {
 
 		delete(app.services, service.Path())
@@ -167,12 +160,9 @@ func (app *Application) GetServices() map[dbus.ObjectPath]*GattService1 {
 //expose dbus interfaces
 func (app *Application) expose() error {
 
-	dbg("Exposing object %s", app.Name())
-
 	conn := app.config.conn
 	reply, err := conn.RequestName(app.Name(), dbus.NameFlagDoNotQueue&dbus.NameFlagReplaceExisting)
 	if err != nil {
-		dbg("Error requesting object name: %s", err.Error())
 		return err
 	}
 
@@ -191,9 +181,6 @@ func (app *Application) expose() error {
 		replym = "RequestNameReplyInQueue"
 		break
 	}
-	dbg("Name registration reply (%d) %s", reply, replym)
-
-	dbg("Exposing path %s", app.Path())
 
 	// / path
 	err = conn.Export(app.objectManager, app.Path(), bluez.ObjectManagerInterface)
@@ -205,8 +192,6 @@ func (app *Application) expose() error {
 	if err != nil {
 		return err
 	}
-
-	dbg("Listening on %s %s", app.Name(), app.Path())
 
 	return nil
 }
@@ -230,8 +215,6 @@ func (app *Application) exportTree() error {
 			}
 		}
 	}
-
-	// dbg("child %v", childrenNode)
 
 	// must include also child nodes
 	node := &introspect.Node{

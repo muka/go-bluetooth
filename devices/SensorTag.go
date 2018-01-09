@@ -15,10 +15,7 @@ import (
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/muka/go-bluetooth/emitter"
-	"github.com/tj/go-debug"
 )
-
-var dbgTag = debug.Debug("bluetooth:sensortag")
 
 var dataChannel chan dbus.Signal
 
@@ -157,7 +154,6 @@ func newHumiditySensor(tag *SensorTag) (HumiditySensor, error) {
 
 	loadChars = func() (HumiditySensor, error) {
 
-		dbgTag("Load humid cfg")
 		cfg, err := dev.GetCharByUUID(HumidityConfigUUID)
 
 		if err != nil {
@@ -172,12 +168,10 @@ func newHumiditySensor(tag *SensorTag) (HumiditySensor, error) {
 
 			tries++
 			time.Sleep(time.Second * time.Duration(5*tries))
-			dbgTag("Char not found, try to reload")
 
 			return loadChars()
 		}
 
-		dbgTag("Load humid data")
 		data, err := dev.GetCharByUUID(HumidityDataUUID)
 		if err != nil {
 			return HumiditySensor{}, err
@@ -186,7 +180,6 @@ func newHumiditySensor(tag *SensorTag) (HumiditySensor, error) {
 			return HumiditySensor{}, errors.New("Cannot find HumidityData characteristic " + HumidityDataUUID)
 		}
 
-		dbgTag("Load temp period")
 		period, err := dev.GetCharByUUID(HumidityPeriodUUID)
 		if err != nil {
 			return HumiditySensor{}, err
@@ -285,8 +278,6 @@ func (s *HumiditySensor) IsNotifying() (bool, error) {
 
 func (s *HumiditySensor) Read() (float64, error) {
 
-	dbgTag("Reading humidity sensor")
-
 	err := s.Enable()
 	if err != nil {
 		return 0, err
@@ -294,8 +285,6 @@ func (s *HumiditySensor) Read() (float64, error) {
 
 	options := make(map[string]dbus.Variant)
 	b, err := s.data.ReadValue(options)
-
-	dbgTag("Read data: %v", b)
 
 	if err != nil {
 		return 0, err
@@ -330,7 +319,6 @@ func (s *HumiditySensor) StartNotify(macAddress string) error {
 			uuidAndService = val[1]
 		}
 	}
-	dbgTag("Enabling dataChannel for humidity")
 
 	err := s.Enable()
 	if err != nil {
@@ -372,7 +360,6 @@ func (s *HumiditySensor) StartNotify(macAddress string) error {
 				}
 
 				b1 := props1["Value"].Value().([]byte)
-				dbgTag("Read data: %v", b1)
 
 				humid := binary.LittleEndian.Uint16(b1[2:])
 
@@ -380,7 +367,6 @@ func (s *HumiditySensor) StartNotify(macAddress string) error {
 
 				temperature := binary.LittleEndian.Uint16(b1[0:2])
 				tempValue := calcTmpFromHumidSensor(uint16(temperature))
-				dbgTag("Got data %v", humidityValue)
 				dataEvent := SensorTagDataEvent{
 
 					Device:            s.tag.Device,
@@ -409,8 +395,6 @@ func (s *HumiditySensor) StartNotify(macAddress string) error {
 //............StopNotify disable DataChannel for humidity sensor............
 
 func (s *HumiditySensor) StopNotify() error {
-
-	dbgTag("Disabling dataChannel")
 
 	err := s.Disable()
 	if err != nil {
@@ -470,7 +454,6 @@ func newMpuSensor(tag *SensorTag) (MpuSensor, error) {
 
 	loadChars = func() (MpuSensor, error) {
 
-		dbgTag("Load mpu cfg")
 		cfg, err := dev.GetCharByUUID(MpuConfigUUID)
 
 		if err != nil {
@@ -485,12 +468,10 @@ func newMpuSensor(tag *SensorTag) (MpuSensor, error) {
 
 			tries++
 			time.Sleep(time.Second * time.Duration(5*tries))
-			dbgTag("Char not found, try to reload")
 
 			return loadChars()
 		}
 
-		dbgTag("Load mpu data")
 		data, err := dev.GetCharByUUID(MpuDataUUID)
 		if err != nil {
 			return MpuSensor{}, err
@@ -499,7 +480,6 @@ func newMpuSensor(tag *SensorTag) (MpuSensor, error) {
 			return MpuSensor{}, errors.New("Cannot find MpuData characteristic " + MpuDataUUID)
 		}
 
-		dbgTag("Load mpu period")
 		period, err := dev.GetCharByUUID(MpuPeriodUUID)
 		if err != nil {
 			return MpuSensor{}, err
@@ -598,8 +578,6 @@ func (s *MpuSensor) IsNotifying() (bool, error) {
 
 func (s *MpuSensor) Read() (float64, error) {
 
-	dbgTag("Reading mpu sensor")
-
 	err := s.Enable()
 	if err != nil {
 		return 0, err
@@ -607,8 +585,6 @@ func (s *MpuSensor) Read() (float64, error) {
 
 	options := make(map[string]dbus.Variant)
 	b, err := s.data.ReadValue(options)
-
-	dbgTag("Read data: %v", b)
 
 	if err != nil {
 		return 0, err
@@ -640,7 +616,6 @@ func (s *MpuSensor) StartNotify(macAddress string) error {
 			uuidAndService = val[1]
 		}
 	}
-	dbgTag("Enabling mpuDataChannel")
 
 	err := s.Enable()
 	if err != nil {
@@ -742,8 +717,6 @@ func (s *MpuSensor) StartNotify(macAddress string) error {
 
 func (s *MpuSensor) StopNotify() error {
 
-	dbgTag("Disabling dataChannel")
-
 	err := s.Disable()
 	if err != nil {
 		return err
@@ -810,7 +783,6 @@ func newBarometricSensor(tag *SensorTag) (BarometricSensor, error) {
 
 	loadChars = func() (BarometricSensor, error) {
 
-		dbgTag("Load pressure cfg")
 		cfg, err := dev.GetCharByUUID(BarometerConfigUUID)
 
 		if err != nil {
@@ -825,12 +797,10 @@ func newBarometricSensor(tag *SensorTag) (BarometricSensor, error) {
 
 			tries++
 			time.Sleep(time.Second * time.Duration(5*tries))
-			dbgTag("Char not found, try to reload")
 
 			return loadChars()
 		}
 
-		dbgTag("Load barometer data")
 		data, err := dev.GetCharByUUID(BarometerDataUUID)
 		if err != nil {
 			return BarometricSensor{}, err
@@ -839,7 +809,6 @@ func newBarometricSensor(tag *SensorTag) (BarometricSensor, error) {
 			return BarometricSensor{}, errors.New("Cannot find BarometerData characteristic " + BarometerDataUUID)
 		}
 
-		dbgTag("Load barometer period")
 		period, err := dev.GetCharByUUID(BarometerPeriodUUID)
 		if err != nil {
 			return BarometricSensor{}, err
@@ -939,8 +908,6 @@ func (s *BarometricSensor) IsNotifying() (bool, error) {
 
 func (s *BarometricSensor) Read() (float64, error) {
 
-	dbgTag("Reading BarometricSensor sensor")
-
 	err := s.Enable()
 	if err != nil {
 		return 0, err
@@ -948,8 +915,6 @@ func (s *BarometricSensor) Read() (float64, error) {
 
 	options := make(map[string]dbus.Variant)
 	b, err := s.data.ReadValue(options)
-
-	dbgTag("Read data: %v", b)
 
 	if err != nil {
 		return 0, err
@@ -980,7 +945,6 @@ func (s *BarometricSensor) StartNotify(macAddress string) error {
 			uuidAndService = val[1]
 		}
 	}
-	dbgTag("Enabling BarometricSensorDataChannel")
 
 	err := s.Enable()
 	if err != nil {
@@ -1028,8 +992,6 @@ func (s *BarometricSensor) StartNotify(macAddress string) error {
 				barometerTemperature := binary.LittleEndian.Uint32(b1[0:4])
 				barometerTempValue := calcBarometricTemperature(uint32(barometerTemperature))
 
-				dbgTag("Got data %v", barometericPressureValue)
-
 				dataEvent := SensorTagDataEvent{
 
 					Device:                   s.tag.Device,
@@ -1058,8 +1020,6 @@ func (s *BarometricSensor) StartNotify(macAddress string) error {
 //............StopNotify disable Barometric Sensor DataChannel............
 
 func (s *BarometricSensor) StopNotify() error {
-
-	dbgTag("Disabling dataChannel")
 
 	err := s.Disable()
 	if err != nil {
@@ -1114,7 +1074,6 @@ func newTemperatureSensor(tag *SensorTag) (TemperatureSensor, error) {
 
 	loadChars = func() (TemperatureSensor, error) {
 
-		dbgTag("Load temp cfg")
 		cfg, err := dev.GetCharByUUID(TemperatureConfigUUID)
 
 		if err != nil {
@@ -1129,12 +1088,10 @@ func newTemperatureSensor(tag *SensorTag) (TemperatureSensor, error) {
 
 			tries++
 			time.Sleep(time.Second * time.Duration(5*tries))
-			dbgTag("Char not found, try to reload")
 
 			return loadChars()
 		}
 
-		dbgTag("Load temp data")
 		data, err := dev.GetCharByUUID(TemperatureDataUUID)
 		if err != nil {
 			return TemperatureSensor{}, err
@@ -1143,7 +1100,6 @@ func newTemperatureSensor(tag *SensorTag) (TemperatureSensor, error) {
 			return TemperatureSensor{}, errors.New("Cannot find TemperatureData characteristic " + TemperatureDataUUID)
 		}
 
-		dbgTag("Load temp period")
 		period, err := dev.GetCharByUUID(TemperaturePeriodUUID)
 		if err != nil {
 			return TemperatureSensor{}, err
@@ -1255,8 +1211,6 @@ var calcTmpTarget = func(raw uint16) float64 {
 //Read value from the sensor
 func (s *TemperatureSensor) Read() (float64, error) {
 
-	dbgTag("Reading temperature sensor")
-
 	err := s.Enable()
 	if err != nil {
 		return 0, err
@@ -1264,8 +1218,6 @@ func (s *TemperatureSensor) Read() (float64, error) {
 
 	options := make(map[string]dbus.Variant)
 	b, err := s.data.ReadValue(options)
-
-	dbgTag("Read data: %v", b)
 
 	if err != nil {
 		return 0, err
@@ -1297,8 +1249,6 @@ func (s *TemperatureSensor) StartNotify(macAddress string) error {
 			uuidAndService = val[1]
 		}
 	}
-
-	dbgTag("Enabling DataChannel")
 
 	err := s.Enable()
 	if err != nil {
@@ -1370,8 +1320,6 @@ func (s *TemperatureSensor) StartNotify(macAddress string) error {
 //StopNotify disable temperature DataChannel
 func (s *TemperatureSensor) StopNotify() error {
 
-	dbgTag("Disabling temperature DataChannel")
-
 	err := s.Disable()
 	if err != nil {
 		return err
@@ -1411,7 +1359,6 @@ func newLuxometerSensor(tag *SensorTag) (LuxometerSensor, error) {
 
 	loadChars = func() (LuxometerSensor, error) {
 
-		dbgTag("Load luxometer cfg")
 		cfg, err := dev.GetCharByUUID(LuxometerConfigUUID)
 
 		if err != nil {
@@ -1426,12 +1373,10 @@ func newLuxometerSensor(tag *SensorTag) (LuxometerSensor, error) {
 
 			tries++
 			time.Sleep(time.Second * time.Duration(5*tries))
-			dbgTag("Char not found, try to reload")
 
 			return loadChars()
 		}
 
-		dbgTag("Load luxometer data")
 		data, err := dev.GetCharByUUID(LuxometerDataUUID)
 		if err != nil {
 			return LuxometerSensor{}, err
@@ -1440,7 +1385,6 @@ func newLuxometerSensor(tag *SensorTag) (LuxometerSensor, error) {
 			return LuxometerSensor{}, errors.New("Cannot find LuxometerDataUUID  characteristic " + LuxometerDataUUID)
 		}
 
-		dbgTag("Load luxometer period")
 		period, err := dev.GetCharByUUID(LuxometerPeriodUUID)
 		if err != nil {
 			return LuxometerSensor{}, err
@@ -1539,8 +1483,6 @@ func (s *LuxometerSensor) IsNotifying() (bool, error) {
 
 func (s *LuxometerSensor) Read() (float64, error) {
 
-	dbgTag("Reading LuxometerSensor sensor")
-
 	err := s.Enable()
 	if err != nil {
 		return 0, err
@@ -1548,8 +1490,6 @@ func (s *LuxometerSensor) Read() (float64, error) {
 
 	options := make(map[string]dbus.Variant)
 	b, err := s.data.ReadValue(options)
-
-	dbgTag("Read data: %v", b)
 
 	if err != nil {
 		return 0, err
@@ -1581,7 +1521,6 @@ func (s *LuxometerSensor) StartNotify(macAddress string) error {
 			uuidAndService = val[1]
 		}
 	}
-	dbgTag("Enabling LuxometerSensorDataChannel")
 
 	err := s.Enable()
 	if err != nil {
@@ -1652,8 +1591,6 @@ func (s *LuxometerSensor) StartNotify(macAddress string) error {
 
 func (s *LuxometerSensor) StopNotify() error {
 
-	dbgTag("Disabling dataChannel")
-
 	err := s.Disable()
 	if err != nil {
 		return err
@@ -1708,8 +1645,6 @@ func NewSensorTag(d *api.Device) (*SensorTag, error) {
 		if changed.Field == "Connected" {
 			conn := changed.Value.(bool)
 			if !conn {
-
-				dbgTag("Device disconnected")
 
 				// TODO clean up properly
 
@@ -1813,8 +1748,6 @@ func newDeviceInfo(tag *SensorTag) (SensorTagDeviceInfo, error) {
 
 	loadChars = func() (SensorTagDeviceInfo, error) {
 
-		dbgTag("Load device DeviceFirmwareUUID")
-
 		firmwareInfo, err := dev.GetCharByUUID(DeviceFirmwareUUID)
 		if err != nil {
 			return SensorTagDeviceInfo{}, err
@@ -1822,8 +1755,6 @@ func newDeviceInfo(tag *SensorTag) (SensorTagDeviceInfo, error) {
 		if firmwareInfo == nil {
 			return SensorTagDeviceInfo{}, errors.New("Cannot find DeviceFirmwareUUID characteristic " + DeviceFirmwareUUID)
 		}
-
-		dbgTag("Load device DeviceHardwareUUID")
 
 		hardwareInfo, err := dev.GetCharByUUID(DeviceHardwareUUID)
 		if err != nil {
@@ -1833,8 +1764,6 @@ func newDeviceInfo(tag *SensorTag) (SensorTagDeviceInfo, error) {
 			return SensorTagDeviceInfo{}, errors.New("Cannot find DeviceHardwareUUID characteristic " + DeviceHardwareUUID)
 		}
 
-		dbgTag("Load device DeviceManufacturerUUID")
-
 		manufacturerInfo, err := dev.GetCharByUUID(DeviceManufacturerUUID)
 		if err != nil {
 			return SensorTagDeviceInfo{}, err
@@ -1842,8 +1771,6 @@ func newDeviceInfo(tag *SensorTag) (SensorTagDeviceInfo, error) {
 		if manufacturerInfo == nil {
 			return SensorTagDeviceInfo{}, errors.New("Cannot find DeviceManufacturerUUID characteristic " + DeviceManufacturerUUID)
 		}
-
-		dbgTag("Load device DeviceModelUUID")
 
 		modelInfo, err := dev.GetCharByUUID(DeviceModelUUID)
 		if err != nil {
