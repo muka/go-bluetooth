@@ -159,7 +159,6 @@ func (s *GattCharacteristic1) StopNotify() error {
 //Expose the char to dbus
 func (s *GattCharacteristic1) Expose() error {
 
-	dbg("GATT Characteristic path %s", s.Path())
 	conn := s.config.conn
 
 	err := conn.Export(s, s.Path(), s.Interface())
@@ -167,7 +166,6 @@ func (s *GattCharacteristic1) Expose() error {
 		return err
 	}
 
-	dbg("Exposing Properties interface")
 	for iface, props := range s.Properties() {
 		s.PropertiesInterface.AddProperties(iface, props)
 	}
@@ -196,8 +194,6 @@ func (s *GattCharacteristic1) Expose() error {
 	if err != nil {
 		return err
 	}
-
-	dbg("Exposed GATT characteristic %s (%s)", s.properties.UUID, s.Path())
 
 	return nil
 }

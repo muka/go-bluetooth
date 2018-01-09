@@ -65,20 +65,17 @@ func (s *GattDescriptor1) Properties() map[string]bluez.Properties {
 
 //ReadValue read a value
 func (s *GattDescriptor1) ReadValue(options map[string]interface{}) []byte {
-	dbg("Descriptor.ReadValue")
 	b := make([]byte, 0)
 	return b
 }
 
 //WriteValue write a value
 func (s *GattDescriptor1) WriteValue(value []byte, options map[string]interface{}) {
-	dbg("Descriptor.ReadValue")
 }
 
 //Expose the desc to dbus
 func (s *GattDescriptor1) Expose() error {
 
-	dbg("GATT Descriptor path %s", s.Path())
 	conn := s.config.conn
 
 	err := conn.Export(s, s.Path(), s.Interface())
@@ -86,7 +83,6 @@ func (s *GattDescriptor1) Expose() error {
 		return err
 	}
 
-	dbg("Exposing Properties interface")
 	for iface, props := range s.Properties() {
 		s.PropertiesInterface.AddProperties(iface, props)
 	}
@@ -115,8 +111,6 @@ func (s *GattDescriptor1) Expose() error {
 	if err != nil {
 		return err
 	}
-
-	dbg("Exposed GATT descriptor %s (%s)", s.properties.UUID, s.Path())
 
 	return nil
 }

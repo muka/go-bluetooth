@@ -161,25 +161,9 @@ func (app *Application) GetServices() map[dbus.ObjectPath]*GattService1 {
 func (app *Application) expose() error {
 
 	conn := app.config.conn
-	reply, err := conn.RequestName(app.Name(), dbus.NameFlagDoNotQueue&dbus.NameFlagReplaceExisting)
+	_, err := conn.RequestName(app.Name(), dbus.NameFlagDoNotQueue&dbus.NameFlagReplaceExisting)
 	if err != nil {
 		return err
-	}
-
-	replym := ""
-	switch reply {
-	case dbus.RequestNameReplyAlreadyOwner:
-		replym = "RequestNameReplyAlreadyOwner"
-		break
-	case dbus.RequestNameReplyPrimaryOwner:
-		replym = "RequestNameReplyPrimaryOwner"
-		break
-	case dbus.RequestNameReplyExists:
-		replym = "RequestNameReplyExists"
-		break
-	case dbus.RequestNameReplyInQueue:
-		replym = "RequestNameReplyInQueue"
-		break
 	}
 
 	// / path

@@ -96,15 +96,12 @@ func On(event string, callback *Callback) {
 
 	events[event] = append(events[event], callback)
 	mutex.Unlock()
-	dbg("Added to `%s` event, len is %d", event, len(events[event]))
 }
 
 // Emit an event
 func Emit(name string, data interface{}) {
-	dbg("Emit event `%s` -> %v", name, data)
 	getPipe()
 	ev := BaseEvent{name, data}
-	dbg("Send to pipe")
 	pipe <- ev
 }
 
@@ -133,8 +130,6 @@ func RemoveListeners(pattern string, callback *Callback) {
 //Off Removes all callbacks from an event
 func Off(name string, callback *Callback) {
 
-	dbg("Off %s", name)
-
 	if name == "*" {
 		for name := range events {
 			if name != "*" {
@@ -153,7 +148,6 @@ func Off(name string, callback *Callback) {
 		for i, cb := range events[name] {
 			// compare pointers to see if the exactly same function
 			if cb == callback {
-				dbg("Drop callback for `%s`", name)
 				events[name] = append(events[name][:i], events[name][i+1:]...)
 			}
 		}

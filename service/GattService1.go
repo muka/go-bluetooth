@@ -136,7 +136,6 @@ func (s *GattService1) RemoveCharacteristic(char *GattCharacteristic1) error {
 //Expose the service to dbus
 func (s *GattService1) Expose() error {
 
-	dbg("GATT Service path %s", s.Path())
 	conn := s.config.conn
 
 	err := conn.Export(s, s.Path(), s.Interface())
@@ -144,7 +143,6 @@ func (s *GattService1) Expose() error {
 		return err
 	}
 
-	dbg("Exposing Properties interface")
 	for iface, props := range s.Properties() {
 		s.PropertiesInterface.AddProperties(iface, props)
 	}
@@ -173,8 +171,6 @@ func (s *GattService1) Expose() error {
 	if err != nil {
 		return err
 	}
-
-	dbg("Exposed GATT service %s (%s)", s.properties.UUID, s.Path())
 
 	return nil
 }

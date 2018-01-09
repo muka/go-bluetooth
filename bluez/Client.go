@@ -7,7 +7,6 @@ import (
 
 // NewClient create a new client
 func NewClient(config *Config) *Client {
-	dbg("Create new client: %v", config)
 	c := new(Client)
 	c.Config = config
 	return c
@@ -30,7 +29,6 @@ func (c *Client) Disconnect() {
 		c.conn.Close()
 		c.conn = nil
 		c.dbusObject = nil
-		dbg("Client disconnected")
 	}
 }
 
@@ -42,7 +40,6 @@ func (c *Client) Connect() error {
 	}
 	c.conn = dbusConn
 	c.dbusObject = c.conn.Object(c.Config.Name, dbus.ObjectPath(c.Config.Path))
-	dbg("Connected to %s %s", c.Config.Name, c.Config.Path)
 	return nil
 }
 
@@ -59,8 +56,6 @@ func (c *Client) Call(method string, flags dbus.Flags, args ...interface{}) *dbu
 	}
 
 	methodPath := c.Config.Iface + "." + method
-
-	dbg("Call %s( %v )", methodPath, args)
 
 	return c.dbusObject.Call(methodPath, flags, args...)
 }
@@ -97,8 +92,6 @@ func (c *Client) GetProperties(props interface{}) error {
 		}
 	}
 
-	dbg("Loading properties for %s", c.Config.Iface)
-
 	result := make(map[string]dbus.Variant)
 	err := c.dbusObject.Call("org.freedesktop.DBus.Properties.GetAll", 0, c.Config.Iface).Store(&result)
 	if err != nil {
@@ -123,7 +116,6 @@ func (c *Client) Register(path string, iface string) (chan *dbus.Signal, error) 
 	}
 
 	matchstr := getMatchString(path, iface)
-	dbg("Match on %s", matchstr)
 	c.conn.BusObject().Call("org.freedesktop.DBus.AddMatch", 0, matchstr)
 
 	channel := make(chan *dbus.Signal, 1)
@@ -141,7 +133,6 @@ func (c *Client) Unregister(path string, iface string) error {
 		}
 	}
 	matchstr := getMatchString(path, iface)
-	dbg("Match on %s", matchstr)
 	c.conn.BusObject().Call("org.freedesktop.DBus.RemoveMatch", 0, matchstr)
 
 	return nil

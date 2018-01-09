@@ -37,7 +37,6 @@ func (h *HCIConfig) Status() (*HCIConfigResult, error) {
 	if err != nil {
 		out := errbuf.String()
 		err = errors.New(string(out))
-		dbg("hciconfig %s status: %s", h.adapterID, err.Error())
 		return nil, err
 	}
 
@@ -83,7 +82,6 @@ func (h *HCIConfig) Up() (*HCIConfigResult, error) {
 	if err != nil {
 		out := errbuf.String()
 		err = errors.New(string(out))
-		dbg("hciconfig %s up: %s", h.adapterID, err.Error())
 		return nil, err
 	}
 	return h.Status()
@@ -98,7 +96,6 @@ func (h *HCIConfig) Down() (*HCIConfigResult, error) {
 	if err != nil {
 		out := errbuf.String()
 		err = errors.New(string(out))
-		dbg("hciconfig %s down: %s", h.adapterID, err.Error())
 		return nil, err
 	}
 	return h.Status()

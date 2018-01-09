@@ -113,7 +113,6 @@ func discoverDevices(adapterID string) {
 		dev := discoveryEvent.Device
 
 		if dev == nil {
-			dbg("Device removed!")
 			return
 		}
 
@@ -133,8 +132,6 @@ func loadDevices() bool {
 	if err != nil {
 		panic(err)
 	}
-
-	dbg("Loaded devices %d", len(devices))
 
 	for _, dev := range devices {
 		if filterDevice(&dev) {
@@ -168,7 +165,6 @@ func listProfiles(dev *api.Device) {
 		charProps := charEvent.Properties
 
 		substr := strings.ToUpper(charProps.UUID[4:8])
-		dbg("Check for char %s", substr)
 		serviceName := sensorTagUUIDs[substr]
 
 		if serviceName != "" {
