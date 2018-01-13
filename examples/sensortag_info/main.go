@@ -8,7 +8,7 @@
 //firmware version, hardware version, model
 //and sensor data...
 
-package examples
+package main
 
 import (
 	"time"
@@ -21,7 +21,7 @@ import (
 
 var adapterID = "hci0"
 
-func SensortTagFetchData() {
+func main() {
 
 	manager := api.NewManager()
 	error := manager.RefreshState()
@@ -29,13 +29,15 @@ func SensortTagFetchData() {
 		panic(error)
 	}
 
-	SensorTag()
+	ShowSensorTagInfo("hci0")
 }
-func SensorTag() {
+
+//ShowSensorTagInfo show info from a sensor tag
+func ShowSensorTagInfo(adapterID string) {
 
 	//.....................AdapterExists..................................
 
-	boo, err := api.AdapterExists("hci0")
+	boo, err := api.AdapterExists(adapterID)
 	if err != nil {
 		panic(err)
 	}
@@ -43,7 +45,7 @@ func SensorTag() {
 
 	//...................start discovery on adapterId hci0..................
 
-	err = api.StartDiscoveryOn("hci0")
+	err = api.StartDiscoveryOn(adapterID)
 	if err != nil {
 		panic(err)
 	}
@@ -71,7 +73,6 @@ func SensorTag() {
 
 		ConnectAndFetchSensorDetailAndData(prop1.Address)
 	}
-	wg.Wait()
 
 }
 
@@ -167,7 +168,5 @@ func ConnectAndFetchSensorDetailAndData(tagAddress string) {
 		x := ev.GetData().(api.DataEvent)
 		log.Debugf("%++v", x)
 	}))
-
-	wg.Add(3)
 
 }

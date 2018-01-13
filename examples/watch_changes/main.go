@@ -1,4 +1,4 @@
-package examples
+package main
 
 import (
 	"strings"
@@ -9,6 +9,7 @@ import (
 	"github.com/muka/go-bluetooth/emitter"
 )
 
+var adapterID = "hci0"
 var dumpAddress = "B0:B4:48:C9:4B:01"
 
 var sensorTagUUIDs = map[string]string{
@@ -41,7 +42,7 @@ var sensorTagUUIDs = map[string]string{
 }
 
 //WatchChangesExample example events receival
-func WatchChangesExample() {
+func main() {
 	if !loadDevice() {
 		discoverDevice()
 	}

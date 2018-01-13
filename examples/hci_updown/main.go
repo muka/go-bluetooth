@@ -1,4 +1,4 @@
-package examples
+package main
 
 import (
 	log "github.com/Sirupsen/logrus"
@@ -6,7 +6,9 @@ import (
 )
 
 //HciUpDownExample hciconfig up / down
-func HciUpDownExample(adapterID string) {
+func main() {
+
+	adapterID := "hci0"
 
 	log.Infof("Starting adapter %s", adapterID)
 

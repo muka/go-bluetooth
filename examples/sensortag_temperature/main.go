@@ -1,4 +1,4 @@
-package examples
+package main
 
 import (
 	log "github.com/Sirupsen/logrus"
@@ -7,8 +7,8 @@ import (
 	"github.com/muka/go-bluetooth/devices"
 )
 
-//SensorTagTemperatureExample example of reading temperature from a TI sensortag
-func SensorTagTemperatureExample() {
+// example of reading temperature from a TI sensortag
+func main() {
 
 	var tagAddress = "B0:B4:48:C9:4B:01"
 

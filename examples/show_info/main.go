@@ -1,4 +1,4 @@
-package examples
+package main
 
 import (
 	"fmt"
@@ -10,11 +10,12 @@ import (
 )
 
 //ShowInfoExample show informations for hardcoded MiBand2 on hci0
-func ShowInfoExample() {
+func main() {
 
 	// Load adapter and device info
 	adapterID := "hci0"
 	deviceID := "ED:4B:79:DC:D4:D4" // MI Band 2
+
 	LoadInfoExample(adapterID, deviceID)
 
 	devices, err := api.GetDevices()

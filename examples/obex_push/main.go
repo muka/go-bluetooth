@@ -8,7 +8,7 @@
 //firmware version, hardware version, model
 //and sensor data...
 
-package examples
+package main
 
 import (
 	"os"
@@ -20,7 +20,7 @@ import (
 	"github.com/muka/go-bluetooth/bluez/profile/obex"
 )
 
-func ObexPush() {
+func main() {
 	manager := api.NewManager()
 	error := manager.RefreshState()
 	if error != nil {
@@ -30,6 +30,7 @@ func ObexPush() {
 	SendFile(os.Args[1], os.Args[2])
 }
 
+//SendFile send a file
 func SendFile(targetAddress string, filePath string) {
 	dev, err := api.GetDeviceByAddress(targetAddress)
 	if err != nil {
@@ -42,6 +43,9 @@ func SendFile(targetAddress string, filePath string) {
 	}
 
 	props, err := dev.GetProperties()
+	if err != nil {
+		panic(err)
+	}
 	if !props.Paired {
 		log.Debug("not paired")
 
