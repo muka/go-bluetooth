@@ -1,7 +1,7 @@
 
-vv=5.46
+vv=5.48
 
-# Script to update bluez, works on Ubuntu 16.0 and 16.10.
+# Script to update bluez, tested on Ubuntu 16.04, 16.10, 17.04, 17.10
 # See next comment for Raspbian jessie
 
 sudo apt-get update
@@ -19,9 +19,9 @@ wget "http://www.kernel.org/pub/linux/bluetooth/bluez-$vv.tar.xz" && \
     make -j 2 && \
     sudo make install
 
-# For Raspbian jessie
-# sudo rm /usr/sbin/bluetoothd
-# sudo ln -s /usr/local/libexec/bluetooth/bluetoothd /usr/sbin/bluetoothd
+# For Raspbian jessie and from Ubuntu 17.04
+sudo rm -f /usr/sbin/bluetoothd
+sudo ln -s /usr/local/libexec/bluetooth/bluetoothd /usr/sbin/bluetoothd
 
 sudo systemctl daemon-reload
 sudo service bluetooth restart
