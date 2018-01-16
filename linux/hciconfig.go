@@ -1,12 +1,10 @@
 package linux
 
 import (
-	"bytes"
-	"errors"
-	"os/exec"
 	"strings"
 )
 
+// NewHCIConfig initialize a new HCIConfig
 func NewHCIConfig(adapterID string) *HCIConfig {
 	return &HCIConfig{adapterID}
 }
@@ -29,18 +27,12 @@ func (h *HCIConfig) Status() (*HCIConfigResult, error) {
 
 	cfg := &HCIConfigResult{}
 
-	cmd := exec.Command("hciconfig", h.adapterID)
-	var outbuf, errbuf bytes.Buffer
-	cmd.Stdout = &outbuf
-	cmd.Stderr = &errbuf
-	err := cmd.Run()
+	out, err := CmdExec("hciconfig", h.adapterID)
 	if err != nil {
-		out := errbuf.String()
-		err = errors.New(string(out))
 		return nil, err
 	}
 
-	s := strings.Replace(outbuf.String()[6:], "\t", "", -1)
+	s := strings.Replace(out[6:], "\t", "", -1)
 	lines := strings.Split(s, "\n")
 	// var parts []string
 	for i, line := range lines {
@@ -75,13 +67,8 @@ func (h *HCIConfig) Status() (*HCIConfigResult, error) {
 
 // Up Turn on an HCI device
 func (h *HCIConfig) Up() (*HCIConfigResult, error) {
-	var errbuf bytes.Buffer
-	cmd := exec.Command("hciconfig", h.adapterID, "up")
-	cmd.Stderr = &errbuf
-	err := cmd.Run()
+	_, err := CmdExec("hciconfig", h.adapterID, "up")
 	if err != nil {
-		out := errbuf.String()
-		err = errors.New(string(out))
 		return nil, err
 	}
 	return h.Status()
@@ -89,13 +76,8 @@ func (h *HCIConfig) Up() (*HCIConfigResult, error) {
 
 // Down Turn down an HCI device
 func (h *HCIConfig) Down() (*HCIConfigResult, error) {
-	var errbuf bytes.Buffer
-	cmd := exec.Command("hciconfig", h.adapterID, "down")
-	cmd.Stderr = &errbuf
-	err := cmd.Run()
+	_, err := CmdExec("hciconfig", h.adapterID, "down")
 	if err != nil {
-		out := errbuf.String()
-		err = errors.New(string(out))
 		return nil, err
 	}
 	return h.Status()
