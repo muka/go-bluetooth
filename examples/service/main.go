@@ -1,6 +1,8 @@
 package main
 
 import (
+	"os"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/api"
@@ -21,9 +23,11 @@ func main() {
 
 	log.SetLevel(log.DebugLevel)
 
-	registerApplication()
-
-	// createClient(objectName, objectPath)
+	if len(os.Args) > 0 && os.Args[len(os.Args)-1] == "client" {
+		createClient(objectName, objectPath)
+	} else {
+		registerApplication()
+	}
 
 	select {}
 }
