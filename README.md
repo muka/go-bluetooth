@@ -29,10 +29,10 @@ Check `main.go` or in `examples/` for an initial overview of the API
 
 The library has been tested with
 
-- golang `1.8` (minimum `v1.6`)
-- bluez bluetooth `v5.46` (**Note** `v5.43` is the minimum supported one)
+- golang `1.9` (minimum `v1.6`)
+- bluez bluetooth `v5.48` (**Note** `v5.43` is the minimum supported one)
 - ubuntu 16.10 kernel `4.8.0-27-generic`
-- raspbian and hypirot (debian 8) armv7 `4.4.x`  
+- raspbian and hypirot (debian 8) armv7 `4.4.x`
 
 ### bluez upgrade
 
@@ -60,13 +60,14 @@ See in `scripts/` how to upgrade bluez
 
 - View `bluetoothd` debug messages
 
-    `sudo bluetoothd -Edn`
+    `sudo bluetoothd -Edn P hostname`
 
-- Enable LE advertisement
+- Enable LE advertisement (to use a single pc, you will need 2 bluetooth adapter)
 
   ```bash
     sudo btmgmt -i 0 power off
-    sudo btmgmt -i 0 le on
+    sudo btmgmt -i 0 name "my go app"
+    sudo btmgmt -i 0 le on    
     sudo btmgmt -i 0 connectable on
     sudo btmgmt -i 0 advertising on
     sudo btmgmt -i 0 power on
