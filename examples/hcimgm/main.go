@@ -2,7 +2,7 @@ package main
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/muka/go-bluetooth/hci"
+	"github.com/muka/go-bluetooth/linux/hci"
 )
 
 func main() {
