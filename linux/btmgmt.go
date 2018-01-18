@@ -37,7 +37,7 @@ func GetAdapters() ([]BtAdapter, error) {
 	//	supported settings:
 	re3 := regexp.MustCompile("\t.+: (.*)")
 	//	(short )name
-	re4 := regexp.MustCompile("\t.+name (.*)")
+	re4 := regexp.MustCompile("\t.*name (.*)")
 
 	// track if parsing an adapter
 	for i := 0; i < len(lines); i++ {

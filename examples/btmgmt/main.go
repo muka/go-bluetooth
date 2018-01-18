@@ -1,3 +1,4 @@
+// Example use of the btmgmt wrapper
 package main
 
 import (
@@ -15,7 +16,7 @@ func main() {
 	}
 
 	for i, a := range list {
-		log.Infof("%d) %s (%v)", i+1, a.Name, a.Status)
+		log.Infof("%d) %s (%v)", i+1, a.Name, a.Addr)
 	}
 
 }
