@@ -25,11 +25,17 @@ func main() {
 		panic(err)
 	}
 
-	err = api.ClearDevices()
+	devices, err := api.GetDevices()
 	if err != nil {
 		panic(err)
 	}
 
+	log.Infof("Cached devices:")
+	for _, dev := range devices {
+		showDeviceInfo(&dev)
+	}
+
+	log.Infof("Discovered devices:")
 	err = discoverDevices(adapterID)
 	if err != nil {
 		panic(err)
