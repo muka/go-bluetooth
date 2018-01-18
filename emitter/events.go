@@ -50,10 +50,6 @@ func loop() {
 		mutex.Lock()
 		if _, ok := events[ev.GetName()]; ok {
 			size := len(events[ev.GetName()])
-			// if size == 0 {
-			// 	dbg("loop: No callback(s)")
-			// } else {
-			// 	dbg("loop: %d callback(s)", size)
 			for i := 0; i < size; i++ {
 				cb := *events[ev.GetName()][i]
 				if cb == nil {
@@ -61,7 +57,6 @@ func loop() {
 				}
 				go cb(ev)
 			}
-			// }
 		}
 		mutex.Unlock()
 	}

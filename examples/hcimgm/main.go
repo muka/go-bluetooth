@@ -2,16 +2,20 @@ package main
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/muka/go-bluetooth/linux/hci"
+	"github.com/muka/go-bluetooth/linux"
 )
 
 func main() {
 
 	log.SetLevel(log.DebugLevel)
 
-	err := hci.Do()
+	list, err := linux.GetAdapters()
 	if err != nil {
 		panic(err)
+	}
+
+	for i, a := range list {
+		log.Infof("%d) %s (%v)", i+1, a.Name, a.Status)
 	}
 
 }
