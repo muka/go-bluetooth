@@ -29,6 +29,7 @@ type Device1 struct {
 
 // Device1Properties exposed properties for Device1
 type Device1Properties struct {
+	AdvertisingFlags []byte
 	UUIDs            []string
 	Blocked          bool
 	Connected        bool
@@ -42,6 +43,7 @@ type Device1Properties struct {
 	TxPower          int16
 	Adapter          dbus.ObjectPath
 	Address          string
+	AddressType      string
 	Alias            string
 	Icon             string
 	Modalias         string

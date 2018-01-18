@@ -110,23 +110,18 @@ type BtMgmt struct {
 	adapterID string
 }
 
-func setFlag(idx string, flag string, val bool) error {
-	var v string
-	if val {
-		v = "on"
-	} else {
-		v = "off"
-	}
-	_, err := CmdExec("btmgmt", "--index", idx, flag, v)
+// Reset reset the power
+func (h *BtMgmt) Reset() error {
+	err := h.SetPowered(false)
 	if err != nil {
 		return err
 	}
-	return nil
+	return h.SetPowered(true)
 }
 
 // SetDeviceID Set Device ID name
 func (h *BtMgmt) SetDeviceID(did string) error {
-	_, err := CmdExec("btmgmt", "--index", h.adapterID, "did", did)
+	_, err := CmdExec("btmgmt", "--index", "did", did)
 	if err != nil {
 		return err
 	}
@@ -135,7 +130,7 @@ func (h *BtMgmt) SetDeviceID(did string) error {
 
 // SetName Set local name
 func (h *BtMgmt) SetName(name string) error {
-	_, err := CmdExec("btmgmt", "--index", h.adapterID, "name", name)
+	_, err := CmdExec("btmgmt", "--index", "name", name)
 	if err != nil {
 		return err
 	}
@@ -144,79 +139,94 @@ func (h *BtMgmt) SetName(name string) error {
 
 // SetClass set device class
 func (h *BtMgmt) SetClass(major, minor string) error {
-	_, err := CmdExec("btmgmt", "--index", h.adapterID, "class", major, minor)
+	_, err := CmdExec("btmgmt", "--index", "class", major, minor)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-// TogglePowered set power to adapter
-func (h *BtMgmt) TogglePowered(status bool) error {
-	return setFlag("power", h.adapterID, status)
+// SetPowered set power to adapter
+func (h *BtMgmt) setFlag(flag string, val bool) error {
+	var v string
+	if val {
+		v = "on"
+	} else {
+		v = "off"
+	}
+	_, err := CmdExec("btmgmt", "--index", h.adapterID, flag, v)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
-// ToggleDiscoverable  Toggle discoverable state
-func (h *BtMgmt) ToggleDiscoverable(status bool) error {
-	return setFlag("discov", h.adapterID, status)
+// SetPowered set power to adapter
+func (h *BtMgmt) SetPowered(status bool) error {
+	return h.setFlag("power", status)
 }
 
-// ToggleConnectable    	Toggle connectable state
-func (h *BtMgmt) ToggleConnectable(status bool) error {
-	return setFlag("connectable", h.adapterID, status)
+// SetDiscoverable  Set discoverable state
+func (h *BtMgmt) SetDiscoverable(status bool) error {
+	return h.setFlag("discov", status)
 }
 
-// ToggleFastConnectable 	Toggle fast connectable state
-func (h *BtMgmt) ToggleFastConnectable(status bool) error {
-	return setFlag("fast", h.adapterID, status)
+// SetConnectable    	Set connectable state
+func (h *BtMgmt) SetConnectable(status bool) error {
+	return h.setFlag("connectable", status)
 }
 
-// ToggleBondable  	Toggle bondable state
-func (h *BtMgmt) ToggleBondable(status bool) error {
-	return setFlag("bondable", h.adapterID, status)
+// SetFastConnectable 	Set fast connectable state
+func (h *BtMgmt) SetFastConnectable(status bool) error {
+	return h.setFlag("fast", status)
 }
 
-// TogglePairable  	Toggle bondable state
-func (h *BtMgmt) TogglePairable(status bool) error {
-	return setFlag("pairable", h.adapterID, status)
+// SetBondable  	Set bondable state
+func (h *BtMgmt) SetBondable(status bool) error {
+	return h.setFlag("bondable", status)
 }
 
-// ToggleLinkLevelSecurity Toggle link level security
-func (h *BtMgmt) ToggleLinkLevelSecurity(status bool) error {
-	return setFlag("linksec", h.adapterID, status)
+// SetPairable  	Set bondable state
+func (h *BtMgmt) SetPairable(status bool) error {
+	return h.setFlag("pairable", status)
 }
 
-// ToggleSsp     Toggle SSP mode
-func (h *BtMgmt) ToggleSsp(status bool) error {
-	return setFlag("ssp", h.adapterID, status)
+// SetLinkLevelSecurity Set link level security
+func (h *BtMgmt) SetLinkLevelSecurity(status bool) error {
+	return h.setFlag("linksec", status)
 }
 
-// ToggleSc Toogle SC support
-func (h *BtMgmt) ToggleSc(status bool) error {
-	return setFlag("sc", h.adapterID, status)
+// SetSsp     Set SSP mode
+func (h *BtMgmt) SetSsp(status bool) error {
+	return h.setFlag("ssp", status)
 }
 
-// ToggleHs Toggle HS support
-func (h *BtMgmt) ToggleHs(status bool) error {
-	return setFlag("hs", h.adapterID, status)
+// SetSc Toogle SC support
+func (h *BtMgmt) SetSc(status bool) error {
+	return h.setFlag("sc", status)
 }
 
-// ToggleLe Toggle LE support
-func (h *BtMgmt) ToggleLe(status bool) error {
-	return setFlag("le", h.adapterID, status)
+// SetHs Set HS support
+func (h *BtMgmt) SetHs(status bool) error {
+	return h.setFlag("hs", status)
 }
 
-// ToggleAdvertising    	Toggle LE advertising
-func (h *BtMgmt) ToggleAdvertising(status bool) error {
-	return setFlag("advertising", h.adapterID, status)
+// SetLe Set LE support
+func (h *BtMgmt) SetLe(status bool) error {
+	return h.setFlag("le", status)
 }
 
-// ToggleBredr   Toggle BR/EDR support
-func (h *BtMgmt) ToggleBredr(status bool) error {
-	return setFlag("bredr", h.adapterID, status)
+// SetAdvertising    	Set LE advertising
+func (h *BtMgmt) SetAdvertising(status bool) error {
+	return h.setFlag("advertising", status)
 }
 
-// TogglePrivacy Toggle privacy support
-func (h *BtMgmt) TogglePrivacy(status bool) error {
-	return setFlag("privacy", h.adapterID, status)
+// SetBredr   Set BR/EDR support
+func (h *BtMgmt) SetBredr(status bool) error {
+	return h.setFlag("bredr", status)
+}
+
+// SetPrivacy Set privacy support
+func (h *BtMgmt) SetPrivacy(status bool) error {
+	return h.setFlag("privacy", status)
 }

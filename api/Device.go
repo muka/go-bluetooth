@@ -38,19 +38,45 @@ func NewDevice(path string) *Device {
 }
 
 //ClearDevice free a device struct
-func ClearDevice(d *Device) {
+func ClearDevice(d *Device) error {
 
-	d.Disconnect()
-	d.unwatchProperties()
-	c, err := d.GetClient()
-	if err == nil {
-		c.Close()
+	err := d.Disconnect()
+	if err != nil {
+		return err
 	}
+
+	err = d.unwatchProperties()
+	if err != nil {
+		return err
+	}
+
+	c, err := d.GetClient()
+	if err != nil {
+		return err
+	}
+
+	c.Close()
 
 	if _, ok := deviceRegistry[d.Path]; ok {
 		delete(deviceRegistry, d.Path)
 	}
 
+	return nil
+}
+
+//ClearDevices clear cached devices
+func ClearDevices() error {
+	devices, err := GetDevices()
+	if err != nil {
+		panic(err)
+	}
+	for _, dev := range devices {
+		err := ClearDevice(&dev)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // ParseDevice parse a Device from a ObjectManager map
