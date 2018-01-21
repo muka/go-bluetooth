@@ -20,6 +20,8 @@ func NewGattCharacteristic1(path string) *GattCharacteristic1 {
 		},
 	)
 
+	g.Path = path
+
 	g.Properties = new(GattCharacteristic1Properties)
 
 	_, err := g.GetProperties()
@@ -35,6 +37,7 @@ type GattCharacteristic1 struct {
 	client     *bluez.Client
 	Properties *GattCharacteristic1Properties
 	channel    chan *dbus.Signal
+	Path       string
 }
 
 // GattCharacteristic1Properties exposed properties for GattCharacteristic1
