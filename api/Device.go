@@ -301,9 +301,9 @@ func (d *Device) GetCharByUUID(uuid string) (*profile.GattCharacteristic1, error
 		}
 	}
 
-	// if deviceFound == nil {
-	// 	dbgDevice("Characteristic not Found: %s ", uuid)
-	// }
+	if deviceFound == nil {
+    return nil, errors.New("Characteristic not found.")
+	}
 
 	return deviceFound, nil
 }
