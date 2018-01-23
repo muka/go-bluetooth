@@ -313,15 +313,6 @@ func (d *Device) GetCharsList() []dbus.ObjectPath {
 
 	var chars []dbus.ObjectPath
 
-	if len(d.chars) != 0 {
-
-		for objpath := range d.chars {
-			chars = append(chars, objpath)
-		}
-
-		return chars
-	}
-
 	list := GetManager().GetObjects()
 	for objpath := range *list {
 		path := string(objpath)
