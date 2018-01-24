@@ -301,9 +301,9 @@ func (d *Device) GetCharByUUID(uuid string) (*profile.GattCharacteristic1, error
 		}
 	}
 
-	// if deviceFound == nil {
-	// 	dbgDevice("Characteristic not Found: %s ", uuid)
-	// }
+	if deviceFound == nil {
+    return nil, errors.New("Characteristic not found.")
+	}
 
 	return deviceFound, nil
 }
@@ -312,15 +312,6 @@ func (d *Device) GetCharByUUID(uuid string) (*profile.GattCharacteristic1, error
 func (d *Device) GetCharsList() []dbus.ObjectPath {
 
 	var chars []dbus.ObjectPath
-
-	if len(d.chars) != 0 {
-
-		for objpath := range d.chars {
-			chars = append(chars, objpath)
-		}
-
-		return chars
-	}
 
 	list := GetManager().GetObjects()
 	for objpath := range *list {
