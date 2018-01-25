@@ -15,7 +15,7 @@ func setupAdapter(aid string) error {
 	btmgmt := linux.NewBtMgmt(aid)
 
 	// turn off
-	err := btmgmt.TogglePowered(false)
+	err := btmgmt.SetPowered(false)
 	if err != nil {
 		return err
 	}
@@ -25,28 +25,28 @@ func setupAdapter(aid string) error {
 		return err
 	}
 
-	err = btmgmt.ToggleAdvertising(true)
+	err = btmgmt.SetAdvertising(true)
 	if err != nil {
 		return err
 	}
 
-	err = btmgmt.ToggleLe(true)
+	err = btmgmt.SetLe(true)
 	if err != nil {
 		return err
 	}
 
-	err = btmgmt.ToggleConnectable(true)
+	err = btmgmt.SetConnectable(true)
 	if err != nil {
 		return err
 	}
 
-	err = btmgmt.ToggleConnectable(true)
+	err = btmgmt.SetConnectable(true)
 	if err != nil {
 		return err
 	}
 
 	// turn on
-	err = btmgmt.TogglePowered(true)
+	err = btmgmt.SetPowered(true)
 	if err != nil {
 		return err
 	}

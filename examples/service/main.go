@@ -13,7 +13,7 @@ const (
 	objectName = "org.bluez"
 	objectPath = "/org/bluez/example/service"
 
-	appName = "Example golang"
+	appName = "go-bluetooth"
 )
 
 func main() {
@@ -21,7 +21,7 @@ func main() {
 	log.SetLevel(log.DebugLevel)
 
 	if len(os.Args) > 0 && os.Args[len(os.Args)-1] == "client" {
-		createClient(objectName, objectPath)
+		createClient(clientAdapterID, objectName, objectPath)
 	} else {
 		err := registerApplication()
 		if err != nil {

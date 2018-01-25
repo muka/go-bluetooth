@@ -84,7 +84,7 @@ func (m *Manager) watchChanges() error {
 				return
 			}
 
-			log.Debugf("ObjectManager event: %++v", v)
+			// log.Debugf("ObjectManager event: %++v", v)
 
 			switch v.Name {
 			case bluez.InterfacesAdded:

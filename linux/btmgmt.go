@@ -110,6 +110,17 @@ type BtMgmt struct {
 	adapterID string
 }
 
+// btmgmt cmd wrapper
+func (h *BtMgmt) cmd(args ...string) error {
+	cmdArgs := []string{"btmgmt", "--index", h.adapterID}
+	cmdArgs = append(cmdArgs, args...)
+	_, err := CmdExec(cmdArgs...)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 // Reset reset the power
 func (h *BtMgmt) Reset() error {
 	err := h.SetPowered(false)
@@ -121,29 +132,17 @@ func (h *BtMgmt) Reset() error {
 
 // SetDeviceID Set Device ID name
 func (h *BtMgmt) SetDeviceID(did string) error {
-	_, err := CmdExec("btmgmt", "--index", "did", did)
-	if err != nil {
-		return err
-	}
-	return nil
+	return h.cmd("did", did)
 }
 
 // SetName Set local name
 func (h *BtMgmt) SetName(name string) error {
-	_, err := CmdExec("btmgmt", "--index", "name", name)
-	if err != nil {
-		return err
-	}
-	return nil
+	return h.cmd("name", name)
 }
 
 // SetClass set device class
 func (h *BtMgmt) SetClass(major, minor string) error {
-	_, err := CmdExec("btmgmt", "--index", "class", major, minor)
-	if err != nil {
-		return err
-	}
-	return nil
+	return h.cmd("class", major, minor)
 }
 
 // SetPowered set power to adapter
@@ -154,11 +153,7 @@ func (h *BtMgmt) setFlag(flag string, val bool) error {
 	} else {
 		v = "off"
 	}
-	_, err := CmdExec("btmgmt", "--index", h.adapterID, flag, v)
-	if err != nil {
-		return err
-	}
-	return nil
+	return h.cmd(flag, v)
 }
 
 // SetPowered set power to adapter
