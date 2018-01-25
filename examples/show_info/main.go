@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	log "github.com/Sirupsen/logrus"
@@ -20,7 +21,8 @@ func main() {
 
 	devices, err := api.GetDevices()
 	if err != nil {
-		panic(err)
+		log.Error(err)
+		os.Exit(1)
 	}
 	log.Info(devices)
 

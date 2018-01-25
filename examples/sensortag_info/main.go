@@ -11,6 +11,8 @@
 package main
 
 import (
+	"errors"
+	"os"
 	"time"
 
 	log "github.com/Sirupsen/logrus"
@@ -23,150 +25,148 @@ var adapterID = "hci0"
 
 func main() {
 
-	manager := api.NewManager()
-	error := manager.RefreshState()
-	if error != nil {
-		panic(error)
+	manager, err := api.NewManager()
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
 	}
 
-	ShowSensorTagInfo("hci0")
+	err = manager.RefreshState()
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+
+	err = ShowSensorTagInfo(adapterID)
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
 }
 
 //ShowSensorTagInfo show info from a sensor tag
-func ShowSensorTagInfo(adapterID string) {
-
-	//.....................AdapterExists..................................
+func ShowSensorTagInfo(adapterID string) error {
 
 	boo, err := api.AdapterExists(adapterID)
 	if err != nil {
-		panic(err)
+		return err
 	}
-	log.Debug("AdapterExists: ", boo)
-
-	//...................start discovery on adapterId hci0..................
+	log.Debugf("AdapterExists: %b", boo)
 
 	err = api.StartDiscoveryOn(adapterID)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	// wait a moment for the device to be spawn
 	time.Sleep(time.Second)
-	//.....................get the list of discovered devices....................
 
 	devarr, err := api.GetDevices()
 	if err != nil {
-		panic(err)
+		return err
 	}
 	//log.Debug("devarr",devarr[0])
 	len := len(devarr)
-	log.Debug("length: ", len)
-
-	//.....................get device properties.........(name,status-connected,paired,uuids,Address)..........
+	log.Debugf("length: %d", len)
 
 	for i := 0; i < len; i++ {
 		prop1, err := devarr[i].GetProperties()
-
 		if err != nil {
-			log.Fatal(err)
+			log.Fatalf("Cannot load properties of %s: %s", devarr[i].Path, err.Error())
+			continue
 		}
-		log.Debug("DeviceProperties -ADDRESS: ", prop1.Address)
+		log.Debugf("DeviceProperties - ADDRESS: %s", prop1.Address)
 
-		ConnectAndFetchSensorDetailAndData(prop1.Address)
+		err = ConnectAndFetchSensorDetailAndData(prop1.Address)
+		if err != nil {
+			return err
+		}
 	}
 
+	return nil
 }
 
-func ConnectAndFetchSensorDetailAndData(tagAddress string) {
+// ConnectAndFetchSensorDetailAndData load an show sensor data
+func ConnectAndFetchSensorDetailAndData(tagAddress string) error {
 
 	dev, err := api.GetDeviceByAddress(tagAddress)
 	if err != nil {
-		panic(err)
+		return err
 	}
-	log.Debug("device (dev): ", dev)
+	log.Debugf("device (dev): %s", dev)
 
 	if dev == nil {
-		panic("Device not found")
+		return errors.New("device not found")
 	}
 
 	if !dev.IsConnected() {
 		log.Debug("not connected")
-
 		err = dev.Connect()
 		if err != nil {
-			log.Fatal(err)
+			return err
 		}
-
 	} else {
-
 		log.Debug("already connected")
-
 	}
 
 	sensorTag, err := devices.NewSensorTag(dev)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	//.........getname returns sensorName.................
-
 	name := sensorTag.Temperature.GetName()
-	log.Debug("sensor name: ", name)
+	log.Debugf("sensor name: %s", name)
 
 	name1 := sensorTag.Humidity.GetName()
-	log.Debug("sensor name: ", name1)
+	log.Debugf("sensor name: %s", name1)
 
 	mpu := sensorTag.Mpu.GetName()
-	log.Debug("sensor name: ", mpu)
+	log.Debugf("sensor name: %s", mpu)
 
 	barometric := sensorTag.Barometric.GetName()
-	log.Debug("sensor name: ", barometric)
+	log.Debugf("sensor name: %s", barometric)
 
 	luxometer := sensorTag.Luxometer.GetName()
-	log.Debug("sensor name: ", luxometer)
-
-	//...........read sensorTag info.............................
+	log.Debugf("sensor name: %s", luxometer)
 
 	devInfo, err := sensorTag.DeviceInfo.Read()
 	if err != nil {
-		panic(err)
+		return err
 	}
+
 	log.Debug("FirmwareVersion: ", devInfo.FirmwareVersion)
 	log.Debug("HardwareVersion: ", devInfo.HardwareVersion)
 	log.Debug("Manufacturer: ", devInfo.Manufacturer)
 	log.Debug("Model: ", devInfo.Model)
 
-	//........StartNotify......................
-
 	err = sensorTag.Temperature.StartNotify()
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	err = sensorTag.Humidity.StartNotify()
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	err = sensorTag.Mpu.StartNotify(tagAddress)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	err = sensorTag.Barometric.StartNotify(tagAddress)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	err = sensorTag.Luxometer.StartNotify(tagAddress)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	//......receive emitted data of different sensors.............
-
-	dev.On("data", emitter.NewCallback(func(ev emitter.Event) {
+	err = dev.On("data", emitter.NewCallback(func(ev emitter.Event) {
 		x := ev.GetData().(api.DataEvent)
 		log.Debugf("%++v", x)
 	}))
 
+	return err
 }

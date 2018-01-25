@@ -2,6 +2,8 @@
 package main
 
 import (
+	"os"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/muka/go-bluetooth/linux"
 )
@@ -12,7 +14,8 @@ func main() {
 
 	list, err := linux.GetAdapters()
 	if err != nil {
-		panic(err)
+		log.Error(err)
+		os.Exit(1)
 	}
 
 	for i, a := range list {

@@ -21,10 +21,15 @@ import (
 )
 
 func main() {
-	manager := api.NewManager()
-	error := manager.RefreshState()
-	if error != nil {
-		panic(error)
+	manager, err := api.NewManager()
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+	err = manager.RefreshState()
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
 	}
 
 	SendFile(os.Args[1], os.Args[2])
@@ -34,17 +39,20 @@ func main() {
 func SendFile(targetAddress string, filePath string) {
 	dev, err := api.GetDeviceByAddress(targetAddress)
 	if err != nil {
-		panic(err)
+		log.Error(err)
+		os.Exit(1)
 	}
 	log.Debug("device (dev): ", dev)
 
 	if dev == nil {
-		panic("Device not found")
+		log.Error("Device not found")
+		os.Exit(1)
 	}
 
 	props, err := dev.GetProperties()
 	if err != nil {
-		panic(err)
+		log.Error(err)
+		os.Exit(1)
 	}
 	if !props.Paired {
 		log.Debug("not paired")

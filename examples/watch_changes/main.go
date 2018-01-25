@@ -1,12 +1,14 @@
 package main
 
 import (
+	"os"
 	"strings"
 	"time"
 
-	logger "github.com/Sirupsen/logrus"
+	log "github.com/Sirupsen/logrus"
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/emitter"
+	"github.com/muka/go-bluetooth/linux"
 )
 
 var adapterID = "hci0"
@@ -43,73 +45,101 @@ var sensorTagUUIDs = map[string]string{
 
 //WatchChangesExample example events receival
 func main() {
-	if !loadDevice() {
-		discoverDevice()
+	ok, err := loadDevice()
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+	if !ok {
+		err := discoverDevice()
+		if err != nil {
+			log.Error(err)
+			os.Exit(1)
+		}
 	}
 	select {}
 }
 
-func loadDevice() bool {
+func loadDevice() (bool, error) {
 	defer api.Exit()
 	return loadDevices()
 }
 
-func discoverDevice() {
+func discoverDevice() error {
 
 	defer api.Exit()
 
-	// logger.Debugf("Reset bluetooth device")
-	// err := api.ToggleBluetooth()
-	// if err != nil {
-	// 	panic(err)
-	// }
+	log.Debugf("Reset bluetooth device")
+	err := linux.NewBtMgmt(adapterID).Reset()
+	if err != nil {
+		return err
+	}
 
 	// wait a moment for the device to be spawn
 	time.Sleep(time.Second)
 
-	go waitAdapter()
+	go func() {
+		for {
+			err := waitAdapter()
+			if err != nil {
+				log.Error(err)
+				log.Warn("Error on discovery, restarting in 10sec")
+				time.Sleep(time.Second * 10)
+			}
+		}
+	}()
 
 	select {}
 }
 
-func waitAdapter() {
+func waitAdapter() error {
 	if exists, err := api.AdapterExists(adapterID); !exists {
 		if err != nil {
-			panic(err)
+			return err
 		}
-		logger.Debug("Waiting for adapter hci0")
-		emitter.On("adapter", emitter.NewCallback(func(ev emitter.Event) {
+		log.Debug("Waiting for adapter hci0")
+		err = emitter.On("adapter", emitter.NewCallback(func(ev emitter.Event) {
 			info := ev.GetData().(api.AdapterEvent)
 
 			if info.Status == api.DeviceAdded {
 
-				logger.Debugf("Adapter %s added\n", info.Name)
+				log.Debugf("Adapter %s added\n", info.Name)
 				discoverDevices(info.Name)
 
 			} else {
-				logger.Debugf("Adapter %s removed\n", info.Name)
+				log.Debugf("Adapter %s removed\n", info.Name)
 			}
 		}))
+		if err != nil {
+			return err
+		}
 	} else {
-		discoverDevices(adapterID)
+		err = discoverDevices(adapterID)
+		if err != nil {
+			return err
+		}
 	}
 
 	select {}
 }
 
-func discoverDevices(adapterID string) {
+func discoverDevices(adapterID string) error {
 
-	if deviceIsCached() {
-		return
-	}
-
-	err := api.StartDiscovery()
+	cached, err := deviceIsCached()
 	if err != nil {
-		panic(err)
+		return err
+	}
+	if cached {
+		return nil
 	}
 
-	logger.Debugf("Started discovery")
-	api.On("discovery", emitter.NewCallback(func(ev emitter.Event) {
+	err = api.StartDiscovery()
+	if err != nil {
+		return err
+	}
+
+	log.Debugf("Started discovery")
+	err = api.On("discovery", emitter.NewCallback(func(ev emitter.Event) {
 
 		discoveryEvent := ev.GetData().(api.DiscoveredDeviceEvent)
 		dev := discoveryEvent.Device
@@ -121,33 +151,34 @@ func discoverDevices(adapterID string) {
 		filterDevice(dev)
 	}))
 
+	return err
 }
 
-func deviceIsCached() bool {
+func deviceIsCached() (bool, error) {
 	return loadDevices()
 }
 
-func loadDevices() bool {
+func loadDevices() (bool, error) {
 
 	var err error
 	devices, err := api.GetDevices()
 	if err != nil {
-		panic(err)
+		return false, err
 	}
 
 	for _, dev := range devices {
 		if filterDevice(&dev) {
-			return true
+			return true, nil
 		}
 	}
 
-	return false
+	return false, nil
 }
 
 func filterDevice(dev *api.Device) bool {
 	props := dev.Properties
 	if props.Address == dumpAddress {
-		logger.Debugf("Found %s [addr:%s], list profiles", props.Name, props.Address)
+		log.Debugf("Found %s [addr:%s], list profiles", props.Name, props.Address)
 		connectProfiles(dev)
 		return true
 	}
@@ -155,13 +186,13 @@ func filterDevice(dev *api.Device) bool {
 	return false
 }
 
-func listProfiles(dev *api.Device) {
+func listProfiles(dev *api.Device) error {
 
-	logger.Debug("Connected")
+	log.Debug("Connected")
 
 	// var LOCK = false
 
-	dev.On("char", emitter.NewCallback(func(ev emitter.Event) {
+	err := dev.On("char", emitter.NewCallback(func(ev emitter.Event) {
 
 		charEvent := ev.GetData().(api.GattCharacteristicEvent)
 		charProps := charEvent.Properties
@@ -171,11 +202,7 @@ func listProfiles(dev *api.Device) {
 
 		if serviceName != "" {
 
-			// if LOCK {
-			// 	return
-			// }
-
-			logger.Debugf("Found char %s (%s : %s)", serviceName, substr, charEvent.Path)
+			log.Debugf("Found char %s (%s : %s)", serviceName, substr, charEvent.Path)
 
 			// gattChar := profile.NewGattCharacteristic1(charEvent.DevicePath)
 
@@ -197,50 +224,52 @@ func listProfiles(dev *api.Device) {
 			// 			return
 			// 		}
 			//
-			// 		logger.Debug("Message %v", msg)
+			// 		log.Debug("Message %v", msg)
 			//
 			// 	}
 			// }()
 			//
 			// err = gattChar.StartNotify()
 			// if err != nil {
-			// 	logger.Errorf("StartNotify error %s: %v", serviceName, err)
+			// 	log.Errorf("StartNotify error %s: %v", serviceName, err)
 			// }
 
 			// opts := make(map[string]dbus.Variant)
 			//
-			// logger.Debugf("Reading value for %s", serviceName)
+			// log.Debugf("Reading value for %s", serviceName)
 			// raw, err := gattChar.ReadValue(opts)
 			//
 			// if err != nil {
-			// 	logger.Errorf("Error reading %s: %v", serviceName, err)
+			// 	log.Errorf("Error reading %s: %v", serviceName, err)
 			// } else {
-			// 	logger.Debugf("Raw data %s: %v", serviceName, raw)
+			// 	log.Debugf("Raw data %s: %v", serviceName, raw)
 			// }
 
 		}
 
 	}))
 
+	return err
 }
 
-func connectProfiles(dev *api.Device) {
+func connectProfiles(dev *api.Device) error {
 
 	props := dev.Properties
 
-	logger.Debugf("Connecting device %s", props.Name)
+	log.Debugf("Connecting device %s", props.Name)
 	err := dev.Connect()
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	// logger.Debugf("Pairing device %s", props.Name)
+	// log.Debugf("Pairing device %s", props.Name)
 	// err = dev.Pair()
 	// if err != nil {
-	// 	panic(err)
+	// 	return err
 	// }
 
 	time.Sleep(time.Second * 5)
 	listProfiles(dev)
 
+	return nil
 }

@@ -14,15 +14,20 @@ import (
 var manager *Manager
 
 //GetManager return the object manager reference
-func GetManager() *Manager {
+func GetManager() (*Manager, error) {
 	if manager == nil {
-		manager = NewManager()
+		m, err := NewManager()
+		if err != nil {
+			return nil, err
+		}
+		manager = m
+
 	}
-	return manager
+	return manager, nil
 }
 
 // NewManager creates a new manager instance
-func NewManager() *Manager {
+func NewManager() (*Manager, error) {
 	m := new(Manager)
 	m.objectManager = profile.NewObjectManager("org.bluez", "/")
 	m.objects = make(map[dbus.ObjectPath]map[string]map[string]dbus.Variant)
@@ -33,10 +38,10 @@ func NewManager() *Manager {
 	// Load initial object cache and emit events
 	err := m.LoadObjects()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return m
+	return m, nil
 }
 
 // Manager track changes in the bluez dbus tree reflecting protocol updates

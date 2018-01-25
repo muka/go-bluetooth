@@ -1,6 +1,7 @@
 package emitter
 
 import (
+	"errors"
 	"regexp"
 	"strings"
 	"sync"
@@ -76,10 +77,10 @@ func NewCallback(fn func(ev Event)) *Callback {
 }
 
 //On registers to an event
-func On(event string, callback *Callback) {
+func On(event string, callback *Callback) error {
 
 	if event == "" {
-		panic("Cannot use an empty string as event name")
+		return errors.New("Cannot use an empty string as event name")
 	}
 
 	mutex.Lock()
@@ -91,13 +92,16 @@ func On(event string, callback *Callback) {
 
 	events[event] = append(events[event], callback)
 	mutex.Unlock()
+
+	return nil
 }
 
 // Emit an event
-func Emit(name string, data interface{}) {
+func Emit(name string, data interface{}) error {
 	getPipe()
 	ev := BaseEvent{name, data}
 	pipe <- ev
+	return nil
 }
 
 //MatchListeners return a list of matching event names
@@ -115,15 +119,19 @@ func MatchListeners(path string) []string {
 }
 
 //RemoveListeners drop a list of listeners by event name
-func RemoveListeners(pattern string, callback *Callback) {
+func RemoveListeners(pattern string, callback *Callback) error {
 	paths := MatchListeners(pattern)
 	for _, name := range paths {
-		Off(name, callback)
+		err := Off(name, callback)
+		if err != nil {
+			return err
+		}
 	}
+	return nil
 }
 
 //Off Removes all callbacks from an event
-func Off(name string, callback *Callback) {
+func Off(name string, callback *Callback) error {
 
 	if name == "*" {
 		for name := range events {
@@ -155,4 +163,5 @@ func Off(name string, callback *Callback) {
 		pipe = nil // will stop the go routine
 	}
 
+	return nil
 }

@@ -42,32 +42,26 @@ type Config struct {
 func GetConnection(connType BusType) (*dbus.Conn, error) {
 	switch connType {
 	case SystemBus:
-		{
-			if conns[SystemBus] == nil {
-				// c.logger.Debug("Connecting to SystemBus")
-				conn, err := dbus.SystemBus()
-				if err != nil {
-					return nil, err
-				}
-				conns[SystemBus] = conn
+		if conns[SystemBus] == nil {
+			// c.logger.Debug("Connecting to SystemBus")
+			conn, err := dbus.SystemBus()
+			if err != nil {
+				return nil, err
 			}
-			return conns[SystemBus], nil
+			conns[SystemBus] = conn
 		}
+		return conns[SystemBus], nil
 	case SessionBus:
-		{
-			if conns[SessionBus] == nil {
-				// c.logger.Debug("Connecting to SessionBus")
-				conn, err := dbus.SessionBus()
-				if err != nil {
-					return nil, err
-				}
-				conns[SessionBus] = conn
+		if conns[SessionBus] == nil {
+			// c.logger.Debug("Connecting to SessionBus")
+			conn, err := dbus.SessionBus()
+			if err != nil {
+				return nil, err
 			}
-			return conns[SessionBus], nil
+			conns[SessionBus] = conn
 		}
+		return conns[SessionBus], nil
 	default:
-		{
-			panic(errors.New("Unmanged DBus type code"))
-		}
+		return nil, errors.New("Unmanged DBus type code")
 	}
 }

@@ -12,7 +12,10 @@ import (
 
 //Exit performs a clean exit
 func Exit() {
-	GetManager().Close()
+	manager, err := GetManager()
+	if err == nil {
+		manager.Close()
+	}
 }
 
 //GetDeviceByAddress return a Device object based on its address
@@ -38,7 +41,12 @@ func GetDevices() ([]Device, error) {
 		return nil, err
 	}
 
-	objects := GetManager().GetObjects()
+	manager, err := GetManager()
+	if err != nil {
+		return nil, err
+	}
+
+	objects := manager.GetObjects()
 
 	var devices = make([]Device, 0)
 	for _, path := range list {
@@ -56,7 +64,12 @@ func GetDevices() ([]Device, error) {
 //GetDeviceList returns a list of discovered Devices paths
 func GetDeviceList() ([]dbus.ObjectPath, error) {
 
-	objects := GetManager().GetObjects()
+	manager, err := GetManager()
+	if err != nil {
+		return nil, err
+	}
+
+	objects := manager.GetObjects()
 	var devices []dbus.ObjectPath
 	for path, ifaces := range *objects {
 		for iface := range ifaces {
@@ -75,7 +88,12 @@ func GetDeviceList() ([]dbus.ObjectPath, error) {
 //AdapterExists checks if an adapter is available
 func AdapterExists(adapterID string) (bool, error) {
 
-	objects := GetManager().GetObjects()
+	manager, err := GetManager()
+	if err != nil {
+		return false, err
+	}
+
+	objects := manager.GetObjects()
 
 	path := dbus.ObjectPath("/org/bluez/" + adapterID)
 	_, exists := (*objects)[path]
@@ -147,11 +165,11 @@ func StopDiscoveryOn(adapterID string) error {
 }
 
 //On add an event handler
-func On(name string, fn *emitter.Callback) {
-	emitter.On(name, fn)
+func On(name string, fn *emitter.Callback) error {
+	return emitter.On(name, fn)
 }
 
 //Off remove an event handler
-func Off(name string, fn *emitter.Callback) {
-	emitter.Off(name, fn)
+func Off(name string, fn *emitter.Callback) error {
+	return emitter.Off(name, fn)
 }

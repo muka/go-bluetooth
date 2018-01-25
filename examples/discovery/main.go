@@ -2,6 +2,8 @@
 package main
 
 import (
+	"os"
+
 	log "github.com/Sirupsen/logrus"
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/emitter"
@@ -22,12 +24,14 @@ func main() {
 	a := linux.NewBtMgmt(adapterID)
 	err := a.Reset()
 	if err != nil {
-		panic(err)
+		log.Error(err)
+		os.Exit(1)
 	}
 
 	devices, err := api.GetDevices()
 	if err != nil {
-		panic(err)
+		log.Error(err)
+		os.Exit(1)
 	}
 
 	log.Infof("Cached devices:")
@@ -38,7 +42,8 @@ func main() {
 	log.Infof("Discovered devices:")
 	err = discoverDevices(adapterID)
 	if err != nil {
-		panic(err)
+		log.Error(err)
+		os.Exit(1)
 	}
 
 	select {}
@@ -52,13 +57,13 @@ func discoverDevices(adapterID string) error {
 	}
 
 	log.Debugf("Started discovery")
-	api.On("discovery", emitter.NewCallback(func(ev emitter.Event) {
+	err = api.On("discovery", emitter.NewCallback(func(ev emitter.Event) {
 		discoveryEvent := ev.GetData().(api.DiscoveredDeviceEvent)
 		dev := discoveryEvent.Device
 		showDeviceInfo(dev)
 	}))
 
-	return nil
+	return err
 }
 
 func showDeviceInfo(dev *api.Device) {

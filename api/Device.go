@@ -68,7 +68,7 @@ func ClearDevice(d *Device) error {
 func ClearDevices() error {
 	devices, err := GetDevices()
 	if err != nil {
-		panic(err)
+		return err
 	}
 	for _, dev := range devices {
 		err := ClearDevice(&dev)
@@ -211,34 +211,45 @@ func (d *Device) GetProperty(name string) (data interface{}, err error) {
 }
 
 //On register callback for event
-func (d *Device) On(name string, fn *emitter.Callback) {
+func (d *Device) On(name string, fn *emitter.Callback) error {
 	switch name {
 	case "changed":
-		d.watchProperties()
+		err := d.watchProperties()
+		if err != nil {
+			return err
+		}
 		break
 	}
-	emitter.On(d.Path+"."+name, fn)
+	return emitter.On(d.Path+"."+name, fn)
 }
 
 //Off unregister callback for event
-func (d *Device) Off(name string, cb *emitter.Callback) {
+func (d *Device) Off(name string, cb *emitter.Callback) error {
+
+	var err error
+
 	switch name {
 	case "changed":
-		d.unwatchProperties()
+		err = d.unwatchProperties()
+		if err != nil {
+			return err
+		}
 		break
 	}
 
 	pattern := d.Path + "." + name
 	if name != "*" {
-		emitter.Off(pattern, cb)
+		err = emitter.Off(pattern, cb)
 	} else {
-		emitter.RemoveListeners(pattern, nil)
+		err = emitter.RemoveListeners(pattern, nil)
 	}
+
+	return err
 }
 
 //Emit an event
-func (d *Device) Emit(name string, data interface{}) {
-	emitter.Emit(d.Path+"."+name, data)
+func (d *Device) Emit(name string, data interface{}) error {
+	return emitter.Emit(d.Path+"."+name, data)
 }
 
 //GetService return a GattService
@@ -247,14 +258,17 @@ func (d *Device) GetService(path string) *profile.GattService1 {
 }
 
 //GetChar return a GattService
-func (d *Device) GetChar(path string) *profile.GattCharacteristic1 {
+func (d *Device) GetChar(path string) (*profile.GattCharacteristic1, error) {
 	return profile.NewGattCharacteristic1(path)
 }
 
 //GetAllServicesAndUUID return a list of uuid's with their corresponding services
 func (d *Device) GetAllServicesAndUUID() ([]string, error) {
 
-	list := d.GetCharsList()
+	list, err := d.GetCharsList()
+	if err != nil {
+		return nil, err
+	}
 
 	var deviceFound []string
 	var uuidAndService string
@@ -262,7 +276,11 @@ func (d *Device) GetAllServicesAndUUID() ([]string, error) {
 
 		_, ok := d.chars[path]
 		if !ok {
-			d.chars[path] = profile.NewGattCharacteristic1(string(path))
+			char, err := profile.NewGattCharacteristic1(string(path))
+			if err != nil {
+				return nil, err
+			}
+			d.chars[path] = char
 		}
 
 		props := d.chars[path].Properties
@@ -281,7 +299,10 @@ func (d *Device) GetCharByUUID(uuid string) (*profile.GattCharacteristic1, error
 
 	uuid = strings.ToUpper(uuid)
 
-	list := d.GetCharsList()
+	list, err := d.GetCharsList()
+	if err != nil {
+		return nil, err
+	}
 
 	var deviceFound *profile.GattCharacteristic1
 
@@ -290,7 +311,11 @@ func (d *Device) GetCharByUUID(uuid string) (*profile.GattCharacteristic1, error
 		// use cache
 		_, ok := d.chars[path]
 		if !ok {
-			d.chars[path] = profile.NewGattCharacteristic1(string(path))
+			char, err := profile.NewGattCharacteristic1(string(path))
+			if err != nil {
+				return nil, err
+			}
+			d.chars[path] = char
 		}
 
 		props := d.chars[path].Properties
@@ -302,18 +327,23 @@ func (d *Device) GetCharByUUID(uuid string) (*profile.GattCharacteristic1, error
 	}
 
 	if deviceFound == nil {
-    return nil, errors.New("Characteristic not found.")
+		return nil, errors.New("characteristic not found")
 	}
 
 	return deviceFound, nil
 }
 
 //GetCharsList return a device characteristics
-func (d *Device) GetCharsList() []dbus.ObjectPath {
+func (d *Device) GetCharsList() ([]dbus.ObjectPath, error) {
 
 	var chars []dbus.ObjectPath
 
-	list := GetManager().GetObjects()
+	manager, err := GetManager()
+	if err != nil {
+		return nil, err
+	}
+
+	list := manager.GetObjects()
 	for objpath := range *list {
 		path := string(objpath)
 		if !strings.HasPrefix(path, d.Path) {
@@ -330,7 +360,7 @@ func (d *Device) GetCharsList() []dbus.ObjectPath {
 		chars = append(chars, objpath)
 	}
 
-	return chars
+	return chars, nil
 }
 
 //IsConnected check if connected to the device

@@ -25,7 +25,8 @@ func main() {
 	} else {
 		err := registerApplication()
 		if err != nil {
-			panic(err)
+			log.Error(err)
+			os.Exit(1)
 		}
 	}
 

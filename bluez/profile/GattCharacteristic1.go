@@ -9,7 +9,7 @@ import (
 )
 
 // NewGattCharacteristic1 create a new GattCharacteristic1 client
-func NewGattCharacteristic1(path string) *GattCharacteristic1 {
+func NewGattCharacteristic1(path string) (*GattCharacteristic1, error) {
 	g := new(GattCharacteristic1)
 	g.client = bluez.NewClient(
 		&bluez.Config{
@@ -21,15 +21,14 @@ func NewGattCharacteristic1(path string) *GattCharacteristic1 {
 	)
 
 	g.Path = path
-
 	g.Properties = new(GattCharacteristic1Properties)
 
 	_, err := g.GetProperties()
 	if err != nil {
-		panic(err)
+		return nil, err
 	}
 
-	return g
+	return g, nil
 }
 
 // GattCharacteristic1 client

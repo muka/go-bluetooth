@@ -33,14 +33,14 @@ func createClient(adapterID, name, path string) error {
 	}
 
 	for _, d := range devices {
-		err := adapter.RemoveDevice(d.Path)
+		err = adapter.RemoveDevice(d.Path)
 		if err != nil {
 			log.Warnf("Cannot remove %s : %s", d.Path, err.Error())
 		}
 	}
 
 	log.Infof("Start discovery..")
-	api.On("discovery", emitter.NewCallback(func(ev emitter.Event) {
+	err = api.On("discovery", emitter.NewCallback(func(ev emitter.Event) {
 
 		discoveryEvent := ev.GetData().(api.DiscoveredDeviceEvent)
 		if discoveryEvent.Status == api.DeviceAdded {
@@ -49,7 +49,7 @@ func createClient(adapterID, name, path string) error {
 
 	}))
 
-	return nil
+	return err
 }
 
 func showDeviceInfo(dev *api.Device) {
