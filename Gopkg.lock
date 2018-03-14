@@ -26,10 +26,16 @@
   version = "v4.1.0"
 
 [[projects]]
-  name = "github.com/op/go-logging"
+  branch = "master"
+  name = "github.com/muka/ble"
+  packages = ["linux/hci/socket"]
+  revision = "5613a57406d1a81b68c78b5dbd4e2a236d76aef0"
+
+[[projects]]
+  name = "github.com/pkg/errors"
   packages = ["."]
-  revision = "b2cb9fa56473e98db8caba80237377e83fe44db5"
-  version = "v1"
+  revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
+  version = "v0.8.0"
 
 [[projects]]
   branch = "master"
@@ -46,6 +52,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "8659f028a737af7cdb1d3dc581722bf05be5d53b958f876c2df17315c84b0d86"
+  inputs-digest = "72b0441794b32aabe9d78fdc012bf54c4cb6961188fc6cf9c99453f38177be23"
   solver-name = "gps-cdcl"
   solver-version = 1
