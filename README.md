@@ -23,16 +23,15 @@ The features implemented are
 
 ## Examples
 
-Check `main.go` or in `examples/` for an initial overview of the API
+Check `examples/` folder for an overview of the API
 
 ## Setup
 
 The library has been tested with
 
 - golang `1.9` (minimum `v1.6`)
-- bluez bluetooth `v5.48` (**Note** `v5.43` is the minimum supported one)
-- ubuntu 16.10 kernel `4.8.0-27-generic`
-- raspbian and hypirot (debian 8) armv7 `4.4.x`
+- bluez bluetooth `v5.48` (minimum supported `v5.43`)
+- ubuntu 16.04 and raspbian (armv7)
 
 ### bluez upgrade
 
@@ -78,6 +77,7 @@ See in `scripts/` how to upgrade bluez
 -   Add docs with examples
 -   Add Device read / write and custom data converters
 -   Unit tests coverage
+-   Integrate hci communication from `github.com/[currentlabs|go-ble]/ble`
 
 ## References
 
