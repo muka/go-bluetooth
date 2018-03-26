@@ -58,7 +58,7 @@ func (m *Manager) unwatchChanges() error {
 		close(m.channel)
 	}
 	m.watchChangesEnabled = false
-	return m.objectManager.Unregister()
+	return m.objectManager.Unregister(m.channel)
 }
 
 // watchChanges regitster for signals from the ObjectManager
@@ -243,7 +243,7 @@ func (m *Manager) RefreshState() error {
 
 //Close Close the Manager and free underlying resources
 func (m *Manager) Close() {
-	m.objectManager.Unregister()
+	m.objectManager.Unregister(m.channel)
 	m.objectManager.Close()
 	m.objectManager = nil
 }

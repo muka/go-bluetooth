@@ -104,6 +104,7 @@ func (d *Device) watchProperties() error {
 	if err != nil {
 		return err
 	}
+	d.watchPropertiesChannel = channel
 
 	go (func() {
 		for {
@@ -157,14 +158,17 @@ func (d *Device) watchProperties() error {
 
 //Device return an API to interact with a DBus device
 type Device struct {
-	Path       string
-	Properties *profile.Device1Properties
-	client     *profile.Device1
-	chars      map[dbus.ObjectPath]*profile.GattCharacteristic1
+	Path                   string
+	Properties             *profile.Device1Properties
+	client                 *profile.Device1
+	chars                  map[dbus.ObjectPath]*profile.GattCharacteristic1
+	watchPropertiesChannel chan *dbus.Signal
 }
 
 func (d *Device) unwatchProperties() error {
-	return d.client.Unregister()
+	err := d.client.Unregister(d.watchPropertiesChannel)
+	close(d.watchPropertiesChannel)
+	return err
 }
 
 //GetClient return a DBus Device1 interface client

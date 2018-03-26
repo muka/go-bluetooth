@@ -125,7 +125,7 @@ func (c *Client) Register(path string, iface string) (chan *dbus.Signal, error) 
 }
 
 //Unregister for signals
-func (c *Client) Unregister(path string, iface string) error {
+func (c *Client) Unregister(path string, iface string, signal chan *dbus.Signal) error {
 	if !c.isConnected() {
 		err := c.Connect()
 		if err != nil {
@@ -134,6 +134,9 @@ func (c *Client) Unregister(path string, iface string) error {
 	}
 	matchstr := getMatchString(path, iface)
 	c.conn.BusObject().Call("org.freedesktop.DBus.RemoveMatch", 0, matchstr)
+	if signal != nil {
+		c.conn.RemoveSignal(signal)
+	}
 
 	return nil
 }
