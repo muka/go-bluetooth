@@ -84,11 +84,11 @@ func (app *Application) Name() string {
 
 // GenerateUUID generate a 128bit UUID
 func (app *Application) GenerateUUID(uuidVal string) string {
-	base := "0000"
+	base := app.config.UUID
 	if len(uuidVal) == 8 {
 		base = ""
 	}
-	return base + uuidVal + UUIDSuffix
+	return base + uuidVal + app.config.UUIDSuffix
 }
 
 //CreateService create a new GattService1 instance
