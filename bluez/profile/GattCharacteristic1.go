@@ -82,11 +82,11 @@ func (d *GattCharacteristic1) Register() (chan *dbus.Signal, error) {
 }
 
 //Unregister for changes signalling
-func (d *GattCharacteristic1) Unregister() error {
+func (d *GattCharacteristic1) Unregister(signal chan *dbus.Signal) error {
 	if d.channel != nil {
 		close(d.channel)
 	}
-	return d.client.Unregister(d.client.Config.Path, bluez.PropertiesInterface)
+	return d.client.Unregister(d.client.Config.Path, bluez.PropertiesInterface, signal)
 }
 
 //GetProperties load all available properties

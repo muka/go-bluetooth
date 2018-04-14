@@ -57,8 +57,8 @@ func (d *GattDescriptor1) Register() (chan *dbus.Signal, error) {
 }
 
 //Unregister for changes signalling
-func (d *GattDescriptor1) Unregister() error {
-	return d.client.Unregister(d.client.Config.Path, bluez.PropertiesInterface)
+func (d *GattDescriptor1) Unregister(signal chan *dbus.Signal) error {
+	return d.client.Unregister(d.client.Config.Path, bluez.PropertiesInterface, signal)
 }
 
 //GetProperties load all available properties

@@ -99,11 +99,15 @@ func ParseDevice(path dbus.ObjectPath, propsMap map[string]dbus.Variant) (*Devic
 }
 
 func (d *Device) watchProperties() error {
+	if d.watchPropertiesChannel != nil {
+		d.unwatchProperties()
+	}
 
 	channel, err := d.client.Register()
 	if err != nil {
 		return err
 	}
+	d.watchPropertiesChannel = channel
 
 	go (func() {
 		for {
@@ -157,14 +161,22 @@ func (d *Device) watchProperties() error {
 
 //Device return an API to interact with a DBus device
 type Device struct {
-	Path       string
-	Properties *profile.Device1Properties
-	client     *profile.Device1
-	chars      map[dbus.ObjectPath]*profile.GattCharacteristic1
+	Path                   string
+	Properties             *profile.Device1Properties
+	client                 *profile.Device1
+	chars                  map[dbus.ObjectPath]*profile.GattCharacteristic1
+	watchPropertiesChannel chan *dbus.Signal
 }
 
 func (d *Device) unwatchProperties() error {
-	return d.client.Unregister()
+	var err error
+	if d.watchPropertiesChannel != nil {
+		err = d.client.Unregister(d.watchPropertiesChannel)
+		close(d.watchPropertiesChannel)
+		d.watchPropertiesChannel = nil
+	}
+
+	return err
 }
 
 //GetClient return a DBus Device1 interface client
@@ -397,6 +409,9 @@ func (d *Device) Disconnect() error {
 		return err
 	}
 	c.Disconnect()
+	if d.watchPropertiesChannel != nil {
+		d.unwatchProperties()
+	}
 	return nil
 }
 
