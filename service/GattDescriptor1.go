@@ -64,13 +64,14 @@ func (s *GattDescriptor1) Properties() map[string]bluez.Properties {
 }
 
 //ReadValue read a value
-func (s *GattDescriptor1) ReadValue(options map[string]interface{}) []byte {
+func (s *GattDescriptor1) ReadValue(options map[string]interface{}) ([]byte, *dbus.Error) {
 	b := make([]byte, 0)
-	return b
+	return b, nil
 }
 
 //WriteValue write a value
-func (s *GattDescriptor1) WriteValue(value []byte, options map[string]interface{}) {
+func (s *GattDescriptor1) WriteValue(value []byte, options map[string]interface{}) *dbus.Error {
+	return nil
 }
 
 //Expose the desc to dbus

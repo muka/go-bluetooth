@@ -131,26 +131,29 @@ func (s *GattCharacteristic1) RemoveDescriptor(char *GattDescriptor1) error {
 }
 
 //ReadValue read a value
-func (s *GattCharacteristic1) ReadValue(options map[string]interface{}) []byte {
+func (s *GattCharacteristic1) ReadValue(options map[string]interface{}) ([]byte, *dbus.Error) {
 	log.Debug("Characteristic.ReadValue")
-	b := make([]byte, 0)
-	return b
+	b := make([]byte, 2)
+	b[0] = 0xff
+	b[1] = 0xff
+	return b, nil
 }
 
 //WriteValue write a value
-func (s *GattCharacteristic1) WriteValue(value []byte, options map[string]interface{}) {
+func (s *GattCharacteristic1) WriteValue(value []byte, options map[string]interface{}) *dbus.Error {
 	log.Debug("Characteristic.WriteValue")
+	return nil
 }
 
 //StartNotify start notification
-func (s *GattCharacteristic1) StartNotify() error {
+func (s *GattCharacteristic1) StartNotify() *dbus.Error {
 	log.Debug("Characteristic.StartNotify")
 	s.notifying = true
 	return nil
 }
 
 //StopNotify stop notification
-func (s *GattCharacteristic1) StopNotify() error {
+func (s *GattCharacteristic1) StopNotify() *dbus.Error {
 	log.Debug("Characteristic.StopNotify")
 	s.notifying = false
 	return nil
