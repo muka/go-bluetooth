@@ -114,9 +114,9 @@ func (s *GattService1) AddCharacteristic(char *GattCharacteristic1) error {
 		return err
 	}
 
-	dberr := s.GetApp().exportTree()
-	if dberr != nil {
-		return nil
+	err = s.GetApp().exportTree()
+	if err != nil {
+		return err
 	}
 
 	om := s.config.app.GetObjectManager()
