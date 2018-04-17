@@ -50,6 +50,14 @@ func NewApplication(config *ApplicationConfig) (*Application, error) {
 	return s, nil
 }
 
+// A callback we can register to handle write requests
+type GattWriteCallback func(service_uuid string, char_uuid string, value []byte) error
+type GattDescriptorWriteCallback func(service_uuid string, char_uuid string, desc_uuid string, value []byte) error
+
+// A callback we can register to handle read requests
+type GattReadCallback func(service_uuid string, char_uuid string) ([]byte, error)
+type GattDescriptorReadCallback func(service_uuid string, char_uuid string, desc_uuid string) ([]byte, error)
+
 // ApplicationConfig configuration for the bluetooth service
 type ApplicationConfig struct {
 	UUIDSuffix   string
@@ -58,6 +66,11 @@ type ApplicationConfig struct {
 	ObjectName   string
 	ObjectPath   dbus.ObjectPath
 	serviceIndex int
+
+	WriteFunc	GattWriteCallback
+	ReadFunc  	GattReadCallback
+	DescWriteFunc	GattDescriptorWriteCallback
+	DescReadFunc	GattDescriptorReadCallback
 }
 
 // Application a bluetooth service exposed by bluez
@@ -217,6 +230,79 @@ func (app *Application) exportTree() error {
 		"org.freedesktop.DBus.Introspectable")
 
 	return err
+}
+
+type CallbackError struct {
+	msg 	string
+	code 	int
+}
+
+func (e *CallbackError) Error() string {
+	return e.msg
+}
+
+func NewCallbackError(code int, msg string) *CallbackError {
+	result := &CallbackError{ msg: msg, code: code }
+	return result
+}
+
+const CALLBACK_NOT_REGISTERED = -1
+const CALLBACK_FUNCTION_ERROR = -2
+
+func (app *Application) HandleRead(srv_uuid string, uuid string) ([]byte, *CallbackError) {
+	if app.config.ReadFunc == nil {
+		b := make([]byte, 0)
+		return b, NewCallbackError(-1, "No callback registered.")
+	}
+
+	var cberr *CallbackError = nil
+	b, err := app.config.ReadFunc(srv_uuid, uuid)
+	if err != nil {
+		cberr = NewCallbackError(-2, err.Error())
+	}
+
+	return b, cberr
+}
+
+func (app *Application) HandleWrite(srv_uuid string, uuid string, value []byte) *CallbackError {
+	if app.config.WriteFunc == nil {
+		return NewCallbackError(-1, "No callback registered.")
+	}
+
+	err := app.config.WriteFunc(srv_uuid, uuid, value)
+	if err != nil {
+		return NewCallbackError(-2, err.Error())
+	}
+
+	return nil
+}
+
+func (app *Application) HandleDescriptorRead(srv_uuid string, char_uuid string, desc_uuid string) ([]byte, *CallbackError) {
+	if app.config.DescReadFunc == nil {
+		b := make([]byte, 0)
+		return b, NewCallbackError(-1, "No callback registered.")
+	}
+
+	var cberr *CallbackError = nil
+	b, err := app.config.DescReadFunc(srv_uuid, char_uuid, desc_uuid)
+	if err != nil {
+		cberr = NewCallbackError(-2, err.Error())
+	}
+
+	return b, cberr
+}
+
+func (app *Application) HandleDescriptorWrite(srv_uuid string, char_uuid string, desc_uuid string, value []byte) *CallbackError {
+	if app.config.DescWriteFunc == nil {
+		return NewCallbackError(-1, "No callback registered.")
+	}
+
+	err := app.config.DescWriteFunc(srv_uuid, char_uuid, desc_uuid, value)
+	if err != nil {
+		return NewCallbackError(-2, err.Error())
+	}
+
+	return nil
 }
 
 //Run start the application

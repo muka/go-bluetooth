@@ -41,7 +41,7 @@ type GattCharacteristic1 struct {
 
 // GattCharacteristic1Properties exposed properties for GattCharacteristic1
 type GattCharacteristic1Properties struct {
-	Value          []byte
+	Value          []byte `dbus:"emit"`
 	Notifying      bool
 	NotifyAcquired bool
 	WriteAcquired  bool
