@@ -32,7 +32,7 @@ type GattDescriptor1 struct {
 
 // GattDescriptor1Properties exposed properties for GattDescriptor1
 type GattDescriptor1Properties struct {
-	Value          []byte
+	Value          []byte `dbus:"emit"`
 	Characteristic dbus.ObjectPath
 	UUID           string
 	Flags          []string
