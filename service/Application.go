@@ -51,12 +51,12 @@ func NewApplication(config *ApplicationConfig) (*Application, error) {
 }
 
 // A callback we can register to handle write requests
-type GattWriteCallback func(service_uuid string, char_uuid string, value []byte) error
-type GattDescriptorWriteCallback func(service_uuid string, char_uuid string, desc_uuid string, value []byte) error
+type GattWriteCallback func(app *Application, service_uuid string, char_uuid string, value []byte) error
+type GattDescriptorWriteCallback func(app *Application, service_uuid string, char_uuid string, desc_uuid string, value []byte) error
 
 // A callback we can register to handle read requests
-type GattReadCallback func(service_uuid string, char_uuid string) ([]byte, error)
-type GattDescriptorReadCallback func(service_uuid string, char_uuid string, desc_uuid string) ([]byte, error)
+type GattReadCallback func(app *Application, service_uuid string, char_uuid string) ([]byte, error)
+type GattDescriptorReadCallback func(app *Application, service_uuid string, char_uuid string, desc_uuid string) ([]byte, error)
 
 // ApplicationConfig configuration for the bluetooth service
 type ApplicationConfig struct {
@@ -256,7 +256,7 @@ func (app *Application) HandleRead(srv_uuid string, uuid string) ([]byte, *Callb
 	}
 
 	var cberr *CallbackError = nil
-	b, err := app.config.ReadFunc(srv_uuid, uuid)
+	b, err := app.config.ReadFunc(app, srv_uuid, uuid)
 	if err != nil {
 		cberr = NewCallbackError(-2, err.Error())
 	}
@@ -269,7 +269,7 @@ func (app *Application) HandleWrite(srv_uuid string, uuid string, value []byte) 
 		return NewCallbackError(-1, "No callback registered.")
 	}
 
-	err := app.config.WriteFunc(srv_uuid, uuid, value)
+	err := app.config.WriteFunc(app, srv_uuid, uuid, value)
 	if err != nil {
 		return NewCallbackError(-2, err.Error())
 	}
@@ -284,7 +284,7 @@ func (app *Application) HandleDescriptorRead(srv_uuid string, char_uuid string, 
 	}
 
 	var cberr *CallbackError = nil
-	b, err := app.config.DescReadFunc(srv_uuid, char_uuid, desc_uuid)
+	b, err := app.config.DescReadFunc(app, srv_uuid, char_uuid, desc_uuid)
 	if err != nil {
 		cberr = NewCallbackError(-2, err.Error())
 	}
@@ -297,7 +297,7 @@ func (app *Application) HandleDescriptorWrite(srv_uuid string, char_uuid string,
 		return NewCallbackError(-1, "No callback registered.")
 	}
 
-	err := app.config.DescWriteFunc(srv_uuid, char_uuid, desc_uuid, value)
+	err := app.config.DescWriteFunc(app, srv_uuid, char_uuid, desc_uuid, value)
 	if err != nil {
 		return NewCallbackError(-2, err.Error())
 	}
