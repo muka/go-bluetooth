@@ -56,13 +56,13 @@ func newLuxometerSensor(tag *SensorTag) (*LuxometerSensor, error) {
 			return nil, errors.New("Cannot find LuxometerPeriodUUID  characteristic " + LuxometerPeriodUUID)
 		}
 
-		return LuxometerSensor{tag, cfg, data, period}, err
+		return &LuxometerSensor{tag, cfg, data, period}, err
 	})
 
 	return i.(*LuxometerSensor), err
 }
 
-//Luxometer sensor structure
+//LuxometerSensor sensor structure
 type LuxometerSensor struct {
 	tag    *SensorTag
 	cfg    *profile.GattCharacteristic1

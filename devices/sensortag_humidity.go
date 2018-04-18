@@ -21,7 +21,13 @@ func newHumiditySensor(tag *SensorTag) (*HumiditySensor, error) {
 		return nil, err
 	}
 	HumidityDataUUID, err := getUUID("HumidityData")
+	if err != nil {
+		return nil, err
+	}
 	HumidityPeriodUUID, err := getUUID("HumidityPeriod")
+	if err != nil {
+		return nil, err
+	}
 
 	i, err := retryCall(DefaultRetry, DefaultRetryWait, func() (interface{}, error) {
 		cfg, err := dev.GetCharByUUID(HumidityConfigUUID)
