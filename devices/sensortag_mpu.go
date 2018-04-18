@@ -60,7 +60,7 @@ func newMpuSensor(tag *SensorTag) (*MpuSensor, error) {
 	return i.(*MpuSensor), err
 }
 
-//Mpu Sensor structure
+//MpuSensor structure
 type MpuSensor struct {
 	tag    *SensorTag
 	cfg    *profile.GattCharacteristic1
