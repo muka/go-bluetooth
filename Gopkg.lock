@@ -4,14 +4,14 @@
 [[projects]]
   name = "github.com/Sirupsen/logrus"
   packages = ["."]
-  revision = "d682213848ed68c0a260ca37d6dd5ace8423f5ba"
-  version = "v1.0.4"
+  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
+  version = "v1.0.5"
 
 [[projects]]
   name = "github.com/coreos/go-systemd"
   packages = ["dbus"]
-  revision = "d2196463941895ee908e13531a23a39feb9e1243"
-  version = "v15"
+  revision = "40e2722dffead74698ca12a750f64ef313ddce05"
+  version = "v16"
 
 [[projects]]
   name = "github.com/fatih/structs"
@@ -21,7 +21,11 @@
 
 [[projects]]
   name = "github.com/godbus/dbus"
-  packages = [".","introspect","prop"]
+  packages = [
+    ".",
+    "introspect",
+    "prop"
+  ]
   revision = "a389bdde4dd695d414e47b755e95e72b7826432c"
   version = "v4.1.0"
 
@@ -41,17 +45,20 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "0fcca4842a8d74bfddc2c96a073bd2a4d2a7a2e8"
+  revision = "d6449816ce06963d9d136eee5a56fca5b0616e7e"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
-  packages = ["unix","windows"]
-  revision = "d38bf781f16e180a1b2ad82697d2f81d7b7ecfac"
+  packages = [
+    "unix",
+    "windows"
+  ]
+  revision = "b126b21c05a91c856b027c16779c12e3bf236954"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "72b0441794b32aabe9d78fdc012bf54c4cb6961188fc6cf9c99453f38177be23"
+  inputs-digest = "87555d48d7d592dbfaa1ef13bdbd50fc22663136fd5beed6af1c61c5aeadf09c"
   solver-name = "gps-cdcl"
   solver-version = 1

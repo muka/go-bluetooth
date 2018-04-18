@@ -16,17 +16,22 @@
 #   source = "github.com/myfork/project2"
 #
 # [[override]]
-#  name = "github.com/x/y"
-#  version = "2.4.0"
+#   name = "github.com/x/y"
+#   version = "2.4.0"
+#
+# [prune]
+#   non-go = false
+#   go-tests = true
+#   unused-packages = true
 
 
 [[constraint]]
   name = "github.com/Sirupsen/logrus"
-  version = "1.0.4"
+  version = "1.0.5"
 
 [[constraint]]
   name = "github.com/coreos/go-systemd"
-  version = "15.0.0"
+  version = "16.0.0"
 
 [[constraint]]
   name = "github.com/fatih/structs"
@@ -37,5 +42,9 @@
   version = "4.1.0"
 
 [[constraint]]
-  name = "github.com/op/go-logging"
-  version = "1.0.0"
+  branch = "master"
+  name = "github.com/muka/ble"
+
+[prune]
+  go-tests = true
+  unused-packages = true
