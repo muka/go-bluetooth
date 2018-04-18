@@ -164,7 +164,7 @@ func ConnectAndFetchSensorDetailAndData(tagAddress string) error {
 	}
 
 	err = dev.On("data", emitter.NewCallback(func(ev emitter.Event) {
-		x := ev.GetData().(api.DataEvent)
+		x := ev.GetData().(devices.SensorTagDataEvent)
 		log.Debugf("%++v", x)
 	}))
 
