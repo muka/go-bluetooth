@@ -39,6 +39,7 @@ type GattService1Config struct {
 	ID         int
 	objectPath dbus.ObjectPath
 	conn       *dbus.Conn
+	advertised bool
 }
 
 //GattService1 interface implementation
@@ -63,6 +64,10 @@ func (s *GattService1) GetApp() *Application {
 //Path return the object path
 func (s *GattService1) Path() dbus.ObjectPath {
 	return s.config.objectPath
+}
+
+func (s *GattService1) Advertised() bool {
+	return s.config.advertised
 }
 
 //Properties return the properties of the service
