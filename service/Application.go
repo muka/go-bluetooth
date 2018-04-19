@@ -66,6 +66,7 @@ type ApplicationConfig struct {
 	ObjectName   string
 	ObjectPath   dbus.ObjectPath
 	serviceIndex int
+	LocalName	 string
 
 	WriteFunc     GattWriteCallback
 	ReadFunc      GattReadCallback
@@ -78,6 +79,9 @@ type Application struct {
 	config        *ApplicationConfig
 	objectManager *ObjectManager
 	services      map[dbus.ObjectPath]*GattService1
+
+	ad_mgr		  *profile.LEAdvertisingManager1
+	advertisement *LEAdvertisement1
 }
 
 //GetObjectManager return the object manager interface handler
@@ -105,18 +109,25 @@ func (app *Application) GenerateUUID(uuidVal string) string {
 }
 
 //CreateService create a new GattService1 instance
-func (app *Application) CreateService(props *profile.GattService1Properties) (*GattService1, error) {
+func (app *Application) CreateService(props *profile.GattService1Properties, advertised_optional ...bool) (*GattService1, error) {
 	app.config.serviceIndex++
 	appPath := string(app.Path())
 	if appPath == "/" {
 		appPath = ""
 	}
+
+	advertise := false
+	if len(advertised_optional) > 0 {
+		advertise = advertised_optional[0]
+	}
+
 	path := appPath + "/service" + strconv.Itoa(app.config.serviceIndex)
 	c := &GattService1Config{
 		app:        app,
 		objectPath: dbus.ObjectPath(path),
 		ID:         app.config.serviceIndex,
 		conn:       app.config.conn,
+		advertised: advertise,
 	}
 	s, err := NewGattService1(c, props)
 	return s, err
@@ -309,6 +320,91 @@ func (app *Application) HandleDescriptorWrite(srv_uuid string, char_uuid string,
 func (app *Application) Run() error {
 
 	err := app.expose()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (app *Application) StartAdvertising(device_interface string) error {
+	if app.advertisement != nil && app.ad_mgr != nil {
+		// Already advertising
+		return nil
+	}
+
+	path := "/org/bluez/advertisement/0"
+
+	config := &LEAdvertisement1Config{
+		conn: app.config.conn,
+		objectPath: dbus.ObjectPath(path),
+	}
+
+	service_uuids := make([]string, 0)
+
+	for _, serv := range app.services {
+		if serv.Advertised() {
+			service_uuids = append(service_uuids, serv.properties.UUID)
+		}
+	}
+
+	props := &profile.LEAdvertisement1Properties{
+		Type: "peripheral",
+		LocalName: app.config.LocalName,
+		ServiceUUIDs: service_uuids,
+	}
+
+	var err error = nil
+
+	app.advertisement, err = NewLEAdvertisement1(config, props)
+	if err != nil {
+		app.advertisement = nil
+		return err
+	}
+
+	err = app.advertisement.Expose()
+	if err != nil {
+		app.advertisement = nil
+		return err
+	}
+
+	options := make(map[string]interface{})
+
+	app.ad_mgr = profile.NewLEAdvertisingManager1(device_interface)
+
+	err = app.ad_mgr.RegisterAdvertisement(path, options)
+	if err != nil {
+		app.advertisement = nil
+		app.ad_mgr = nil
+		return err
+	}
+
+	adapter := profile.NewAdapter1(device_interface)
+	err = adapter.SetProperty("Discoverable", dbus.MakeVariant(true))
+	if err != nil {
+		return err
+	}
+
+	err = adapter.SetProperty("Powered", dbus.MakeVariant(true))
+	if err != nil {
+		return err
+	}
+
+
+	return nil
+}
+
+func (app *Application) StopAdvertising() error {
+	if app.advertisement == nil || app.ad_mgr == nil {
+		// Not advertising
+		return nil
+	}
+
+	err := app.ad_mgr.UnregisterAdvertisement(string(app.advertisement.config.objectPath))
+
+	app.advertisement = nil
+	app.ad_mgr = nil
+
 	if err != nil {
 		return err
 	}
