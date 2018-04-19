@@ -67,6 +67,7 @@ func registerApplication() error {
 		UUID:       "1234",
 		ObjectName: objectName,
 		ObjectPath: objectPath,
+		LocalName:  "GolangService",
 	}
 	app, err := service.NewApplication(cfg)
 	if err != nil {
