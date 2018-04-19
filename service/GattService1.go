@@ -66,6 +66,7 @@ func (s *GattService1) Path() dbus.ObjectPath {
 	return s.config.objectPath
 }
 
+//Advertised indicate if the service has been advertised
 func (s *GattService1) Advertised() bool {
 	return s.config.advertised
 }

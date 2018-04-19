@@ -31,7 +31,6 @@ The library has been tested with
 
 - golang `1.9` (minimum `v1.6`)
 - bluez bluetooth `v5.48` (minimum supported `v5.43`)
-- ubuntu 16.04 and raspbian (armv7)
 
 ### bluez upgrade
 
