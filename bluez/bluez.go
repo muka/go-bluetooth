@@ -14,6 +14,8 @@ const (
 	GattCharacteristic1Interface = "org.bluez.GattCharacteristic1"
 	//GattDescriptor1Interface the bluez interface for GattDescriptor1
 	GattDescriptor1Interface = "org.bluez.GattDescriptor1"
+	//LEAdvertisement1Interface the bluez interface for LEAdvertisement1
+	LEAdvertisement1Interface = "org.bluez.LEAdvertisement1"
 
 	//ObjectManagerInterface the dbus object manager interface
 	ObjectManagerInterface = "org.freedesktop.DBus.ObjectManager"

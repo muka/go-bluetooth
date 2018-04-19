@@ -69,8 +69,7 @@ func (s *GattDescriptor1) ReadValue(options map[string]interface{}) ([]byte, *db
 		s.config.characteristic.config.service.properties.UUID, s.config.characteristic.properties.UUID,
 		s.properties.UUID)
 
-	var dberr *dbus.Error = nil
-
+	var dberr *dbus.Error
 	if err != nil {
 		if err.code == -1 {
 			// No registered callback, so we'll just use our stored value
@@ -94,18 +93,22 @@ func (s *GattDescriptor1) WriteValue(value []byte, options map[string]interface{
 			// No registered callback, so we'll just store this value
 			s.UpdateValue(value)
 			return nil
-		} else {
-			dberr := dbus.NewError(err.Error(), nil)
-			return dberr
 		}
+		dberr := dbus.NewError(err.Error(), nil)
+		return dberr
 	}
 
 	return nil
 }
 
-func (s *GattDescriptor1) UpdateValue(value []byte) {
+//UpdateValue update a descriptor value
+func (s *GattDescriptor1) UpdateValue(value []byte) error {
 	s.properties.Value = value
-	s.PropertiesInterface.Instance().Set(s.Interface(), "Value", dbus.MakeVariant(value))
+	err := s.PropertiesInterface.Instance().Set(s.Interface(), "Value", dbus.MakeVariant(value))
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 //Expose the desc to dbus

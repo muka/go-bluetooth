@@ -50,7 +50,7 @@ func NewApplication(config *ApplicationConfig) (*Application, error) {
 	return s, nil
 }
 
-// A callback we can register to handle write requests
+//Aa callback we can register to handle write requests
 type GattWriteCallback func(app *Application, service_uuid string, char_uuid string, value []byte) error
 type GattDescriptorWriteCallback func(app *Application, service_uuid string, char_uuid string, desc_uuid string, value []byte) error
 
@@ -67,10 +67,10 @@ type ApplicationConfig struct {
 	ObjectPath   dbus.ObjectPath
 	serviceIndex int
 
-	WriteFunc	GattWriteCallback
-	ReadFunc  	GattReadCallback
-	DescWriteFunc	GattDescriptorWriteCallback
-	DescReadFunc	GattDescriptorReadCallback
+	WriteFunc     GattWriteCallback
+	ReadFunc      GattReadCallback
+	DescWriteFunc GattDescriptorWriteCallback
+	DescReadFunc  GattDescriptorReadCallback
 }
 
 // Application a bluetooth service exposed by bluez
@@ -233,8 +233,8 @@ func (app *Application) exportTree() error {
 }
 
 type CallbackError struct {
-	msg 	string
-	code 	int
+	msg  string
+	code int
 }
 
 func (e *CallbackError) Error() string {
@@ -242,7 +242,7 @@ func (e *CallbackError) Error() string {
 }
 
 func NewCallbackError(code int, msg string) *CallbackError {
-	result := &CallbackError{ msg: msg, code: code }
+	result := &CallbackError{msg: msg, code: code}
 	return result
 }
 
