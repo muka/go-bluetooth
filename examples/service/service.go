@@ -2,65 +2,13 @@ package main
 
 import (
 	log "github.com/Sirupsen/logrus"
-	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
-	"github.com/muka/go-bluetooth/linux"
 	"github.com/muka/go-bluetooth/service"
 )
 
-func setupAdapter(aid string) error {
-
-	btmgmt := linux.NewBtMgmt(aid)
-
-	// turn off
-	err := btmgmt.SetPowered(false)
-	if err != nil {
-		return err
-	}
-
-	err = btmgmt.SetName(appName)
-	if err != nil {
-		return err
-	}
-
-	err = btmgmt.SetAdvertising(true)
-	if err != nil {
-		return err
-	}
-
-	err = btmgmt.SetLe(true)
-	if err != nil {
-		return err
-	}
-
-	err = btmgmt.SetConnectable(true)
-	if err != nil {
-		return err
-	}
-
-	err = btmgmt.SetConnectable(true)
-	if err != nil {
-		return err
-	}
-
-	// turn on
-	err = btmgmt.SetPowered(true)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
 func registerApplication() error {
-
-	err := setupAdapter(adapterID)
-	if err != nil {
-		log.Errorf("Failed to setup adapter: %s", err.Error())
-		return err
-	}
 
 	cfg := &service.ApplicationConfig{
 		UUIDSuffix: "-0000-1000-8000-00805F9B34FB",
@@ -86,7 +34,8 @@ func registerApplication() error {
 		UUID:    app.GenerateUUID("2233"),
 	}
 
-	service1, err := app.CreateService(serviceProps)
+	// Set this service to be advertised
+	service1, err := app.CreateService(serviceProps, true)
 	if err != nil {
 		log.Errorf("Failed to create service: %s", err.Error())
 		return err
@@ -151,13 +100,9 @@ func registerApplication() error {
 		return err
 	}
 
-	adapter := profile.NewAdapter1(adapterID)
-	err = adapter.SetProperty("Discoverable", dbus.MakeVariant(true))
-	if err != nil {
-		log.Errorf("Failed to set adapter %s discoverable: %s", adapterID, err.Error())
-		return err
-	}
+	// Register our advertisement
+	err = app.StartAdvertising(adapterID)
 
-	log.Info("Application registered.")
+	log.Info("Application registered and advertising.")
 	return nil
 }
