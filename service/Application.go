@@ -50,13 +50,17 @@ func NewApplication(config *ApplicationConfig) (*Application, error) {
 	return s, nil
 }
 
-// A callback we can register to handle write requests
-type GattWriteCallback func(app *Application, service_uuid string, char_uuid string, value []byte) error
-type GattDescriptorWriteCallback func(app *Application, service_uuid string, char_uuid string, desc_uuid string, value []byte) error
+//GattWriteCallback A callback we can register to handle write requests
+type GattWriteCallback func(app *Application, service_uuid string, charUUID string, value []byte) error
 
-// A callback we can register to handle read requests
-type GattReadCallback func(app *Application, service_uuid string, char_uuid string) ([]byte, error)
-type GattDescriptorReadCallback func(app *Application, service_uuid string, char_uuid string, desc_uuid string) ([]byte, error)
+//GattDescriptorWriteCallback A callback we can register to handle descriptor write requests
+type GattDescriptorWriteCallback func(app *Application, service_uuid string, charUUID string, descUUID string, value []byte) error
+
+//GattReadCallback A callback we can register to handle read requests
+type GattReadCallback func(app *Application, service_uuid string, charUUID string) ([]byte, error)
+
+//GattDescriptorReadCallback A callback we can register to handle descriptor ead requests
+type GattDescriptorReadCallback func(app *Application, service_uuid string, charUUID string, descUUID string) ([]byte, error)
 
 // ApplicationConfig configuration for the bluetooth service
 type ApplicationConfig struct {
@@ -66,11 +70,12 @@ type ApplicationConfig struct {
 	ObjectName   string
 	ObjectPath   dbus.ObjectPath
 	serviceIndex int
+	LocalName    string
 
-	WriteFunc	GattWriteCallback
-	ReadFunc  	GattReadCallback
-	DescWriteFunc	GattDescriptorWriteCallback
-	DescReadFunc	GattDescriptorReadCallback
+	WriteFunc     GattWriteCallback
+	ReadFunc      GattReadCallback
+	DescWriteFunc GattDescriptorWriteCallback
+	DescReadFunc  GattDescriptorReadCallback
 }
 
 // Application a bluetooth service exposed by bluez
@@ -78,6 +83,9 @@ type Application struct {
 	config        *ApplicationConfig
 	objectManager *ObjectManager
 	services      map[dbus.ObjectPath]*GattService1
+
+	adMgr         *profile.LEAdvertisingManager1
+	advertisement *LEAdvertisement1
 }
 
 //GetObjectManager return the object manager interface handler
@@ -105,18 +113,25 @@ func (app *Application) GenerateUUID(uuidVal string) string {
 }
 
 //CreateService create a new GattService1 instance
-func (app *Application) CreateService(props *profile.GattService1Properties) (*GattService1, error) {
+func (app *Application) CreateService(props *profile.GattService1Properties, advertisedOptional ...bool) (*GattService1, error) {
 	app.config.serviceIndex++
 	appPath := string(app.Path())
 	if appPath == "/" {
 		appPath = ""
 	}
+
+	advertise := false
+	if len(advertisedOptional) > 0 {
+		advertise = advertisedOptional[0]
+	}
+
 	path := appPath + "/service" + strconv.Itoa(app.config.serviceIndex)
 	c := &GattService1Config{
 		app:        app,
 		objectPath: dbus.ObjectPath(path),
 		ID:         app.config.serviceIndex,
 		conn:       app.config.conn,
+		advertised: advertise,
 	}
 	s, err := NewGattService1(c, props)
 	return s, err
@@ -232,31 +247,37 @@ func (app *Application) exportTree() error {
 	return err
 }
 
+// CallbackError error from a callback
 type CallbackError struct {
-	msg 	string
-	code 	int
+	msg  string
+	code int
 }
 
 func (e *CallbackError) Error() string {
 	return e.msg
 }
 
+//NewCallbackError create a new callback error
 func NewCallbackError(code int, msg string) *CallbackError {
-	result := &CallbackError{ msg: msg, code: code }
+	result := &CallbackError{msg: msg, code: code}
 	return result
 }
 
-const CALLBACK_NOT_REGISTERED = -1
-const CALLBACK_FUNCTION_ERROR = -2
+//CallbackNotRegistered callback not registered
+const CallbackNotRegistered = -1
 
-func (app *Application) HandleRead(srv_uuid string, uuid string) ([]byte, *CallbackError) {
+//CallbackFunctionError callback reported an error
+const CallbackFunctionError = -2
+
+//HandleRead Handle application read
+func (app *Application) HandleRead(srvUUID string, uuid string) ([]byte, *CallbackError) {
 	if app.config.ReadFunc == nil {
 		b := make([]byte, 0)
 		return b, NewCallbackError(-1, "No callback registered.")
 	}
 
-	var cberr *CallbackError = nil
-	b, err := app.config.ReadFunc(app, srv_uuid, uuid)
+	var cberr *CallbackError
+	b, err := app.config.ReadFunc(app, srvUUID, uuid)
 	if err != nil {
 		cberr = NewCallbackError(-2, err.Error())
 	}
@@ -264,12 +285,13 @@ func (app *Application) HandleRead(srv_uuid string, uuid string) ([]byte, *Callb
 	return b, cberr
 }
 
-func (app *Application) HandleWrite(srv_uuid string, uuid string, value []byte) *CallbackError {
+// HandleWrite handle application write
+func (app *Application) HandleWrite(srvUUID string, uuid string, value []byte) *CallbackError {
 	if app.config.WriteFunc == nil {
 		return NewCallbackError(-1, "No callback registered.")
 	}
 
-	err := app.config.WriteFunc(app, srv_uuid, uuid, value)
+	err := app.config.WriteFunc(app, srvUUID, uuid, value)
 	if err != nil {
 		return NewCallbackError(-2, err.Error())
 	}
@@ -277,14 +299,15 @@ func (app *Application) HandleWrite(srv_uuid string, uuid string, value []byte) 
 	return nil
 }
 
-func (app *Application) HandleDescriptorRead(srv_uuid string, char_uuid string, desc_uuid string) ([]byte, *CallbackError) {
+//HandleDescriptorRead handle descriptor read
+func (app *Application) HandleDescriptorRead(srvUUID string, charUUID string, descUUID string) ([]byte, *CallbackError) {
 	if app.config.DescReadFunc == nil {
 		b := make([]byte, 0)
 		return b, NewCallbackError(-1, "No callback registered.")
 	}
 
-	var cberr *CallbackError = nil
-	b, err := app.config.DescReadFunc(app, srv_uuid, char_uuid, desc_uuid)
+	var cberr *CallbackError
+	b, err := app.config.DescReadFunc(app, srvUUID, charUUID, descUUID)
 	if err != nil {
 		cberr = NewCallbackError(-2, err.Error())
 	}
@@ -292,12 +315,13 @@ func (app *Application) HandleDescriptorRead(srv_uuid string, char_uuid string, 
 	return b, cberr
 }
 
-func (app *Application) HandleDescriptorWrite(srv_uuid string, char_uuid string, desc_uuid string, value []byte) *CallbackError {
+//HandleDescriptorWrite handle descriptor write
+func (app *Application) HandleDescriptorWrite(srvUUID string, charUUID string, descUUID string, value []byte) *CallbackError {
 	if app.config.DescWriteFunc == nil {
 		return NewCallbackError(-1, "No callback registered.")
 	}
 
-	err := app.config.DescWriteFunc(app, srv_uuid, char_uuid, desc_uuid, value)
+	err := app.config.DescWriteFunc(app, srvUUID, charUUID, descUUID, value)
 	if err != nil {
 		return NewCallbackError(-2, err.Error())
 	}
@@ -309,6 +333,92 @@ func (app *Application) HandleDescriptorWrite(srv_uuid string, char_uuid string,
 func (app *Application) Run() error {
 
 	err := app.expose()
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+//StartAdvertising advertise information for a service
+func (app *Application) StartAdvertising(deviceInterface string) error {
+	if app.advertisement != nil && app.adMgr != nil {
+		// Already advertising
+		return nil
+	}
+
+	path := "/org/bluez/advertisement/0"
+
+	config := &LEAdvertisement1Config{
+		conn:       app.config.conn,
+		objectPath: dbus.ObjectPath(path),
+	}
+
+	serviceUUIDs := make([]string, 0)
+
+	for _, serv := range app.services {
+		if serv.Advertised() {
+			serviceUUIDs = append(serviceUUIDs, serv.properties.UUID)
+		}
+	}
+
+	props := &profile.LEAdvertisement1Properties{
+		Type:         "peripheral",
+		LocalName:    app.config.LocalName,
+		ServiceUUIDs: serviceUUIDs,
+	}
+
+	var err error
+
+	app.advertisement, err = NewLEAdvertisement1(config, props)
+	if err != nil {
+		app.advertisement = nil
+		return err
+	}
+
+	err = app.advertisement.Expose()
+	if err != nil {
+		app.advertisement = nil
+		return err
+	}
+
+	options := make(map[string]interface{})
+
+	app.adMgr = profile.NewLEAdvertisingManager1(deviceInterface)
+
+	err = app.adMgr.RegisterAdvertisement(path, options)
+	if err != nil {
+		app.advertisement = nil
+		app.adMgr = nil
+		return err
+	}
+
+	adapter := profile.NewAdapter1(deviceInterface)
+	err = adapter.SetProperty("Discoverable", dbus.MakeVariant(true))
+	if err != nil {
+		return err
+	}
+
+	err = adapter.SetProperty("Powered", dbus.MakeVariant(true))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+//StopAdvertising stop advertising information on a service
+func (app *Application) StopAdvertising() error {
+	if app.advertisement == nil || app.adMgr == nil {
+		// Not advertising
+		return nil
+	}
+
+	err := app.adMgr.UnregisterAdvertisement(string(app.advertisement.config.objectPath))
+
+	app.advertisement = nil
+	app.adMgr = nil
+
 	if err != nil {
 		return err
 	}
