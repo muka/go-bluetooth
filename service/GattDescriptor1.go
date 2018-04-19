@@ -70,7 +70,6 @@ func (s *GattDescriptor1) ReadValue(options map[string]interface{}) ([]byte, *db
 		s.properties.UUID)
 
 	var dberr *dbus.Error
-
 	if err != nil {
 		if err.code == -1 {
 			// No registered callback, so we'll just use our stored value
