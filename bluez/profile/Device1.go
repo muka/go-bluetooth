@@ -79,8 +79,8 @@ func (d *Device1) GetProperty(name string) (dbus.Variant, error) {
 }
 
 //CancelParing stop the pairing process
-func (d *Device1) CancelParing() error {
-	return d.client.Call("CancelParing", 0).Store()
+func (d *Device1) CancelPairing() error {
+	return d.client.Call("CancelPairing", 0).Store()
 }
 
 //Connect to the device
