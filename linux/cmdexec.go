@@ -5,7 +5,7 @@ import (
 	"errors"
 	"os/exec"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 // CmdExec Execute a command

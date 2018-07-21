@@ -1,9 +1,9 @@
 package obex
 
 import (
-	log "github.com/Sirupsen/logrus"
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
+	log "github.com/sirupsen/logrus"
 )
 
 // TODO: https://github.com/blueman-project/blueman/issues/218#issuecomment-89315974

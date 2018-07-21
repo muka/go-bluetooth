@@ -5,9 +5,9 @@ import (
 	"os"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez/profile"
+	log "github.com/sirupsen/logrus"
 )
 
 //ShowInfoExample show informations for hardcoded MiBand2 on hci0

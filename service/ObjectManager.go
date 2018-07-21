@@ -3,7 +3,7 @@ package service
 import (
 	"errors"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
 )
