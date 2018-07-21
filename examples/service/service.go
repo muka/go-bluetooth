@@ -1,11 +1,11 @@
 package main
 
 import (
-	log "github.com/Sirupsen/logrus"
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/muka/go-bluetooth/service"
+	log "github.com/sirupsen/logrus"
 )
 
 func registerApplication() error {

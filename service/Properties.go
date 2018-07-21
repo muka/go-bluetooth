@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/fatih/structs"
 	"github.com/godbus/dbus"
 	"github.com/godbus/dbus/introspect"
