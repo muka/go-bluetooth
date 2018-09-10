@@ -73,3 +73,24 @@ func (a *Adapter1) StopDiscovery() error {
 func (a *Adapter1) RemoveDevice(device string) error {
 	return a.client.Call("RemoveDevice", 0, dbus.ObjectPath(device)).Store()
 }
+
+//GetDiscoveryFilters - get supported discovery filters
+func (a *Adapter1) GetDiscoveryFilters() ([]string, error) {
+	var f []string
+	err := a.client.Call("GetDiscoveryFilters", 0).Store(&f)
+	return f, err
+}
+
+//SetDiscoveryFilters - set discovery filters.
+//
+// Example:
+// 	filters := map[string]interface{} {
+//		"RSSI": int16(-127),
+//		"Transport": "le",
+//		"DuplicateData": true,
+//		"UUIDs": []string{"0x180a", "0x1400"},
+//	}
+//  adapter.SetDiscoveryFilter(filter)
+func (a *Adapter1) SetDiscoveryFilter(f map[string]interface{}) error {
+	return a.client.Call("SetDiscoveryFilter", 0, f).Store()
+}
