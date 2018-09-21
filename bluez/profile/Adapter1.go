@@ -35,6 +35,7 @@ type Adapter1Properties struct {
 	Pairable            bool
 	Powered             bool
 	Address             string
+	AddressType         string
 	Alias               string
 	Modalias            string
 	Name                string
