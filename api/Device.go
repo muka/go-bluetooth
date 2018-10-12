@@ -125,6 +125,9 @@ func (d *Device) watchProperties() error {
 			if sig.Name != bluez.PropertiesChanged {
 				continue
 			}
+			if (fmt.Sprint(sig.Path) != d.Path) {
+			    continue
+			}
 
 			// for i := 0; i < len(sig.Body); i++ {
 			// log.Printf("%s -> %s\n", reflect.TypeOf(sig.Body[i]), sig.Body[i])
