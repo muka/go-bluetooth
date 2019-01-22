@@ -4,10 +4,10 @@ package main
 import (
 	"os"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/emitter"
 	"github.com/muka/go-bluetooth/linux"
+	log "github.com/sirupsen/logrus"
 )
 
 const logLevel = log.DebugLevel
@@ -23,6 +23,12 @@ func main() {
 	log.Debugf("Reset bluetooth device")
 	a := linux.NewBtMgmt(adapterID)
 	err := a.Reset()
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+
+	err = api.FlushDevices(adapterID)
 	if err != nil {
 		log.Error(err)
 		os.Exit(1)

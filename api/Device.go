@@ -64,6 +64,31 @@ func ClearDevice(d *Device) error {
 	return nil
 }
 
+// FlushDevices clears removes device and clears it from cached devices
+func FlushDevices(adapterID string) error {
+	adapter, err := GetAdapter(adapterID)
+	if err != nil {
+		return err
+	}
+
+	devices, err := GetDevices()
+	if err != nil {
+		return err
+	}
+	for _, dev := range devices {
+		err = adapter.RemoveDevice(dev.Path)
+		if err != nil {
+			return err
+		}
+
+		err := ClearDevice(&dev)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
 //ClearDevices clear cached devices
 func ClearDevices() error {
 	devices, err := GetDevices()
@@ -125,8 +150,8 @@ func (d *Device) watchProperties() error {
 			if sig.Name != bluez.PropertiesChanged {
 				continue
 			}
-			if (fmt.Sprint(sig.Path) != d.Path) {
-			    continue
+			if fmt.Sprint(sig.Path) != d.Path {
+				continue
 			}
 
 			// for i := 0; i < len(sig.Body); i++ {
