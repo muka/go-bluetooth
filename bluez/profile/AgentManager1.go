@@ -5,6 +5,16 @@ import (
 	"github.com/muka/go-bluetooth/bluez"
 )
 
+/*
+//All agent capabilities 
+const (
+	AGENT_CAP_DISPLAY_ONLY       = "DisplayOnly"
+	AGENT_CAP_DISPLAY_YES_NO     = "DisplayYesNo"
+	AGENT_CAP_KEYBOARD_ONLY      = "KeyboardOnly"
+	AGENT_CAP_NO_INPUT_NO_OUTPUT = "NoInputNoOutput"
+	AGENT_CAP_KEYBOARD_DISPLAY   = "KeyboardDisplay"
+)
+*/
 // NewAgentManager1 create a new AgentManager1 client
 func NewAgentManager1(hostID string) *AgentManager1 {
 	a := new(AgentManager1)
