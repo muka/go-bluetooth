@@ -4,9 +4,7 @@ Golang bluetooth client based on bluez DBus interfaces
 
 See here for reference https://git.kernel.org/cgit/bluetooth/bluez.git/tree/doc
 
-## Status
-
-The current API is unstable and may change in the future.
+## Features
 
 The features implemented are
 
@@ -18,8 +16,7 @@ The features implemented are
 - [x] Handle systemd `bluetooth.service` unit
 - [x] Expose `hciconfig` basic API
 - [x] Expose bluetooth services via bluez GATT API
-- [ ] HCI protocol communication
-- [ ] Pairing support
+- [x] Basic pairing support
 
 ## Examples
 
@@ -29,8 +26,8 @@ Check `examples/` folder for an overview of the API
 
 The library has been tested with
 
-- golang `1.9` (minimum `v1.6`)
-- bluez bluetooth `v5.48` (minimum supported `v5.43`)
+- golang `1.11.4` (starting from `v1.6`)
+- bluez bluetooth `v5.50` (starting from `v5.43`)
 
 ### bluez upgrade
 
