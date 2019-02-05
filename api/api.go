@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-
 	"github.com/godbus/dbus"
 
 	"github.com/muka/go-bluetooth/bluez"
