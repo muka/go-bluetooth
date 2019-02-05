@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-  "fmt"
 	"github.com/godbus/dbus"
 
 	"github.com/muka/go-bluetooth/bluez"
@@ -38,7 +37,6 @@ func GetDevices() ([]Device, error) {
 
 	list, err := GetDeviceList()
 	if err != nil {
-	  fmt.Println("GetDeviceList", err)
 		return nil, err
 	}
 
