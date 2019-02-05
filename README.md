@@ -20,7 +20,18 @@ The features implemented are
 
 ## Examples
 
-Check `examples/` folder for an overview of the API
+The `examples/` folder offer an overview of library
+
+- `agent` a simple agent to support pairing
+- `btmgmt` interface to CLI btmgmt
+- `discovery` find devices around
+- `hci_updown` HCI based communication example
+- `obex_push` send file to a device
+- `sensortag_info` Obtain data from a TI SensorTag
+- `sensortag_temperature` Obtain temperature from a TI SensorTag
+- `service` expose a bluetooth device with corresponding services
+- `show_miband_info` show informations for MiBand2
+- `watch_changes` register for notifications from a TI SensorTag
 
 ## Setup
 
