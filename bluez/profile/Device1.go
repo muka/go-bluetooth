@@ -1,6 +1,8 @@
 package profile
 
 import (
+	"sync"
+
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
 )
@@ -29,6 +31,7 @@ type Device1 struct {
 
 // Device1Properties exposed properties for Device1
 type Device1Properties struct {
+	Lock             sync.RWMutex
 	AdvertisingFlags []byte
 	UUIDs            []string
 	Blocked          bool
@@ -69,7 +72,9 @@ func (d *Device1) Unregister(signal chan *dbus.Signal) error {
 
 //GetProperties load all available properties
 func (d *Device1) GetProperties() (*Device1Properties, error) {
+	d.Properties.Lock.Lock()
 	err := d.client.GetProperties(d.Properties)
+	d.Properties.Lock.Unlock()
 	return d.Properties, err
 }
 
@@ -80,7 +85,7 @@ func (d *Device1) GetProperty(name string) (dbus.Variant, error) {
 
 //SetProperty set a property
 func (d *Device1) SetProperty(name string, v interface{}) error {
-	return d.client.SetProperty(name,v)
+	return d.client.SetProperty(name, v)
 }
 
 //CancelParing stop the pairing process

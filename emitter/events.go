@@ -34,7 +34,7 @@ func (e BaseEvent) GetData() interface{} {
 
 var pipe chan Event
 var events = make(map[string][]*Callback, 0)
-var mutex = &sync.Mutex{}
+var mutex = &sync.RWMutex{}
 
 func loop() {
 	for {
@@ -158,6 +158,8 @@ func Off(name string, callback *Callback) error {
 
 	mutex.Unlock()
 
+	mutex.RLock()
+	defer mutex.RUnlock()
 	if len(events) == 0 {
 		close(pipe)
 		pipe = nil // will stop the go routine

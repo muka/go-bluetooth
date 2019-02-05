@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+
 	"github.com/godbus/dbus"
 
 	"github.com/muka/go-bluetooth/bluez"
@@ -25,7 +26,16 @@ func GetDeviceByAddress(address string) (*Device, error) {
 	}
 	for _, path := range list {
 		dev := NewDevice(string(path))
-		if dev.Properties.Address == address {
+
+		dev.lock.RLock()
+		// get current Properites pointer (can be changed by other goroutine)
+		props := dev.Properties
+		dev.lock.RUnlock()
+
+		props.Lock.RLock()
+		prop_address := props.Address
+		props.Lock.RUnlock()
+		if prop_address == address {
 			return dev, nil
 		}
 	}
@@ -49,7 +59,11 @@ func GetDevices() ([]Device, error) {
 
 	var devices = make([]Device, 0)
 	for _, path := range list {
-		props := (*objects)[path][bluez.Device1Interface]
+		object, ok := objects.Load(path)
+		if !ok {
+			return nil, errors.New("Path " + string(path) + " does not exists.")
+		}
+		props := (object.(map[string]map[string]dbus.Variant))[bluez.Device1Interface]
 		dev, err := ParseDevice(path, props)
 		if err != nil {
 			return nil, err
@@ -70,7 +84,9 @@ func GetDeviceList() ([]dbus.ObjectPath, error) {
 
 	objects := manager.GetObjects()
 	var devices []dbus.ObjectPath
-	for path, ifaces := range *objects {
+	objects.Range(func(key, value interface{}) bool {
+		ifaces := value.(map[string]map[string]dbus.Variant)
+		path := key.(dbus.ObjectPath)
 		for iface := range ifaces {
 			switch iface {
 			case bluez.Device1Interface:
@@ -79,7 +95,8 @@ func GetDeviceList() ([]dbus.ObjectPath, error) {
 				}
 			}
 		}
-	}
+		return true
+	})
 
 	return devices, nil
 }
@@ -95,7 +112,7 @@ func AdapterExists(adapterID string) (bool, error) {
 	objects := manager.GetObjects()
 
 	path := dbus.ObjectPath("/org/bluez/" + adapterID)
-	_, exists := (*objects)[path]
+	_, exists := objects.Load(path)
 
 	return exists, nil
 }

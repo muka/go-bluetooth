@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"strings"
+	"sync"
 
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
@@ -13,13 +14,13 @@ import (
 	"github.com/muka/go-bluetooth/util"
 )
 
-var deviceRegistry = make(map[string]*Device)
+var deviceRegistry = new(sync.Map)
 
 // NewDevice creates a new Device
 func NewDevice(path string) *Device {
 
-	if _, ok := deviceRegistry[path]; ok {
-		return deviceRegistry[path]
+	if device, ok := deviceRegistry.Load(path); ok {
+		return device.(*Device)
 	}
 
 	d := new(Device)
@@ -30,7 +31,7 @@ func NewDevice(path string) *Device {
 	d.Properties = d.client.Properties
 	d.chars = make(map[dbus.ObjectPath]*profile.GattCharacteristic1, 0)
 
-	deviceRegistry[path] = d
+	deviceRegistry.Store(path, d)
 
 	// d.watchProperties()
 
@@ -57,8 +58,8 @@ func ClearDevice(d *Device) error {
 
 	c.Close()
 
-	if _, ok := deviceRegistry[d.Path]; ok {
-		delete(deviceRegistry, d.Path)
+	if _, ok := deviceRegistry.Load(d.Path); ok {
+		deviceRegistry.Delete(d.Path)
 	}
 
 	return nil
@@ -124,15 +125,21 @@ func ParseDevice(path dbus.ObjectPath, propsMap map[string]dbus.Variant) (*Devic
 }
 
 func (d *Device) watchProperties() error {
+	d.lock.RLock()
 	if d.watchPropertiesChannel != nil {
+		d.lock.RUnlock()
 		d.unwatchProperties()
+	} else {
+		d.lock.RUnlock()
 	}
 
 	channel, err := d.client.Register()
 	if err != nil {
 		return err
 	}
+	d.lock.Lock()
 	d.watchPropertiesChannel = channel
+	d.lock.Unlock()
 
 	go (func() {
 		for {
@@ -160,10 +167,13 @@ func (d *Device) watchProperties() error {
 
 			iface := sig.Body[0].(string)
 			changes := sig.Body[1].(map[string]dbus.Variant)
+			propertyChangedEvents := make([]PropertyChangedEvent, 0)
 			for field, val := range changes {
 
 				// updates [*]Properties struct
+				d.lock.RLock()
 				props := d.Properties
+				d.lock.RUnlock()
 
 				s := reflect.ValueOf(props).Elem()
 				// exported field
@@ -174,13 +184,20 @@ func (d *Device) watchProperties() error {
 					// the use of unexported struct fields.
 					if f.CanSet() {
 						x := reflect.ValueOf(val.Value())
+						props.Lock.Lock()
 						f.Set(x)
+						props.Lock.Unlock()
 					}
 				}
 
 				propChanged := PropertyChangedEvent{string(iface), field, val.Value(), props, d}
+				propertyChangedEvents = append(propertyChangedEvents, propChanged)
+			}
+
+			for _, propChanged := range propertyChangedEvents {
 				d.Emit("changed", propChanged)
 			}
+
 		}
 	})()
 
@@ -194,10 +211,13 @@ type Device struct {
 	client                 *profile.Device1
 	chars                  map[dbus.ObjectPath]*profile.GattCharacteristic1
 	watchPropertiesChannel chan *dbus.Signal
+	lock                   sync.RWMutex
 }
 
 func (d *Device) unwatchProperties() error {
 	var err error
+	d.lock.Lock()
+	defer d.lock.Unlock()
 	if d.watchPropertiesChannel != nil {
 		err = d.client.Unregister(d.watchPropertiesChannel)
 		close(d.watchPropertiesChannel)
@@ -233,7 +253,10 @@ func (d *Device) GetProperties() (*profile.Device1Properties, error) {
 		return nil, err
 	}
 
+	d.lock.Lock()
 	d.Properties = props
+	defer d.lock.Unlock()
+
 	return d.Properties, err
 }
 
@@ -384,21 +407,22 @@ func (d *Device) GetCharsList() ([]dbus.ObjectPath, error) {
 	}
 
 	list := manager.GetObjects()
-	for objpath := range *list {
-		path := string(objpath)
+	list.Range(func(objpath, value interface{}) bool {
+		path := string(objpath.(dbus.ObjectPath))
 		if !strings.HasPrefix(path, d.Path) {
-			continue
+			return true
 		}
 		charPos := strings.Index(path, "char")
 		if charPos == -1 {
-			continue
+			return true
 		}
 		if strings.Index(path[charPos:], "desc") != -1 {
-			continue
+			return true
 		}
 
-		chars = append(chars, objpath)
-	}
+		chars = append(chars, objpath.(dbus.ObjectPath))
+		return true
+	})
 
 	return chars, nil
 }
@@ -437,8 +461,13 @@ func (d *Device) Disconnect() error {
 		return err
 	}
 	c.Disconnect()
+
+	d.lock.RLock()
 	if d.watchPropertiesChannel != nil {
+		d.lock.RUnlock()
 		d.unwatchProperties()
+	} else {
+		d.lock.RUnlock()
 	}
 	return nil
 }
