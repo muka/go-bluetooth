@@ -81,13 +81,6 @@ See in `scripts/` how to upgrade bluez
 
   ```
 
-## TODO List / Help wanted
-
--   Add docs with examples
--   Add Device read / write and custom data converters
--   Unit tests coverage
--   Integrate hci communication from `github.com/[currentlabs|go-ble]/ble`
-
 ## References
 
 - https://git.kernel.org/cgit/bluetooth/bluez.git/tree/doc
