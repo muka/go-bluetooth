@@ -2,12 +2,12 @@ package profile
 
 import (
 	"github.com/godbus/dbus"
-  "github.com/godbus/dbus/prop"
 	"github.com/godbus/dbus/introspect"
+	"github.com/godbus/dbus/prop"
 	"github.com/muka/go-bluetooth/bluez"
 )
 
-//All agent capabilities 
+//All agent capabilities
 const (
 	AGENT_CAP_DISPLAY_ONLY       = "DisplayOnly"
 	AGENT_CAP_DISPLAY_YES_NO     = "DisplayYesNo"
@@ -17,10 +17,10 @@ const (
 )
 
 type Agent1Interface interface {
-	Release() *dbus.Error // Callback doesn't trigger on unregister
+	Release() *dbus.Error                                                    // Callback doesn't trigger on unregister
 	RequestPinCode(device dbus.ObjectPath) (pincode string, err *dbus.Error) // Triggers for pairing when SSP is off and cap != CAP_NO_INPUT_NO_OUTPUT
 	DisplayPinCode(device dbus.ObjectPath, pincode string) *dbus.Error
-	RequestPasskey(device dbus.ObjectPath)  (passkey uint32, err *dbus.Error) // SSP on, toolz.AGENT_CAP_KEYBOARD_ONLY
+	RequestPasskey(device dbus.ObjectPath) (passkey uint32, err *dbus.Error) // SSP on, toolz.AGENT_CAP_KEYBOARD_ONLY
 	DisplayPasskey(device dbus.ObjectPath, passkey uint32, entered uint16) *dbus.Error
 	RequestConfirmation(device dbus.ObjectPath, passkey uint32) *dbus.Error
 	RequestAuthorization(device dbus.ObjectPath) *dbus.Error
@@ -64,7 +64,6 @@ func (a *AgentManager1) RequestDefaultAgent(agent string) error {
 	return a.client.Call("RequestDefaultAgent", 0, dbus.ObjectPath(agent)).Store()
 }
 
-
 //UnregisterAgent unregisters the agent that has been previously registered
 func (a *AgentManager1) UnregisterAgent(agent string) error {
 	return a.client.Call("UnregisterAgent", 0, dbus.ObjectPath(agent)).Store()
@@ -74,15 +73,19 @@ func (a *AgentManager1) UnregisterAgent(agent string) error {
 func (a *AgentManager1) ExportGoAgentToDBus(agentInstance Agent1Interface) error {
 
 	//Connect DBus System bus
-	conn,err := dbus.SystemBus()
-	if err != nil { return err }
-	
-  targetPath := agentInstance.RegistrationPath()
-  agentInterfacePath := agentInstance.InterfacePath()
+	conn, err := dbus.SystemBus()
+	if err != nil {
+		return err
+	}
+
+	targetPath := agentInstance.RegistrationPath()
+	agentInterfacePath := agentInstance.InterfacePath()
 
 	//Export the given agent to the given path as interface "org.bluez.Agent1"
 	err = conn.Export(agentInstance, dbus.ObjectPath(targetPath), agentInterfacePath)
-	if err != nil { return err }
+	if err != nil {
+		return err
+	}
 
 	// Create  Introspectable for the given agent instance
 	node := &introspect.Node{
@@ -97,7 +100,6 @@ func (a *AgentManager1) ExportGoAgentToDBus(agentInstance Agent1Interface) error
 				Methods: introspect.Methods(agentInstance),
 			},
 		},
-
 	}
 	//fmt.Println(node)
 
@@ -106,8 +108,6 @@ func (a *AgentManager1) ExportGoAgentToDBus(agentInstance Agent1Interface) error
 	if err != nil {
 		return err
 	}
+
 	return nil
-
 }
-
-

@@ -47,7 +47,7 @@ See in `scripts/` how to upgrade bluez
 - Create a dbus profile
 
     ```sh
-    ln -s `pwd`/scripts/dbus-dev.conf /etc/dbus1/system.d/go-bluetooth.config
+    ln -s `pwd`/scripts/dbus-dev.conf /etc/dbus-1/system.d/go-bluetooth.config
     ```
 - Monitor activity
 
@@ -60,12 +60,14 @@ See in `scripts/` how to upgrade bluez
 - Enable LE advertisement (to use a single pc, you will need 2 bluetooth adapter)
 
   ```bash
+
     sudo btmgmt -i 0 power off
     sudo btmgmt -i 0 name "my go app"
     sudo btmgmt -i 0 le on    
     sudo btmgmt -i 0 connectable on
     sudo btmgmt -i 0 advertising on
     sudo btmgmt -i 0 power on
+
   ```
 
 ## TODO List / Help wanted
