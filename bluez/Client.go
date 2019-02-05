@@ -79,7 +79,7 @@ func (c *Client) SetProperty(p string, v interface{}) error {
 			return err
 		}
 	}
-	return c.dbusObject.Call("org.freedesktop.DBus.Properties.Set", 0, c.Config.Iface, p, v).Store()
+	return c.dbusObject.Call("org.freedesktop.DBus.Properties.Set", 0, c.Config.Iface, p, dbus.MakeVariant(v)).Store()
 }
 
 //GetProperties load all the properties for an interface

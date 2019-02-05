@@ -449,6 +449,5 @@ func (d *Device) Pair() error {
 	if err != nil {
 		return err
 	}
-	c.Pair()
-	return nil
+	return c.Pair()
 }
