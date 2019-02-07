@@ -33,6 +33,14 @@ The `examples/` folder offer an overview of library
 - `show_miband_info` show informations for MiBand2
 - `watch_changes` register for notifications from a TI SensorTag
 
+**Note** Ensure to install proper dbus rules on the system. For a dev setup use
+
+```
+sudo ln -s `pwd`/scripts/dbus-go-bluetooth-service.conf /etc/dbus-1/system.d/
+sudo ln -s `pwd`/scripts/dbus-go-bluetooth-dev.conf /etc/dbus-1/system.d/
+```
+
+
 ## Setup
 
 The library has been tested with

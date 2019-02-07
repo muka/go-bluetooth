@@ -11,7 +11,7 @@ const (
 	clientAdapterID = "hci1"
 
 	objectName = "org.bluez"
-	objectPath = "/org/bluez/example/service"
+	objectPath = "/go_bluetooth/example/service"
 
 	appName = "go-bluetooth"
 )
