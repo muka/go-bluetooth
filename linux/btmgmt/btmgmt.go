@@ -1,8 +1,12 @@
-package linux
+package btmgmt
 
 import (
+	"errors"
+	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/muka/go-bluetooth/linux"
 )
 
 //BtAdapter contains info about adapter from btmgmt
@@ -18,20 +22,38 @@ type BtAdapter struct {
 	CurrentSettings   []string
 }
 
-//GetAdapters return a list of adapters
-func GetAdapters() ([]BtAdapter, error) {
+//GetAdapter return an adapter
+func GetAdapter(adapterID string) (*BtAdapter, error) {
+	adapters, err := GetAdapters()
+	if err != nil {
+		return nil, err
+	}
+	for _, a := range adapters {
+		if a.ID == adapterID {
+			return a, nil
+		}
+	}
+	return nil, fmt.Errorf("Adapter %s not found", adapterID)
+}
 
-	raw, err := CmdExec("btmgmt", "info")
+//GetAdapters return a list of adapters
+func GetAdapters() ([]*BtAdapter, error) {
+
+	raw, err := linux.CmdExec("btmgmt", "info")
 	if err != nil {
 		return nil, err
 	}
 
-	list := []BtAdapter{}
+	if len(raw) == 0 {
+		return nil, errors.New("btmgmt provided no response")
+	}
+
+	list := make([]*BtAdapter, 0)
 	lines := strings.Split(raw, "\n")
 	lines = lines[1:]
 
 	// hci1:	Primary controller
-	re1 := regexp.MustCompile("([a-z0-1]+):[ ]*")
+	re1 := regexp.MustCompile("([a-z0-9]+):[ ]*")
 	//	addr 10:08:B1:72:F5:98 version 6 manufacturer 93 class 0x000000
 	re2 := regexp.MustCompile("\taddr ([a-zA-z0-9:]+) version ([0-9]+) manufacturer ([0-9]+) class ([0-9a-zA-Zx]+)")
 	//	supported settings:
@@ -46,7 +68,7 @@ func GetAdapters() ([]BtAdapter, error) {
 			continue
 		}
 
-		el := BtAdapter{}
+		el := new(BtAdapter)
 
 		res := re1.FindStringSubmatch(lines[i])
 		if len(res) > 1 {
@@ -114,7 +136,7 @@ type BtMgmt struct {
 func (h *BtMgmt) cmd(args ...string) error {
 	cmdArgs := []string{"btmgmt", "--index", h.adapterID}
 	cmdArgs = append(cmdArgs, args...)
-	_, err := CmdExec(cmdArgs...)
+	_, err := linux.CmdExec(cmdArgs...)
 	if err != nil {
 		return err
 	}

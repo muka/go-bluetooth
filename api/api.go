@@ -130,7 +130,7 @@ func GetAdapter(adapterID string) (*profile.Adapter1, error) {
 	return profile.NewAdapter1(adapterID), nil
 }
 
-//GetGattManager return an adapter object instance
+//GetGattManager return a GattManager1 instance
 func GetGattManager(adapterID string) (*profile.GattManager1, error) {
 
 	if exists, err := AdapterExists(adapterID); !exists {

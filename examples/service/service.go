@@ -8,7 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func registerApplication() error {
+func registerApplication(adapterID string) error {
 
 	cfg := &service.ApplicationConfig{
 		UUIDSuffix: "-0000-1000-8000-00805F9B34FB",

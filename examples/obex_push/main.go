@@ -15,9 +15,9 @@ import (
 	"sync"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez/profile/obex"
+	log "github.com/sirupsen/logrus"
 )
 
 func main() {

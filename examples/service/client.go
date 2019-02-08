@@ -1,21 +1,29 @@
 package main
 
 import (
-	log "github.com/sirupsen/logrus"
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/muka/go-bluetooth/emitter"
-	"github.com/muka/go-bluetooth/linux"
+	"github.com/muka/go-bluetooth/linux/btmgmt"
+	"github.com/muka/go-bluetooth/linux/hcitool"
+	log "github.com/sirupsen/logrus"
 )
 
 func createClient(adapterID, name, path string) error {
 
 	log.Info("Discovering devices")
 
-	btmgmt := linux.NewBtMgmt(adapterID)
+	serviceAdapterInfo, err := hcitool.GetAdapter(serviceAdapterID)
+	if err != nil {
+		return err
+	}
+
+	log.Debugf("Service adapter ID %s", serviceAdapterInfo.ID)
+
+	btmgmt := btmgmt.NewBtMgmt(adapterID)
 
 	// turn off/on
-	err := btmgmt.Reset()
+	err = btmgmt.Reset()
 	if err != nil {
 		return err
 	}

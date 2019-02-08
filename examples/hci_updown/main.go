@@ -1,8 +1,8 @@
 package main
 
 import (
-	log "github.com/sirupsen/logrus"
 	"github.com/muka/go-bluetooth/linux"
+	log "github.com/sirupsen/logrus"
 )
 
 //HciUpDownExample hciconfig up / down

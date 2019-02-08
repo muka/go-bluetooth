@@ -7,7 +7,7 @@ import (
 
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/emitter"
-	"github.com/muka/go-bluetooth/linux"
+	"github.com/muka/go-bluetooth/linux/btmgmt"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -70,7 +70,7 @@ func discoverDevice() error {
 	defer api.Exit()
 
 	log.Debugf("Reset bluetooth device")
-	err := linux.NewBtMgmt(adapterID).Reset()
+	err := btmgmt.NewBtMgmt(adapterID).Reset()
 	if err != nil {
 		return err
 	}

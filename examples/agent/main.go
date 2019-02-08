@@ -8,7 +8,7 @@ import (
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez/profile"
-	"github.com/muka/go-bluetooth/linux"
+	"github.com/muka/go-bluetooth/linux/btmgmt"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -31,7 +31,7 @@ func main() {
 
 	defer api.Exit()
 
-	a := linux.NewBtMgmt(adapterID)
+	a := btmgmt.NewBtMgmt(adapterID)
 	err := a.Reset()
 	if err != nil {
 		log.Fatal(err)

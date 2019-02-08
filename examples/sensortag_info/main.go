@@ -15,10 +15,10 @@ import (
 	"os"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/devices"
 	"github.com/muka/go-bluetooth/emitter"
+	log "github.com/sirupsen/logrus"
 )
 
 var adapterID = "hci0"
@@ -51,7 +51,7 @@ func ShowSensorTagInfo(adapterID string) error {
 	if err != nil {
 		return err
 	}
-	log.Debugf("AdapterExists: %b", boo)
+	log.Debugf("AdapterExists: %t", boo)
 
 	err = api.StartDiscoveryOn(adapterID)
 	if err != nil {
@@ -92,7 +92,7 @@ func ConnectAndFetchSensorDetailAndData(tagAddress string) error {
 	if err != nil {
 		return err
 	}
-	log.Debugf("device (dev): %s", dev)
+	log.Debugf("device (dev): %v", dev)
 
 	if dev == nil {
 		return errors.New("device not found")

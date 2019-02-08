@@ -11,3 +11,8 @@ func Down(adapterID int) error {
 func Up(adapterID int) error {
 	return socket.Up(adapterID)
 }
+
+//List list available HCI devices
+func List() ([]int, error) {
+	return socket.List()
+}

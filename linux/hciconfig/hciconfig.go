@@ -1,7 +1,9 @@
-package linux
+package hciconfig
 
 import (
 	"strings"
+
+	"github.com/muka/go-bluetooth/linux"
 )
 
 // NewHCIConfig initialize a new HCIConfig
@@ -27,7 +29,7 @@ func (h *HCIConfig) Status() (*HCIConfigResult, error) {
 
 	cfg := &HCIConfigResult{}
 
-	out, err := CmdExec("hciconfig", h.adapterID)
+	out, err := linux.CmdExec("hciconfig", h.adapterID)
 	if err != nil {
 		return nil, err
 	}
@@ -67,7 +69,7 @@ func (h *HCIConfig) Status() (*HCIConfigResult, error) {
 
 // Up Turn on an HCI device
 func (h *HCIConfig) Up() (*HCIConfigResult, error) {
-	_, err := CmdExec("hciconfig", h.adapterID, "up")
+	_, err := linux.CmdExec("hciconfig", h.adapterID, "up")
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +78,7 @@ func (h *HCIConfig) Up() (*HCIConfigResult, error) {
 
 // Down Turn down an HCI device
 func (h *HCIConfig) Down() (*HCIConfigResult, error) {
-	_, err := CmdExec("hciconfig", h.adapterID, "down")
+	_, err := linux.CmdExec("hciconfig", h.adapterID, "down")
 	if err != nil {
 		return nil, err
 	}
