@@ -5,6 +5,7 @@ import (
 	"strconv"
 
 	"github.com/muka/go-bluetooth/linux"
+	"github.com/muka/go-bluetooth/linux/hciconfig"
 )
 
 var rfclass = [...]string{
@@ -15,8 +16,8 @@ var rfclass = [...]string{
 var rfkill = linux.NewRFKill()
 
 // GetHCIConfig return an HCIConfig struct
-func GetHCIConfig(adapterID string) *linux.HCIConfig {
-	return linux.NewHCIConfig(adapterID)
+func GetHCIConfig(adapterID string) *hciconfig.HCIConfig {
+	return hciconfig.NewHCIConfig(adapterID)
 }
 
 // GetAdapterStatus return the status of an adapter
