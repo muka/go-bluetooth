@@ -2,12 +2,6 @@
 
 
 [[projects]]
-  name = "github.com/sirupsen/logrus"
-  packages = ["."]
-  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
-  version = "v1.0.5"
-
-[[projects]]
   name = "github.com/coreos/go-systemd"
   packages = ["dbus"]
   revision = "40e2722dffead74698ca12a750f64ef313ddce05"
@@ -21,25 +15,33 @@
 
 [[projects]]
   name = "github.com/godbus/dbus"
-  packages = [
-    ".",
-    "introspect",
-    "prop"
-  ]
+  packages = [".","introspect","prop"]
   revision = "a389bdde4dd695d414e47b755e95e72b7826432c"
   version = "v4.1.0"
+
+[[projects]]
+  name = "github.com/konsorten/go-windows-terminal-sequences"
+  packages = ["."]
+  revision = "5c8c8bd35d3832f5d134ae1e1e375b69a4d25242"
+  version = "v1.0.1"
 
 [[projects]]
   branch = "master"
   name = "github.com/muka/ble"
   packages = ["linux/hci/socket"]
-  revision = "5613a57406d1a81b68c78b5dbd4e2a236d76aef0"
+  revision = "c5982255bf40c9c8862768b014f33dd58d2784ff"
 
 [[projects]]
   name = "github.com/pkg/errors"
   packages = ["."]
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
   version = "v0.8.0"
+
+[[projects]]
+  name = "github.com/sirupsen/logrus"
+  packages = ["."]
+  revision = "e1e72e9de974bd926e5c56f83753fba2df402ce5"
+  version = "v1.3.0"
 
 [[projects]]
   branch = "master"
@@ -50,15 +52,12 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
-  packages = [
-    "unix",
-    "windows"
-  ]
+  packages = ["unix","windows"]
   revision = "b126b21c05a91c856b027c16779c12e3bf236954"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "87555d48d7d592dbfaa1ef13bdbd50fc22663136fd5beed6af1c61c5aeadf09c"
+  inputs-digest = "9f08a5ea182851704ea05d7200215fa93967755a5951285f1743475405e6774a"
   solver-name = "gps-cdcl"
   solver-version = 1
