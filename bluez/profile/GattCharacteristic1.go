@@ -57,7 +57,7 @@ func (d *GattCharacteristic1Properties) ToMap() (map[string]interface{}, error) 
 		return nil, errors.New("GattCharacteristic1Properties: Service ObjectPath is not valid")
 	}
 	for i := 0; i < len(d.Descriptors); i++ {
-		if d.Descriptors[i].IsValid() {
+		if !d.Descriptors[i].IsValid() {
 			return nil, errors.New("GattCharacteristic1Properties: Descriptors contains an ObjectPath that is not valid")
 		}
 	}
