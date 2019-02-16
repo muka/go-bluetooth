@@ -359,7 +359,15 @@ func (d *Device) GetAllServicesAndUUID() ([]string, error) {
 
 //GetCharByUUID return a GattService by its uuid, return nil if not found
 func (d *Device) GetCharByUUID(uuid string) (*profile.GattCharacteristic1, error) {
+	devices, err := d.GetCharsByUUID(uuid)
+	if len(devices) > 0 {
+		return devices[0], err
+	}
+	return nil, err
+}
 
+//GetCharsByUUID returns all characteristics that match the given UUID.
+func (d *Device) GetCharsByUUID(uuid string) ([]*profile.GattCharacteristic1, error) {
 	uuid = strings.ToUpper(uuid)
 
 	list, err := d.GetCharsList()
@@ -367,10 +375,9 @@ func (d *Device) GetCharByUUID(uuid string) (*profile.GattCharacteristic1, error
 		return nil, err
 	}
 
-	var deviceFound *profile.GattCharacteristic1
+	var devicesFound []*profile.GattCharacteristic1
 
 	for _, path := range list {
-
 		// use cache
 		_, ok := d.chars[path]
 		if !ok {
@@ -385,15 +392,15 @@ func (d *Device) GetCharByUUID(uuid string) (*profile.GattCharacteristic1, error
 		cuuid := strings.ToUpper(props.UUID)
 
 		if cuuid == uuid {
-			deviceFound = d.chars[path]
+			devicesFound = append(devicesFound, d.chars[path])
 		}
 	}
 
-	if deviceFound == nil {
+	if len(devicesFound) == 0 {
 		return nil, errors.New("characteristic not found")
 	}
 
-	return deviceFound, nil
+	return devicesFound, nil
 }
 
 //GetCharsList return a device characteristics
