@@ -70,4 +70,7 @@ func showDeviceInfo(dev *api.Device) {
 		return
 	}
 	log.Infof("name=%s addr=%s rssi=%d", props.Name, props.Address, props.RSSI)
+
+	log.Debugf("services: %++v", props.UUIDs)
+
 }

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
@@ -15,7 +17,7 @@ func registerApplication(adapterID string) error {
 		UUID:       "1234",
 		ObjectName: objectName,
 		ObjectPath: objectPath,
-		LocalName:  "GolangService",
+		LocalName:  "GoBleSrvc",
 	}
 	app, err := service.NewApplication(cfg)
 	if err != nil {
@@ -29,13 +31,61 @@ func registerApplication(adapterID string) error {
 		return err
 	}
 
+	err = exposeService(
+		app,
+		app.GenerateUUID("2233"),
+		app.GenerateUUID("3344"),
+		app.GenerateUUID("4455"),
+	)
+	if err != nil {
+		return err
+	}
+
+	err = exposeService(
+		app,
+		app.GenerateUUID("3322"),
+		app.GenerateUUID("4433"),
+		app.GenerateUUID("5544"),
+	)
+	if err != nil {
+		return err
+	}
+
+	log.Info("Application started, waiting for connections")
+
+	//Register Application
+	gattManager, err := api.GetGattManager(adapterID)
+	if err != nil {
+		return fmt.Errorf("GetGattManager: %s", err)
+	}
+
+	err = gattManager.RegisterApplication(app.Path(), map[string]interface{}{})
+	if err != nil {
+		return fmt.Errorf("RegisterApplication: %s", err.Error())
+	}
+
+	// Register our advertisement
+	err = app.StartAdvertising(adapterID)
+	if err != nil {
+		return fmt.Errorf("StartAdvertising: %s", err)
+	}
+
+	log.Info("Application registered and advertising.")
+	return nil
+}
+
+func exposeService(
+	app *service.Application,
+	serviceUUID, characteristicUUID, descriptorUUID string,
+) error {
+
 	serviceProps := &profile.GattService1Properties{
-		Primary: true,
-		UUID:    app.GenerateUUID("2233"),
+		Primary: false,
+		UUID:    serviceUUID,
 	}
 
 	// Set this service to be advertised
-	service1, err := app.CreateService(serviceProps, true)
+	service1, err := app.CreateService(serviceProps, false)
 	if err != nil {
 		log.Errorf("Failed to create service: %s", err.Error())
 		return err
@@ -48,7 +98,7 @@ func registerApplication(adapterID string) error {
 	}
 
 	charProps := &profile.GattCharacteristic1Properties{
-		UUID: app.GenerateUUID("3344"),
+		UUID: characteristicUUID,
 		Flags: []string{
 			bluez.FlagCharacteristicRead,
 			bluez.FlagCharacteristicWrite,
@@ -67,7 +117,7 @@ func registerApplication(adapterID string) error {
 	}
 
 	descProps := &profile.GattDescriptor1Properties{
-		UUID: app.GenerateUUID("4455"),
+		UUID: descriptorUUID,
 		Flags: []string{
 			bluez.FlagDescriptorRead,
 			bluez.FlagDescriptorWrite,
@@ -85,24 +135,5 @@ func registerApplication(adapterID string) error {
 		return err
 	}
 
-	log.Info("Application started, waiting for connections")
-
-	//Register Application
-	gattManager, err := api.GetGattManager(adapterID)
-	if err != nil {
-		log.Errorf("Failed to get GattManager1: %s", err.Error())
-		return err
-	}
-
-	err = gattManager.RegisterApplication(app.Path(), map[string]interface{}{})
-	if err != nil {
-		log.Errorf("Failed to register application: %s", err.Error())
-		return err
-	}
-
-	// Register our advertisement
-	err = app.StartAdvertising(adapterID)
-
-	log.Info("Application registered and advertising.")
 	return nil
 }

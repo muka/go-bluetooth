@@ -5,6 +5,18 @@ import (
 	"github.com/muka/go-bluetooth/bluez"
 )
 
+type SupportedIncludesType string
+
+// Possible values:
+// "tx-power"
+// "appearance"
+// "local-name"
+const (
+	SupportedIncludesTypeTxPower    SupportedIncludesType = "tx-power"
+	SupportedIncludesTypeAppearance SupportedIncludesType = "appearance"
+	SupportedIncludesTypeLocalName  SupportedIncludesType = "local-name"
+)
+
 // NewLEAdvertisingManager1 create a new LEAdvertisingManager1 client
 func NewLEAdvertisingManager1(hostID string) *LEAdvertisingManager1 {
 	a := new(LEAdvertisingManager1)
@@ -23,7 +35,7 @@ func NewLEAdvertisingManager1(hostID string) *LEAdvertisingManager1 {
 type LEAdvertisingManager1Properties struct {
 	ActiveInstances    byte
 	SupportedInstances byte
-	SupportedIncludes  []string
+	SupportedIncludes  []SupportedIncludesType
 }
 
 // LEAdvertisingManager1 client
