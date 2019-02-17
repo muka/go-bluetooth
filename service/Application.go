@@ -2,12 +2,15 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/godbus/dbus"
 	"github.com/godbus/dbus/introspect"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
+	"github.com/sirupsen/logrus"
 )
 
 //UUIDSuffix fixed 128bit UUID [0000]+[xxxx]+[-0000-1000-8000-00805F9B34FB]
@@ -19,6 +22,7 @@ func NewApplication(config *ApplicationConfig) (*Application, error) {
 	if config.ObjectName == "" {
 		return nil, errors.New("objectName is required")
 	}
+
 	if config.ObjectPath == "" {
 		return nil, errors.New("objectPath is required")
 	}
@@ -342,12 +346,15 @@ func (app *Application) Run() error {
 
 //StartAdvertising advertise information for a service
 func (app *Application) StartAdvertising(deviceInterface string) error {
-	if app.advertisement != nil && app.adMgr != nil {
-		// Already advertising
+
+	if app.advertisement != nil || app.adMgr != nil {
+		logrus.Debugf("Already advertising on %s", deviceInterface)
 		return nil
 	}
 
-	path := "/org/bluez/advertisement/0"
+	path := fmt.Sprintf("/org/bluez/advertisement/%s", deviceInterface)
+
+	logrus.Debugf("Registering service on %s (%s)", deviceInterface, path)
 
 	config := &LEAdvertisement1Config{
 		conn:       app.config.conn,
@@ -362,6 +369,10 @@ func (app *Application) StartAdvertising(deviceInterface string) error {
 		}
 	}
 
+	if len([]byte(strings.Join(serviceUUIDs, ","))) > 31 {
+		logrus.Warn("Advertisment limit of 31 bytes may have been exceeded. Consider not exposing all services IDs with `CreateService(props, false)`")
+	}
+
 	props := &profile.LEAdvertisement1Properties{
 		Type:         "peripheral",
 		LocalName:    app.config.LocalName,
@@ -370,16 +381,17 @@ func (app *Application) StartAdvertising(deviceInterface string) error {
 
 	var err error
 
-	app.advertisement, err = NewLEAdvertisement1(config, props)
+	advertisement, err := NewLEAdvertisement1(config, props)
 	if err != nil {
-		app.advertisement = nil
-		return err
+		return fmt.Errorf("NewLEAdvertisement1: %s", err)
 	}
 
-	err = app.advertisement.Expose()
+	app.advertisement = advertisement
+
+	err = advertisement.Expose()
 	if err != nil {
 		app.advertisement = nil
-		return err
+		return fmt.Errorf("Expose: %s", err)
 	}
 
 	options := make(map[string]interface{})
@@ -390,16 +402,16 @@ func (app *Application) StartAdvertising(deviceInterface string) error {
 	if err != nil {
 		app.advertisement = nil
 		app.adMgr = nil
-		return err
+		return fmt.Errorf("RegisterAdvertisement: %s", err)
 	}
 
 	adapter := profile.NewAdapter1(deviceInterface)
-	err = adapter.SetProperty("Discoverable", dbus.MakeVariant(true))
+	err = adapter.SetProperty("Discoverable", true)
 	if err != nil {
 		return err
 	}
 
-	err = adapter.SetProperty("Powered", dbus.MakeVariant(true))
+	err = adapter.SetProperty("Powered", true)
 	if err != nil {
 		return err
 	}
@@ -409,6 +421,7 @@ func (app *Application) StartAdvertising(deviceInterface string) error {
 
 //StopAdvertising stop advertising information on a service
 func (app *Application) StopAdvertising() error {
+
 	if app.advertisement == nil || app.adMgr == nil {
 		// Not advertising
 		return nil
@@ -419,9 +432,5 @@ func (app *Application) StopAdvertising() error {
 	app.advertisement = nil
 	app.adMgr = nil
 
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return err
 }
