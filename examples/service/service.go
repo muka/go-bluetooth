@@ -10,7 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func registerApplication(adapterID string) error {
+func registerApplication(adapterID string) (*service.Application, error) {
 
 	cfg := &service.ApplicationConfig{
 		UUIDSuffix: "-0000-1000-8000-00805F9B34FB",
@@ -22,13 +22,13 @@ func registerApplication(adapterID string) error {
 	app, err := service.NewApplication(cfg)
 	if err != nil {
 		log.Errorf("Failed to initialize app: %s", err.Error())
-		return err
+		return nil, err
 	}
 
 	err = app.Run()
 	if err != nil {
 		log.Errorf("Failed to run: %s", err.Error())
-		return err
+		return nil, err
 	}
 
 	err = exposeService(
@@ -36,9 +36,10 @@ func registerApplication(adapterID string) error {
 		app.GenerateUUID("2233"),
 		app.GenerateUUID("3344"),
 		app.GenerateUUID("4455"),
+		true,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	err = exposeService(
@@ -46,9 +47,10 @@ func registerApplication(adapterID string) error {
 		app.GenerateUUID("3322"),
 		app.GenerateUUID("4433"),
 		app.GenerateUUID("5544"),
+		false,
 	)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	log.Info("Application started, waiting for connections")
@@ -56,36 +58,37 @@ func registerApplication(adapterID string) error {
 	//Register Application
 	gattManager, err := api.GetGattManager(adapterID)
 	if err != nil {
-		return fmt.Errorf("GetGattManager: %s", err)
+		return nil, fmt.Errorf("GetGattManager: %s", err)
 	}
 
 	err = gattManager.RegisterApplication(app.Path(), map[string]interface{}{})
 	if err != nil {
-		return fmt.Errorf("RegisterApplication: %s", err.Error())
+		return nil, fmt.Errorf("RegisterApplication: %s", err.Error())
 	}
 
 	// Register our advertisement
 	err = app.StartAdvertising(adapterID)
 	if err != nil {
-		return fmt.Errorf("StartAdvertising: %s", err)
+		return nil, fmt.Errorf("StartAdvertising: %s", err)
 	}
 
 	log.Info("Application registered and advertising.")
-	return nil
+	return app, nil
 }
 
 func exposeService(
 	app *service.Application,
 	serviceUUID, characteristicUUID, descriptorUUID string,
+	advertise bool,
 ) error {
 
 	serviceProps := &profile.GattService1Properties{
-		Primary: false,
+		Primary: true,
 		UUID:    serviceUUID,
 	}
 
 	// Set this service to be advertised
-	service1, err := app.CreateService(serviceProps, false)
+	service1, err := app.CreateService(serviceProps, advertise)
 	if err != nil {
 		log.Errorf("Failed to create service: %s", err.Error())
 		return err

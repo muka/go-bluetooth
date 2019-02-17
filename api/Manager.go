@@ -22,7 +22,6 @@ func GetManager() (*Manager, error) {
 			return nil, err
 		}
 		manager = m
-
 	}
 	return manager, nil
 }

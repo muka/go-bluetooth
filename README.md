@@ -74,7 +74,7 @@ See in `scripts/` how to upgrade bluez
 
 - View `bluetoothd` debug messages
 
-    `sudo bluetoothd -Edn P hostname`
+    `sudo service bluetooth stop && sudo bluetoothd -Edn P hostname`
 
 - Enable LE advertisement (to use a single pc, you will need 2 bluetooth adapter)
 

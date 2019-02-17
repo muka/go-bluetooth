@@ -72,6 +72,11 @@ func (s *GattService1) Advertised() bool {
 }
 
 //Properties return the properties of the service
+func (s *GattService1) GetProperties() *profile.GattService1Properties {
+	return s.properties
+}
+
+//Properties return the properties of the service
 func (s *GattService1) Properties() map[string]bluez.Properties {
 	p := make(map[string]bluez.Properties)
 	s.properties.Characteristics = s.GetCharacteristicPaths()
