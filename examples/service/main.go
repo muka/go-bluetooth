@@ -41,6 +41,13 @@ func reset() {
 
 }
 
+func fail(where string, err error) {
+	if err != nil {
+		log.Errorf("%s: %s", where, err)
+		os.Exit(1)
+	}
+}
+
 func main() {
 
 	log.SetLevel(log.DebugLevel)
@@ -48,32 +55,20 @@ func main() {
 	var err error
 
 	agent, err := createAgent()
-	if err != nil {
-		log.Errorf("createAgent: %s", err)
-		os.Exit(1)
-	}
+	fail("createAgent", err)
 
 	defer agent.Release()
 
 	app, err := registerApplication(serviceAdapterID)
-	if err != nil {
-		log.Error(err)
-		os.Exit(1)
-	}
+	fail("registerApplication", err)
 
 	defer app.StopAdvertising()
 
 	adapter, err := api.GetAdapter(serviceAdapterID)
-	if err != nil {
-		log.Errorf("GetAadapter: %s", err)
-		os.Exit(1)
-	}
+	fail("GetAdapter", err)
 
 	adapterProps, err := adapter.GetProperties()
-	if err != nil {
-		log.Errorf("adapter.GetProperties: %s", err)
-		os.Exit(1)
-	}
+	fail("GetProperties", err)
 
 	hwaddr := adapterProps.Address
 
@@ -83,16 +78,8 @@ func main() {
 		break
 	}
 
-	// w := 4
-	// log.Infof("Waiting %dsec to start client ...", w)
-	// time.Sleep(time.Second * time.Duration(w))
-	// log.Info("Ok")
-
 	err = createClient(clientAdapterID, hwaddr, serviceID)
-	if err != nil {
-		log.Error(err)
-		os.Exit(1)
-	}
+	fail("createClient", err)
 
 	select {}
 }
