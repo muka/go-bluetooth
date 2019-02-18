@@ -2,62 +2,95 @@
 
 
 [[projects]]
+  digest = "1:d5286d88d5620c43617ecec0ec188ded033bf7a434b0c708cd16cd9a40545d04"
   name = "github.com/coreos/go-systemd"
   packages = ["dbus"]
+  pruneopts = "UT"
   revision = "40e2722dffead74698ca12a750f64ef313ddce05"
   version = "v16"
 
 [[projects]]
+  digest = "1:ca82a3b99694824c627573c2a76d0e49719b4a9c02d1d85a2ac91f1c1f52ab9b"
   name = "github.com/fatih/structs"
   packages = ["."]
+  pruneopts = "UT"
   revision = "a720dfa8df582c51dee1b36feabb906bde1588bd"
   version = "v1.0"
 
 [[projects]]
+  digest = "1:b33b93376c39fe1d08c439037423e99df1d9b4ce770cf0f8adcb740038a5d34d"
   name = "github.com/godbus/dbus"
-  packages = [".","introspect","prop"]
+  packages = [
+    ".",
+    "introspect",
+    "prop",
+  ]
+  pruneopts = "UT"
   revision = "a389bdde4dd695d414e47b755e95e72b7826432c"
   version = "v4.1.0"
 
 [[projects]]
+  digest = "1:0a69a1c0db3591fcefb47f115b224592c8dfa4368b7ba9fae509d5e16cdc95c8"
   name = "github.com/konsorten/go-windows-terminal-sequences"
   packages = ["."]
+  pruneopts = "UT"
   revision = "5c8c8bd35d3832f5d134ae1e1e375b69a4d25242"
   version = "v1.0.1"
 
 [[projects]]
   branch = "master"
+  digest = "1:efca3ef4a9c339f9c45804f3bf561501838f90124ce7448c89934a89b4c069bb"
   name = "github.com/muka/ble"
   packages = ["linux/hci/socket"]
+  pruneopts = "UT"
   revision = "c5982255bf40c9c8862768b014f33dd58d2784ff"
 
 [[projects]]
+  digest = "1:40e195917a951a8bf867cd05de2a46aaf1806c50cf92eebf4c16f78cd196f747"
   name = "github.com/pkg/errors"
   packages = ["."]
+  pruneopts = "UT"
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
   version = "v0.8.0"
 
 [[projects]]
+  digest = "1:87c2e02fb01c27060ccc5ba7c5a407cc91147726f8f40b70cceeedbc52b1f3a8"
   name = "github.com/sirupsen/logrus"
   packages = ["."]
+  pruneopts = "UT"
   revision = "e1e72e9de974bd926e5c56f83753fba2df402ce5"
   version = "v1.3.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:3f3a05ae0b95893d90b9b3b5afdb79a9b3d96e4e36e099d841ae602e4aca0da8"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
+  pruneopts = "UT"
   revision = "d6449816ce06963d9d136eee5a56fca5b0616e7e"
 
 [[projects]]
   branch = "master"
+  digest = "1:8f550b02b29d363bd3f836d04b276273ee00a107ec9b3432eb01d5dec1d6b666"
   name = "golang.org/x/sys"
-  packages = ["unix","windows"]
+  packages = [
+    "unix",
+    "windows",
+  ]
+  pruneopts = "UT"
   revision = "b126b21c05a91c856b027c16779c12e3bf236954"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "9f08a5ea182851704ea05d7200215fa93967755a5951285f1743475405e6774a"
+  input-imports = [
+    "github.com/coreos/go-systemd/dbus",
+    "github.com/fatih/structs",
+    "github.com/godbus/dbus",
+    "github.com/godbus/dbus/introspect",
+    "github.com/godbus/dbus/prop",
+    "github.com/muka/ble/linux/hci/socket",
+    "github.com/sirupsen/logrus",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
