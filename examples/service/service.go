@@ -33,9 +33,9 @@ func registerApplication(adapterID string) (*service.Application, error) {
 
 	err = exposeService(
 		app,
-		app.GenerateUUID("2233"),
-		app.GenerateUUID("3344"),
-		app.GenerateUUID("4455"),
+		app.GenerateUUID("1111"),
+		app.GenerateUUID("1111"),
+		app.GenerateUUID("1111"),
 		true,
 	)
 	if err != nil {
@@ -44,9 +44,9 @@ func registerApplication(adapterID string) (*service.Application, error) {
 
 	err = exposeService(
 		app,
-		app.GenerateUUID("3322"),
-		app.GenerateUUID("4433"),
-		app.GenerateUUID("5544"),
+		app.GenerateUUID("2222"),
+		app.GenerateUUID("2222"),
+		app.GenerateUUID("2222"),
 		false,
 	)
 	if err != nil {

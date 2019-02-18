@@ -2,81 +2,19 @@ package main
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/api"
+	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
-	"github.com/muka/go-bluetooth/linux/btmgmt"
 	log "github.com/sirupsen/logrus"
 )
-
-// ToDo: allow enabling "simple pairing" (sspmode set via hcitool)
-
-const adapterID = "hci0"
-const dev_mac = "88:B4:A6:6F:12:EF"
-
-const logLevel = log.DebugLevel
-
-const (
-	BUS_NAME        = "org.bluez"
-	AGENT_INTERFACE = "org.bluez.Agent1"
-	AGENT_PATH      = "/gameshell/bleagentgo"
-)
-
-func main() {
-
-	log.SetLevel(logLevel)
-
-	defer api.Exit()
-
-	a := btmgmt.NewBtMgmt(adapterID)
-	err := a.Reset()
-	if err != nil {
-		log.Fatal(err)
-		os.Exit(1)
-	}
-
-	err = InitAgent()
-	if err != nil {
-		log.Fatal(err)
-		os.Exit(1)
-	}
-
-	devices, err := api.GetDevices()
-	if err != nil {
-		log.Errorf("GetDevices: %s", err)
-		return
-	}
-
-	log.Info(devices)
-
-	for i, v := range devices {
-		dev_mac_path := strings.Replace(dev_mac, ":", "_", -1)
-		if strings.Contains(v.Path, dev_mac_path) {
-			log.Info(i, v.Path)
-			log.Info("Pairing...")
-			err := v.Pair()
-			if err == nil {
-
-				log.Info("Pair succeed,Connecting...")
-				setTrusted(dev_mac_path)
-				v.Connect()
-			} else {
-				log.Error("Pair failed:", err)
-			}
-		}
-	}
-
-	log.Info("Working...")
-	select {}
-}
 
 func RegisterAgent(agent profile.Agent1Interface, caps string) error {
 	//agent_path := AgentDefaultRegisterPath // we use the default path
 	agent_path := agent.RegistrationPath() // we use the default path
-	log.Info("The Agent Path: ", agent_path)
+	log.Infof("Agent path: %s", agent_path)
 
 	// Register agent
 	am := profile.NewAgentManager1(agent_path)
@@ -102,13 +40,13 @@ func RegisterAgent(agent profile.Agent1Interface, caps string) error {
 	return nil
 }
 
-func InitAgent() error {
+func createAgent() (*Agent, error) {
 	agent := new(Agent)
-	agent.BusName = BUS_NAME
-	agent.AgentInterface = AGENT_INTERFACE
-	agent.AgentPath = AGENT_PATH
+	agent.BusName = bluez.OrgBluezInterface
+	agent.AgentInterface = bluez.Agent1Interface
+	agent.AgentPath = agentObjectPath
 
-	return RegisterAgent(agent, profile.AGENT_CAP_KEYBOARD_DISPLAY)
+	return agent, RegisterAgent(agent, profile.AGENT_CAP_KEYBOARD_DISPLAY)
 }
 
 func setTrusted(path string) {
@@ -119,16 +57,11 @@ func setTrusted(path string) {
 		return
 	}
 
-	for i, v := range devices {
-		log.Info(i, v.Path)
+	for _, v := range devices {
 		if strings.Contains(v.Path, path) {
-			log.Info("Found device")
-			dev1, err := v.GetClient()
-			if err != nil {
-				log.Error(err)
-				return
-			}
-			err = dev1.SetProperty("Trusted", true)
+			log.Infof("Found device %s", path)
+			dev1, _ := v.GetClient()
+			err := dev1.SetProperty("Trusted", true)
 			if err != nil {
 				log.Error(err)
 			}

@@ -3,7 +3,7 @@ package bluez
 import "github.com/godbus/dbus/introspect"
 
 const (
-
+	OrgBluezInterface = "org.bluez"
 	//Device1Interface the bluez interface for Device1
 	Device1Interface = "org.bluez.Device1"
 	//Adapter1Interface the bluez interface for Adapter1
@@ -16,6 +16,8 @@ const (
 	GattDescriptor1Interface = "org.bluez.GattDescriptor1"
 	//LEAdvertisement1Interface the bluez interface for LEAdvertisement1
 	LEAdvertisement1Interface = "org.bluez.LEAdvertisement1"
+	// Agent1Interface the bluez interface for Agent1
+	Agent1Interface = "org.bluez.Agent1"
 
 	//ObjectManagerInterface the dbus object manager interface
 	ObjectManagerInterface = "org.freedesktop.DBus.ObjectManager"
