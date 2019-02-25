@@ -134,7 +134,6 @@ func (s *HumiditySensor) IsNotifying() (bool, error) {
 
 //Read value from the humidity sensor
 func (s *HumiditySensor) Read() (float64, error) {
-
 	err := s.Enable()
 	if err != nil {
 		return 0, err
@@ -147,13 +146,10 @@ func (s *HumiditySensor) Read() (float64, error) {
 		return 0, err
 	}
 
-	//die := binary.LittleEndian.Uint16(b[0:2])
-	amb := binary.LittleEndian.Uint16(b[2:])
+	humid := binary.LittleEndian.Uint16(b[2:])
+	humidValue := calcHumidLocal(uint16(humid))
 
-	//dieValue := calcTmpTarget(uint16(die))
-	ambientValue := calcTmpLocal(uint16(amb))
-
-	return ambientValue, err
+	return humidValue, err
 }
 
 //StartNotify enable DataChannel for humidity
