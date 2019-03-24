@@ -10,13 +10,14 @@ The features implemented are
 
 - [x] Discovery
 - [x] Adapter support
-- [x] Device support (SensorTag example)
+- [x] Client device support (see [SensorTag example](./devices))
 - [x] GATT Service and characteristics interface
-- [x] Adapter on/off via `rfkill`
+- [x] Shell interfaces to `rfkill`, `btmgmt`, `hciconfig`, `hcitool`
 - [x] Handle systemd `bluetooth.service` unit
-- [x] Expose `hciconfig` basic API
+- [x] Expose `hci` basic API
 - [x] Expose bluetooth services via bluez GATT API
 - [x] Basic pairing support
+- [x] Basic authentication support
 
 ## Examples
 
@@ -40,7 +41,6 @@ sudo ln -s `pwd`/scripts/dbus-go-bluetooth-service.conf /etc/dbus-1/system.d/
 sudo ln -s `pwd`/scripts/dbus-go-bluetooth-dev.conf /etc/dbus-1/system.d/
 ```
 
-
 ## Setup
 
 The library has been tested with
@@ -57,6 +57,8 @@ Ensure you are using an up to date version with `bluetoothd -v`
 See in `scripts/` how to upgrade bluez
 
 ### Development notes
+
+Standard GATT characteristics descriptions can be found on https://www.bluetooth.com/specifications/gatt/
 
 -   Give access to `hciconfig` to any user (may have [security implications](https://www.insecure.ws/linux/getcap_setcap.html))
 
