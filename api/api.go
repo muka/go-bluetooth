@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/godbus/dbus"
 
@@ -122,7 +123,7 @@ func GetAdapter(adapterID string) (*profile.Adapter1, error) {
 
 	if exists, err := AdapterExists(adapterID); !exists {
 		if err != nil {
-			return nil, err
+			return nil, fmt.Errorf("AdapterExists: %s", err)
 		}
 		return nil, errors.New("Adapter " + adapterID + " not found")
 	}

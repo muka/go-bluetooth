@@ -59,14 +59,18 @@ func setTrusted(path string) {
 
 	for _, v := range devices {
 		if strings.Contains(v.Path, path) {
-			log.Infof("Found device %s", path)
+			log.Infof("Trust device at %s", path)
 			dev1, _ := v.GetClient()
 			err := dev1.SetProperty("Trusted", true)
 			if err != nil {
 				log.Error(err)
 			}
+			return
 		}
 	}
+
+	log.Errorf("Cannot trust device %s, not found", path)
+
 }
 
 type Agent struct {

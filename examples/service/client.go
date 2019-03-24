@@ -52,6 +52,11 @@ func showDeviceInfo(dev *api.Device, hwaddr, serviceID string) error {
 		return fmt.Errorf("%s: Failed to get properties: %s", dev.Path, err.Error())
 	}
 
+	// device1, err := dev.GetClient()
+	// if err != nil {
+	// 	return fmt.Errorf("GetClient: %s", err)
+	// }
+
 	if strings.ToLower(hwaddr) != strings.ToLower(props.Address) {
 		// log.Debugf("Skip device name=%s addr=%s rssi=%d", props.Name, props.Address, props.RSSI)
 		return nil
@@ -70,7 +75,8 @@ func showDeviceInfo(dev *api.Device, hwaddr, serviceID string) error {
 	}
 
 	if !found {
-		return fmt.Errorf("Service UUID %s not found on %s", serviceID, hwaddr)
+		log.Error(fmt.Errorf("Service UUID %s not found on %s", serviceID, hwaddr))
+		return nil
 	}
 
 	if !props.Paired {

@@ -37,6 +37,12 @@ func reset() {
 		os.Exit(1)
 	}
 
+	// err = api.FlushDevices(serviceAdapterID)
+	// fail("FlushDevices "+serviceAdapterID, err)
+	//
+	// err = api.FlushDevices(clientAdapterID)
+	// fail("FlushDevices "+clientAdapterID, err)
+
 	time.Sleep(time.Millisecond * 500)
 
 }
@@ -51,6 +57,8 @@ func fail(where string, err error) {
 func main() {
 
 	log.SetLevel(log.DebugLevel)
+
+	reset()
 
 	var err error
 
@@ -77,6 +85,8 @@ func main() {
 		serviceID = service.GetProperties().UUID
 		break
 	}
+
+	time.Sleep(time.Millisecond * 500)
 
 	err = createClient(clientAdapterID, hwaddr, serviceID)
 	fail("createClient", err)

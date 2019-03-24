@@ -377,6 +377,7 @@ func (app *Application) StartAdvertising(deviceInterface string) error {
 		Type:         "peripheral",
 		LocalName:    app.config.LocalName,
 		ServiceUUIDs: serviceUUIDs,
+		// Appearance:   0,
 	}
 
 	var err error
@@ -406,6 +407,7 @@ func (app *Application) StartAdvertising(deviceInterface string) error {
 	}
 
 	adapter := profile.NewAdapter1(deviceInterface)
+
 	err = adapter.SetProperty("Discoverable", true)
 	if err != nil {
 		return err
@@ -428,6 +430,8 @@ func (app *Application) StopAdvertising() error {
 	}
 
 	err := app.adMgr.UnregisterAdvertisement(string(app.advertisement.config.objectPath))
+
+	app.advertisement.Release()
 
 	app.advertisement = nil
 	app.adMgr = nil

@@ -78,14 +78,13 @@ func FlushDevices(adapterID string) error {
 		return err
 	}
 	for _, dev := range devices {
-		err = adapter.RemoveDevice(dev.Path)
-		if err != nil {
-			return err
-		}
-
 		err := ClearDevice(&dev)
 		if err != nil {
-			return err
+			return fmt.Errorf("FlushDevices.ClearDevice %s", err)
+		}
+		err = adapter.RemoveDevice(dev.Path)
+		if err != nil {
+			return fmt.Errorf("FlushDevices.RemoveDevice %s", err)
 		}
 	}
 	return nil
@@ -543,7 +542,7 @@ func (d *Device) Disconnect() error {
 	return nil
 }
 
-//Pair a device
+// Pair a device
 func (d *Device) Pair() error {
 	c, err := d.GetClient()
 	if err != nil {

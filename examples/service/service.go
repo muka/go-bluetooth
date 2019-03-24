@@ -14,10 +14,10 @@ func registerApplication(adapterID string) (*service.Application, error) {
 
 	cfg := &service.ApplicationConfig{
 		UUIDSuffix: "-0000-1000-8000-00805F9B34FB",
-		UUID:       "1234",
+		UUID:       "AAAA",
 		ObjectName: objectName,
 		ObjectPath: objectPath,
-		LocalName:  "GoBleSrvc",
+		LocalName:  "gobluetooth",
 	}
 	app, err := service.NewApplication(cfg)
 	if err != nil {
