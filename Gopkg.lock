@@ -2,14 +2,6 @@
 
 
 [[projects]]
-  digest = "1:9e9193aa51197513b3abcb108970d831fbcf40ef96aa845c4f03276e1fa316d2"
-  name = "github.com/Sirupsen/logrus"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
-  version = "v1.0.5"
-
-[[projects]]
   digest = "1:d5286d88d5620c43617ecec0ec188ded033bf7a434b0c708cd16cd9a40545d04"
   name = "github.com/coreos/go-systemd"
   packages = ["dbus"]
@@ -73,6 +65,14 @@
   version = "v0.8.0"
 
 [[projects]]
+  digest = "1:9e9193aa51197513b3abcb108970d831fbcf40ef96aa845c4f03276e1fa316d2"
+  name = "github.com/sirupsen/logrus"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
+  version = "v1.0.5"
+
+[[projects]]
   branch = "master"
   digest = "1:3f3a05ae0b95893d90b9b3b5afdb79a9b3d96e4e36e099d841ae602e4aca0da8"
   name = "golang.org/x/crypto"
@@ -95,7 +95,6 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/Sirupsen/logrus",
     "github.com/coreos/go-systemd/dbus",
     "github.com/fatih/structs",
     "github.com/godbus/dbus",
@@ -111,6 +110,7 @@
     "github.com/muka/go-bluetooth/linux",
     "github.com/muka/go-bluetooth/service",
     "github.com/muka/go-bluetooth/util",
+    "github.com/sirupsen/logrus",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

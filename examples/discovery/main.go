@@ -4,7 +4,7 @@ package main
 import (
 	"os"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/emitter"
 	"github.com/muka/go-bluetooth/linux"
