@@ -45,6 +45,10 @@
   branch = "master"
   name = "github.com/muka/ble"
 
+[[constraint]]
+  name = "github.com/muka/go-bluetooth"
+  source = "github.com/ozxcorp/go-bluetooth"
+
 [prune]
   go-tests = true
   unused-packages = true

@@ -2,63 +2,115 @@
 
 
 [[projects]]
+  digest = "1:9e9193aa51197513b3abcb108970d831fbcf40ef96aa845c4f03276e1fa316d2"
   name = "github.com/Sirupsen/logrus"
   packages = ["."]
+  pruneopts = "UT"
   revision = "c155da19408a8799da419ed3eeb0cb5db0ad5dbc"
   version = "v1.0.5"
 
 [[projects]]
+  digest = "1:d5286d88d5620c43617ecec0ec188ded033bf7a434b0c708cd16cd9a40545d04"
   name = "github.com/coreos/go-systemd"
   packages = ["dbus"]
+  pruneopts = "UT"
   revision = "40e2722dffead74698ca12a750f64ef313ddce05"
   version = "v16"
 
 [[projects]]
+  digest = "1:ca82a3b99694824c627573c2a76d0e49719b4a9c02d1d85a2ac91f1c1f52ab9b"
   name = "github.com/fatih/structs"
   packages = ["."]
+  pruneopts = "UT"
   revision = "a720dfa8df582c51dee1b36feabb906bde1588bd"
   version = "v1.0"
 
 [[projects]]
+  digest = "1:b33b93376c39fe1d08c439037423e99df1d9b4ce770cf0f8adcb740038a5d34d"
   name = "github.com/godbus/dbus"
   packages = [
     ".",
     "introspect",
-    "prop"
+    "prop",
   ]
+  pruneopts = "UT"
   revision = "a389bdde4dd695d414e47b755e95e72b7826432c"
   version = "v4.1.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:e1fcc2f5962bda31594420e06aa4603aec46a88b8a28fe6dc5a02aa1efa266b8"
   name = "github.com/muka/ble"
   packages = ["linux/hci/socket"]
+  pruneopts = "UT"
   revision = "5613a57406d1a81b68c78b5dbd4e2a236d76aef0"
 
 [[projects]]
+  digest = "1:5bc1d250c5c6da9680345ca86da6ef8ff4239e60f696b0ed722425a0991b30a2"
+  name = "github.com/muka/go-bluetooth"
+  packages = [
+    "api",
+    "bluez",
+    "bluez/profile",
+    "bluez/profile/obex",
+    "devices",
+    "emitter",
+    "linux",
+    "service",
+    "util",
+  ]
+  pruneopts = "UT"
+  revision = "c37f45f4ed51656e61dda499c33f7e2f98fa4e12"
+  source = "github.com/ozxcorp/go-bluetooth"
+  version = "1.0.0"
+
+[[projects]]
+  digest = "1:40e195917a951a8bf867cd05de2a46aaf1806c50cf92eebf4c16f78cd196f747"
   name = "github.com/pkg/errors"
   packages = ["."]
+  pruneopts = "UT"
   revision = "645ef00459ed84a119197bfb8d8205042c6df63d"
   version = "v0.8.0"
 
 [[projects]]
   branch = "master"
+  digest = "1:3f3a05ae0b95893d90b9b3b5afdb79a9b3d96e4e36e099d841ae602e4aca0da8"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
+  pruneopts = "UT"
   revision = "d6449816ce06963d9d136eee5a56fca5b0616e7e"
 
 [[projects]]
   branch = "master"
+  digest = "1:8f550b02b29d363bd3f836d04b276273ee00a107ec9b3432eb01d5dec1d6b666"
   name = "golang.org/x/sys"
   packages = [
     "unix",
-    "windows"
+    "windows",
   ]
+  pruneopts = "UT"
   revision = "b126b21c05a91c856b027c16779c12e3bf236954"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "87555d48d7d592dbfaa1ef13bdbd50fc22663136fd5beed6af1c61c5aeadf09c"
+  input-imports = [
+    "github.com/Sirupsen/logrus",
+    "github.com/coreos/go-systemd/dbus",
+    "github.com/fatih/structs",
+    "github.com/godbus/dbus",
+    "github.com/godbus/dbus/introspect",
+    "github.com/godbus/dbus/prop",
+    "github.com/muka/ble/linux/hci/socket",
+    "github.com/muka/go-bluetooth/api",
+    "github.com/muka/go-bluetooth/bluez",
+    "github.com/muka/go-bluetooth/bluez/profile",
+    "github.com/muka/go-bluetooth/bluez/profile/obex",
+    "github.com/muka/go-bluetooth/devices",
+    "github.com/muka/go-bluetooth/emitter",
+    "github.com/muka/go-bluetooth/linux",
+    "github.com/muka/go-bluetooth/service",
+    "github.com/muka/go-bluetooth/util",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1

@@ -341,13 +341,13 @@ func (app *Application) Run() error {
 }
 
 //StartAdvertising advertise information for a service
-func (app *Application) StartAdvertising(deviceInterface string) error {
+func (app *Application) StartAdvertising(deviceInterface string, appID string) error {
 	if app.advertisement != nil && app.adMgr != nil {
 		// Already advertising
 		return nil
 	}
 
-	path := "/org/bluez/advertisement/0"
+	path := "/org/bluez/advertisement/" + appID
 
 	config := &LEAdvertisement1Config{
 		conn:       app.config.conn,
