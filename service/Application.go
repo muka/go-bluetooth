@@ -277,17 +277,17 @@ const CallbackFunctionError = -2
 func (app *Application) HandleRead(srvUUID string, uuid string) ([]byte, *CallbackError) {
 	if app.config.ReadFunc == nil {
 		b := make([]byte, 0)
-		return b, NewCallbackError(-1, "No callback registered.")
+		return b, NewCallbackError(CallbackNotRegistered, "No callback registered.")
 	}
 
 	var cberr *CallbackError
 	b, err := app.config.ReadFunc(app, srvUUID, uuid)
 	if err != nil {
-		// If a CallbackError is returned, simply pass it through
 		if err, ok := err.(*CallbackError); ok {
+			// If a CallbackError is returned, simply pass it through
 			cberr = err
 		} else {
-			cberr = NewCallbackError(-2, err.Error())
+			cberr = NewCallbackError(CallbackFunctionError, err.Error())
 		}
 	}
 
@@ -297,17 +297,17 @@ func (app *Application) HandleRead(srvUUID string, uuid string) ([]byte, *Callba
 // HandleWrite handle application write
 func (app *Application) HandleWrite(srvUUID string, uuid string, value []byte) *CallbackError {
 	if app.config.WriteFunc == nil {
-		return NewCallbackError(-1, "No callback registered.")
+		return NewCallbackError(CallbackNotRegistered, "No callback registered.")
 	}
 
 	err := app.config.WriteFunc(app, srvUUID, uuid, value)
 	if err != nil {
-		// If a CallbackError is returned, simply pass it through
 		if err, ok := err.(*CallbackError); ok {
+			// If a CallbackError is returned, simply pass it through
 			return err
 		}
 
-		return NewCallbackError(-2, err.Error())
+		return NewCallbackError(CallbackFunctionError, err.Error())
 	}
 
 	return nil
@@ -317,17 +317,17 @@ func (app *Application) HandleWrite(srvUUID string, uuid string, value []byte) *
 func (app *Application) HandleDescriptorRead(srvUUID string, charUUID string, descUUID string) ([]byte, *CallbackError) {
 	if app.config.DescReadFunc == nil {
 		b := make([]byte, 0)
-		return b, NewCallbackError(-1, "No callback registered.")
+		return b, NewCallbackError(CallbackNotRegistered, "No callback registered.")
 	}
 
 	var cberr *CallbackError
 	b, err := app.config.DescReadFunc(app, srvUUID, charUUID, descUUID)
 	if err != nil {
-		// If a CallbackError is returned, simply pass it through
 		if err, ok := err.(*CallbackError); ok {
+			// If a CallbackError is returned, simply pass it through
 			cberr = err
 		} else {
-			cberr = NewCallbackError(-2, err.Error())
+			cberr = NewCallbackError(CallbackFunctionError, err.Error())
 		}
 	}
 
@@ -337,17 +337,17 @@ func (app *Application) HandleDescriptorRead(srvUUID string, charUUID string, de
 //HandleDescriptorWrite handle descriptor write
 func (app *Application) HandleDescriptorWrite(srvUUID string, charUUID string, descUUID string, value []byte) *CallbackError {
 	if app.config.DescWriteFunc == nil {
-		return NewCallbackError(-1, "No callback registered.")
+		return NewCallbackError(CallbackNotRegistered, "No callback registered.")
 	}
 
 	err := app.config.DescWriteFunc(app, srvUUID, charUUID, descUUID, value)
 	if err != nil {
-		// If a CallbackError is returned, simply pass it through
 		if err, ok := err.(*CallbackError); ok {
+			// If a CallbackError is returned, simply pass it through
 			return err
 		}
 
-		return NewCallbackError(-2, err.Error())
+		return NewCallbackError(CallbackFunctionError, err.Error())
 	}
 
 	return nil
