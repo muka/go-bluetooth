@@ -283,7 +283,12 @@ func (app *Application) HandleRead(srvUUID string, uuid string) ([]byte, *Callba
 	var cberr *CallbackError
 	b, err := app.config.ReadFunc(app, srvUUID, uuid)
 	if err != nil {
-		cberr = NewCallbackError(-2, err.Error())
+		// If a CallbackError is returned, simply pass it through
+		if err, ok := err.(*CallbackError); ok {
+			cberr = err
+		} else {
+			cberr = NewCallbackError(-2, err.Error())
+		}
 	}
 
 	return b, cberr
@@ -297,6 +302,11 @@ func (app *Application) HandleWrite(srvUUID string, uuid string, value []byte) *
 
 	err := app.config.WriteFunc(app, srvUUID, uuid, value)
 	if err != nil {
+		// If a CallbackError is returned, simply pass it through
+		if err, ok := err.(*CallbackError); ok {
+			return err
+		}
+
 		return NewCallbackError(-2, err.Error())
 	}
 
@@ -313,7 +323,12 @@ func (app *Application) HandleDescriptorRead(srvUUID string, charUUID string, de
 	var cberr *CallbackError
 	b, err := app.config.DescReadFunc(app, srvUUID, charUUID, descUUID)
 	if err != nil {
-		cberr = NewCallbackError(-2, err.Error())
+		// If a CallbackError is returned, simply pass it through
+		if err, ok := err.(*CallbackError); ok {
+			cberr = err
+		} else {
+			cberr = NewCallbackError(-2, err.Error())
+		}
 	}
 
 	return b, cberr
@@ -327,6 +342,11 @@ func (app *Application) HandleDescriptorWrite(srvUUID string, charUUID string, d
 
 	err := app.config.DescWriteFunc(app, srvUUID, charUUID, descUUID, value)
 	if err != nil {
+		// If a CallbackError is returned, simply pass it through
+		if err, ok := err.(*CallbackError); ok {
+			return err
+		}
+
 		return NewCallbackError(-2, err.Error())
 	}
 
