@@ -138,7 +138,7 @@ func (s *GattCharacteristic1) ReadValue(options map[string]interface{}) ([]byte,
 
 	var dberr *dbus.Error
 	if err != nil {
-		if err.code == -1 {
+		if err.code == CallbackNotRegistered {
 			// No registered callback, so we'll just use our stored value
 			b = s.properties.Value
 		} else {
@@ -156,7 +156,7 @@ func (s *GattCharacteristic1) WriteValue(value []byte, options map[string]interf
 	err := s.config.service.config.app.HandleWrite(s.config.service.properties.UUID, s.properties.UUID, value)
 
 	if err != nil {
-		if err.code == -1 {
+		if err.code == CallbackNotRegistered {
 			// No registered callback, so we'll just store this value
 			s.UpdateValue(value)
 			return nil
