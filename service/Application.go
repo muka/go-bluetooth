@@ -55,16 +55,16 @@ func NewApplication(config *ApplicationConfig) (*Application, error) {
 }
 
 //GattWriteCallback A callback we can register to handle write requests
-type GattWriteCallback func(app *Application, service_uuid string, charUUID string, value []byte) error
+type GattWriteCallback func(app *Application, serviceObjPath dbus.ObjectPath, charObjPath dbus.ObjectPath, value []byte) error
 
 //GattDescriptorWriteCallback A callback we can register to handle descriptor write requests
-type GattDescriptorWriteCallback func(app *Application, service_uuid string, charUUID string, descUUID string, value []byte) error
+type GattDescriptorWriteCallback func(app *Application, serviceObjPath dbus.ObjectPath, charObjPath dbus.ObjectPath, descObjPath dbus.ObjectPath, value []byte) error
 
 //GattReadCallback A callback we can register to handle read requests
-type GattReadCallback func(app *Application, service_uuid string, charUUID string) ([]byte, error)
+type GattReadCallback func(app *Application, serviceObjPath dbus.ObjectPath, charObjPath dbus.ObjectPath) ([]byte, error)
 
 //GattDescriptorReadCallback A callback we can register to handle descriptor ead requests
-type GattDescriptorReadCallback func(app *Application, service_uuid string, charUUID string, descUUID string) ([]byte, error)
+type GattDescriptorReadCallback func(app *Application, serviceObjPath dbus.ObjectPath, charObjPath dbus.ObjectPath, descObjPath dbus.ObjectPath) ([]byte, error)
 
 // ApplicationConfig configuration for the bluetooth service
 type ApplicationConfig struct {
@@ -274,14 +274,14 @@ const CallbackNotRegistered = -1
 const CallbackFunctionError = -2
 
 //HandleRead Handle application read
-func (app *Application) HandleRead(srvUUID string, uuid string) ([]byte, *CallbackError) {
+func (app *Application) HandleRead(serviceObjPath dbus.ObjectPath, charObjPath dbus.ObjectPath) ([]byte, *CallbackError) {
 	if app.config.ReadFunc == nil {
 		b := make([]byte, 0)
 		return b, NewCallbackError(CallbackNotRegistered, "No callback registered.")
 	}
 
 	var cberr *CallbackError
-	b, err := app.config.ReadFunc(app, srvUUID, uuid)
+	b, err := app.config.ReadFunc(app, serviceObjPath, charObjPath)
 	if err != nil {
 		if callbackErr, ok := err.(*CallbackError); ok {
 			// If a CallbackError is returned, simply pass it through
@@ -295,12 +295,12 @@ func (app *Application) HandleRead(srvUUID string, uuid string) ([]byte, *Callba
 }
 
 // HandleWrite handle application write
-func (app *Application) HandleWrite(srvUUID string, uuid string, value []byte) *CallbackError {
+func (app *Application) HandleWrite(serviceObjPath dbus.ObjectPath, charObjPath dbus.ObjectPath, value []byte) *CallbackError {
 	if app.config.WriteFunc == nil {
 		return NewCallbackError(CallbackNotRegistered, "No callback registered.")
 	}
 
-	err := app.config.WriteFunc(app, srvUUID, uuid, value)
+	err := app.config.WriteFunc(app, serviceObjPath, charObjPath, value)
 	if err != nil {
 		if callbackErr, ok := err.(*CallbackError); ok {
 			// If a CallbackError is returned, simply pass it through
@@ -314,14 +314,14 @@ func (app *Application) HandleWrite(srvUUID string, uuid string, value []byte) *
 }
 
 //HandleDescriptorRead handle descriptor read
-func (app *Application) HandleDescriptorRead(srvUUID string, charUUID string, descUUID string) ([]byte, *CallbackError) {
+func (app *Application) HandleDescriptorRead(serviceObjPath dbus.ObjectPath, charObjPath dbus.ObjectPath, descObjPath dbus.ObjectPath) ([]byte, *CallbackError) {
 	if app.config.DescReadFunc == nil {
 		b := make([]byte, 0)
 		return b, NewCallbackError(CallbackNotRegistered, "No callback registered.")
 	}
 
 	var cberr *CallbackError
-	b, err := app.config.DescReadFunc(app, srvUUID, charUUID, descUUID)
+	b, err := app.config.DescReadFunc(app, serviceObjPath, charObjPath, descObjPath)
 	if err != nil {
 		if callbackErr, ok := err.(*CallbackError); ok {
 			// If a CallbackError is returned, simply pass it through
@@ -335,12 +335,12 @@ func (app *Application) HandleDescriptorRead(srvUUID string, charUUID string, de
 }
 
 //HandleDescriptorWrite handle descriptor write
-func (app *Application) HandleDescriptorWrite(srvUUID string, charUUID string, descUUID string, value []byte) *CallbackError {
+func (app *Application) HandleDescriptorWrite(serviceObjPath dbus.ObjectPath, charObjPath dbus.ObjectPath, descObjPath dbus.ObjectPath, value []byte) *CallbackError {
 	if app.config.DescWriteFunc == nil {
 		return NewCallbackError(CallbackNotRegistered, "No callback registered.")
 	}
 
-	err := app.config.DescWriteFunc(app, srvUUID, charUUID, descUUID, value)
+	err := app.config.DescWriteFunc(app, serviceObjPath, charObjPath, descObjPath, value)
 	if err != nil {
 		if callbackErr, ok := err.(*CallbackError); ok {
 			// If a CallbackError is returned, simply pass it through
