@@ -3,12 +3,12 @@ package service
 import (
 	"strconv"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/godbus/dbus"
 	"github.com/godbus/dbus/introspect"
 	"github.com/godbus/dbus/prop"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
+	log "github.com/sirupsen/logrus"
 )
 
 // NewGattCharacteristic1 create a new GattCharacteristic1 client
@@ -134,7 +134,7 @@ func (s *GattCharacteristic1) RemoveDescriptor(char *GattDescriptor1) error {
 func (s *GattCharacteristic1) ReadValue(options map[string]interface{}) ([]byte, *dbus.Error) {
 	log.Debug("Characteristic.ReadValue")
 
-	b, err := s.config.service.config.app.HandleRead(s.config.service.properties.UUID, s.properties.UUID)
+	b, err := s.config.service.config.app.HandleRead(s.config.service.Path(), s.Path())
 
 	var dberr *dbus.Error
 	if err != nil {
@@ -153,7 +153,7 @@ func (s *GattCharacteristic1) ReadValue(options map[string]interface{}) ([]byte,
 func (s *GattCharacteristic1) WriteValue(value []byte, options map[string]interface{}) *dbus.Error {
 	log.Debug("Characteristic.WriteValue")
 
-	err := s.config.service.config.app.HandleWrite(s.config.service.properties.UUID, s.properties.UUID, value)
+	err := s.config.service.config.app.HandleWrite(s.config.service.Path(), s.Path(), value)
 
 	if err != nil {
 		if err.code == CallbackNotRegistered {
