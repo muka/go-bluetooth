@@ -10,35 +10,37 @@ The features implemented are
 
 - [x] Discovery
 - [x] Adapter support
-- [x] Client device support (see [SensorTag example](./devices))
+- [x] Client device support
 - [x] GATT Service and characteristics interface
-- [x] Shell interfaces to `rfkill`, `btmgmt`, `hciconfig`, `hcitool`
+- [x] Shell wrapper to `rfkill`, `btmgmt`, `hciconfig`, `hcitool`
 - [x] Handle systemd `bluetooth.service` unit
-- [x] Expose `hci` basic API
-- [x] Expose bluetooth services via bluez GATT API
-- [x] Basic pairing support
-- [x] Basic authentication support
+- [x] An `hci` basic API (based on a fork of [go-ble/ble](https://github.com/muka/ble))
+- [x] Bluetooth services via bluez GATT API (requires 2 bluetooth adapters)
+- [x] Pairing support
+- [x] Authentication support
 
 ## Examples
 
-The `examples/` folder offer an overview of library
+The `examples/` folder offer an API overview
 
-- `agent` a simple agent to support pairing
-- `btmgmt` interface to CLI btmgmt
-- `discovery` find devices around
-- `hci_updown` HCI based communication example
-- `obex_push` send file to a device
-- `sensortag_info` Obtain data from a TI SensorTag
-- `sensortag_temperature` Obtain temperature from a TI SensorTag
-- `service` expose a bluetooth device with corresponding services
-- `show_miband_info` show informations for MiBand2
-- `watch_changes` register for notifications from a TI SensorTag
+- [agent](./examples/agent) a simple agent to support pairing
+- [btmgmt](./examples/btmgmt) interface to CLI btmgmt
+- [discovery](./examples/discovery) find devices around
+- [hci_updown](./examples/hci_updown) HCI based communication example
+- [obex_push](./examples/obex_push) send file to a device
+- [sensortag_info](./examples/sensortag_info) Obtain data from a TI SensorTag
+- [sensortag_temperature](./examples/sensortag_temperature) Obtain temperature from a TI SensorTag
+- [service](./examples/service) expose a bluetooth device with corresponding services
+- [show_miband_info](./examples/show_miband_info) show informations for MiBand2
+- [watch_changes](./examples/watch_changes) register for notifications from a TI SensorTag
 
 **Note** Ensure to install proper dbus rules on the system. For a dev setup use
 
-```
-sudo ln -s `pwd`/scripts/dbus-go-bluetooth-service.conf /etc/dbus-1/system.d/
-sudo ln -s `pwd`/scripts/dbus-go-bluetooth-dev.conf /etc/dbus-1/system.d/
+```sh
+  sudo ln -s `pwd`/scripts/dbus-go-bluetooth-service.conf /etc/dbus-1/system.d/
+  sudo ln -s `pwd`/scripts/dbus-go-bluetooth-dev.conf /etc/dbus-1/system.d/
+  # Reload dbus to load new policies
+  dbus-send --system --type=method_call --dest=org.freedesktop.DBus / org.freedesktop.DBus.ReloadConfig
 ```
 
 ## Setup
@@ -58,27 +60,22 @@ See in `scripts/` how to upgrade bluez
 
 ### Development notes
 
-Standard GATT characteristics descriptions can be found on https://www.bluetooth.com/specifications/gatt/
+-  Standard GATT characteristics descriptions can be found on https://www.bluetooth.com/specifications/gatt/
 
--   Give access to `hciconfig` to any user (may have [security implications](https://www.insecure.ws/linux/getcap_setcap.html))
+-   Give access to `hciconfig` to any user and avoid `sudo` (may have [security implications](https://www.insecure.ws/linux/getcap_setcap.html))
 
     ```
     sudo setcap 'cap_net_raw,cap_net_admin+eip' `which hciconfig`
-    ```
-- Create a dbus profile
-
-    ```sh
-    ln -s `pwd`/scripts/dbus-dev.conf /etc/dbus-1/system.d/go-bluetooth.config
     ```
 - Monitor activity
 
     `sudo dbus-monitor --system "type=error"`
 
-- View `bluetoothd` debug messages
+- Start `bluetoothd` with experimental features and verbose debug messages
 
     `sudo service bluetooth stop && sudo bluetoothd -Edn P hostname`
 
-- Enable LE advertisement (to use a single pc, you will need 2 bluetooth adapter)
+- Enable LE advertisement (on a single pc ensure to use at least 2x bluetooth adapter)
 
   ```bash
 
