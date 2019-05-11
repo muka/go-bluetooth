@@ -66,8 +66,8 @@ func (s *GattDescriptor1) Properties() map[string]bluez.Properties {
 //ReadValue read a value
 func (s *GattDescriptor1) ReadValue(options map[string]interface{}) ([]byte, *dbus.Error) {
 	b, err := s.config.characteristic.config.service.config.app.HandleDescriptorRead(
-		s.config.characteristic.config.service.properties.UUID, s.config.characteristic.properties.UUID,
-		s.properties.UUID)
+		s.config.characteristic.config.service.Path(), s.config.characteristic.Path(),
+		s.Path())
 
 	var dberr *dbus.Error
 	if err != nil {
@@ -85,8 +85,8 @@ func (s *GattDescriptor1) ReadValue(options map[string]interface{}) ([]byte, *db
 //WriteValue write a value
 func (s *GattDescriptor1) WriteValue(value []byte, options map[string]interface{}) *dbus.Error {
 	err := s.config.characteristic.config.service.config.app.HandleDescriptorWrite(
-		s.config.characteristic.config.service.properties.UUID, s.config.characteristic.properties.UUID,
-		s.properties.UUID, value)
+		s.config.characteristic.config.service.Path(), s.config.characteristic.Path(),
+		s.Path(), value)
 
 	if err != nil {
 		if err.code == -1 {
