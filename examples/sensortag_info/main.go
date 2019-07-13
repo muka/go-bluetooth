@@ -24,6 +24,7 @@ import (
 var adapterID = "hci0"
 
 func main() {
+	log.SetLevel(log.DebugLevel)
 
 	manager, err := api.NewManager()
 	if err != nil {
