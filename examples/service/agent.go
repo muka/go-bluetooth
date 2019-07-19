@@ -100,7 +100,7 @@ func (self *Agent) RequestPasskey(device dbus.ObjectPath) (passkey uint32, err *
 }
 
 func (self *Agent) DisplayPasskey(device dbus.ObjectPath, passkey uint32, entered uint16) *dbus.Error {
-	log.Info(fmt.Sprintf("DisplayPasskey %s, %06u entered %u", device, passkey, entered))
+	log.Info(fmt.Sprintf("DisplayPasskey %s, %06d entered %d", device, passkey, entered))
 	return nil
 }
 
