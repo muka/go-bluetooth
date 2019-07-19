@@ -29,7 +29,7 @@ func GetDeviceByAddress(address string) (*Device, error) {
 		dev := NewDevice(string(path))
 
 		dev.lock.RLock()
-		// get current Properites pointer (can be changed by other goroutine)
+		// get current Properties pointer (can be changed by other goroutine)
 		props := dev.Properties
 		dev.lock.RUnlock()
 
