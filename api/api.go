@@ -146,6 +146,20 @@ func GetGattManager(adapterID string) (*profile.GattManager1, error) {
 }
 
 //StartDiscovery on adapter hci0
+func StartCleanDiscovery() error {
+	return StartCleanDiscoveryOn("hci0")
+}
+
+//StartDiscovery on adapter hci0
+func StartCleanDiscoveryOn(adapterID string) error {
+	err := FlushDevices(adapterID)
+	if err != nil {
+		return err
+	}
+	return StartDiscoveryOn(adapterID)
+}
+
+//StartDiscovery on adapter hci0
 func StartDiscovery() error {
 	return StartDiscoveryOn("hci0")
 }

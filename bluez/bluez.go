@@ -19,6 +19,22 @@ const (
 	// Agent1Interface the bluez interface for Agent1
 	Agent1Interface = "org.bluez.Agent1"
 
+	// Media API
+	// Media1Interface the bluez interface for Media1
+	Media1Interface = "org.bluez.Media1"
+	// MediaControl1Interface the bluez interface for MediaControl1
+	MediaControl1Interface = "org.bluez.MediaControl1"
+	// MediaPlayer1Interface the bluez interface for MediaPlayer1
+	MediaPlayer1Interface = "org.bluez.MediaPlayer1"
+	// MediaFolder1Interface the bluez interface for MediaFolder1
+	MediaFolder1Interface = "org.bluez.MediaFolder1"
+	// MediaItem1Interface the bluez interface for MediaItem1
+	MediaItem1Interface = "org.bluez.MediaItem1"
+	// MediaEndpoint1Interface the bluez interface for MediaEndpoint1
+	MediaEndpoint1Interface = "org.bluez.MediaEndpoint1"
+	// MediaTransport1Interface the bluez interface for MediaTransport1
+	MediaTransport1Interface = "org.bluez.MediaTransport1"
+
 	//ObjectManagerInterface the dbus object manager interface
 	ObjectManagerInterface = "org.freedesktop.DBus.ObjectManager"
 	//InterfacesRemoved the DBus signal member for InterfacesRemoved
