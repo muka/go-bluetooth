@@ -16,8 +16,6 @@ const (
 	objectName      = "org.bluez"
 	objectPath      = "/go_bluetooth/example/service"
 	agentObjectPath = "/go_bluetooth/example/agent"
-
-	appName = "go-bluetooth"
 )
 
 func reset() {
