@@ -16,7 +16,7 @@ import (
 	"time"
 
 	"github.com/muka/go-bluetooth/api"
-	"github.com/muka/go-bluetooth/devices"
+	"github.com/muka/go-bluetooth/devices/sensortag"
 	"github.com/muka/go-bluetooth/emitter"
 	log "github.com/sirupsen/logrus"
 )
@@ -109,7 +109,7 @@ func ConnectAndFetchSensorDetailAndData(tagAddress string) error {
 		log.Debug("already connected")
 	}
 
-	sensorTag, err := devices.NewSensorTag(dev)
+	sensorTag, err := sensortag.NewSensorTag(dev)
 	if err != nil {
 		return err
 	}
@@ -165,7 +165,7 @@ func ConnectAndFetchSensorDetailAndData(tagAddress string) error {
 	}
 
 	err = dev.On("data", emitter.NewCallback(func(ev emitter.Event) {
-		x := ev.GetData().(devices.SensorTagDataEvent)
+		x := ev.GetData().(sensortag.SensorTagDataEvent)
 		log.Debugf("%++v", x)
 	}))
 

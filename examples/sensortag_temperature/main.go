@@ -4,7 +4,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/muka/go-bluetooth/api"
-	"github.com/muka/go-bluetooth/devices"
+	"github.com/muka/go-bluetooth/devices/sensortag"
 )
 
 // example of reading temperature from a TI sensortag
@@ -26,7 +26,7 @@ func main() {
 		panic(err)
 	}
 
-	sensorTag, err := devices.NewSensorTag(dev)
+	sensorTag, err := sensortag.NewSensorTag(dev)
 	if err != nil {
 		panic(err)
 	}
