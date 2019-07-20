@@ -10,7 +10,7 @@ var calcBarometricPressure = func(raw uint32) float64 {
 }
 
 var calcBarometricTemperature = func(raw uint32) float64 {
-	//TEMPERATURE calibiration data comming from barometric sensor
+	//TEMPERATURE calibiration data coming from barometric sensor
 	tempMask := int(raw) & 0x00ffffff
 	return float64(tempMask) / 100.0
 }
@@ -22,7 +22,7 @@ var calcHumidLocal = func(raw uint16) float64 {
 }
 
 var calcTmpFromHumidSensor = func(raw uint16) float64 {
-	//TEMPERATURE calibiration for data comming from humidity sensor
+	//TEMPERATURE calibiration for data coming from humidity sensor
 	return -40 + ((165 * float64(raw)) / 65536.0)
 }
 
