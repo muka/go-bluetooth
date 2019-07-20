@@ -25,6 +25,13 @@ func (c *Client) isConnected() bool {
 
 //Disconnect from DBus
 func (c *Client) Disconnect() {
+
+	// do not disconnect SystemBus
+	// as it is a singleton from dbus package
+	if c.Config.Bus == SystemBus {
+		return
+	}
+
 	if c.isConnected() {
 		c.conn.Close()
 		c.conn = nil

@@ -42,22 +42,10 @@ func NewDevice(path string) *Device {
 //ClearDevice free a device struct
 func ClearDevice(d *Device) error {
 
-	err := d.Disconnect()
+	err := d.unwatchProperties()
 	if err != nil {
 		return err
 	}
-
-	err = d.unwatchProperties()
-	if err != nil {
-		return err
-	}
-
-	c, err := d.GetClient()
-	if err != nil {
-		return err
-	}
-
-	c.Close()
 
 	if _, ok := deviceRegistry.Load(d.Path); ok {
 		deviceRegistry.Delete(d.Path)
@@ -520,24 +508,6 @@ func (d *Device) Connect() error {
 	err = c.Connect()
 	if err != nil {
 		return err
-	}
-	return nil
-}
-
-//Disconnect from a device
-func (d *Device) Disconnect() error {
-	c, err := d.GetClient()
-	if err != nil {
-		return err
-	}
-	c.Disconnect()
-
-	d.lock.RLock()
-	if d.watchPropertiesChannel != nil {
-		d.lock.RUnlock()
-		d.unwatchProperties()
-	} else {
-		d.lock.RUnlock()
 	}
 	return nil
 }

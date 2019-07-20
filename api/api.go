@@ -17,6 +17,7 @@ func Exit() {
 	if err == nil {
 		manager.Close()
 	}
+	bluez.CloseConnections()
 }
 
 //GetDeviceByAddress return a Device object based on its address

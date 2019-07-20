@@ -38,6 +38,14 @@ type Config struct {
 	Bus   BusType
 }
 
+// CloseConnections close all open connection to DBus
+func CloseConnections() {
+	for _, conn := range conns {
+		conn.Close()
+	}
+	conns = make([]*dbus.Conn, 2)
+}
+
 //GetConnection get a DBus connection
 func GetConnection(connType BusType) (*dbus.Conn, error) {
 	switch connType {
