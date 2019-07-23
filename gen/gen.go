@@ -56,7 +56,7 @@ type Api struct {
 
 func (g *ApiGroup) Parse(srcFile string) error {
 
-	log.Debugf("Parsing %s", srcFile)
+	log.Debugf("------------------- Parsing %s -------------------", srcFile)
 
 	raw, err := readFile(srcFile)
 	if err != nil {
