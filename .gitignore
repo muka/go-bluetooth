@@ -26,3 +26,4 @@ logs/*.log
 debug
 
 /vendor
+/test

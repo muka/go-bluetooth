@@ -8,55 +8,11 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type Flag int
-
-const (
-	FlagReadOnly     Flag = 1
-	FlagWriteOnly    Flag = iota
-	FlagReadWrite    Flag = iota
-	FlagExperimental Flag = iota
-)
-
-type Arg struct {
-	Type string
-	Name string
-}
-
-type Method struct {
-	Name       string
-	ReturnType string
-	Args       []Arg
-	Errors     []string
-	Docs       string
-}
-
-type Property struct {
-	Name  string
-	Type  string
-	Docs  string
-	Flags []Flag
-}
-
-type ApiGroup struct {
-	FileName    string
-	Name        string
-	Description string
-	Api         []Api
-}
-
-type Api struct {
-	Title       string
-	Description string
-	Service     string
-	Interface   string
-	ObjectPath  string
-	Methods     []Method
-	Properties  []Property
-}
-
 func (g *ApiGroup) Parse(srcFile string) error {
 
-	log.Debugf("------------------- Parsing %s -------------------", srcFile)
+	if g.debug {
+		log.Debugf("------------------- Parsing %s -------------------", srcFile)
+	}
 
 	raw, err := readFile(srcFile)
 	if err != nil {
@@ -121,7 +77,8 @@ func (g *ApiGroup) Parse(srcFile string) error {
 	}
 
 	for _, slice := range slices {
-		g.parseApi(slice)
+		api := g.parseApi(slice)
+		g.Api = append(g.Api, api)
 	}
 
 	return nil
@@ -131,6 +88,7 @@ func NewApiGroup(srcFile string) (ApiGroup, error) {
 	g := ApiGroup{
 		FileName: filepath.Base(srcFile),
 		Api:      make([]Api, 0),
+		debug:    false,
 	}
 	err := g.Parse(srcFile)
 	return g, err
@@ -140,8 +98,4 @@ func NewApiGroup(srcFile string) (ApiGroup, error) {
 func Parse(src string) []ApiGroup {
 	apis := listFiles(src + "/doc")
 	return apis
-}
-
-func Generate(outDir string) {
-
 }

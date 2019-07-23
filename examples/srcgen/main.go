@@ -10,7 +10,7 @@ func main() {
 	log.SetLevel(log.DebugLevel)
 
 	log.Info("Generating src")
-	gen.Parse("./test")
-	gen.Generate("./tmp")
+	api := gen.Parse("/home/l/git/kernel.org/bluetooth/bluez")
+	gen.Generate(api, "./test/out")
 
 }
