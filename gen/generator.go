@@ -16,17 +16,28 @@ func Generate(apiGroups []ApiGroup, outDir string) error {
 		return err
 	}
 
+	outDir += "/profile"
+	err = mkdir(outDir)
+	if err != nil {
+		log.Errorf("Failed to mkdir %s: %s", outDir, err)
+		return err
+	}
+
 	filename := filepath.Join(outDir, "errors.go")
 	err = ErrorsTemplate(filename, apiGroups)
 	if err != nil {
 		return err
 	}
 
+	filename = filepath.Join(outDir, "interfaces.go")
+	err = InterfacesTemplate(filename, apiGroups)
+	if err != nil {
+		return err
+	}
+
 	for _, apiGroup := range apiGroups {
 
-		apiName := strings.Replace(apiGroup.FileName, "-api.txt", "", -1)
-		// log.Debugf("--- Generating %s API ---", apiName)
-
+		apiName := getApiPackage(apiGroup)
 		dirpath := path.Join(outDir, apiName)
 		err := mkdir(dirpath)
 		if err != nil {
@@ -34,7 +45,24 @@ func Generate(apiGroups []ApiGroup, outDir string) error {
 			continue
 		}
 
-		// RootTemplate(apiGroup)
+		rootFile := path.Join(dirpath, apiName+".go")
+		err = RootTemplate(rootFile, apiGroup)
+		if err != nil {
+			log.Errorf("Failed to create %s: %s", rootFile, err)
+			continue
+		}
+
+		for _, api := range apiGroup.Api {
+
+			pts := strings.Split(api.Interface, ".")
+			apiFilename := path.Join(dirpath, pts[len(pts)-1]+".go")
+
+			err1 := ApiTemplate(apiFilename, api, apiGroup)
+			if err1 != nil {
+				log.Errorf("Api generation failed %s: %s", api.Title, err)
+				return err1
+			}
+		}
 
 	}
 

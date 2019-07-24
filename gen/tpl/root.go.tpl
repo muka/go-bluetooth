@@ -1,3 +1,5 @@
 // {{.Name}}
-// {{.Description}}
 //
+{{.Description}}
+
+package {{.Package}}

@@ -8,3 +8,10 @@ run/example/service:
 
 run/example/client:
 	go run examples/service/*.go client
+
+gen/clean:
+	rm -rf test/out
+	mkdir -p test/out
+
+gen/run: gen/clean
+	go run examples/srcgen/main.go 
