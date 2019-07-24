@@ -59,7 +59,7 @@ func Generate(apiGroups []ApiGroup, outDir string) error {
 
 			err1 := ApiTemplate(apiFilename, api, apiGroup)
 			if err1 != nil {
-				log.Errorf("Api generation failed %s: %s", api.Title, err)
+				log.Errorf("Api generation failed %s: %s", api.Title, err1)
 				return err1
 			}
 		}

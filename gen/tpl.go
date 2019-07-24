@@ -2,10 +2,10 @@ package gen
 
 import (
 	"fmt"
-	"html/template"
 	"os"
 	"regexp"
 	"strings"
+	"text/template"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -21,10 +21,16 @@ type BluezErrors struct {
 
 type MethodDoc struct {
 	Method
-	ArgsList string
+	ArgsList             string
+	ParamsList           string
+	SingleReturn         bool
+	ReturnVarsDefinition string
+	ReturnVarsRefs       string
+	ReturnVarsList       string
 }
 
 type InterfaceDoc struct {
+	Title     string
 	Name      string
 	Interface string
 }
@@ -82,10 +88,16 @@ func toType(t string) string {
 	case "bool":
 	case "boolean":
 		return "bool"
+	case "uint16_t":
+		return "uint16"
+	case "uint32_t":
+		return "uint32"
+	case "uint8_t":
+		return "uint8"
 	case "dict":
 		return "map[string]interface{}"
 	case "object":
-		return "interface{}"
+		return "dbus.ObjectPath"
 	case "<unknown>":
 	case "unknown":
 	case "void":
@@ -227,8 +239,16 @@ func InterfacesTemplate(filename string, apis []ApiGroup) error {
 
 			pts := strings.Split(api.Interface, ".")
 			ifaceName := pts[len(pts)-1]
+			// org.bluez.obex.AgentManager1
+			if len(pts) > 3 {
+				ifaceName = ""
+				for _, pt := range pts[2:] {
+					ifaceName += strings.ToUpper(string(pt[0])) + pt[1:]
+				}
+			}
 
 			iface := InterfaceDoc{
+				Title:     api.Title,
 				Name:      ifaceName,
 				Interface: api.Interface,
 			}
@@ -265,12 +285,12 @@ func ApiTemplate(filename string, api Api, apiGroup ApiGroup) error {
 	props := []PropertyDoc{}
 	for _, p := range api.Properties {
 
-		p.Docs = prepareDocs(p.Docs, true, 2)
-		p.Type = castType(p.Type)
-
 		prop := PropertyDoc{
 			Property: p,
 		}
+
+		prop.Property.Docs = prepareDocs(p.Docs, true, 2)
+		prop.Property.Type = castType(p.Type)
 
 		props = append(props, prop)
 	}
@@ -279,19 +299,48 @@ func ApiTemplate(filename string, api Api, apiGroup ApiGroup) error {
 	for _, m := range api.Methods {
 
 		args := []string{}
+		params := []string{}
 		for _, a := range m.Args {
 			arg := a.Name + " " + castType(a.Type)
 			args = append(args, arg)
+			params = append(params, a.Name)
 		}
-
-		m.Docs = prepareDocs(m.Docs, true, 2)
 
 		mm := MethodDoc{
-			Method:   m,
-			ArgsList: strings.Join(args, ", "),
+			Method:     m,
+			ArgsList:   strings.Join(args, ", "),
+			ParamsList: strings.Join(params, ", "),
 		}
 
+		mm.Method.Name = strings.Replace(mm.Method.Name, " (optional)", "", -1)
+		mm.Method.Docs = prepareDocs(mm.Method.Docs, true, 2)
 		mm.Method.ReturnType = castType(mm.Method.ReturnType)
+
+		mm.SingleReturn = len(mm.Method.ReturnType) == 0
+
+		if mm.SingleReturn {
+			mm.Method.ReturnType = "error"
+		} else {
+
+			log.Debugf("With return type %s", mm.Method.ReturnType)
+
+			objInitialization1 := ""
+			objInitialization2 := ""
+			if strings.Contains(mm.Method.ReturnType, "[]") {
+				objInitialization1 = "="
+				objInitialization2 = "{}"
+			}
+			mm.ReturnVarsDefinition = fmt.Sprintf("var val0 %s %s%s", objInitialization1, mm.Method.ReturnType, objInitialization2)
+			mm.ReturnVarsRefs = "&val0"
+			mm.ReturnVarsList = "val0"
+
+			mm.Method.ReturnType = "(" + mm.Method.ReturnType + ", error)"
+
+		}
+
+		if len(mm.Method.Name) == 0 {
+			continue
+		}
 
 		methods = append(methods, mm)
 	}

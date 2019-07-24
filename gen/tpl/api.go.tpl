@@ -1,6 +1,11 @@
 package {{.Package}}
 {{$InterfaceName := .InterfaceName}}
 
+import (
+	"github.com/godbus/dbus"
+	"github.com/muka/go-bluetooth/bluez"
+)
+
 // {{.InterfaceName}} {{.Api.Title}}
 {{.Api.Description}}
 type {{.InterfaceName}} struct {
@@ -35,6 +40,13 @@ func (a *{{.InterfaceName}}) SetProperty(name string, value interface{}) error {
 {{range .Methods}}
 //{{.Name}} {{.Docs}}
 func (a *{{$InterfaceName}}) {{.Name}}({{.ArgsList}}) {{.Method.ReturnType}} {
-	return a.client.Call("{{.Name}}", 0).Store()
+	{{if .SingleReturn}}
+	return a.client.Call("{{.Name}}", 0, {{.ParamsList}}).Store()
+	{{else}}
+	{{.ReturnVarsDefinition}}
+	err := a.client.Call("{{.Name}}", 0, {{.ParamsList}}).Store({{.ReturnVarsRefs}})
+	return {{.ReturnVarsList}}, err
+	{{end}}
+
 }
 {{end}}

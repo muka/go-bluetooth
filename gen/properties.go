@@ -7,22 +7,22 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+const propBaseRegexp = `(bool|boolean|byte|string|uint16|uint16_t|uint32|dict|array\{.*?) ([A-Z].+?)`
+
 func (g *ApiGroup) parseProperty(raw []byte) Property {
 
 	// log.Debugf("prop raw -> %s", raw)
 
-	re1 := regexp.MustCompile(`[ \t]*?([A-Za-z0-9_}{]+) (.+?)( \[[^\]]*\])?\n((?s).+)`)
+	re1 := regexp.MustCompile(`[ \t]*?` + propBaseRegexp + `( \[[^\]]*\])?\n((?s).+)`)
 	matches2 := re1.FindAllSubmatch(raw, -1)
 
 	// log.Debugf("m1 %s", matches2)
 
-	if len(matches2[0]) == 1 {
-		re1 = regexp.MustCompile(`[ \t]*?([A-Za-z0-9_}{]+) (.+?)\n((?s).+)`)
+	if len(matches2) == 0 || len(matches2[0]) == 1 {
+		re1 = regexp.MustCompile(`[ \t]*?` + propBaseRegexp + `\n((?s).+)`)
 		matches2 = re1.FindAllSubmatch(raw, -1)
 		// log.Debugf("m2 %s", matches2)
 	}
-
-	// log.Debugf("m2 %s", matches2[0][3])
 
 	flags := []Flag{}
 	flagListRaw := string(matches2[0][3])
@@ -51,6 +51,8 @@ func (g *ApiGroup) parseProperty(raw []byte) Property {
 		}
 
 	}
+
+	// log.Debugf("%s", matches2)
 
 	docs := string(matches2[0][4])
 	docs = strings.Replace(docs, " \t\n", "", -1)
@@ -87,7 +89,7 @@ func (g *ApiGroup) parseProperties(raw []byte) []Property {
 	for _, propsRaw := range matches1[1:] {
 
 		// string Modalias [readonly, optional]
-		re1 := regexp.MustCompile(`(?s)[ \t]*(bool|byte|string|uint16|uint16_t|uint32|dict|array.*?) ([A-Za-z0-9_]+?).*?\n`)
+		re1 := regexp.MustCompile(`(?s)[ \t]*` + propBaseRegexp + `.*?\n`)
 		matches2 := re1.FindAllSubmatchIndex(propsRaw, -1)
 
 		// log.Debugf("1*** %d", matches2)

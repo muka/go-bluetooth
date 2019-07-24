@@ -88,7 +88,7 @@ func NewApiGroup(srcFile string) (ApiGroup, error) {
 	g := ApiGroup{
 		FileName: filepath.Base(srcFile),
 		Api:      make([]Api, 0),
-		debug:    false,
+		debug:    true,
 	}
 	err := g.Parse(srcFile)
 	return g, err
