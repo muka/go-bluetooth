@@ -18,6 +18,7 @@ The features implemented are
 - [x] Bluetooth services via bluez GATT API (requires 2 bluetooth adapters)
 - [x] Pairing support
 - [x] Authentication support
+- [x] API generation from bluez documentation
 
 ## Examples
 
