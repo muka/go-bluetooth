@@ -12,7 +12,7 @@ func (g *ApiGroup) parseMethods(raw []byte) []Method {
 	methods := make([]Method, 0)
 	slices := make([][]byte, 0)
 
-	re := regexp.MustCompile(`(?s)Methods(.+)\n\nProperties`)
+	re := regexp.MustCompile(`(?s)Methods(.+?)(Properties|Signals)`)
 	matches1 := re.FindSubmatch(raw)
 
 	if len(matches1) == 0 {
@@ -21,9 +21,10 @@ func (g *ApiGroup) parseMethods(raw []byte) []Method {
 		if len(matches1) == 1 {
 			matches1 = append(matches1, matches1[0])
 		}
+		// log.Debugf("matches1 %s", matches1[1:])
 	}
 
-	// log.Debugf("matches1 %s", matches1[1:])
+	// log.Debugf("matches1 %s", matches1[:1])
 	// log.Debugf("%s", matches1)
 
 	for _, methodsRaw := range matches1[1:] {
@@ -90,7 +91,8 @@ func (g *ApiGroup) parseMethod(raw []byte) Method {
 		if len(rtype) > 7 && rtype[:7] == "Methods" {
 			rtype = rtype[7:]
 		}
-		method.ReturnType = strings.Trim(rtype, " \t")
+		rtype = strings.Trim(rtype, " \t")
+		method.ReturnType = rtype
 
 		name := string(matches2[2])
 		method.Name = strings.Trim(name, " \t")
@@ -112,7 +114,11 @@ func (g *ApiGroup) parseMethod(raw []byte) Method {
 					continue
 				}
 				if len(argsparts) < 2 {
-					argsparts = []string{"<unknown>", argsparts[0]}
+					if argsparts[0] == "fd" {
+						argsparts = []string{"int32", argsparts[0]}
+					} else {
+						argsparts = []string{"<unknown>", argsparts[0]}
+					}
 				}
 				arg := Arg{
 					Type: strings.Trim(argsparts[0], " \t\n"),

@@ -1,10 +1,7 @@
 package {{.Package}}
 {{$InterfaceName := .InterfaceName}}
 
-import (
-	"github.com/godbus/dbus"
-	"github.com/muka/go-bluetooth/bluez"
-)
+{{.Imports}}
 
 // {{.InterfaceName}} {{.Api.Title}}
 {{.Api.Description}}
@@ -45,8 +42,6 @@ func (a *{{$InterfaceName}}) {{.Name}}({{.ArgsList}}) {{.Method.ReturnType}} {
 	{{else}}
 	{{.ReturnVarsDefinition}}
 	err := a.client.Call("{{.Name}}", 0, {{.ParamsList}}).Store({{.ReturnVarsRefs}})
-	return {{.ReturnVarsList}}, err
-	{{end}}
-
+	return {{.ReturnVarsList}}, err	{{end}}
 }
 {{end}}

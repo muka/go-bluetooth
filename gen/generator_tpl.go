@@ -6,8 +6,6 @@ import (
 	"regexp"
 	"strings"
 	"text/template"
-
-	log "github.com/sirupsen/logrus"
 )
 
 type BluezError struct {
@@ -54,6 +52,7 @@ type ApiDoc struct {
 	Package       string
 	Properties    []PropertyDoc
 	Methods       []MethodDoc
+	Imports       string
 }
 
 func loadtpl(name string) *template.Template {
@@ -98,6 +97,8 @@ func toType(t string) string {
 		return "map[string]interface{}"
 	case "object":
 		return "dbus.ObjectPath"
+	case "fd":
+		return "int32"
 	case "<unknown>":
 	case "unknown":
 	case "void":
@@ -175,7 +176,7 @@ func RootTemplate(filename string, api ApiGroup) error {
 		return fmt.Errorf("write tpl: %s", err)
 	}
 
-	log.Debugf("Created %s", filename)
+	// log.Debugf("Created %s", filename)
 	return nil
 }
 
@@ -222,7 +223,7 @@ func ErrorsTemplate(filename string, apis []ApiGroup) error {
 		return fmt.Errorf("tpl write: %s", err)
 	}
 
-	log.Debugf("Created %s", filename)
+	// log.Debugf("Created %s", filename)
 	return nil
 }
 
@@ -266,7 +267,7 @@ func InterfacesTemplate(filename string, apis []ApiGroup) error {
 		return fmt.Errorf("tpl write: %s", err)
 	}
 
-	log.Debugf("Created %s", filename)
+	// log.Debugf("Created %s", filename)
 	return nil
 }
 
@@ -278,6 +279,13 @@ func ApiTemplate(filename string, api Api, apiGroup ApiGroup) error {
 	}
 
 	apiName := getApiPackage(apiGroup)
+
+	imports := []string{
+		"github.com/muka/go-bluetooth/bluez",
+	}
+
+	// flag to import dbus
+	importDbus := false
 
 	pts := strings.Split(api.Interface, ".")
 	iface := pts[len(pts)-1]
@@ -291,6 +299,10 @@ func ApiTemplate(filename string, api Api, apiGroup ApiGroup) error {
 
 		prop.Property.Docs = prepareDocs(p.Docs, true, 2)
 		prop.Property.Type = castType(p.Type)
+
+		if !importDbus {
+			importDbus = strings.Contains(prop.Property.Type, "ObjectPath")
+		}
 
 		props = append(props, prop)
 	}
@@ -312,8 +324,12 @@ func ApiTemplate(filename string, api Api, apiGroup ApiGroup) error {
 			ParamsList: strings.Join(params, ", "),
 		}
 
+		if !importDbus {
+			importDbus = strings.Contains(mm.ArgsList, "ObjectPath")
+		}
+
 		mm.Method.Name = strings.Replace(mm.Method.Name, " (optional)", "", -1)
-		mm.Method.Docs = prepareDocs(mm.Method.Docs, true, 2)
+		mm.Method.Docs = prepareDocs(mm.Method.Docs, true, 0)
 		mm.Method.ReturnType = castType(mm.Method.ReturnType)
 
 		mm.SingleReturn = len(mm.Method.ReturnType) == 0
@@ -322,20 +338,36 @@ func ApiTemplate(filename string, api Api, apiGroup ApiGroup) error {
 			mm.Method.ReturnType = "error"
 		} else {
 
-			log.Debugf("With return type %s", mm.Method.ReturnType)
+			// log.Debugf("With return type %s", mm.Method.ReturnType)
 
-			objInitialization1 := ""
-			objInitialization2 := ""
-			if strings.Contains(mm.Method.ReturnType, "[]") {
-				objInitialization1 = "="
-				objInitialization2 = "{}"
+			returnTypes := strings.Split(mm.Method.ReturnType, ", ")
+			defs := []string{}
+			refs := []string{}
+			list := []string{}
+			for i, returnType := range returnTypes {
+
+				objInitialization1 := ""
+				objInitialization2 := ""
+				if strings.Contains(returnType, "[]") {
+					objInitialization1 = "="
+					objInitialization2 = "{}"
+				}
+
+				varName := fmt.Sprintf("val%d", i)
+				def := fmt.Sprintf("var %s %s %s%s", varName, objInitialization1, returnType, objInitialization2)
+				ref := "&" + varName
+
+				defs = append(defs, def)
+				refs = append(refs, ref)
+				list = append(list, varName)
+
 			}
-			mm.ReturnVarsDefinition = fmt.Sprintf("var val0 %s %s%s", objInitialization1, mm.Method.ReturnType, objInitialization2)
-			mm.ReturnVarsRefs = "&val0"
-			mm.ReturnVarsList = "val0"
+
+			mm.ReturnVarsDefinition = strings.Join(defs, "\n")
+			mm.ReturnVarsRefs = strings.Join(refs, ", ")
+			mm.ReturnVarsList = strings.Join(list, ", ")
 
 			mm.Method.ReturnType = "(" + mm.Method.ReturnType + ", error)"
-
 		}
 
 		if len(mm.Method.Name) == 0 {
@@ -345,10 +377,23 @@ func ApiTemplate(filename string, api Api, apiGroup ApiGroup) error {
 		methods = append(methods, mm)
 	}
 
+	if importDbus {
+		imports = append(imports, "github.com/godbus/dbus")
+	}
+
+	importsTpl := ""
+	if len(imports) > 0 {
+		for i := range imports {
+			imports[i] = fmt.Sprintf(`"%s"`, imports[i])
+		}
+		importsTpl = fmt.Sprintf("import (\n  %s\n)", strings.Join(imports, "\n  "))
+	}
+
 	api.Description = prepareDocs(api.Description, false, 0)
 	api.Title = strings.Trim(api.Title, "\n \t")
 
 	apidocs := ApiDoc{
+		Imports:       importsTpl,
 		Package:       apiName,
 		Api:           api,
 		InterfaceName: iface,
@@ -362,6 +407,6 @@ func ApiTemplate(filename string, api Api, apiGroup ApiGroup) error {
 		return fmt.Errorf("api tpl: %s", err)
 	}
 
-	log.Debugf("Created %s", filename)
+	// log.Debugf("Created %s", filename)
 	return nil
 }

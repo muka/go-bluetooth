@@ -44,5 +44,7 @@ type Api struct {
 	Interface   string
 	ObjectPath  string
 	Methods     []Method
-	Properties  []Property
+	// those are currently avail only in health-api
+	Signals    []Method
+	Properties []Property
 }

@@ -45,8 +45,8 @@ func (g *ApiGroup) parseApi(raw []byte) Api {
 	}
 
 	raw = raw[matches[7]:]
-	// log.Debugf("%s", raw)
 	api.Methods = g.parseMethods(raw)
+	api.Signals = g.parseSignals(raw)
 	api.Properties = g.parseProperties(raw)
 
 	return api

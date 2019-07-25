@@ -11,6 +11,7 @@ func main() {
 
 	log.Info("Generating src")
 	api := gen.Parse("/home/l/git/kernel.org/bluetooth/bluez")
+	// api := gen.Parse("./test")
 	gen.Generate(api, "./test/out")
 
 }
