@@ -85,7 +85,7 @@ func (g *ApiGroup) parseProperties(raw []byte) []Property {
 	props := make([]Property, 0)
 	slices := make([][]byte, 0)
 
-	re := regexp.MustCompile(`(?s)\nProperties(.+)\n\n?(Filters|)`)
+	re := regexp.MustCompile(`(?s)\nProperties(.+)\n\n?(Filters|)[ \t]`)
 	matches1 := re.FindSubmatch(raw)
 
 	if len(matches1) == 0 {

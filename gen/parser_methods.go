@@ -14,7 +14,7 @@ func (g *ApiGroup) parseMethods(raw []byte) []Method {
 	methods := make([]Method, 0)
 	slices := make([][]byte, 0)
 
-	re := regexp.MustCompile(`(?s)Methods(.+?)(Properties|Signals)`)
+	re := regexp.MustCompile(`(?s)Methods(.+?)(Properties|Signals)[\t ]`)
 	matches1 := re.FindSubmatch(raw)
 
 	if len(matches1) == 0 {
