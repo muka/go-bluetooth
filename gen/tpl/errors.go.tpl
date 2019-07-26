@@ -1,3 +1,4 @@
+// WARNING: generated code, do not edit
 package profile
 
 import "errors"

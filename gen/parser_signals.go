@@ -71,7 +71,11 @@ func (g *ApiGroup) parseSignals(raw []byte) []Method {
 		log.Debug("\nSignals:")
 	}
 	for _, methodRaw := range slices {
-		method := g.parseMethod(methodRaw)
+		method, err := g.parseMethod(methodRaw)
+		if err != nil {
+			log.Debugf("Skip signal: %s", err)
+			continue
+		}
 		methods = append(methods, method)
 	}
 

@@ -1,6 +1,8 @@
 package gen
 
 import (
+	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -31,7 +33,6 @@ func (g *ApiGroup) parseMethods(raw []byte) []Method {
 
 		re1 := regexp.MustCompile(`[ \t]*?(.*?)? ?([^ ]+)\(([^)]+?)?\) ?(.*)`)
 		matches2 := re1.FindAllSubmatchIndex(methodsRaw, -1)
-
 		if len(matches2) == 1 {
 			if len(methodsRaw) > 0 {
 				slices = append(slices, methodsRaw)
@@ -69,17 +70,18 @@ func (g *ApiGroup) parseMethods(raw []byte) []Method {
 		log.Debug("\tMethods:")
 	}
 	for _, methodRaw := range slices {
-		method := g.parseMethod(methodRaw)
+		method, err := g.parseMethod(methodRaw)
+		if err != nil {
+			log.Debugf("Skip method: %s", err)
+			continue
+		}
 		methods = append(methods, method)
 	}
 
 	return methods
 }
 
-func (g *ApiGroup) parseMethod(raw []byte) Method {
-
-	method := Method{}
-	// log.Debugf("%s", raw)
+func (g *ApiGroup) parseMethod(raw []byte) (method Method, err error) {
 
 	re := regexp.MustCompile(`[ \t]*(.*?) ?(\w+)\(([^)]*)\) ?(.*?)\n((?s).+)`)
 	matches1 := re.FindAllSubmatch(raw, -1)
@@ -91,7 +93,12 @@ func (g *ApiGroup) parseMethod(raw []byte) Method {
 		if len(rtype) > 7 && rtype[:7] == "Methods" {
 			rtype = rtype[7:]
 		}
+
 		rtype = strings.Trim(rtype, " \t")
+		if len(rtype) > 15 {
+			return method, fmt.Errorf("Return type is too long: `%s`", rtype)
+		}
+
 		method.ReturnType = rtype
 
 		name := string(matches2[2])
@@ -141,9 +148,13 @@ func (g *ApiGroup) parseMethod(raw []byte) Method {
 		}
 	}
 
+	if method.Name == "" {
+		return method, errors.New("Empty method name")
+	}
+
 	if method.Name != "" && g.debug {
 		log.Debugf("\t - %s %s(%s)", method.ReturnType, method.Name, method.Args)
 	}
 
-	return method
+	return method, err
 }

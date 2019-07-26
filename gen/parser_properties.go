@@ -59,6 +59,12 @@ func (g *ApiGroup) parseProperty(raw []byte) Property {
 	docs = strings.Trim(docs, " \t\n")
 
 	name := string(matches2[0][2])
+
+	if strings.Contains(name, "optional") {
+		name = strings.Replace(name, " (optional)", "", -1)
+		docs = "(optional) " + docs
+	}
+
 	name = strings.Replace(name, " \t\n", "", -1)
 
 	p := Property{
@@ -79,7 +85,7 @@ func (g *ApiGroup) parseProperties(raw []byte) []Property {
 	props := make([]Property, 0)
 	slices := make([][]byte, 0)
 
-	re := regexp.MustCompile(`(?s)\nProperties(.+)\n\n?`)
+	re := regexp.MustCompile(`(?s)\nProperties(.+)\n\n?(Filters|)`)
 	matches1 := re.FindSubmatch(raw)
 
 	if len(matches1) == 0 {

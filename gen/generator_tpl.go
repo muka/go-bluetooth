@@ -83,8 +83,7 @@ func prepareDocs(src string, skipFirstComment bool, leftpad int) string {
 }
 
 func toType(t string) string {
-	switch t {
-	case "bool":
+	switch strings.Trim(t, " \t\r\n") {
 	case "boolean":
 		return "bool"
 	case "uint16_t":
@@ -95,12 +94,19 @@ func toType(t string) string {
 		return "uint8"
 	case "dict":
 		return "map[string]interface{}"
+	// check in media-api
+	case "properties":
+		return "string"
 	case "object":
+		return "dbus.ObjectPath"
+	case "objects":
 		return "dbus.ObjectPath"
 	case "fd":
 		return "int32"
 	case "<unknown>":
+		return ""
 	case "unknown":
+		return ""
 	case "void":
 		return ""
 	}
@@ -113,8 +119,7 @@ func listCastType(typedef string) string {
 		parts := strings.Split(typedef, ", ")
 		defs := make([]string, 0)
 		for _, part := range parts {
-			subtype := castType(strings.Trim(part, " "))
-			subtype = strings.Trim(subtype, " \t")
+			subtype := castType(part)
 			if len(subtype) > 0 {
 				defs = append(defs, subtype)
 			}
@@ -124,28 +129,25 @@ func listCastType(typedef string) string {
 	return typedef
 }
 
-func castType(typedef string) string {
+func castType(rawtype string) string {
 
-	if typedef == "" {
+	if rawtype == "" {
 		return ""
 	}
 
-	// log.Debugf("\n DBUS TYPE ---- %s", typedef)
+	typedef := listCastType(rawtype)
 
-	typedef = listCastType(typedef)
-
-	// array{string}
-	re := regexp.MustCompile(`array\{([a-zA-Z0-9]+)\}`)
-	matches := re.FindSubmatch([]byte(typedef))
+	//eg. array{string} or array{string, foo}
+	re := regexp.MustCompile(`array\{([a-zA-Z0-9, ]+)\}`)
+	matches := re.FindSubmatch([]byte(rawtype))
 	if len(matches) > 0 {
-		// log.Debugf(" array of ----------------------------------- %s", matches[1])
 		subtype := string(matches[1])
 		subtype = listCastType(subtype)
 		typedef = "[]" + toType(subtype)
 	}
 
 	typedef = toType(typedef)
-	// log.Debugf(" GO TYPE ---- %s \n", typedef)
+	// log.Debugf("type casting %s -> %s\n", rawtype, typedef)
 
 	return typedef
 }
@@ -366,6 +368,10 @@ func ApiTemplate(filename string, api Api, apiGroup ApiGroup) error {
 			mm.ReturnVarsDefinition = strings.Join(defs, "\n")
 			mm.ReturnVarsRefs = strings.Join(refs, ", ")
 			mm.ReturnVarsList = strings.Join(list, ", ")
+
+			if !importDbus {
+				importDbus = strings.Contains(mm.ReturnVarsDefinition, "ObjectPath")
+			}
 
 			mm.Method.ReturnType = "(" + mm.Method.ReturnType + ", error)"
 		}
