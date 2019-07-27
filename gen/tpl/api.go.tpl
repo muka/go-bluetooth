@@ -8,7 +8,7 @@ var {{.InterfaceName}}Interface = "{{.Api.Interface}}"
 
 {{range .Constructors}}
 // New{{$InterfaceName}}{{.Role}} create a new instance of {{$InterfaceName}}
-// {{.ArgsDocs}}
+{{.ArgsDocs}}
 func New{{$InterfaceName}}{{.Role}}({{.Args}}) (*{{$InterfaceName}}, error) {
 	a := new({{$InterfaceName}})
 	a.client = bluez.NewClient(

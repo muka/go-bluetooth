@@ -97,7 +97,14 @@ func createConstructors(api Api) []Constructor {
 		}
 
 		c.Args = strings.Join(args, ", ")
-		c.ArgsDocs = strings.Join(c.Docs, "\n// ")
+
+		docs := []string{}
+		for _, doc := range c.Docs {
+			for _, d1 := range strings.Split(doc, "\n") {
+				docs = append(docs, "// "+d1)
+			}
+		}
+		c.ArgsDocs = strings.Join(docs, "\n")
 
 		constructors[i] = c
 	}
