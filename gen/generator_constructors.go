@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 var defaultService = "org.bluez"
@@ -14,7 +16,7 @@ func isDefaultService(s string) bool {
 
 func createConstructors(api Api) []Constructor {
 
-	// log.Debugf("-------------------------------------- %s", api.Interface)
+	log.Debugf("-------------------------------------- %s", api.Interface)
 
 	constructors := []Constructor{}
 	constructors = inspectServiceName(api.Service, constructors)
@@ -136,6 +138,9 @@ func inspectObjectPath(objectPath string, constructors []Constructor) []Construc
 
 	constructors2 := []Constructor{}
 
+	log.Debugf("%d %s", len(constructors), objectPath)
+	log.Debugf("%+v", constructors)
+
 	for _, c := range constructors {
 
 		if strings.Contains(objectPath, "\n") {
@@ -194,18 +199,15 @@ func inspectObjectPath(objectPath string, constructors []Constructor) []Construc
 			continue
 		}
 
-		// freely definable
-		if strings.Contains(objectPath, "freely") {
+		defaultObjectPath := "/org/bluez"
+		if len(objectPath) >= len(defaultObjectPath) && objectPath[:len(defaultObjectPath)] != defaultObjectPath {
 			c.ObjectPath = ""
 			c.Docs = append(c.Docs, "objectPath: "+objectPath)
+		} else {
+			c.ObjectPath = objectPath
 		}
 
-		// <application dependent>
-		if strings.HasPrefix(objectPath, "<application") {
-			c.Docs = append(c.Docs, "objectPath: "+objectPath)
-			c.ObjectPath = ""
-		}
-
+		log.Debugf("----> %++v", c)
 		constructors2 = append(constructors2, c)
 	}
 
