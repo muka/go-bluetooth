@@ -27,3 +27,4 @@ debug
 
 /vendor
 /test
+/src/generated

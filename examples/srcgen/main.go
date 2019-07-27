@@ -19,7 +19,7 @@ func main() {
 		gen.Generate(api, "./test/out")
 	} else {
 		api = gen.Parse("./src/bluez")
-		gen.Generate(api, "./bluez")
+		gen.Generate(api, "./src/generated")
 	}
 
 }

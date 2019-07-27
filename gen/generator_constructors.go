@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-
-	log "github.com/sirupsen/logrus"
 )
 
 var defaultService = "org.bluez"
@@ -138,8 +136,8 @@ func inspectObjectPath(objectPath string, constructors []Constructor) []Construc
 
 	constructors2 := []Constructor{}
 
-	log.Debugf("%d %s", len(constructors), objectPath)
-	log.Debugf("%+v", constructors)
+	// log.Debugf("%d %s", len(constructors), objectPath)
+	// log.Debugf("%+v", constructors)
 
 	for _, c := range constructors {
 
