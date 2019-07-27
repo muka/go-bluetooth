@@ -16,10 +16,10 @@ func main() {
 	var api []gen.ApiGroup
 	if os.Getenv("DEBUG") != "" {
 		api = gen.Parse("./test")
+		gen.Generate(api, "./test/out")
 	} else {
-		api = gen.Parse("/home/l/git/kernel.org/bluetooth/bluez")
+		api = gen.Parse("./src/bluez")
+		gen.Generate(api, "./bluez")
 	}
-
-	gen.Generate(api, "./test/out")
 
 }
