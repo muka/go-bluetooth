@@ -16,7 +16,7 @@ func isDefaultService(s string) bool {
 
 func createConstructors(api Api) []Constructor {
 
-	log.Debugf("-------------------------------------- %s", api.Interface)
+	// log.Debugf("-------------------------------------- %s", api.Interface)
 
 	constructors := []Constructor{}
 	constructors = inspectServiceName(api.Service, constructors)
@@ -207,7 +207,7 @@ func inspectObjectPath(objectPath string, constructors []Constructor) []Construc
 			c.ObjectPath = objectPath
 		}
 
-		log.Debugf("----> %++v", c)
+		// log.Debugf("----> %++v", c)
 		constructors2 = append(constructors2, c)
 	}
 

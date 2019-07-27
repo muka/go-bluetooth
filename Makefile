@@ -13,5 +13,5 @@ gen/clean:
 	rm -rf test/out
 	mkdir -p test/out
 
-gen/run: 
+gen/run:
 	go run examples/srcgen/main.go
