@@ -4,6 +4,32 @@ package {{.Package}}
 
 {{.Imports}}
 
+var {{.InterfaceName}}Interface = "{{.Api.Interface}}"
+
+{{range .Constructors}}
+// New{{$InterfaceName}}{{.Role}} create a new instance of {{$InterfaceName}}
+// {{.ArgsDocs}}
+func New{{$InterfaceName}}{{.Role}}({{.Args}}) (*{{$InterfaceName}}, error) {
+	a := new({{$InterfaceName}})
+	a.client = bluez.NewClient(
+		&bluez.Config{
+			Name:  {{.Service}},
+			Iface: {{$InterfaceName}}Interface,
+			Path:  {{.ObjectPath}},
+			Bus:   bluez.SystemBus,
+		},
+	)
+	a.Properties = new({{$InterfaceName}}Properties)
+
+	_, err := a.GetProperties()
+	if err != nil {
+		return nil, err
+	}
+
+	return a, nil
+}
+{{end}}
+
 // {{.InterfaceName}} {{.Api.Title}}
 {{.Api.Description}}
 type {{.InterfaceName}} struct {

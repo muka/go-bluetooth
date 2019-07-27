@@ -53,6 +53,16 @@ type ApiDoc struct {
 	Properties    []PropertyDoc
 	Methods       []MethodDoc
 	Imports       string
+	Constructors  []Constructor
+}
+
+type Constructor struct {
+	Service    string
+	Role       string
+	ObjectPath string
+	Args       string
+	ArgsDocs   string
+	Docs       []string
 }
 
 func loadtpl(name string) *template.Template {
@@ -398,6 +408,8 @@ func ApiTemplate(filename string, api Api, apiGroup ApiGroup) error {
 	api.Description = prepareDocs(api.Description, false, 0)
 	api.Title = strings.Trim(api.Title, "\n \t")
 
+	ctrs := createConstructors(api)
+
 	apidocs := ApiDoc{
 		Imports:       importsTpl,
 		Package:       apiName,
@@ -405,6 +417,7 @@ func ApiTemplate(filename string, api Api, apiGroup ApiGroup) error {
 		InterfaceName: iface,
 		Properties:    props,
 		Methods:       methods,
+		Constructors:  ctrs,
 	}
 
 	tmpl := loadtpl("api")

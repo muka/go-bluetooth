@@ -2,7 +2,6 @@ package gen
 
 import (
 	"regexp"
-	"strings"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -18,9 +17,7 @@ func (g *ApiGroup) parseApi(raw []byte) Api {
 	api.Title = string(raw[matches[2]:matches[3]])
 	api.Description = string(raw[matches[4]:matches[5]])
 
-	if g.debug {
-		log.Debugf("= %s", api.Title)
-	}
+	log.Infof("= %s", api.Title)
 
 	raw = raw[matches[5]:]
 
@@ -33,10 +30,6 @@ func (g *ApiGroup) parseApi(raw []byte) Api {
 	api.Service = string(raw[matches[2]:matches[3]])
 	api.Interface = string(raw[matches[4]:matches[5]])
 	api.ObjectPath = string(raw[matches[6]:matches[7]])
-
-	if strings.Contains(api.ObjectPath, "freely") {
-		api.ObjectPath = ""
-	}
 
 	if g.debug {
 		log.Debugf("\tService %s", api.Service)
@@ -68,9 +61,6 @@ func (g *ApiGroup) parseGroup(raw []byte) {
 	g.Name = string(raw[matches[0][2]:matches[0][3]])
 	g.Description = string(raw[matches[0][1]+1:])
 
-	if g.debug {
-		log.Debugf("* %s", g.Name)
-		// log.Debugf("*\t%s", g.Description)
-	}
+	log.Infof("* %s", g.Name)
 
 }

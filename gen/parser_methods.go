@@ -72,7 +72,7 @@ func (g *ApiGroup) parseMethods(raw []byte) []Method {
 	for _, methodRaw := range slices {
 		method, err := g.parseMethod(methodRaw)
 		if err != nil {
-			log.Debugf("Skip method: %s", err)
+			log.Warnf("Skip method: %s", err)
 			continue
 		}
 		methods = append(methods, method)
@@ -95,7 +95,7 @@ func (g *ApiGroup) parseMethod(raw []byte) (method Method, err error) {
 		}
 
 		rtype = strings.Trim(rtype, " \t")
-		if len(rtype) > 15 {
+		if len(rtype) > 20 {
 			return method, fmt.Errorf("Return type is too long: `%s`", rtype)
 		}
 

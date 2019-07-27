@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"errors"
 	"regexp"
 	"strings"
 
@@ -9,7 +10,9 @@ import (
 
 const propBaseRegexp = `(bool|boolean|byte|string|uint16|uint16_t|uint32|dict|array\{.*?) ([A-Z].+?)`
 
-func (g *ApiGroup) parseProperty(raw []byte) Property {
+func (g *ApiGroup) parseProperty(raw []byte) (Property, error) {
+
+	property := Property{}
 
 	// log.Debugf("prop raw -> %s", raw)
 
@@ -22,6 +25,11 @@ func (g *ApiGroup) parseProperty(raw []byte) Property {
 		re1 = regexp.MustCompile(`[ \t]*?` + propBaseRegexp + `\n((?s).+)`)
 		matches2 = re1.FindAllSubmatch(raw, -1)
 		// log.Debugf("m2 %s", matches2)
+	}
+
+	if len(matches2) == 0 {
+		log.Debugf("prop raw -> %s", raw)
+		return property, errors.New("No property found")
 	}
 
 	flags := []Flag{}
@@ -67,17 +75,15 @@ func (g *ApiGroup) parseProperty(raw []byte) Property {
 
 	name = strings.Replace(name, " \t\n", "", -1)
 
-	p := Property{
-		Type:  string(matches2[0][1]),
-		Name:  name,
-		Flags: flags,
-		Docs:  docs,
-	}
+	property.Type = string(matches2[0][1])
+	property.Name = name
+	property.Flags = flags
+	property.Docs = docs
 
 	if g.debug {
-		log.Debugf("\t - %s %s %s", p.Type, p.Name, strings.Trim(flagListRaw, " "))
+		log.Debugf("\t - %s %s %s", property.Type, property.Name, strings.Trim(flagListRaw, " "))
 	}
-	return p
+	return property, nil
 }
 
 func (g *ApiGroup) parseProperties(raw []byte) []Property {
@@ -85,7 +91,7 @@ func (g *ApiGroup) parseProperties(raw []byte) []Property {
 	props := make([]Property, 0)
 	slices := make([][]byte, 0)
 
-	re := regexp.MustCompile(`(?s)\nProperties(.+)\n\n?(Filters|)[ \t]`)
+	re := regexp.MustCompile(`(?s)\nProperties(.+)\n\n?(Filters|)?[ \t]?`)
 	matches1 := re.FindSubmatch(raw)
 
 	if len(matches1) == 0 {
@@ -144,8 +150,13 @@ func (g *ApiGroup) parseProperties(raw []byte) []Property {
 	if g.debug {
 		log.Debug("\tProperties:")
 	}
+
 	for _, propRaw := range slices {
-		prop := g.parseProperty(propRaw)
+		prop, err := g.parseProperty(propRaw)
+		if err != nil {
+			log.Warnf("Skipped property: %s", err)
+			continue
+		}
 		props = append(props, prop)
 	}
 

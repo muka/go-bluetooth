@@ -29,11 +29,11 @@ func Generate(apiGroups []ApiGroup, outDir string) error {
 		return err
 	}
 
-	filename = filepath.Join(outDir, "interfaces.go")
-	err = InterfacesTemplate(filename, apiGroups)
-	if err != nil {
-		return err
-	}
+	// filename = filepath.Join(outDir, "interfaces.go")
+	// err = InterfacesTemplate(filename, apiGroups)
+	// if err != nil {
+	// 	return err
+	// }
 
 	for _, apiGroup := range apiGroups {
 
