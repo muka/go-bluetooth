@@ -35,6 +35,7 @@ func New{{$InterfaceName}}{{.Role}}({{.Args}}) (*{{$InterfaceName}}, error) {
 type {{.InterfaceName}} struct {
 	client     *bluez.Client
 	Properties *{{.InterfaceName}}Properties
+	lock             sync.RWMutex
 }
 
 // {{.InterfaceName}}Properties contains the exposed properties of an interface
@@ -45,20 +46,42 @@ type {{.InterfaceName}}Properties struct {
 {{end}}
 }
 
+// ToMap convert a {{.InterfaceName}}Properties to map
+func (a *{{.InterfaceName}}Properties) ToMap() (map[string]interface{}, error) {
+	return structs.Map(a), nil
+}
+
 // Close the connection
 func (a *{{.InterfaceName}}) Close() {
 	a.client.Disconnect()
 }
 
-//GetProperties load all available properties
+// GetProperties load all available properties
 func (a *{{.InterfaceName}}) GetProperties() (*{{.InterfaceName}}Properties, error) {
+	a.lock.Lock()
 	err := a.client.GetProperties(a.Properties)
+	a.lock.Unlock()
 	return a.Properties, err
 }
 
-//SetProperty set a property
+// SetProperty set a property
 func (a *{{.InterfaceName}}) SetProperty(name string, value interface{}) error {
 	return a.client.SetProperty(name, value)
+}
+
+// GetProperty get a property
+func (a *{{.InterfaceName}}) GetProperty(name string) (dbus.Variant, error) {
+	return a.client.GetProperty(name)
+}
+
+// Register for changes signalling
+func (a *{{.InterfaceName}}) Register() (chan *dbus.Signal, error) {
+	return a.client.Register(a.client.Config.Path, bluez.PropertiesInterface)
+}
+
+// Unregister for changes signalling
+func (a *{{.InterfaceName}}) Unregister(signal chan *dbus.Signal) error {
+	return a.client.Unregister(a.client.Config.Path, bluez.PropertiesInterface, signal)
 }
 
 {{range .Methods}}

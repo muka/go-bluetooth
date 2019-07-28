@@ -8,7 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const propBaseRegexp = `(bool|boolean|byte|string|uint16|uint16_t|uint32|dict|array\{.*?) ([A-Z].+?)`
+const propBaseRegexp = `(bool|boolean|byte|string|int16|uint16|uint16_t|uint32|dict|object|array\{.*?) ([A-Z].+?)`
 
 func (g *ApiGroup) parseProperty(raw []byte) (Property, error) {
 

@@ -198,7 +198,13 @@ func inspectObjectPath(objectPath string, constructors []Constructor) []Construc
 		}
 
 		defaultObjectPath := "/org/bluez"
-		if len(objectPath) >= len(defaultObjectPath) && objectPath[:len(defaultObjectPath)] != defaultObjectPath {
+
+		isDefaultPath := len(objectPath) >= len(defaultObjectPath) && objectPath[:len(defaultObjectPath)] == defaultObjectPath
+		pathHasVariables := strings.Contains(objectPath, "{")
+
+		// log.Debugf("%s %t %t", objectPath, isDefaultPath, pathHasVariables)
+
+		if !isDefaultPath || pathHasVariables {
 			c.ObjectPath = ""
 			c.Docs = append(c.Docs, "objectPath: "+objectPath)
 		} else {
