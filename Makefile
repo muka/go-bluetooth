@@ -15,3 +15,6 @@ gen/clean:
 
 gen/run:
 	go run examples/srcgen/main.go
+
+test/switch:
+	sudo go test api/switch*

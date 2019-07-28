@@ -51,24 +51,11 @@ func GetAdapterStatus(adapterID string) (*linux.RFKillResult, error) {
 
 // ToggleAdapter Swap Off/On a device
 func ToggleAdapter(adapterID string) error {
-
-	var identifier string
-	if isRFClass(adapterID) {
-		identifier = adapterID
-	} else {
-		adapter, err := GetAdapterStatus(adapterID)
-		if err != nil {
-			return err
-		}
-		identifier = strconv.Itoa(adapter.Index)
-	}
-
-	err := TurnOffAdapter(identifier)
+	err := TurnOffAdapter(adapterID)
 	if err != nil {
 		return err
 	}
-
-	return TurnOnAdapter(identifier)
+	return TurnOnAdapter(adapterID)
 }
 
 // TurnOnAdapter Enable a rfkill managed device
