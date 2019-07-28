@@ -42,6 +42,7 @@ type {{.InterfaceName}} struct {
 
 // {{.InterfaceName}}Properties contains the exposed properties of an interface
 type {{.InterfaceName}}Properties struct {
+	Lock sync.RWMutex
 {{ range .Properties }}
 	// {{.Property.Name}} {{.Property.Docs}}
 	{{.Property.Name}} {{.Property.Type}}

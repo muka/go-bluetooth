@@ -1,6 +1,10 @@
 package api
 
-import "github.com/muka/go-bluetooth/bluez/profile"
+import (
+	"github.com/muka/go-bluetooth/bluez/profile"
+	"github.com/muka/go-bluetooth/src/gen/profile/device"
+	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
+)
 
 //EventStatus indicate the status related to an event
 type EventStatus int
@@ -41,7 +45,7 @@ type PropertyChangedEvent struct {
 	Iface      string
 	Field      string
 	Value      interface{}
-	Properties *profile.Device1Properties
+	Properties *device.Device1Properties
 	Device     *Device
 }
 
@@ -49,7 +53,7 @@ type PropertyChangedEvent struct {
 type GattServiceEvent struct {
 	Path       string
 	DevicePath string
-	Properties *profile.GattService1Properties
+	Properties *gatt.GattService1Properties
 	Status     EventStatus
 }
 
@@ -57,7 +61,7 @@ type GattServiceEvent struct {
 type GattCharacteristicEvent struct {
 	Path       string
 	DevicePath string
-	Properties *profile.GattCharacteristic1Properties
+	Properties *gatt.GattCharacteristic1Properties
 	Status     EventStatus
 }
 

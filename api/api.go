@@ -9,6 +9,9 @@ import (
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/muka/go-bluetooth/emitter"
+	"github.com/muka/go-bluetooth/src/gen/profile/adapter"
+	"github.com/muka/go-bluetooth/src/gen/profile/device"
+	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
 )
 
 //Exit performs a clean exit
@@ -27,7 +30,11 @@ func GetDeviceByAddress(address string) (*Device, error) {
 		return nil, err
 	}
 	for _, path := range list {
-		dev := NewDevice(string(path))
+
+		dev, err := NewDevice(string(path))
+		if err != nil {
+			return nil, err
+		}
 
 		dev.lock.RLock()
 		// get current Properties pointer (can be changed by other goroutine)
@@ -65,7 +72,7 @@ func GetDevices() ([]Device, error) {
 		if !ok {
 			return nil, errors.New("Path " + string(path) + " does not exists.")
 		}
-		props := (object.(map[string]map[string]dbus.Variant))[bluez.Device1Interface]
+		props := (object.(map[string]map[string]dbus.Variant))[device.Device1Interface]
 		dev, err := ParseDevice(path, props)
 		if err != nil {
 			return nil, err
@@ -91,7 +98,7 @@ func GetDeviceList() ([]dbus.ObjectPath, error) {
 		path := key.(dbus.ObjectPath)
 		for iface := range ifaces {
 			switch iface {
-			case bluez.Device1Interface:
+			case device.Device1Interface:
 				{
 					devices = append(devices, path)
 				}
@@ -120,7 +127,7 @@ func AdapterExists(adapterID string) (bool, error) {
 }
 
 //GetAdapter return an adapter object instance
-func GetAdapter(adapterID string) (*profile.Adapter1, error) {
+func GetAdapter(adapterID string) (*adapter.Adapter1, error) {
 
 	if exists, err := AdapterExists(adapterID); !exists {
 		if err != nil {
@@ -129,11 +136,11 @@ func GetAdapter(adapterID string) (*profile.Adapter1, error) {
 		return nil, errors.New("Adapter " + adapterID + " not found")
 	}
 
-	return profile.NewAdapter1(adapterID), nil
+	return profile.NewAdapter1(adapterID)
 }
 
 //GetGattManager return a GattManager1 instance
-func GetGattManager(adapterID string) (*profile.GattManager1, error) {
+func GetGattManager(adapterID string) (*gatt.GattManager1, error) {
 
 	if exists, err := AdapterExists(adapterID); !exists {
 		if err != nil {
@@ -142,7 +149,7 @@ func GetGattManager(adapterID string) (*profile.GattManager1, error) {
 		return nil, errors.New("Adapter " + adapterID + " not found")
 	}
 
-	return profile.NewGattManager1(adapterID), nil
+	return profile.NewGattManager1(adapterID)
 }
 
 //StartDiscovery on adapter hci0

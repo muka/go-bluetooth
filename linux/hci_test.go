@@ -1,7 +1,6 @@
 package linux
 
 import (
-	"fmt"
 	"testing"
 
 	log "github.com/sirupsen/logrus"
@@ -34,8 +33,6 @@ func TestHciUp(t *testing.T) {
 	if len(list) == 0 {
 		t.Fatal("At least an adapter should be available")
 	}
-
-	fmt.Print("list", list)
 
 	Up(list[0])
 	Down(list[0])

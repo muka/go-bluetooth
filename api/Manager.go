@@ -8,6 +8,9 @@ import (
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/muka/go-bluetooth/emitter"
+	"github.com/muka/go-bluetooth/src/gen/profile/adapter"
+	"github.com/muka/go-bluetooth/src/gen/profile/device"
+	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
 	"github.com/muka/go-bluetooth/util"
 	log "github.com/sirupsen/logrus"
 )
@@ -115,13 +118,13 @@ func (m *Manager) watchChanges() error {
 
 					for _, iF := range ifaces {
 						// device removed
-						if iF == bluez.Device1Interface {
+						if iF == device.Device1Interface {
 
 							devInfo := DiscoveredDeviceEvent{string(path), DeviceRemoved, nil}
 							emitter.Emit("discovery", devInfo)
 						}
 						//adapter removed
-						if iF == bluez.Adapter1Interface {
+						if iF == adapter.Adapter1Interface {
 
 							strpath := string(path)
 							parts := strings.Split(strpath, "/")
@@ -141,8 +144,8 @@ func (m *Manager) watchChanges() error {
 func emitChanges(path dbus.ObjectPath, props map[string]map[string]dbus.Variant) {
 
 	//Device1
-	if props[bluez.Device1Interface] != nil {
-		dev, err := ParseDevice(path, props[bluez.Device1Interface])
+	if props[device.Device1Interface] != nil {
+		dev, err := ParseDevice(path, props[device.Device1Interface])
 		if err != nil {
 			log.Fatalf("Failed to parse device: %v\n", err)
 			return
@@ -153,7 +156,7 @@ func emitChanges(path dbus.ObjectPath, props map[string]map[string]dbus.Variant)
 	}
 
 	//Adapter1
-	if props[bluez.Adapter1Interface] != nil {
+	if props[adapter.Adapter1Interface] != nil {
 		strpath := string(path)
 		parts := strings.Split(strpath, "/")
 		name := parts[len(parts)-1:][0]
@@ -163,14 +166,14 @@ func emitChanges(path dbus.ObjectPath, props map[string]map[string]dbus.Variant)
 	}
 
 	//GattService1
-	if props[bluez.GattService1Interface] != nil {
+	if props[gatt.GattService1Interface] != nil {
 
 		strpath := string(path)
 		parts := strings.Split(strpath, "/")
 		devicePath := strings.Join(parts[:len(parts)-1], "/")
 
-		srvcProps := new(profile.GattService1Properties)
-		util.MapToStruct(srvcProps, props[bluez.GattService1Interface])
+		srvcProps := new(gatt.GattService1Properties)
+		util.MapToStruct(srvcProps, props[gatt.GattService1Interface])
 
 		ev := GattServiceEvent{strpath, devicePath, srvcProps, StatusAdded}
 
@@ -179,14 +182,14 @@ func emitChanges(path dbus.ObjectPath, props map[string]map[string]dbus.Variant)
 
 	}
 	//GattCharacteristic1
-	if props[bluez.GattCharacteristic1Interface] != nil {
+	if props[gatt.GattCharacteristic1Interface] != nil {
 
 		strpath := string(path)
 		parts := strings.Split(strpath, "/")
 		devicePath := strings.Join(parts[:len(parts)-2], "/")
 
-		srvcProps := new(profile.GattCharacteristic1Properties)
-		util.MapToStruct(srvcProps, props[bluez.GattCharacteristic1Interface])
+		srvcProps := new(gatt.GattCharacteristic1Properties)
+		util.MapToStruct(srvcProps, props[gatt.GattCharacteristic1Interface])
 
 		ev := GattCharacteristicEvent{strpath, devicePath, srvcProps, StatusAdded}
 
@@ -194,13 +197,13 @@ func emitChanges(path dbus.ObjectPath, props map[string]map[string]dbus.Variant)
 		emitter.Emit(devicePath+".char", ev)
 	}
 	//GattDescriptor1
-	if props[bluez.GattDescriptor1Interface] != nil {
+	if props[gatt.GattDescriptor1Interface] != nil {
 		strpath := string(path)
 		parts := strings.Split(strpath, "/")
 		devicePath := strings.Join(parts[:len(parts)-3], "/")
 
 		srvcProps := new(profile.GattDescriptor1Properties)
-		util.MapToStruct(srvcProps, props[bluez.GattDescriptor1Interface])
+		util.MapToStruct(srvcProps, props[gatt.GattDescriptor1Interface])
 
 		ev := GattDescriptorEvent{strpath, devicePath, srvcProps, StatusAdded}
 

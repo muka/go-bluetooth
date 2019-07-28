@@ -11,32 +11,38 @@ import (
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/muka/go-bluetooth/emitter"
+	"github.com/muka/go-bluetooth/src/gen/profile/device"
+	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
 	"github.com/muka/go-bluetooth/util"
 )
 
 var deviceRegistry = new(sync.Map)
 
 // NewDevice creates a new Device
-func NewDevice(path string) *Device {
+func NewDevice(path string) (*Device, error) {
 
 	if device, ok := deviceRegistry.Load(path); ok {
-		return device.(*Device)
+		return device.(*Device), nil
 	}
 
 	d := new(Device)
 	d.Path = path
-	d.client = profile.NewDevice1(path)
+	dev, err := profile.NewDevice1(path)
+	if err != nil {
+		return nil, err
+	}
+	d.client = dev
 
 	d.client.GetProperties()
 	d.Properties = d.client.Properties
-	d.chars = make(map[dbus.ObjectPath]*profile.GattCharacteristic1, 0)
-	d.descr = make(map[dbus.ObjectPath]*profile.GattDescriptor1, 0)
+	d.chars = make(map[dbus.ObjectPath]*gatt.GattCharacteristic1, 0)
+	d.descr = make(map[dbus.ObjectPath]*gatt.GattDescriptor1, 0)
 
 	deviceRegistry.Store(path, d)
 
 	// d.watchProperties()
 
-	return d
+	return d, nil
 }
 
 //ClearDevice free a device struct
@@ -70,7 +76,7 @@ func FlushDevices(adapterID string) error {
 		if err != nil {
 			return fmt.Errorf("FlushDevices.ClearDevice %s", err)
 		}
-		err = adapter.RemoveDevice(dev.Path)
+		err = adapter.RemoveDevice(dbus.ObjectPath(dev.Path))
 		if err != nil {
 			return fmt.Errorf("FlushDevices.RemoveDevice %s", err)
 		}
@@ -98,17 +104,22 @@ func ParseDevice(path dbus.ObjectPath, propsMap map[string]dbus.Variant) (*Devic
 
 	d := new(Device)
 	d.Path = string(path)
-	d.client = profile.NewDevice1(d.Path)
+	dev, err := profile.NewDevice1(d.Path)
+	if err != nil {
+		return nil, err
+	}
 
-	props := new(profile.Device1Properties)
+	d.client = dev
+
+	props := new(device.Device1Properties)
 	util.MapToStruct(props, propsMap)
 	c, err := d.GetClient()
 	if err != nil {
 		return nil, err
 	}
 	c.Properties = props
-	d.chars = make(map[dbus.ObjectPath]*profile.GattCharacteristic1, 0)
-	d.descr = make(map[dbus.ObjectPath]*profile.GattDescriptor1, 0)
+	d.chars = make(map[dbus.ObjectPath]*gatt.GattCharacteristic1, 0)
+	d.descr = make(map[dbus.ObjectPath]*gatt.GattDescriptor1, 0)
 
 	return d, nil
 }
@@ -196,10 +207,10 @@ func (d *Device) watchProperties() error {
 //Device return an API to interact with a DBus device
 type Device struct {
 	Path                   string
-	Properties             *profile.Device1Properties
-	client                 *profile.Device1
-	chars                  map[dbus.ObjectPath]*profile.GattCharacteristic1
-	descr                  map[dbus.ObjectPath]*profile.GattDescriptor1
+	Properties             *device.Device1Properties
+	client                 *device.Device1
+	chars                  map[dbus.ObjectPath]*gatt.GattCharacteristic1
+	descr                  map[dbus.ObjectPath]*gatt.GattDescriptor1
 	watchPropertiesChannel chan *dbus.Signal
 	lock                   sync.RWMutex
 }
@@ -218,7 +229,7 @@ func (d *Device) unwatchProperties() error {
 }
 
 //GetClient return a DBus Device1 interface client
-func (d *Device) GetClient() (*profile.Device1, error) {
+func (d *Device) GetClient() (*device.Device1, error) {
 	if d.client == nil {
 		return nil, errors.New("Client not available")
 	}
@@ -226,7 +237,7 @@ func (d *Device) GetClient() (*profile.Device1, error) {
 }
 
 //GetProperties return the properties for the device
-func (d *Device) GetProperties() (*profile.Device1Properties, error) {
+func (d *Device) GetProperties() (*device.Device1Properties, error) {
 
 	if d == nil {
 		return nil, errors.New("Empty device pointer")
@@ -306,12 +317,12 @@ func (d *Device) Emit(name string, data interface{}) error {
 }
 
 //GetService return a GattService
-func (d *Device) GetService(path string) *profile.GattService1 {
-	return profile.NewGattService1(path, "org.bluez")
+func (d *Device) GetService(path string) (*gatt.GattService1, error) {
+	return profile.NewGattService1(path)
 }
 
 //GetChar return a GattService
-func (d *Device) GetChar(path string) (*profile.GattCharacteristic1, error) {
+func (d *Device) GetChar(path string) (*gatt.GattCharacteristic1, error) {
 	return profile.NewGattCharacteristic1(path)
 }
 
@@ -348,7 +359,7 @@ func (d *Device) GetAllServicesAndUUID() ([]string, error) {
 }
 
 //GetCharByUUID return a GattService by its uuid, return nil if not found
-func (d *Device) GetCharByUUID(uuid string) (*profile.GattCharacteristic1, error) {
+func (d *Device) GetCharByUUID(uuid string) (*gatt.GattCharacteristic1, error) {
 	devices, err := d.GetCharsByUUID(uuid)
 	if len(devices) > 0 {
 		return devices[0], err
@@ -357,7 +368,7 @@ func (d *Device) GetCharByUUID(uuid string) (*profile.GattCharacteristic1, error
 }
 
 //GetCharsByUUID returns all characteristics that match the given UUID.
-func (d *Device) GetCharsByUUID(uuid string) ([]*profile.GattCharacteristic1, error) {
+func (d *Device) GetCharsByUUID(uuid string) ([]*gatt.GattCharacteristic1, error) {
 	uuid = strings.ToUpper(uuid)
 
 	list, err := d.GetCharsList()
@@ -365,7 +376,7 @@ func (d *Device) GetCharsByUUID(uuid string) ([]*profile.GattCharacteristic1, er
 		return nil, err
 	}
 
-	var charsFound []*profile.GattCharacteristic1
+	var charsFound []*gatt.GattCharacteristic1
 
 	for _, path := range list {
 		// use cache
@@ -455,13 +466,13 @@ func (d *Device) GetDescriptorList() ([]dbus.ObjectPath, error) {
 }
 
 //GetDescriptors returns all descriptors for a given characteristic
-func (d *Device) GetDescriptors(char *profile.GattCharacteristic1) ([]*profile.GattDescriptor1, error) {
+func (d *Device) GetDescriptors(char *gatt.GattCharacteristic1) ([]*gatt.GattDescriptor1, error) {
 	descrPaths, err := d.GetDescriptorList()
 	if err != nil {
 		return nil, err
 	}
 
-	var descrFound []*profile.GattDescriptor1
+	var descrFound []*gatt.GattDescriptor1
 
 	for _, path := range descrPaths {
 		_, ok := d.descr[path]
@@ -473,7 +484,10 @@ func (d *Device) GetDescriptors(char *profile.GattCharacteristic1) ([]*profile.G
 			d.descr[path] = descr
 		}
 
-		if dbus.ObjectPath(char.Path) == d.descr[path].Properties.Characteristic {
+		charPath := string(char.Properties.Service) + "/" + UUIDToPath(char.Properties.UUID)
+
+		if dbus.ObjectPath(charPath) == d.descr[path].Properties.Characteristic {
+			// if dbus.ObjectPath(char.Path) == d.descr[path].Properties.Characteristic {
 			descrFound = append(descrFound, d.descr[path])
 		}
 	}
