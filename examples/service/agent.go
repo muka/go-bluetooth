@@ -13,14 +13,15 @@ import (
 )
 
 func RegisterAgent(agent profile.Agent1Interface, caps string) error {
+
 	//agent_path := AgentDefaultRegisterPath // we use the default path
 	agent_path := agent.RegistrationPath() // we use the default path
 	log.Infof("Agent path: %s", agent_path)
 
 	// Register agent
-	am, err := profile.NewAgentManager1(agent_path)
+	am, err := profile.NewAgentManager1()
 	if err != nil {
-		return err
+		return fmt.Errorf("NewAgentManager1: %s", err)
 	}
 
 	// Export the Go interface to DBus

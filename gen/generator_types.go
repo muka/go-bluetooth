@@ -39,13 +39,14 @@ type ApiGroupDoc struct {
 }
 
 type ApiDoc struct {
-	Api           Api
-	InterfaceName string
-	Package       string
-	Properties    []PropertyDoc
-	Methods       []MethodDoc
-	Imports       string
-	Constructors  []Constructor
+	Api              Api
+	InterfaceName    string
+	Package          string
+	Properties       []PropertyDoc
+	Methods          []MethodDoc
+	Imports          string
+	Constructors     []Constructor
+	ExposeProperties bool
 }
 
 type Constructor struct {

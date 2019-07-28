@@ -20,8 +20,14 @@ func ApiTemplate(filename string, api Api, apiGroup ApiGroup) error {
 
 	imports := []string{
 		"sync",
-		"github.com/fatih/structs",
 		"github.com/muka/go-bluetooth/bluez",
+	}
+
+	// Expose Properties interface ?
+	exposeProps := override.ExposeProperties(api.Interface)
+
+	if exposeProps {
+		imports = append(imports, "github.com/fatih/structs")
 	}
 
 	// flag to import dbus
@@ -153,13 +159,14 @@ func ApiTemplate(filename string, api Api, apiGroup ApiGroup) error {
 	ctrs := createConstructors(api)
 
 	apidocs := ApiDoc{
-		Imports:       importsTpl,
-		Package:       apiName,
-		Api:           api,
-		InterfaceName: iface,
-		Properties:    props,
-		Methods:       methods,
-		Constructors:  ctrs,
+		Imports:          importsTpl,
+		Package:          apiName,
+		Api:              api,
+		InterfaceName:    iface,
+		Properties:       props,
+		Methods:          methods,
+		Constructors:     ctrs,
+		ExposeProperties: exposeProps,
 	}
 
 	tmpl := loadtpl("api")

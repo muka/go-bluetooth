@@ -3,6 +3,7 @@
 //
 package {{.Package}}
 {{$InterfaceName := .InterfaceName}}
+{{$ExposeProperties := .ExposeProperties}}
 
 {{.Imports}}
 
@@ -21,13 +22,14 @@ func New{{$InterfaceName}}{{.Role}}({{.Args}}) (*{{$InterfaceName}}, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
+	{{if $ExposeProperties }}
 	a.Properties = new({{$InterfaceName}}Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-
+	{{end}}
 	return a, nil
 }
 {{end}}
@@ -49,14 +51,15 @@ type {{.InterfaceName}}Properties struct {
 {{end}}
 }
 
-// ToMap convert a {{.InterfaceName}}Properties to map
-func (a *{{.InterfaceName}}Properties) ToMap() (map[string]interface{}, error) {
-	return structs.Map(a), nil
-}
-
 // Close the connection
 func (a *{{.InterfaceName}}) Close() {
 	a.client.Disconnect()
+}
+
+{{if .ExposeProperties }}
+// ToMap convert a {{.InterfaceName}}Properties to map
+func (a *{{.InterfaceName}}Properties) ToMap() (map[string]interface{}, error) {
+	return structs.Map(a), nil
 }
 
 // GetProperties load all available properties
@@ -86,6 +89,7 @@ func (a *{{.InterfaceName}}) Register() (chan *dbus.Signal, error) {
 func (a *{{.InterfaceName}}) Unregister(signal chan *dbus.Signal) error {
 	return a.client.Unregister(a.client.Config.Path, bluez.PropertiesInterface, signal)
 }
+{{end}}
 
 {{range .Methods}}
 //{{.Name}} {{.Docs}}

@@ -32,7 +32,7 @@ type Agent1Interface interface {
 }
 
 // NewAgentManager1 create a new AgentManager1 client
-func NewAgentManager1(hostID string) (*agent.AgentManager1, error) {
+func NewAgentManager1() (*agent.AgentManager1, error) {
 	return agent.NewAgentManager1()
 }
 
