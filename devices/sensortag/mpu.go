@@ -8,8 +8,7 @@ import (
 	"strings"
 
 	"github.com/godbus/dbus"
-	"github.com/muka/go-bluetooth/bluez"
-	"github.com/muka/go-bluetooth/bluez/profile"
+	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
 )
 
 //getting config,data,period characteristics for Humidity sensor
@@ -63,9 +62,9 @@ func newMpuSensor(tag *SensorTag) (*MpuSensor, error) {
 //MpuSensor structure
 type MpuSensor struct {
 	tag    *SensorTag
-	cfg    *profile.GattCharacteristic1
-	data   *profile.GattCharacteristic1
-	period *profile.GattCharacteristic1
+	cfg    *gatt.GattCharacteristic1
+	data   *gatt.GattCharacteristic1
+	period *gatt.GattCharacteristic1
 }
 
 //GetName return's the sensor name
@@ -131,7 +130,7 @@ func (s *MpuSensor) IsNotifying() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return n.(bool), nil
+	return n.Value().(bool), nil
 }
 
 //Read value from the mpu sensors
@@ -200,7 +199,7 @@ func (s *MpuSensor) StartNotify(macAddress string) error {
 				case string:
 				}
 
-				if event1.Body[0] != bluez.GattCharacteristic1Interface {
+				if event1.Body[0] != gatt.GattCharacteristic1Interface {
 
 					continue
 				}

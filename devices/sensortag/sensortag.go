@@ -7,8 +7,8 @@ import (
 
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/api"
-	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/muka/go-bluetooth/emitter"
+	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -319,10 +319,10 @@ func newDeviceInfo(tag *SensorTag) (SensorTagDeviceInfo, error) {
 //SensorTagDeviceInfo sensorTag structure
 type SensorTagDeviceInfo struct {
 	tag              *SensorTag
-	firmwareInfo     *profile.GattCharacteristic1
-	hardwareInfo     *profile.GattCharacteristic1
-	manufacturerInfo *profile.GattCharacteristic1
-	modelInfo        *profile.GattCharacteristic1
+	firmwareInfo     *gatt.GattCharacteristic1
+	hardwareInfo     *gatt.GattCharacteristic1
+	manufacturerInfo *gatt.GattCharacteristic1
+	modelInfo        *gatt.GattCharacteristic1
 }
 
 //Read device info from sensorTag

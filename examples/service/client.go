@@ -15,9 +15,12 @@ func createClient(adapterID, hwaddr, serviceID string) (err error) {
 
 	log.Infof("Discovering devices from %s, looking for %s (serviceID:%s)", adapterID, hwaddr, serviceID)
 
-	adapter := profile.NewAdapter1(adapterID)
+	a, err := profile.NewAdapter1(adapterID)
+	if err != nil {
+		return err
+	}
 
-	err = adapter.StartDiscovery()
+	err = a.StartDiscovery()
 	if err != nil {
 		log.Errorf("Failed to start discovery: %s", err.Error())
 		return err

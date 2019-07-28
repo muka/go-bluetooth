@@ -3,10 +3,11 @@ package main
 import (
 	"fmt"
 
+	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/api"
-	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/muka/go-bluetooth/service"
+	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -61,7 +62,7 @@ func registerApplication(adapterID string) (*service.Application, error) {
 		return nil, fmt.Errorf("GetGattManager: %s", err)
 	}
 
-	err = gattManager.RegisterApplication(app.Path(), map[string]interface{}{})
+	err = gattManager.RegisterApplication(app.Path(), map[string]dbus.Variant{})
 	if err != nil {
 		return nil, fmt.Errorf("RegisterApplication: %s", err.Error())
 	}
@@ -82,7 +83,7 @@ func exposeService(
 	advertise bool,
 ) error {
 
-	serviceProps := &profile.GattService1Properties{
+	serviceProps := &gatt.GattService1Properties{
 		Primary: true,
 		UUID:    serviceUUID,
 	}
@@ -100,11 +101,11 @@ func exposeService(
 		return err
 	}
 
-	charProps := &profile.GattCharacteristic1Properties{
+	charProps := &gatt.GattCharacteristic1Properties{
 		UUID: characteristicUUID,
 		Flags: []string{
-			bluez.FlagCharacteristicRead,
-			bluez.FlagCharacteristicWrite,
+			profile.FlagCharacteristicRead,
+			profile.FlagCharacteristicWrite,
 		},
 	}
 	char, err := service1.CreateCharacteristic(charProps)
@@ -119,11 +120,11 @@ func exposeService(
 		return err
 	}
 
-	descProps := &profile.GattDescriptor1Properties{
+	descProps := &gatt.GattDescriptor1Properties{
 		UUID: descriptorUUID,
 		Flags: []string{
-			bluez.FlagDescriptorRead,
-			bluez.FlagDescriptorWrite,
+			profile.FlagDescriptorRead,
+			profile.FlagDescriptorWrite,
 		},
 	}
 	desc, err := char.CreateDescriptor(descProps)

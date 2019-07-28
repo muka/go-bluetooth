@@ -7,11 +7,11 @@ import (
 	"github.com/godbus/dbus/introspect"
 	"github.com/godbus/dbus/prop"
 	"github.com/muka/go-bluetooth/bluez"
-	"github.com/muka/go-bluetooth/bluez/profile"
+	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
 )
 
 // NewGattService1 create a new instance of GattService1
-func NewGattService1(config *GattService1Config, props *profile.GattService1Properties) (*GattService1, error) {
+func NewGattService1(config *GattService1Config, props *gatt.GattService1Properties) (*GattService1, error) {
 
 	propInterface, err := NewProperties(config.conn)
 	if err != nil {
@@ -45,7 +45,7 @@ type GattService1Config struct {
 //GattService1 interface implementation
 type GattService1 struct {
 	config              *GattService1Config
-	properties          *profile.GattService1Properties
+	properties          *gatt.GattService1Properties
 	characteristics     map[dbus.ObjectPath]*GattCharacteristic1
 	charIndex           int
 	PropertiesInterface *Properties
@@ -53,7 +53,7 @@ type GattService1 struct {
 
 //Interface return the dbus interface name
 func (s *GattService1) Interface() string {
-	return bluez.GattService1Interface
+	return gatt.GattService1Interface
 }
 
 //GetApp return the parent app
@@ -72,14 +72,14 @@ func (s *GattService1) Advertised() bool {
 }
 
 //Properties return the properties of the service
-func (s *GattService1) GetProperties() *profile.GattService1Properties {
+func (s *GattService1) GetProperties() *gatt.GattService1Properties {
 	return s.properties
 }
 
 //Properties return the properties of the service
 func (s *GattService1) Properties() map[string]bluez.Properties {
 	p := make(map[string]bluez.Properties)
-	s.properties.Characteristics = s.GetCharacteristicPaths()
+	// s.properties.Characteristics = s.GetCharacteristicPaths()
 	p[s.Interface()] = s.properties
 	return p
 }
@@ -99,7 +99,7 @@ func (s *GattService1) GetCharacteristicPaths() []dbus.ObjectPath {
 }
 
 //CreateCharacteristic create a new characteristic
-func (s *GattService1) CreateCharacteristic(props *profile.GattCharacteristic1Properties) (*GattCharacteristic1, error) {
+func (s *GattService1) CreateCharacteristic(props *gatt.GattCharacteristic1Properties) (*GattCharacteristic1, error) {
 	s.charIndex++
 	path := string(s.config.objectPath) + "/char" + strconv.Itoa(s.charIndex)
 	config := &GattCharacteristic1Config{

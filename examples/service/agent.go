@@ -8,6 +8,7 @@ import (
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
+	"github.com/muka/go-bluetooth/src/gen/profile/agent"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -17,22 +18,27 @@ func RegisterAgent(agent profile.Agent1Interface, caps string) error {
 	log.Infof("Agent path: %s", agent_path)
 
 	// Register agent
-	am := profile.NewAgentManager1(agent_path)
-
-	// Export the Go interface to DBus
-	err := am.ExportGoAgentToDBus(agent)
+	am, err := profile.NewAgentManager1(agent_path)
 	if err != nil {
 		return err
 	}
 
+	// Export the Go interface to DBus
+	err = profile.ExportAgent(agent)
+	if err != nil {
+		return err
+	}
+
+	agentPathObj := dbus.ObjectPath(agent_path)
+
 	// Register the exported interface as application agent via AgenManager API
-	err = am.RegisterAgent(agent_path, caps)
+	err = am.RegisterAgent(agentPathObj, caps)
 	if err != nil {
 		return err
 	}
 
 	// Set the new application agent as Default Agent
-	err = am.RequestDefaultAgent(agent_path)
+	err = am.RequestDefaultAgent(agentPathObj)
 	if err != nil {
 		return err
 	}
@@ -41,12 +47,12 @@ func RegisterAgent(agent profile.Agent1Interface, caps string) error {
 }
 
 func createAgent() (*Agent, error) {
-	agent := new(Agent)
-	agent.BusName = bluez.OrgBluezInterface
-	agent.AgentInterface = bluez.Agent1Interface
-	agent.AgentPath = agentObjectPath
+	a := new(Agent)
+	a.BusName = bluez.OrgBluezInterface
+	a.AgentInterface = agent.Agent1Interface
+	a.AgentPath = agentObjectPath
 
-	return agent, RegisterAgent(agent, profile.AGENT_CAP_KEYBOARD_DISPLAY)
+	return a, RegisterAgent(a, profile.AGENT_CAP_KEYBOARD_DISPLAY)
 }
 
 func setTrusted(path string) {

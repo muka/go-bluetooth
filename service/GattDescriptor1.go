@@ -5,11 +5,11 @@ import (
 	"github.com/godbus/dbus/introspect"
 	"github.com/godbus/dbus/prop"
 	"github.com/muka/go-bluetooth/bluez"
-	"github.com/muka/go-bluetooth/bluez/profile"
+	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
 )
 
 // NewGattDescriptor1 create a new GattDescriptor1 client
-func NewGattDescriptor1(config *GattDescriptor1Config, props *profile.GattDescriptor1Properties) (*GattDescriptor1, error) {
+func NewGattDescriptor1(config *GattDescriptor1Config, props *gatt.GattDescriptor1Properties) (*GattDescriptor1, error) {
 
 	propInterface, err := NewProperties(config.conn)
 	if err != nil {
@@ -41,7 +41,7 @@ type GattDescriptor1Config struct {
 // GattDescriptor1 client
 type GattDescriptor1 struct {
 	config              *GattDescriptor1Config
-	properties          *profile.GattDescriptor1Properties
+	properties          *gatt.GattDescriptor1Properties
 	PropertiesInterface *Properties
 }
 
@@ -52,7 +52,7 @@ func (s *GattDescriptor1) Path() dbus.ObjectPath {
 
 //Interface return the Dbus interface
 func (s *GattDescriptor1) Interface() string {
-	return bluez.GattDescriptor1Interface
+	return gatt.GattDescriptor1Interface
 }
 
 //Properties return the properties of the service

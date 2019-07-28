@@ -5,11 +5,11 @@ import (
 	"github.com/godbus/dbus/introspect"
 	"github.com/godbus/dbus/prop"
 	"github.com/muka/go-bluetooth/bluez"
-	"github.com/muka/go-bluetooth/bluez/profile"
+	"github.com/muka/go-bluetooth/src/gen/profile/advertising"
 )
 
 // NewLEAdvertisement1 create a new LEAdvertisement1 client
-func NewLEAdvertisement1(config *LEAdvertisement1Config, props *profile.LEAdvertisement1Properties) (*LEAdvertisement1, error) {
+func NewLEAdvertisement1(config *LEAdvertisement1Config, props *advertising.LEAdvertisement1Properties) (*LEAdvertisement1, error) {
 
 	propInterface, err := NewProperties(config.conn)
 	if err != nil {
@@ -39,13 +39,13 @@ type LEAdvertisement1Config struct {
 // LEAdvertisement1 client
 type LEAdvertisement1 struct {
 	config              *LEAdvertisement1Config
-	properties          *profile.LEAdvertisement1Properties
+	properties          *advertising.LEAdvertisement1Properties
 	PropertiesInterface *Properties
 }
 
 //Interface return the dbus interface name
 func (s *LEAdvertisement1) Interface() string {
-	return bluez.LEAdvertisement1Interface
+	return advertising.LEAdvertisement1Interface
 }
 
 //Path return the object path

@@ -8,8 +8,7 @@ import (
 	"strings"
 
 	"github.com/godbus/dbus"
-	"github.com/muka/go-bluetooth/bluez"
-	"github.com/muka/go-bluetooth/bluez/profile"
+	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
 )
 
 //Luxometer Sensor..
@@ -65,9 +64,9 @@ func newLuxometerSensor(tag *SensorTag) (*LuxometerSensor, error) {
 //LuxometerSensor sensor structure
 type LuxometerSensor struct {
 	tag    *SensorTag
-	cfg    *profile.GattCharacteristic1
-	data   *profile.GattCharacteristic1
-	period *profile.GattCharacteristic1
+	cfg    *gatt.GattCharacteristic1
+	data   *gatt.GattCharacteristic1
+	period *gatt.GattCharacteristic1
 }
 
 //GetName return the sensor name
@@ -133,7 +132,7 @@ func (s *LuxometerSensor) IsNotifying() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return n.(bool), nil
+	return n.Value().(bool), nil
 }
 
 //Read value from the LuxometerSensor sensors
@@ -203,7 +202,7 @@ func (s *LuxometerSensor) StartNotify(macAddress string) error {
 				case string:
 				}
 
-				if event1.Body[0] != bluez.GattCharacteristic1Interface {
+				if event1.Body[0] != gatt.GattCharacteristic1Interface {
 
 					continue
 				}

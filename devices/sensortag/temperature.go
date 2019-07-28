@@ -7,8 +7,7 @@ import (
 	"strings"
 
 	"github.com/godbus/dbus"
-	"github.com/muka/go-bluetooth/bluez"
-	"github.com/muka/go-bluetooth/bluez/profile"
+	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
 )
 
 //.....getting config,data,period characteristics for TEMPERATURE sensor............
@@ -61,9 +60,9 @@ func newTemperatureSensor(tag *SensorTag) (*TemperatureSensor, error) {
 //TemperatureSensor the temperature sensor structure
 type TemperatureSensor struct {
 	tag    *SensorTag
-	cfg    *profile.GattCharacteristic1
-	data   *profile.GattCharacteristic1
-	period *profile.GattCharacteristic1
+	cfg    *gatt.GattCharacteristic1
+	data   *gatt.GattCharacteristic1
+	period *gatt.GattCharacteristic1
 }
 
 // GetName return the sensor name
@@ -131,7 +130,7 @@ func (s *TemperatureSensor) IsNotifying() (bool, error) {
 	if err != nil {
 		return false, err
 	}
-	return n.(bool), nil
+	return n.Value().(bool), nil
 }
 
 //Read value from the sensor
@@ -201,7 +200,7 @@ func (s *TemperatureSensor) StartNotify() error {
 				case string:
 				}
 
-				if event.Body[0] != bluez.GattCharacteristic1Interface {
+				if event.Body[0] != gatt.GattCharacteristic1Interface {
 					continue
 				}
 

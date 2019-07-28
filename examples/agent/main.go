@@ -79,22 +79,25 @@ func RegisterAgent(agent profile.Agent1Interface, caps string) error {
 	log.Info("The Agent Path: ", agent_path)
 
 	// Register agent
-	am := profile.NewAgentManager1(agent_path)
+	am, err := profile.NewAgentManager1(agent_path)
+	if err != nil {
+		return err
+	}
 
 	// Export the Go interface to DBus
-	err := am.ExportGoAgentToDBus(agent)
+	err = profile.ExportAgent(agent)
 	if err != nil {
 		return err
 	}
 
 	// Register the exported interface as application agent via AgenManager API
-	err = am.RegisterAgent(agent_path, caps)
+	err = am.RegisterAgent(dbus.ObjectPath(agent_path), caps)
 	if err != nil {
 		return err
 	}
 
 	// Set the new application agent as Default Agent
-	err = am.RequestDefaultAgent(agent_path)
+	err = am.RequestDefaultAgent(dbus.ObjectPath(agent_path))
 	if err != nil {
 		return err
 	}
@@ -163,7 +166,7 @@ func (self *Agent) RequestPasskey(device dbus.ObjectPath) (passkey uint32, err *
 }
 
 func (self *Agent) DisplayPasskey(device dbus.ObjectPath, passkey uint32, entered uint16) *dbus.Error {
-	log.Info(fmt.Sprintf("DisplayPasskey %s, %06u entered %u", device, passkey, entered))
+	log.Info(fmt.Sprintf("DisplayPasskey %s, %06d entered %d", device, passkey, entered))
 	return nil
 }
 
