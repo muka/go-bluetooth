@@ -27,4 +27,4 @@ debug
 
 /vendor
 /test
-/src/generated
+/src/gen*

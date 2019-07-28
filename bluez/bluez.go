@@ -4,36 +4,6 @@ import "github.com/godbus/dbus/introspect"
 
 const (
 	OrgBluezInterface = "org.bluez"
-	//Device1Interface the bluez interface for Device1
-	Device1Interface = "org.bluez.Device1"
-	//Adapter1Interface the bluez interface for Adapter1
-	Adapter1Interface = "org.bluez.Adapter1"
-	//GattService1Interface the bluez interface for GattService1
-	GattService1Interface = "org.bluez.GattService1"
-	//GattCharacteristic1Interface the bluez interface for GattCharacteristic1
-	GattCharacteristic1Interface = "org.bluez.GattCharacteristic1"
-	//GattDescriptor1Interface the bluez interface for GattDescriptor1
-	GattDescriptor1Interface = "org.bluez.GattDescriptor1"
-	//LEAdvertisement1Interface the bluez interface for LEAdvertisement1
-	LEAdvertisement1Interface = "org.bluez.LEAdvertisement1"
-	// Agent1Interface the bluez interface for Agent1
-	Agent1Interface = "org.bluez.Agent1"
-
-	// Media API
-	// Media1Interface the bluez interface for Media1
-	Media1Interface = "org.bluez.Media1"
-	// MediaControl1Interface the bluez interface for MediaControl1
-	MediaControl1Interface = "org.bluez.MediaControl1"
-	// MediaPlayer1Interface the bluez interface for MediaPlayer1
-	MediaPlayer1Interface = "org.bluez.MediaPlayer1"
-	// MediaFolder1Interface the bluez interface for MediaFolder1
-	MediaFolder1Interface = "org.bluez.MediaFolder1"
-	// MediaItem1Interface the bluez interface for MediaItem1
-	MediaItem1Interface = "org.bluez.MediaItem1"
-	// MediaEndpoint1Interface the bluez interface for MediaEndpoint1
-	MediaEndpoint1Interface = "org.bluez.MediaEndpoint1"
-	// MediaTransport1Interface the bluez interface for MediaTransport1
-	MediaTransport1Interface = "org.bluez.MediaTransport1"
 
 	//ObjectManagerInterface the dbus object manager interface
 	ObjectManagerInterface = "org.freedesktop.DBus.ObjectManager"
@@ -46,6 +16,41 @@ const (
 	PropertiesInterface = "org.freedesktop.DBus.Properties"
 	//PropertiesChanged the DBus properties interface and member
 	PropertiesChanged = "org.freedesktop.DBus.Properties.PropertiesChanged"
+
+	// Introspectable introspectable interface
+	Introspectable = "org.freedesktop.DBus.Introspectable"
+
+	// //Device1Interface the bluez interface for Device1
+	// Device1Interface = "org.bluez.Device1"
+	// //Adapter1Interface the bluez interface for Adapter1
+	// Adapter1Interface = "org.bluez.Adapter1"
+	// //GattService1Interface the bluez interface for GattService1
+	// GattService1Interface = "org.bluez.GattService1"
+	// //GattCharacteristic1Interface the bluez interface for GattCharacteristic1
+	// GattCharacteristic1Interface = "org.bluez.GattCharacteristic1"
+	// //GattDescriptor1Interface the bluez interface for GattDescriptor1
+	// GattDescriptor1Interface = "org.bluez.GattDescriptor1"
+	// //LEAdvertisement1Interface the bluez interface for LEAdvertisement1
+	// LEAdvertisement1Interface = "org.bluez.LEAdvertisement1"
+	// // Agent1Interface the bluez interface for Agent1
+	// Agent1Interface = "org.bluez.Agent1"
+	//
+	// // Media API
+	// // Media1Interface the bluez interface for Media1
+	// Media1Interface = "org.bluez.Media1"
+	// // MediaControl1Interface the bluez interface for MediaControl1
+	// MediaControl1Interface = "org.bluez.MediaControl1"
+	// // MediaPlayer1Interface the bluez interface for MediaPlayer1
+	// MediaPlayer1Interface = "org.bluez.MediaPlayer1"
+	// // MediaFolder1Interface the bluez interface for MediaFolder1
+	// MediaFolder1Interface = "org.bluez.MediaFolder1"
+	// // MediaItem1Interface the bluez interface for MediaItem1
+	// MediaItem1Interface = "org.bluez.MediaItem1"
+	// // MediaEndpoint1Interface the bluez interface for MediaEndpoint1
+	// MediaEndpoint1Interface = "org.bluez.MediaEndpoint1"
+	// // MediaTransport1Interface the bluez interface for MediaTransport1
+	// MediaTransport1Interface = "org.bluez.MediaTransport1"
+
 )
 
 // ObjectManagerIntrospectDataString introspect ObjectManager description
@@ -108,37 +113,3 @@ var ObjectManagerIntrospectData = introspect.Interface{
 		},
 	},
 }
-
-// Defines how the characteristic value can be used. See
-// Core spec "Table 3.5: Characteristic Properties bit
-// field", and "Table 3.8: Characteristic Extended
-// Properties bit field"
-const (
-	FlagCharacteristicBroadcast                 = "broadcast"
-	FlagCharacteristicRead                      = "read"
-	FlagCharacteristicWriteWithoutResponse      = "write-without-response"
-	FlagCharacteristicWrite                     = "write"
-	FlagCharacteristicNotify                    = "notify"
-	FlagCharacteristicIndicate                  = "indicate"
-	FlagCharacteristicAuthenticatedSignedWrites = "authenticated-signed-writes"
-	FlagCharacteristicReliableWrite             = "reliable-write"
-	FlagCharacteristicWritableAuxiliaries       = "writable-auxiliaries"
-	FlagCharacteristicEncryptRead               = "encrypt-read"
-	FlagCharacteristicEncryptWrite              = "encrypt-write"
-	FlagCharacteristicEncryptAuthenticatedRead  = "encrypt-authenticated-read"
-	FlagCharacteristicEncryptAuthenticatedWrite = "encrypt-authenticated-write"
-	FlagCharacteristicSecureRead                = "secure-read"
-	FlagCharacteristicSecureWrite               = "secure-write"
-)
-
-// Descriptor specific flags
-const (
-	FlagDescriptorRead                      = "read"
-	FlagDescriptorWrite                     = "write"
-	FlagDescriptorEncryptRead               = "encrypt-read"
-	FlagDescriptorEncryptWrite              = "encrypt-write"
-	FlagDescriptorEncryptAuthenticatedRead  = "encrypt-authenticated-read"
-	FlagDescriptorEncryptAuthenticatedWrite = "encrypt-authenticated-write"
-	FlagDescriptorSecureRead                = "secure-read"
-	FlagDescriptorSecureWrite               = "secure-write"
-)

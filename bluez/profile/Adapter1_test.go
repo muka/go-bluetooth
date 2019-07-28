@@ -4,15 +4,20 @@ import (
 	"testing"
 )
 
-const TestAdapter = "hci0"
+const testAdapter = "hci0"
 
 func TestNewAdapter1(t *testing.T) {
+
 	t.Log("Create Adapter1")
 
-	a := NewAdapter1(TestAdapter)
+	a, err := NewAdapter1(testAdapter)
+
+	if err != nil {
+		t.Fatal(err)
+	}
 
 	t.Log("Start Discovery")
-	err := a.StartDiscovery()
+	err = a.StartDiscovery()
 	if err != nil {
 		t.Log("Error on StartDiscovery")
 		t.Fatal(err)

@@ -1,34 +1,26 @@
 package profile
 
 import (
+	"fmt"
+
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/src/gen/profile/advertising"
 )
-
-type SupportedIncludesType string
 
 // Possible values:
 // "tx-power"
 // "appearance"
 // "local-name"
 const (
-	SupportedIncludesTypeTxPower    SupportedIncludesType = "tx-power"
-	SupportedIncludesTypeAppearance SupportedIncludesType = "appearance"
-	SupportedIncludesTypeLocalName  SupportedIncludesType = "local-name"
+	SupportedIncludesTxPower    = "tx-power"
+	SupportedIncludesAppearance = "appearance"
+	SupportedIncludesLocalName  = "local-name"
 )
 
 // NewLEAdvertisingManager1 create a new LEAdvertisingManager1 client
-func NewLEAdvertisingManager1(hostID string) *LEAdvertisingManager1 {
-	a := new(LEAdvertisingManager1)
-	a.client = bluez.NewClient(
-		&bluez.Config{
-			Name:  "org.bluez",
-			Iface: "org.bluez.LEAdvertisingManager1",
-			Path:  "/org/bluez/" + hostID,
-			Bus:   bluez.SystemBus,
-		},
-	)
-	return a
+func NewLEAdvertisingManager1(hostID string) (*advertising.LEAdvertisingManager1, error) {
+	return advertising.NewLEAdvertisingManager1(fmt.Sprintf("/org/bluez/%s", hostID))
 }
 
 // LEAdvertisingManager1Properties exposed properties for LEAdvertisingManager1
