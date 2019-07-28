@@ -40,6 +40,7 @@ func ApiTemplate(filename string, api Api, apiGroup ApiGroup) error {
 			Property: p,
 		}
 
+		prop.Name = strings.Trim(p.Name, ": \t")
 		prop.Property.Docs = prepareDocs(p.Docs, true, 2)
 		prop.Property.Type = castType(p.Type)
 
