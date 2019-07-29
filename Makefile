@@ -1,6 +1,6 @@
 
 bluetoothd:
-	sudo killall bluetoothd; true
+	sudo killall bluetoothd && \
 	sudo bluetoothd -Edn P hostname
 
 run/example/service:
