@@ -4,6 +4,7 @@ import (
 	"os"
 
 	"github.com/muka/go-bluetooth/gen"
+	"github.com/muka/go-bluetooth/gen/generator"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -16,10 +17,10 @@ func main() {
 	var api []gen.ApiGroup
 	if os.Getenv("DEBUG") != "" {
 		api = gen.Parse("./test")
-		gen.Generate(api, "./test/out")
+		generator.Generate(api, "./test/out")
 	} else {
 		api = gen.Parse("./src/bluez")
-		gen.Generate(api, "./src/gen")
+		generator.Generate(api, "./src/gen")
 	}
 
 }
