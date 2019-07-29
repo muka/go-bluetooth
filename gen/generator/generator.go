@@ -1,23 +1,24 @@
-package gen
+package generator
 
 import (
 	"path"
 	"path/filepath"
 	"strings"
 
+	"github.com/muka/go-bluetooth/gen"
 	log "github.com/sirupsen/logrus"
 )
 
-func Generate(apiGroups []ApiGroup, outDir string) error {
+func Generate(apiGroups []gen.ApiGroup, outDir string) error {
 
-	err := mkdir(outDir)
+	err := gen.Mkdir(outDir)
 	if err != nil {
 		log.Errorf("Failed to mkdir %s: %s", outDir, err)
 		return err
 	}
 
 	outDir += "/profile"
-	err = mkdir(outDir)
+	err = gen.Mkdir(outDir)
 	if err != nil {
 		log.Errorf("Failed to mkdir %s: %s", outDir, err)
 		return err
@@ -39,7 +40,7 @@ func Generate(apiGroups []ApiGroup, outDir string) error {
 
 		apiName := getApiPackage(apiGroup)
 		dirpath := path.Join(outDir, apiName)
-		err := mkdir(dirpath)
+		err := gen.Mkdir(dirpath)
 		if err != nil {
 			log.Errorf("Failed to mkdir %s: %s", dirpath, err)
 			continue

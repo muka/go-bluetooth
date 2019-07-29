@@ -1,15 +1,16 @@
-package gen
+package generator
 
 import (
 	"fmt"
 	"os"
 	"strings"
 
+	"github.com/muka/go-bluetooth/gen"
 	"github.com/muka/go-bluetooth/gen/override"
 	log "github.com/sirupsen/logrus"
 )
 
-func ApiTemplate(filename string, api Api, apiGroup ApiGroup) error {
+func ApiTemplate(filename string, api gen.Api, apiGroup gen.ApiGroup) error {
 
 	fw, err := os.Create(filename)
 	if err != nil {
@@ -39,10 +40,11 @@ func ApiTemplate(filename string, api Api, apiGroup ApiGroup) error {
 	pts := strings.Split(api.Interface, ".")
 	iface := pts[len(pts)-1]
 
-	props := []PropertyDoc{}
+	props := []gen.PropertyDoc{}
+	propsList := map[string]*gen.PropertyDoc{}
 	for _, p := range api.Properties {
 
-		prop := PropertyDoc{
+		prop := gen.PropertyDoc{
 			Property: p,
 		}
 
@@ -50,19 +52,36 @@ func ApiTemplate(filename string, api Api, apiGroup ApiGroup) error {
 		prop.Property.Docs = prepareDocs(p.Docs, true, 2)
 		prop.Property.Type = castType(p.Type)
 
-		val, found := override.GetPropertyTypeOverride(api.Interface, prop.Name)
-		if found {
-			prop.Property.Type = val
-		}
-
-		if !importDbus {
-			importDbus = strings.Contains(prop.Property.Type, "dbus.")
-		}
-
 		props = append(props, prop)
+		propsList[prop.Name] = &prop
 	}
 
-	methods := []MethodDoc{}
+	propertiesOverride, found := override.GetPropertiesOverride(api.Interface)
+	if found {
+		for propName, propType := range propertiesOverride {
+
+			var prop *gen.PropertyDoc
+			if _, ok := propsList[propName]; ok {
+				prop = propsList[propName]
+				prop.Property.Type = propType
+			} else {
+				prop = &gen.PropertyDoc{
+					Property: gen.Property{
+						Name: propName,
+						Type: propType,
+					},
+				}
+				props = append(props, *prop)
+			}
+
+			if !importDbus {
+				importDbus = strings.Contains(prop.Property.Type, "dbus.")
+			}
+
+		}
+	}
+
+	methods := []gen.MethodDoc{}
 	for _, m := range api.Methods {
 
 		args := []string{}
@@ -73,7 +92,7 @@ func ApiTemplate(filename string, api Api, apiGroup ApiGroup) error {
 			params = append(params, a.Name)
 		}
 
-		mm := MethodDoc{
+		mm := gen.MethodDoc{
 			Method:     m,
 			ArgsList:   strings.Join(args, ", "),
 			ParamsList: strings.Join(params, ", "),
@@ -158,7 +177,7 @@ func ApiTemplate(filename string, api Api, apiGroup ApiGroup) error {
 
 	ctrs := createConstructors(api)
 
-	apidocs := ApiDoc{
+	apidocs := gen.ApiDoc{
 		Imports:          importsTpl,
 		Package:          apiName,
 		Api:              api,

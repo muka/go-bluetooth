@@ -10,11 +10,9 @@ import (
 
 func (g *ApiGroup) Parse(srcFile string) error {
 
-	if g.debug {
-		log.Debugf("------------------- Parsing %s -------------------", srcFile)
-	}
+	log.Debugf("------------------- Parsing %s -------------------", srcFile)
 
-	raw, err := readFile(srcFile)
+	raw, err := ReadFile(srcFile)
 	if err != nil {
 		return err
 	}
@@ -96,6 +94,15 @@ func NewApiGroup(srcFile string) (ApiGroup, error) {
 
 // Parse bluez DBus API docs and generate go code stub
 func Parse(src string) []ApiGroup {
-	apis := listFiles(src + "/doc")
+	files := ListFiles(src + "/doc")
+	apis := []ApiGroup{}
+	for _, file := range files {
+		apiGroup, err := NewApiGroup(file)
+		if err != nil {
+			log.Errorf("Failed to load %s", file)
+			continue
+		}
+		apis = append(apis, apiGroup)
+	}
 	return apis
 }

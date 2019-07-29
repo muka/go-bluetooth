@@ -39,16 +39,23 @@ func New{{$InterfaceName}}{{.Role}}({{.Args}}) (*{{$InterfaceName}}, error) {
 type {{.InterfaceName}} struct {
 	client     *bluez.Client
 	Properties *{{.InterfaceName}}Properties
-	lock             sync.RWMutex
 }
 
 // {{.InterfaceName}}Properties contains the exposed properties of an interface
 type {{.InterfaceName}}Properties struct {
-	Lock sync.RWMutex
+	lock sync.RWMutex
 {{ range .Properties }}
 	// {{.Property.Name}} {{.Property.Docs}}
 	{{.Property.Name}} {{.Property.Type}}
 {{end}}
+}
+
+func (p *{{.InterfaceName}}Properties) Lock() {
+	p.lock.Lock()
+}
+
+func (p *{{.InterfaceName}}Properties) Unlock() {
+	p.lock.Unlock()
 }
 
 // Close the connection
@@ -64,9 +71,9 @@ func (a *{{.InterfaceName}}Properties) ToMap() (map[string]interface{}, error) {
 
 // GetProperties load all available properties
 func (a *{{.InterfaceName}}) GetProperties() (*{{.InterfaceName}}Properties, error) {
-	a.lock.Lock()
+	a.Properties.Lock()
 	err := a.client.GetProperties(a.Properties)
-	a.lock.Unlock()
+	a.Properties.Unlock()
 	return a.Properties, err
 }
 

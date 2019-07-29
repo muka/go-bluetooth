@@ -9,7 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func mkdir(dirpath string) error {
+func Mkdir(dirpath string) error {
 	err := os.Mkdir(dirpath, 0755)
 	if err != nil && !os.IsExist(err) {
 		return err
@@ -17,9 +17,9 @@ func mkdir(dirpath string) error {
 	return nil
 }
 
-func listFiles(dir string) []ApiGroup {
+func ListFiles(dir string) []string {
 
-	list := make([]ApiGroup, 0)
+	list := make([]string, 0)
 
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 
@@ -35,12 +35,7 @@ func listFiles(dir string) []ApiGroup {
 			return nil
 		}
 
-		apiGroup, err := NewApiGroup(path)
-		if err != nil {
-			log.Errorf("Failed to load %s", path)
-			return nil
-		}
-		list = append(list, apiGroup)
+		list = append(list, path)
 		return nil
 	})
 
@@ -51,7 +46,7 @@ func listFiles(dir string) []ApiGroup {
 	return list
 }
 
-func readFile(srcFile string) ([]byte, error) {
+func ReadFile(srcFile string) ([]byte, error) {
 	file, err := os.Open(srcFile)
 	if err != nil {
 		return []byte{}, err

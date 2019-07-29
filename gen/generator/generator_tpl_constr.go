@@ -1,9 +1,11 @@
-package gen
+package generator
 
 import (
 	"fmt"
 	"regexp"
 	"strings"
+
+	"github.com/muka/go-bluetooth/gen"
 )
 
 var defaultService = "org.bluez"
@@ -12,11 +14,11 @@ func isDefaultService(s string) bool {
 	return len(s) >= len(defaultService) && s[:len(defaultService)] == defaultService
 }
 
-func createConstructors(api Api) []Constructor {
+func createConstructors(api gen.Api) []gen.Constructor {
 
 	// log.Debugf("-------------------------------------- %s", api.Interface)
 
-	constructors := []Constructor{}
+	constructors := []gen.Constructor{}
 	constructors = inspectServiceName(api.Service, constructors)
 	constructors = inspectObjectPath(api.ObjectPath, constructors)
 
@@ -60,7 +62,7 @@ func createConstructors(api Api) []Constructor {
 	return constructors
 }
 
-func inspectServiceName(serviceName string, constructors []Constructor) []Constructor {
+func inspectServiceName(serviceName string, constructors []gen.Constructor) []gen.Constructor {
 
 	// log.Debugf("ObjectPath %s", api.ObjectPath)
 	// log.Debugf("Interface %s", api.Interface)
@@ -99,7 +101,7 @@ func inspectServiceName(serviceName string, constructors []Constructor) []Constr
 					docslist = append(docslist, "servicePath: "+doc)
 				}
 
-				c := Constructor{
+				c := gen.Constructor{
 					Service: srvc,
 					Role:    string(m1[2]),
 					Docs:    docslist,
@@ -109,7 +111,7 @@ func inspectServiceName(serviceName string, constructors []Constructor) []Constr
 			}
 		} else {
 
-			c := Constructor{
+			c := gen.Constructor{
 				Service: "",
 				Role:    "",
 				Docs: []string{
@@ -119,7 +121,7 @@ func inspectServiceName(serviceName string, constructors []Constructor) []Constr
 			constructors = append(constructors, c)
 		}
 	} else {
-		c := Constructor{
+		c := gen.Constructor{
 			Service:    apiService,
 			Role:       "",
 			ObjectPath: "",
@@ -132,9 +134,9 @@ func inspectServiceName(serviceName string, constructors []Constructor) []Constr
 	return constructors
 }
 
-func inspectObjectPath(objectPath string, constructors []Constructor) []Constructor {
+func inspectObjectPath(objectPath string, constructors []gen.Constructor) []gen.Constructor {
 
-	constructors2 := []Constructor{}
+	constructors2 := []gen.Constructor{}
 
 	// log.Debugf("%d %s", len(constructors), objectPath)
 	// log.Debugf("%+v", constructors)

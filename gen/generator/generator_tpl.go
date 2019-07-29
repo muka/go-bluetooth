@@ -1,19 +1,21 @@
-package gen
+package generator
 
 import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/muka/go-bluetooth/gen"
 )
 
-func RootTemplate(filename string, api ApiGroup) error {
+func RootTemplate(filename string, api gen.ApiGroup) error {
 
 	fw, err := os.Create(filename)
 	if err != nil {
 		return fmt.Errorf("create file: %s", err)
 	}
 
-	apidoc := ApiGroupDoc{
+	apidoc := gen.ApiGroupDoc{
 		ApiGroup: api,
 		Package:  getApiPackage(api),
 	}
@@ -30,7 +32,7 @@ func RootTemplate(filename string, api ApiGroup) error {
 	return nil
 }
 
-func ErrorsTemplate(filename string, apis []ApiGroup) error {
+func ErrorsTemplate(filename string, apis []gen.ApiGroup) error {
 
 	fw, err := os.Create(filename)
 	if err != nil {
@@ -48,12 +50,12 @@ func ErrorsTemplate(filename string, apis []ApiGroup) error {
 		}
 	}
 
-	errorsList := BluezErrors{
-		List: make([]BluezError, len(errors)),
+	errorsList := gen.BluezErrors{
+		List: make([]gen.BluezError, len(errors)),
 	}
 
 	for i, err := range errors {
-		errorsList.List[i] = BluezError{
+		errorsList.List[i] = gen.BluezError{
 			Name: strings.Replace(err, "org.bluez.Error.", "", 1),
 		}
 	}
@@ -68,14 +70,14 @@ func ErrorsTemplate(filename string, apis []ApiGroup) error {
 	return nil
 }
 
-func InterfacesTemplate(filename string, apis []ApiGroup) error {
+func InterfacesTemplate(filename string, apis []gen.ApiGroup) error {
 
 	fw, err := os.Create(filename)
 	if err != nil {
 		return fmt.Errorf("create file: %s", err)
 	}
 
-	interfaces := []InterfaceDoc{}
+	interfaces := []gen.InterfaceDoc{}
 	for _, apiGroup := range apis {
 		for _, api := range apiGroup.Api {
 
@@ -89,7 +91,7 @@ func InterfacesTemplate(filename string, apis []ApiGroup) error {
 				}
 			}
 
-			iface := InterfaceDoc{
+			iface := gen.InterfaceDoc{
 				Title:     api.Title,
 				Name:      ifaceName,
 				Interface: api.Interface,
@@ -98,7 +100,7 @@ func InterfacesTemplate(filename string, apis []ApiGroup) error {
 		}
 	}
 
-	ifaces := InterfacesDoc{
+	ifaces := gen.InterfacesDoc{
 		Interfaces: interfaces,
 	}
 

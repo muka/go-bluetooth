@@ -1,11 +1,10 @@
 package override
 
-func GetPropertyTypeOverride(iface string, property string) (string, bool) {
+func GetPropertiesOverride(iface string) (map[string]string, bool) {
 	if props, ok := PropertyTypes[iface]; ok {
-		val, ok := props[property]
-		return val, ok
+		return props, ok
 	}
-	return "", false
+	return map[string]string{}, false
 }
 
 var PropertyTypes = map[string]map[string]string{
@@ -14,10 +13,12 @@ var PropertyTypes = map[string]map[string]string{
 		"ManufacturerData": "map[uint16]dbus.Variant",
 	},
 	"org.bluez.GattCharacteristic1": map[string]string{
-		"Value": "[]byte `dbus:emit`",
+		"Value":       "[]byte `dbus:emit`",
+		"Descriptors": "[]dbus.ObjectPath",
 	},
 	"org.bluez.GattDescriptor1": map[string]string{
-		"Value": "[]byte `dbus:emit`",
+		"Value":          "[]byte `dbus:emit`",
+		"Characteristic": "dbus.ObjectPath",
 	},
 	"org.bluez.GattService1": map[string]string{
 		"Characteristics": "[]dbus.ObjectPath `dbus:emit`",

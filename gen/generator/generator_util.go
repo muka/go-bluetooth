@@ -1,14 +1,18 @@
-package gen
+package generator
 
 import (
 	"fmt"
 	"regexp"
 	"strings"
 	"text/template"
+
+	"github.com/muka/go-bluetooth/gen"
 )
 
+const TplPath = "./gen/generator/tpl/%s.go.tpl"
+
 func loadtpl(name string) *template.Template {
-	return template.Must(template.ParseFiles("gen/tpl/" + name + ".go.tpl"))
+	return template.Must(template.ParseFiles(fmt.Sprintf(TplPath, name)))
 }
 
 func prepareDocs(src string, skipFirstComment bool, leftpad int) string {
@@ -107,7 +111,7 @@ func castType(rawtype string) string {
 	return typedef
 }
 
-func getApiPackage(apiGroup ApiGroup) string {
+func getApiPackage(apiGroup gen.ApiGroup) string {
 	apiName := strings.Replace(apiGroup.FileName, "-api.txt", "", -1)
 	apiName = strings.Replace(apiName, "-", "_", -1)
 	return apiName
