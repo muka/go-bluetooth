@@ -11,7 +11,6 @@ import (
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/muka/go-bluetooth/src/gen/profile/advertising"
-	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
 	"github.com/sirupsen/logrus"
 )
 
@@ -89,7 +88,6 @@ type Application struct {
 	config        *ApplicationConfig
 	objectManager *ObjectManager
 	services      map[dbus.ObjectPath]*GattService1
-
 	adMgr         *advertising.LEAdvertisingManager1
 	advertisement *LEAdvertisement1
 }
@@ -119,7 +117,7 @@ func (app *Application) GenerateUUID(uuidVal string) string {
 }
 
 //CreateService create a new GattService1 instance
-func (app *Application) CreateService(props *gatt.GattService1Properties, advertisedOptional ...bool) (*GattService1, error) {
+func (app *Application) CreateService(props *GattService1Properties, advertisedOptional ...bool) (*GattService1, error) {
 	app.config.serviceIndex++
 	appPath := string(app.Path())
 	if appPath == "/" {

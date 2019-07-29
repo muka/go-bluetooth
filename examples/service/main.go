@@ -42,7 +42,7 @@ func reset() {
 	// fail("FlushDevices "+clientAdapterID, err)
 
 	time.Sleep(time.Millisecond * 500)
-
+	log.Info("Controllers resetted")
 }
 
 func fail(where string, err error) {
@@ -60,11 +60,13 @@ func main() {
 
 	var err error
 
+	log.Info("Register agent")
 	agent, err := createAgent()
 	fail("createAgent", err)
 
 	defer agent.Release()
 
+	log.Info("Register app")
 	app, err := registerApplication(serviceAdapterID)
 	fail("registerApplication", err)
 

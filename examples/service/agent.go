@@ -14,9 +14,9 @@ import (
 
 func RegisterAgent(agent profile.Agent1Interface, caps string) error {
 
-	//agent_path := AgentDefaultRegisterPath // we use the default path
-	agent_path := agent.RegistrationPath() // we use the default path
-	log.Infof("Agent path: %s", agent_path)
+	// agentPath := AgentDefaultRegisterPath // we use the default path
+	agentPath := agent.RegistrationPath() // we use the default path
+	log.Infof("Agent path: %s", agentPath)
 
 	// Register agent
 	am, err := profile.NewAgentManager1()
@@ -30,7 +30,7 @@ func RegisterAgent(agent profile.Agent1Interface, caps string) error {
 		return err
 	}
 
-	agentPathObj := dbus.ObjectPath(agent_path)
+	agentPathObj := dbus.ObjectPath(agentPath)
 
 	// Register the exported interface as application agent via AgenManager API
 	err = am.RegisterAgent(agentPathObj, caps)

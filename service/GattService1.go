@@ -1,6 +1,7 @@
 package service
 
 import (
+	"fmt"
 	"strconv"
 
 	"github.com/godbus/dbus"
@@ -8,10 +9,11 @@ import (
 	"github.com/godbus/dbus/prop"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
+	log "github.com/sirupsen/logrus"
 )
 
 // NewGattService1 create a new instance of GattService1
-func NewGattService1(config *GattService1Config, props *gatt.GattService1Properties) (*GattService1, error) {
+func NewGattService1(config *GattService1Config, props *GattService1Properties) (*GattService1, error) {
 
 	propInterface, err := NewProperties(config.conn)
 	if err != nil {
@@ -33,6 +35,15 @@ func NewGattService1(config *GattService1Config, props *gatt.GattService1Propert
 	return s, nil
 }
 
+func NewGattService1Properties(serviceUUID string) *GattService1Properties {
+	return &GattService1Properties{
+		GattService1Properties: &gatt.GattService1Properties{
+			Primary: true,
+			UUID:    serviceUUID,
+		},
+	}
+}
+
 //GattService1Config GattService configuration
 type GattService1Config struct {
 	app        *Application
@@ -45,10 +56,15 @@ type GattService1Config struct {
 //GattService1 interface implementation
 type GattService1 struct {
 	config              *GattService1Config
-	properties          *gatt.GattService1Properties
+	properties          *GattService1Properties
 	characteristics     map[dbus.ObjectPath]*GattCharacteristic1
 	charIndex           int
 	PropertiesInterface *Properties
+}
+
+type GattService1Properties struct {
+	*gatt.GattService1Properties
+	Characteristics []dbus.ObjectPath `dbus:"emit"`
 }
 
 //Interface return the dbus interface name
@@ -72,14 +88,14 @@ func (s *GattService1) Advertised() bool {
 }
 
 //Properties return the properties of the service
-func (s *GattService1) GetProperties() *gatt.GattService1Properties {
+func (s *GattService1) GetProperties() *GattService1Properties {
 	return s.properties
 }
 
 //Properties return the properties of the service
 func (s *GattService1) Properties() map[string]bluez.Properties {
 	p := make(map[string]bluez.Properties)
-	// s.properties.Characteristics = s.GetCharacteristicPaths()
+	s.properties.Characteristics = s.GetCharacteristicPaths()
 	p[s.Interface()] = s.properties
 	return p
 }
@@ -99,7 +115,7 @@ func (s *GattService1) GetCharacteristicPaths() []dbus.ObjectPath {
 }
 
 //CreateCharacteristic create a new characteristic
-func (s *GattService1) CreateCharacteristic(props *gatt.GattCharacteristic1Properties) (*GattCharacteristic1, error) {
+func (s *GattService1) CreateCharacteristic(props *GattCharacteristic1Properties) (*GattCharacteristic1, error) {
 	s.charIndex++
 	path := string(s.config.objectPath) + "/char" + strconv.Itoa(s.charIndex)
 	config := &GattCharacteristic1Config{
@@ -122,16 +138,22 @@ func (s *GattService1) AddCharacteristic(char *GattCharacteristic1) error {
 
 	err := char.Expose()
 	if err != nil {
-		return err
+		return fmt.Errorf("Expose error: %s", err)
 	}
 
 	err = s.GetApp().exportTree()
 	if err != nil {
-		return err
+		return fmt.Errorf("Expose app tree error: %s", err)
 	}
 
 	om := s.config.app.GetObjectManager()
-	return om.AddObject(char.Path(), char.Properties())
+	log.Debugf("%s %++v", char.Path(), char.GetDescriptorPaths())
+	err = om.AddObject(char.Path(), char.Properties())
+	if err != nil {
+		return fmt.Errorf("Object Manager add object error: %s", err)
+	}
+
+	return nil
 }
 
 //RemoveCharacteristic remove a characteristic

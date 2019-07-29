@@ -3,9 +3,9 @@ package service
 import (
 	"errors"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
+	log "github.com/sirupsen/logrus"
 )
 
 // NewObjectManager create a new instance

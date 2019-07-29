@@ -4,12 +4,12 @@ import (
 	"reflect"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/fatih/structs"
 	"github.com/godbus/dbus"
 	"github.com/godbus/dbus/introspect"
 	"github.com/godbus/dbus/prop"
 	"github.com/muka/go-bluetooth/bluez"
+	log "github.com/sirupsen/logrus"
 )
 
 // NewProperties create a new instance

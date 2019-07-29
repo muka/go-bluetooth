@@ -20,6 +20,7 @@ func registerApplication(adapterID string) (*service.Application, error) {
 		ObjectPath: objectPath,
 		LocalName:  "gobluetooth",
 	}
+
 	app, err := service.NewApplication(cfg)
 	if err != nil {
 		log.Errorf("Failed to initialize app: %s", err.Error())
@@ -83,10 +84,7 @@ func exposeService(
 	advertise bool,
 ) error {
 
-	serviceProps := &gatt.GattService1Properties{
-		Primary: true,
-		UUID:    serviceUUID,
-	}
+	serviceProps := service.NewGattService1Properties(serviceUUID)
 
 	// Set this service to be advertised
 	service1, err := app.CreateService(serviceProps, advertise)
@@ -101,30 +99,35 @@ func exposeService(
 		return err
 	}
 
-	charProps := &gatt.GattCharacteristic1Properties{
-		UUID: characteristicUUID,
-		Flags: []string{
-			profile.FlagCharacteristicRead,
-			profile.FlagCharacteristicWrite,
+	charProps := &service.GattCharacteristic1Properties{
+		GattCharacteristic1Properties: &gatt.GattCharacteristic1Properties{
+			UUID: characteristicUUID,
+			Flags: []string{
+				profile.FlagCharacteristicRead,
+				profile.FlagCharacteristicWrite,
+			},
 		},
 	}
+	log.Debugf("%++v", charProps)
 	char, err := service1.CreateCharacteristic(charProps)
 	if err != nil {
-		log.Errorf("Failed to create char: %s", err.Error())
+		log.Errorf("Failed to create char: %s", err)
 		return err
 	}
 
 	err = service1.AddCharacteristic(char)
 	if err != nil {
-		log.Errorf("Failed to add char: %s", err.Error())
+		log.Errorf("Failed to add char: %s", err)
 		return err
 	}
 
-	descProps := &gatt.GattDescriptor1Properties{
-		UUID: descriptorUUID,
-		Flags: []string{
-			profile.FlagDescriptorRead,
-			profile.FlagDescriptorWrite,
+	descProps := &service.GattDescriptor1Properties{
+		GattDescriptor1Properties: &gatt.GattDescriptor1Properties{
+			UUID: descriptorUUID,
+			Flags: []string{
+				profile.FlagDescriptorRead,
+				profile.FlagDescriptorWrite,
+			},
 		},
 	}
 	desc, err := char.CreateDescriptor(descProps)

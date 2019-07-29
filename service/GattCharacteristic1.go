@@ -12,7 +12,7 @@ import (
 )
 
 // NewGattCharacteristic1 create a new GattCharacteristic1 client
-func NewGattCharacteristic1(config *GattCharacteristic1Config, props *gatt.GattCharacteristic1Properties) (*GattCharacteristic1, error) {
+func NewGattCharacteristic1(config *GattCharacteristic1Config, props *GattCharacteristic1Properties) (*GattCharacteristic1, error) {
 
 	propInterface, err := NewProperties(config.conn)
 	if err != nil {
@@ -45,11 +45,16 @@ type GattCharacteristic1Config struct {
 // GattCharacteristic1 client
 type GattCharacteristic1 struct {
 	config              *GattCharacteristic1Config
-	properties          *gatt.GattCharacteristic1Properties
+	properties          *GattCharacteristic1Properties
 	PropertiesInterface *Properties
 	descriptors         map[dbus.ObjectPath]*GattDescriptor1
 	descIndex           int
 	notifying           bool
+}
+
+type GattCharacteristic1Properties struct {
+	*gatt.GattCharacteristic1Properties
+	Descriptors []dbus.ObjectPath
 }
 
 //Interface return the dbus interface name
@@ -65,7 +70,7 @@ func (s *GattCharacteristic1) Path() dbus.ObjectPath {
 //Properties return the properties of the service
 func (s *GattCharacteristic1) Properties() map[string]bluez.Properties {
 	p := make(map[string]bluez.Properties)
-	// s.properties.Descriptors = s.GetDescriptorPaths()
+	s.properties.Descriptors = s.GetDescriptorPaths()
 	p[s.Interface()] = s.properties
 	return p
 }
@@ -85,7 +90,7 @@ func (s *GattCharacteristic1) GetDescriptorPaths() []dbus.ObjectPath {
 }
 
 //CreateDescriptor create a new characteristic
-func (s *GattCharacteristic1) CreateDescriptor(props *gatt.GattDescriptor1Properties) (*GattDescriptor1, error) {
+func (s *GattCharacteristic1) CreateDescriptor(props *GattDescriptor1Properties) (*GattDescriptor1, error) {
 	s.descIndex++
 	path := string(s.config.objectPath) + "/desc" + strconv.Itoa(s.descIndex)
 	config := &GattDescriptor1Config{
