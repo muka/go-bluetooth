@@ -37,7 +37,7 @@ func NewApplication(config *ApplicationConfig) (*Application, error) {
 		config.conn = conn
 	}
 
-	om, err := profile.NewObjectManager(config.ObjectName, string(config.ObjectPath))
+	om, err := NewObjectManagerService(config.conn)
 	if err != nil {
 		return nil, err
 	}
@@ -87,14 +87,14 @@ type ApplicationConfig struct {
 // Application a bluetooth service exposed by bluez
 type Application struct {
 	config        *ApplicationConfig
-	objectManager *profile.ObjectManager
+	objectManager *ObjectManagerService
 	services      map[dbus.ObjectPath]*GattService1
 	adMgr         *advertising.LEAdvertisingManager1
 	advertisement *LEAdvertisement1
 }
 
 //GetObjectManager return the object manager interface handler
-func (app *Application) GetObjectManager() *profile.ObjectManager {
+func (app *Application) GetObjectManager() *ObjectManagerService {
 	return app.objectManager
 }
 
