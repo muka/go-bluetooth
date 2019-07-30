@@ -40,8 +40,8 @@ func ApiTemplate(filename string, api gen.Api, apiGroup gen.ApiGroup) error {
 	pts := strings.Split(api.Interface, ".")
 	iface := pts[len(pts)-1]
 
-	props := []gen.PropertyDoc{}
 	propsList := map[string]*gen.PropertyDoc{}
+
 	for _, p := range api.Properties {
 
 		prop := gen.PropertyDoc{
@@ -52,7 +52,6 @@ func ApiTemplate(filename string, api gen.Api, apiGroup gen.ApiGroup) error {
 		prop.Property.Docs = prepareDocs(p.Docs, true, 2)
 		prop.Property.Type = castType(p.Type)
 
-		props = append(props, prop)
 		propsList[prop.Name] = &prop
 	}
 
@@ -64,6 +63,7 @@ func ApiTemplate(filename string, api gen.Api, apiGroup gen.ApiGroup) error {
 			if _, ok := propsList[propName]; ok {
 				prop = propsList[propName]
 				prop.Property.Type = propType
+				// log.Debugf("props --> %s %s", propName, propType)
 			} else {
 				prop = &gen.PropertyDoc{
 					Property: gen.Property{
@@ -71,7 +71,7 @@ func ApiTemplate(filename string, api gen.Api, apiGroup gen.ApiGroup) error {
 						Type: propType,
 					},
 				}
-				props = append(props, *prop)
+				propsList[propName] = prop
 			}
 
 			if !importDbus {
@@ -79,6 +79,11 @@ func ApiTemplate(filename string, api gen.Api, apiGroup gen.ApiGroup) error {
 			}
 
 		}
+	}
+
+	props := []gen.PropertyDoc{}
+	for _, prop := range propsList {
+		props = append(props, *prop)
 	}
 
 	methods := []gen.MethodDoc{}

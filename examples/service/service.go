@@ -55,7 +55,7 @@ func registerApplication(adapterID string) (*service.Application, error) {
 		return nil, err
 	}
 
-	log.Info("Application started, waiting for connections")
+	log.Info("Registering application to DBus")
 
 	//Register Application
 	gattManager, err := api.GetGattManager(adapterID)
@@ -63,18 +63,21 @@ func registerApplication(adapterID string) (*service.Application, error) {
 		return nil, fmt.Errorf("GetGattManager: %s", err)
 	}
 
+	log.Debugf("Application path %s", app.Path())
+
 	err = gattManager.RegisterApplication(app.Path(), map[string]dbus.Variant{})
 	if err != nil {
 		return nil, fmt.Errorf("RegisterApplication: %s", err.Error())
 	}
 
+	log.Info("Starting device advertising")
 	// Register our advertisement
 	err = app.StartAdvertising(adapterID)
 	if err != nil {
 		return nil, fmt.Errorf("StartAdvertising: %s", err)
 	}
 
-	log.Info("Application registered and advertising.")
+	log.Info("Application is ready.")
 	return app, nil
 }
 

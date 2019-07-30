@@ -13,15 +13,17 @@ var PropertyTypes = map[string]map[string]string{
 		"ManufacturerData": "map[uint16]dbus.Variant",
 	},
 	"org.bluez.GattCharacteristic1": map[string]string{
-		"Value":       "[]byte `dbus:emit`",
+		"Value":       "[]byte `dbus:\"emit\"`",
 		"Descriptors": "[]dbus.ObjectPath",
 	},
 	"org.bluez.GattDescriptor1": map[string]string{
-		"Value":          "[]byte `dbus:emit`",
+		"Value":          "[]byte `dbus:\"emit\"`",
 		"Characteristic": "dbus.ObjectPath",
 	},
 	"org.bluez.GattService1": map[string]string{
-		"Characteristics": "[]dbus.ObjectPath `dbus:emit`",
+		"Characteristics": "[]dbus.ObjectPath `dbus:\"emit\"`",
+		"Device":          "[]dbus.ObjectPath `dbus:\"ignore=isService\"`",
+		"IsService":       "bool `dbus:\"ignore\"`",
 	},
 	"org.bluez.LEAdvertisement1": map[string]string{
 		"Data": "map[uint8][]byte",

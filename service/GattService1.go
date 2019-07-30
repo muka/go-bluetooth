@@ -9,7 +9,6 @@ import (
 	"github.com/godbus/dbus/prop"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
-	log "github.com/sirupsen/logrus"
 )
 
 // NewGattService1 create a new instance of GattService1
@@ -37,8 +36,9 @@ func NewGattService1(config *GattService1Config, props *gatt.GattService1Propert
 
 func NewGattService1Properties(serviceUUID string) *gatt.GattService1Properties {
 	return &gatt.GattService1Properties{
-		Primary: true,
-		UUID:    serviceUUID,
+		IsService: true,
+		Primary:   true,
+		UUID:      serviceUUID,
 	}
 }
 
@@ -142,9 +142,8 @@ func (s *GattService1) AddCharacteristic(char *GattCharacteristic1) error {
 	om := s.config.app.GetObjectManager()
 
 	props := char.Properties()
-	log.Debugf("AddCharacteristic %s %++v", char.Path(), props["org.bluez.GattCharacteristic1"])
-
 	err = om.AddObject(char.Path(), props)
+
 	if err != nil {
 		return fmt.Errorf("ObjectManager.AddObject: %s", err)
 	}

@@ -3,7 +3,6 @@ package profile
 import (
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
-	log "github.com/sirupsen/logrus"
 )
 
 // NewObjectManager create a new ObjectManager client
@@ -98,8 +97,6 @@ func (o *ObjectManager) AddObject(path dbus.ObjectPath, object map[string]bluez.
 			obj[iface][key] = dbus.MakeVariant(value)
 		}
 	}
-
-	log.Debugf("OM add %+v", obj)
 
 	return o.SignalAdded(path, obj)
 }

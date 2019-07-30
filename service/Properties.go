@@ -36,7 +36,8 @@ type Properties struct {
 func (p *Properties) parseTag(conf *prop.Prop, tag string) bool {
 	parts := strings.Split(tag, ",")
 	for i := 0; i < len(parts); i++ {
-		switch parts[i] {
+		subparts := strings.Split(parts[i], "=")
+		switch subparts[0] {
 		case "emit":
 			conf.Emit = prop.EmitTrue
 			conf.Writable = true
@@ -46,13 +47,27 @@ func (p *Properties) parseTag(conf *prop.Prop, tag string) bool {
 			conf.Writable = true
 			break
 		case "ignore":
-			return true
+			if len(subparts) == 1 || subparts[1] == "" {
+				return true
+			}
+
+			checkField := subparts[1]
+			t := reflect.TypeOf(p)
+			f, ok := t.Elem().FieldByName(checkField)
+			if ok {
+				val := reflect.ValueOf(f)
+				if val.Type().Kind() == reflect.Bool {
+					return val.Bool()
+				}
+				log.Warnf("tag ignore indicates %s field, but is not a bool", checkField)
+			}
+			return false
 		case "writable":
 			conf.Writable = true
 			break
 		default:
 			t := reflect.TypeOf(p)
-			m, ok := t.MethodByName(parts[i])
+			m, ok := t.Elem().MethodByName(parts[i])
 			if ok {
 				conf.Writable = true
 				conf.Callback = m.Func.Interface().(func(*prop.Change) *dbus.Error)

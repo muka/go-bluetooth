@@ -43,7 +43,7 @@ type {{.InterfaceName}} struct {
 
 // {{.InterfaceName}}Properties contains the exposed properties of an interface
 type {{.InterfaceName}}Properties struct {
-	lock sync.RWMutex `dbus:ignore`
+	lock sync.RWMutex `dbus:"ignore"`
 {{ range .Properties }}
 	// {{.Property.Name}} {{.Property.Docs}}
 	{{.Property.Name}} {{.Property.Type}}
