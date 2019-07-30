@@ -32,7 +32,13 @@ func GetManager() (*Manager, error) {
 // NewManager creates a new manager instance
 func NewManager() (*Manager, error) {
 	m := new(Manager)
-	m.objectManager = profile.NewObjectManager("org.bluez", "/")
+
+	om, err := profile.NewObjectManager("org.bluez", "/")
+	if err != nil {
+		return nil, err
+	}
+
+	m.objectManager = om
 
 	// m.objects = make(map[dbus.ObjectPath]map[string]map[string]dbus.Variant)
 	m.objects = new(sync.Map)
@@ -41,7 +47,7 @@ func NewManager() (*Manager, error) {
 	m.watchChanges()
 
 	// Load initial object cache and emit events
-	err := m.LoadObjects()
+	err = m.LoadObjects()
 	if err != nil {
 		return nil, err
 	}

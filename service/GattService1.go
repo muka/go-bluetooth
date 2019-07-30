@@ -13,7 +13,7 @@ import (
 )
 
 // NewGattService1 create a new instance of GattService1
-func NewGattService1(config *GattService1Config, props *GattService1Properties) (*GattService1, error) {
+func NewGattService1(config *GattService1Config, props *gatt.GattService1Properties) (*GattService1, error) {
 
 	propInterface, err := NewProperties(config.conn)
 	if err != nil {
@@ -35,12 +35,10 @@ func NewGattService1(config *GattService1Config, props *GattService1Properties) 
 	return s, nil
 }
 
-func NewGattService1Properties(serviceUUID string) *GattService1Properties {
-	return &GattService1Properties{
-		GattService1Properties: &gatt.GattService1Properties{
-			Primary: true,
-			UUID:    serviceUUID,
-		},
+func NewGattService1Properties(serviceUUID string) *gatt.GattService1Properties {
+	return &gatt.GattService1Properties{
+		Primary: true,
+		UUID:    serviceUUID,
 	}
 }
 
@@ -56,15 +54,10 @@ type GattService1Config struct {
 //GattService1 interface implementation
 type GattService1 struct {
 	config              *GattService1Config
-	properties          *GattService1Properties
+	properties          *gatt.GattService1Properties
 	characteristics     map[dbus.ObjectPath]*GattCharacteristic1
 	charIndex           int
 	PropertiesInterface *Properties
-}
-
-type GattService1Properties struct {
-	*gatt.GattService1Properties
-	Characteristics []dbus.ObjectPath `dbus:"emit"`
 }
 
 //Interface return the dbus interface name
@@ -88,7 +81,7 @@ func (s *GattService1) Advertised() bool {
 }
 
 //Properties return the properties of the service
-func (s *GattService1) GetProperties() *GattService1Properties {
+func (s *GattService1) GetProperties() *gatt.GattService1Properties {
 	return s.properties
 }
 
@@ -115,7 +108,7 @@ func (s *GattService1) GetCharacteristicPaths() []dbus.ObjectPath {
 }
 
 //CreateCharacteristic create a new characteristic
-func (s *GattService1) CreateCharacteristic(props *GattCharacteristic1Properties) (*GattCharacteristic1, error) {
+func (s *GattService1) CreateCharacteristic(props *gatt.GattCharacteristic1Properties) (*GattCharacteristic1, error) {
 	s.charIndex++
 	path := string(s.config.objectPath) + "/char" + strconv.Itoa(s.charIndex)
 	config := &GattCharacteristic1Config{
@@ -147,10 +140,13 @@ func (s *GattService1) AddCharacteristic(char *GattCharacteristic1) error {
 	}
 
 	om := s.config.app.GetObjectManager()
-	log.Debugf("%s %++v", char.Path(), char.GetDescriptorPaths())
-	err = om.AddObject(char.Path(), char.Properties())
+
+	props := char.Properties()
+	log.Debugf("AddCharacteristic %s %++v", char.Path(), props["org.bluez.GattCharacteristic1"])
+
+	err = om.AddObject(char.Path(), props)
 	if err != nil {
-		return fmt.Errorf("Object Manager add object error: %s", err)
+		return fmt.Errorf("ObjectManager.AddObject: %s", err)
 	}
 
 	return nil

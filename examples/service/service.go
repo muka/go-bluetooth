@@ -99,16 +99,14 @@ func exposeService(
 		return err
 	}
 
-	charProps := &service.GattCharacteristic1Properties{
-		GattCharacteristic1Properties: &gatt.GattCharacteristic1Properties{
-			UUID: characteristicUUID,
-			Flags: []string{
-				profile.FlagCharacteristicRead,
-				profile.FlagCharacteristicWrite,
-			},
+	charProps := &gatt.GattCharacteristic1Properties{
+		UUID: characteristicUUID,
+		Flags: []string{
+			profile.FlagCharacteristicRead,
+			profile.FlagCharacteristicWrite,
 		},
 	}
-	log.Debugf("%++v", charProps)
+
 	char, err := service1.CreateCharacteristic(charProps)
 	if err != nil {
 		log.Errorf("Failed to create char: %s", err)
@@ -121,13 +119,11 @@ func exposeService(
 		return err
 	}
 
-	descProps := &service.GattDescriptor1Properties{
-		GattDescriptor1Properties: &gatt.GattDescriptor1Properties{
-			UUID: descriptorUUID,
-			Flags: []string{
-				profile.FlagDescriptorRead,
-				profile.FlagDescriptorWrite,
-			},
+	descProps := &gatt.GattDescriptor1Properties{
+		UUID: descriptorUUID,
+		Flags: []string{
+			profile.FlagDescriptorRead,
+			profile.FlagDescriptorWrite,
 		},
 	}
 	desc, err := char.CreateDescriptor(descProps)

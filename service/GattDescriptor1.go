@@ -9,7 +9,7 @@ import (
 )
 
 // NewGattDescriptor1 create a new GattDescriptor1 client
-func NewGattDescriptor1(config *GattDescriptor1Config, props *GattDescriptor1Properties) (*GattDescriptor1, error) {
+func NewGattDescriptor1(config *GattDescriptor1Config, props *gatt.GattDescriptor1Properties) (*GattDescriptor1, error) {
 
 	propInterface, err := NewProperties(config.conn)
 	if err != nil {
@@ -41,13 +41,8 @@ type GattDescriptor1Config struct {
 // GattDescriptor1 client
 type GattDescriptor1 struct {
 	config              *GattDescriptor1Config
-	properties          *GattDescriptor1Properties
+	properties          *gatt.GattDescriptor1Properties
 	PropertiesInterface *Properties
-}
-
-type GattDescriptor1Properties struct {
-	*gatt.GattDescriptor1Properties
-	Characteristic dbus.ObjectPath
 }
 
 //Path return the object path

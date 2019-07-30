@@ -48,16 +48,8 @@ The `examples/` folder offer an API overview
 
 The library has been tested with
 
-- golang `1.11.4` (starting from `v1.6`)
-- bluez bluetooth `v5.50` (starting from `v5.43`)
-
-### bluez upgrade
-
-Bluez, the linux bluetooth implementation, has introduced GATT support from `v5.43`
-
-Ensure you are using an up to date version with `bluetoothd -v`
-
-See in `scripts/` how to upgrade bluez
+- golang `1.11`
+- bluez bluetooth `v5.50`
 
 ### Development notes
 
@@ -68,7 +60,11 @@ See in `scripts/` how to upgrade bluez
     ```
     sudo setcap 'cap_net_raw,cap_net_admin+eip' `which hciconfig`
     ```
-- Monitor activity
+- Monitor Bluetooth activity
+
+  `sudo btmon`
+
+- Monitor DBus activity
 
     `sudo dbus-monitor --system "type=error"`
 
@@ -88,6 +84,10 @@ See in `scripts/` how to upgrade bluez
     sudo btmgmt -i 0 power on
 
   ```
+
+## Contributing
+
+Feel free to open an issue and/or a PR to contribute. If you would like to help improve the library without coding directly, you can also consider to contribute by providing some hardware to test on.
 
 ## References
 

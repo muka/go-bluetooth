@@ -41,9 +41,9 @@ func GetDeviceByAddress(address string) (*Device, error) {
 		props := dev.Properties
 		dev.lock.RUnlock()
 
-		props.Lock.RLock()
+		props.Lock()
 		prop_address := props.Address
-		props.Lock.RUnlock()
+		props.Unlock()
 		if prop_address == address {
 			return dev, nil
 		}

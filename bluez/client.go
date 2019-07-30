@@ -147,3 +147,14 @@ func (c *Client) Unregister(path string, iface string, signal chan *dbus.Signal)
 
 	return nil
 }
+
+// Emit
+func (c *Client) Emit(path dbus.ObjectPath, name string, values ...interface{}) error {
+	if !c.isConnected() {
+		err := c.Connect()
+		if err != nil {
+			return err
+		}
+	}
+	return c.conn.Emit(path, name, values...)
+}

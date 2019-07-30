@@ -11,6 +11,7 @@ import (
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/muka/go-bluetooth/src/gen/profile/advertising"
+	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
 	"github.com/sirupsen/logrus"
 )
 
@@ -36,7 +37,7 @@ func NewApplication(config *ApplicationConfig) (*Application, error) {
 		config.conn = conn
 	}
 
-	om, err := NewObjectManager(config.conn)
+	om, err := profile.NewObjectManager(config.ObjectName, string(config.ObjectPath))
 	if err != nil {
 		return nil, err
 	}
@@ -86,14 +87,14 @@ type ApplicationConfig struct {
 // Application a bluetooth service exposed by bluez
 type Application struct {
 	config        *ApplicationConfig
-	objectManager *ObjectManager
+	objectManager *profile.ObjectManager
 	services      map[dbus.ObjectPath]*GattService1
 	adMgr         *advertising.LEAdvertisingManager1
 	advertisement *LEAdvertisement1
 }
 
 //GetObjectManager return the object manager interface handler
-func (app *Application) GetObjectManager() *ObjectManager {
+func (app *Application) GetObjectManager() *profile.ObjectManager {
 	return app.objectManager
 }
 
@@ -117,7 +118,7 @@ func (app *Application) GenerateUUID(uuidVal string) string {
 }
 
 //CreateService create a new GattService1 instance
-func (app *Application) CreateService(props *GattService1Properties, advertisedOptional ...bool) (*GattService1, error) {
+func (app *Application) CreateService(props *gatt.GattService1Properties, advertisedOptional ...bool) (*GattService1, error) {
 	app.config.serviceIndex++
 	appPath := string(app.Path())
 	if appPath == "/" {

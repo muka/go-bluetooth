@@ -33,7 +33,7 @@ type Properties struct {
 	instance    *prop.Properties
 }
 
-func (p *Properties) parseTag(conf *prop.Prop, tag string) {
+func (p *Properties) parseTag(conf *prop.Prop, tag string) bool {
 	parts := strings.Split(tag, ",")
 	for i := 0; i < len(parts); i++ {
 		switch parts[i] {
@@ -45,6 +45,8 @@ func (p *Properties) parseTag(conf *prop.Prop, tag string) {
 			conf.Emit = prop.EmitInvalidates
 			conf.Writable = true
 			break
+		case "ignore":
+			return true
 		case "writable":
 			conf.Writable = true
 			break
@@ -57,6 +59,7 @@ func (p *Properties) parseTag(conf *prop.Prop, tag string) {
 			}
 		}
 	}
+	return false
 }
 
 func (p *Properties) parseProperties() error {
@@ -69,10 +72,17 @@ func (p *Properties) parseProperties() error {
 		t := structs.New(ifaceVal)
 		for _, field := range t.Fields() {
 
+			// skip unexported fields
+			if !field.IsExported() {
+				continue
+			}
+
 			if _, ok := field.Value().(dbus.ObjectPath); ok && field.IsZero() {
 				// log.Debugf("parseProperties: skip empty ObjectPath %s", field.Name())
 				continue
 			}
+
+			// log.Debugf("Proeprty %s %s", iface, field.Name())
 
 			propConf := &prop.Prop{
 				Value:    field.Value(),
@@ -83,7 +93,10 @@ func (p *Properties) parseProperties() error {
 
 			tag := field.Tag("dbus")
 			if tag != "" {
-				p.parseTag(propConf, tag)
+				ignoreField := p.parseTag(propConf, tag)
+				if ignoreField {
+					continue
+				}
 			}
 
 			// log.Debugf("parseProperties: %s: `%s` %v", field.Name(), tag, propConf)

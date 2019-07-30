@@ -184,9 +184,9 @@ func (d *Device) watchProperties() error {
 					// the use of unexported struct fields.
 					if f.CanSet() {
 						x := reflect.ValueOf(val.Value())
-						props.Lock.Lock()
+						props.Lock()
 						f.Set(x)
-						props.Lock.Unlock()
+						props.Unlock()
 					}
 				}
 
