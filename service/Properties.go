@@ -33,11 +33,10 @@ type Properties struct {
 	instance    *prop.Properties
 }
 
-func (p *Properties) parseTag(conf *prop.Prop, tag string) bool {
+func (p *Properties) parseTag(conf *prop.Prop, tag string) {
 	parts := strings.Split(tag, ",")
 	for i := 0; i < len(parts); i++ {
-		subparts := strings.Split(parts[i], "=")
-		switch subparts[0] {
+		switch parts[i] {
 		case "emit":
 			conf.Emit = prop.EmitTrue
 			conf.Writable = true
@@ -46,35 +45,18 @@ func (p *Properties) parseTag(conf *prop.Prop, tag string) bool {
 			conf.Emit = prop.EmitInvalidates
 			conf.Writable = true
 			break
-		case "ignore":
-			if len(subparts) == 1 || subparts[1] == "" {
-				return true
-			}
-
-			checkField := subparts[1]
-			t := reflect.TypeOf(p)
-			f, ok := t.Elem().FieldByName(checkField)
-			if ok {
-				val := reflect.ValueOf(f)
-				if val.Type().Kind() == reflect.Bool {
-					return val.Bool()
-				}
-				log.Warnf("tag ignore indicates %s field, but is not a bool", checkField)
-			}
-			return false
 		case "writable":
 			conf.Writable = true
 			break
 		default:
 			t := reflect.TypeOf(p)
-			m, ok := t.Elem().MethodByName(parts[i])
+			m, ok := t.MethodByName(parts[i])
 			if ok {
 				conf.Writable = true
 				conf.Callback = m.Func.Interface().(func(*prop.Change) *dbus.Error)
 			}
 		}
 	}
-	return false
 }
 
 func (p *Properties) parseProperties() error {
@@ -87,7 +69,6 @@ func (p *Properties) parseProperties() error {
 		t := structs.New(ifaceVal)
 		for _, field := range t.Fields() {
 
-			// skip unexported fields
 			if !field.IsExported() {
 				continue
 			}
@@ -96,8 +77,6 @@ func (p *Properties) parseProperties() error {
 				// log.Debugf("parseProperties: skip empty ObjectPath %s", field.Name())
 				continue
 			}
-
-			// log.Debugf("Proeprty %s %s", iface, field.Name())
 
 			propConf := &prop.Prop{
 				Value:    field.Value(),
@@ -108,10 +87,7 @@ func (p *Properties) parseProperties() error {
 
 			tag := field.Tag("dbus")
 			if tag != "" {
-				ignoreField := p.parseTag(propConf, tag)
-				if ignoreField {
-					continue
-				}
+				p.parseTag(propConf, tag)
 			}
 
 			// log.Debugf("parseProperties: %s: `%s` %v", field.Name(), tag, propConf)

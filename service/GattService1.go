@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"strconv"
 
 	"github.com/godbus/dbus"
@@ -31,14 +30,17 @@ func NewGattService1(config *GattService1Config, props *gatt.GattService1Propert
 		return nil, err
 	}
 
+	props.Includes = append(props.Includes, config.objectPath)
+
 	return s, nil
 }
 
-func NewGattService1Properties(serviceUUID string) *gatt.GattService1Properties {
+func NewGattService1Properties(uuid string) *gatt.GattService1Properties {
 	return &gatt.GattService1Properties{
 		IsService: true,
 		Primary:   true,
-		UUID:      serviceUUID,
+		UUID:      uuid,
+		Includes:  []dbus.ObjectPath{},
 	}
 }
 
@@ -131,24 +133,16 @@ func (s *GattService1) AddCharacteristic(char *GattCharacteristic1) error {
 
 	err := char.Expose()
 	if err != nil {
-		return fmt.Errorf("Expose error: %s", err)
+		return err
 	}
 
 	err = s.GetApp().exportTree()
 	if err != nil {
-		return fmt.Errorf("Expose app tree error: %s", err)
+		return err
 	}
 
 	om := s.config.app.GetObjectManager()
-
-	props := char.Properties()
-	err = om.AddObject(char.Path(), props)
-
-	if err != nil {
-		return fmt.Errorf("ObjectManager.AddObject: %s", err)
-	}
-
-	return nil
+	return om.AddObject(char.Path(), char.Properties())
 }
 
 //RemoveCharacteristic remove a characteristic

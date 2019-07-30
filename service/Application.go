@@ -37,7 +37,7 @@ func NewApplication(config *ApplicationConfig) (*Application, error) {
 		config.conn = conn
 	}
 
-	om, err := NewObjectManagerService(config.conn)
+	om, err := NewObjectManager(config.conn)
 	if err != nil {
 		return nil, err
 	}
@@ -87,14 +87,15 @@ type ApplicationConfig struct {
 // Application a bluetooth service exposed by bluez
 type Application struct {
 	config        *ApplicationConfig
-	objectManager *ObjectManagerService
+	objectManager *ObjectManager
 	services      map[dbus.ObjectPath]*GattService1
+
 	adMgr         *advertising.LEAdvertisingManager1
 	advertisement *LEAdvertisement1
 }
 
 //GetObjectManager return the object manager interface handler
-func (app *Application) GetObjectManager() *ObjectManagerService {
+func (app *Application) GetObjectManager() *ObjectManager {
 	return app.objectManager
 }
 
@@ -139,6 +140,7 @@ func (app *Application) CreateService(props *gatt.GattService1Properties, advert
 		advertised: advertise,
 	}
 	s, err := NewGattService1(c, props)
+
 	return s, err
 }
 
@@ -417,10 +419,11 @@ func (app *Application) StartAdvertising(deviceInterface string) error {
 	}
 
 	options := make(map[string]dbus.Variant)
+	// options := make(map[string]interface{})
 
-	adMgr, err := advertising.NewLEAdvertisingManager1(deviceInterface)
+	adMgr, err := profile.NewLEAdvertisingManager1(deviceInterface)
 	if err != nil {
-		return fmt.Errorf("NewLEAdvertisingManager1: %s", err)
+		return err
 	}
 
 	app.adMgr = adMgr
