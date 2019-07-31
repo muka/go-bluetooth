@@ -2,8 +2,6 @@ package service
 
 import (
 	"github.com/godbus/dbus"
-	"github.com/godbus/dbus/introspect"
-	"github.com/godbus/dbus/prop"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
 )
@@ -45,6 +43,11 @@ type GattDescriptor1 struct {
 	PropertiesInterface *Properties
 }
 
+//Conn return a conn instance
+func (s *GattDescriptor1) Conn() *dbus.Conn {
+	return s.config.conn
+}
+
 //Path return the object path
 func (s *GattDescriptor1) Path() dbus.ObjectPath {
 	return s.config.objectPath
@@ -56,51 +59,50 @@ func (s *GattDescriptor1) Interface() string {
 }
 
 //Properties return the properties of the service
-func (s *GattDescriptor1) Properties() map[string]bluez.Properties {
-	p := make(map[string]bluez.Properties)
+func (s *GattDescriptor1) Properties() bluez.Properties {
 	s.properties.Characteristic = s.config.characteristic.Path()
-	p[s.Interface()] = s.properties
-	return p
+	return s.properties
 }
 
 //Expose the desc to dbus
 func (s *GattDescriptor1) Expose() error {
-
-	conn := s.config.conn
-
-	err := conn.Export(s, s.Path(), s.Interface())
-	if err != nil {
-		return err
-	}
-
-	for iface, props := range s.Properties() {
-		s.PropertiesInterface.AddProperties(iface, props)
-	}
-
-	s.PropertiesInterface.Expose(s.Path())
-
-	node := &introspect.Node{
-		Interfaces: []introspect.Interface{
-			//Introspect
-			introspect.IntrospectData,
-			//Properties
-			prop.IntrospectData,
-			//GattCharacteristic1
-			{
-				Name:       s.Interface(),
-				Methods:    introspect.Methods(s),
-				Properties: s.PropertiesInterface.Introspection(s.Interface()),
-			},
-		},
-	}
-
-	err = conn.Export(
-		introspect.NewIntrospectable(node),
-		s.Path(),
-		"org.freedesktop.DBus.Introspectable")
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return ExposeService(s)
+	//
+	// conn := s.config.conn
+	//
+	// err := conn.Export(s, s.Path(), s.Interface())
+	// if err != nil {
+	// 	return err
+	// }
+	//
+	// for iface, props := range s.Properties() {
+	// 	s.PropertiesInterface.AddProperties(iface, props)
+	// }
+	//
+	// s.PropertiesInterface.Expose(s.Path())
+	//
+	// node := &introspect.Node{
+	// 	Interfaces: []introspect.Interface{
+	// 		//Introspect
+	// 		introspect.IntrospectData,
+	// 		//Properties
+	// 		prop.IntrospectData,
+	// 		//GattCharacteristic1
+	// 		{
+	// 			Name:       s.Interface(),
+	// 			Methods:    introspect.Methods(s),
+	// 			Properties: s.PropertiesInterface.Introspection(s.Interface()),
+	// 		},
+	// 	},
+	// }
+	//
+	// err = conn.Export(
+	// 	introspect.NewIntrospectable(node),
+	// 	s.Path(),
+	// 	"org.freedesktop.DBus.Introspectable")
+	// if err != nil {
+	// 	return err
+	// }
+	//
+	// return nil
 }

@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/godbus/dbus"
+	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
 )
 
@@ -54,7 +55,9 @@ func (s *GattCharacteristic1) AddDescriptor(desc *GattDescriptor1) error {
 	}
 
 	om := s.config.service.GetApp().GetObjectManager()
-	return om.AddObject(desc.Path(), desc.Properties())
+	return om.AddObject(desc.Path(), map[string]bluez.Properties{
+		desc.Interface(): desc.Properties(),
+	})
 }
 
 //RemoveDescriptor remove a characteristic

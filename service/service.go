@@ -143,7 +143,9 @@ func (s *GattService1) AddCharacteristic(char *GattCharacteristic1) error {
 	}
 
 	om := s.config.app.GetObjectManager()
-	return om.AddObject(char.Path(), char.Properties())
+	return om.AddObject(char.Path(), map[string]bluez.Properties{
+		char.Interface(): char.Properties(),
+	})
 }
 
 //RemoveCharacteristic remove a characteristic

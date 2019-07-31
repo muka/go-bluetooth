@@ -1,4 +1,6 @@
 
+all: gen/clean gen/run
+
 bluetoothd:
 	sudo killall bluetoothd && \
 	sudo bluetoothd -Edn P hostname

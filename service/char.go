@@ -2,8 +2,6 @@ package service
 
 import (
 	"github.com/godbus/dbus"
-	"github.com/godbus/dbus/introspect"
-	"github.com/godbus/dbus/prop"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
 	log "github.com/sirupsen/logrus"
@@ -51,6 +49,11 @@ type GattCharacteristic1 struct {
 }
 
 //Interface return the dbus interface name
+func (s *GattCharacteristic1) Conn() *dbus.Conn {
+	return s.config.conn
+}
+
+//Interface return the dbus interface name
 func (s *GattCharacteristic1) Interface() string {
 	return gatt.GattCharacteristic1Interface
 }
@@ -61,11 +64,9 @@ func (s *GattCharacteristic1) Path() dbus.ObjectPath {
 }
 
 //Properties return the properties of the service
-func (s *GattCharacteristic1) Properties() map[string]bluez.Properties {
-	p := make(map[string]bluez.Properties)
+func (s *GattCharacteristic1) Properties() bluez.Properties {
 	s.properties.Descriptors = s.GetDescriptorPaths()
-	p[s.Interface()] = s.properties
-	return p
+	return s.properties
 }
 
 //StartNotify start notification
@@ -85,41 +86,42 @@ func (s *GattCharacteristic1) StopNotify() *dbus.Error {
 //Expose the char to dbus
 func (s *GattCharacteristic1) Expose() error {
 
-	conn := s.config.conn
-
-	err := conn.Export(s, s.Path(), s.Interface())
-	if err != nil {
-		return err
-	}
-
-	for iface, props := range s.Properties() {
-		s.PropertiesInterface.AddProperties(iface, props)
-	}
-
-	s.PropertiesInterface.Expose(s.Path())
-
-	node := &introspect.Node{
-		Interfaces: []introspect.Interface{
-			//Introspect
-			introspect.IntrospectData,
-			//Properties
-			prop.IntrospectData,
-			//GattCharacteristic1
-			{
-				Name:       s.Interface(),
-				Methods:    introspect.Methods(s),
-				Properties: s.PropertiesInterface.Introspection(s.Interface()),
-			},
-		},
-	}
-
-	err = conn.Export(
-		introspect.NewIntrospectable(node),
-		s.Path(),
-		"org.freedesktop.DBus.Introspectable")
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return ExposeService(s)
+	//
+	// conn := s.config.conn
+	//
+	// err := conn.Export(s, s.Path(), s.Interface())
+	// if err != nil {
+	// 	return err
+	// }
+	//
+	// for iface, props := range s.Properties() {
+	// 	s.PropertiesInterface.AddProperties(iface, props)
+	// }
+	//
+	// s.PropertiesInterface.Expose(s.Path())
+	//
+	// node := &introspect.Node{
+	// 	Interfaces: []introspect.Interface{
+	// 		//Introspect
+	// 		introspect.IntrospectData,
+	// 		//Properties
+	// 		prop.IntrospectData,
+	// 		//GattCharacteristic1
+	// 		{
+	// 			Name:       s.Interface(),
+	// 			Methods:    introspect.Methods(s),
+	// 			Properties: s.PropertiesInterface.Introspection(s.Interface()),
+	// 		},
+	// 	},
+	// }
+	//
+	// err = conn.Export(
+	// 	introspect.NewIntrospectable(node),
+	// 	s.Path(),
+	// 	"org.freedesktop.DBus.Introspectable")
+	// if err != nil {
+	// 	return err
+	// }
+	// return nil
 }

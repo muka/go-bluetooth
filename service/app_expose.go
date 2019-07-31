@@ -4,6 +4,7 @@ import (
 	"github.com/godbus/dbus"
 	"github.com/godbus/dbus/introspect"
 	"github.com/muka/go-bluetooth/bluez"
+	log "github.com/sirupsen/logrus"
 )
 
 //expose dbus interfaces
@@ -14,6 +15,8 @@ func (app *Application) expose() error {
 	if err != nil {
 		return err
 	}
+
+	log.Debugf("Exposing %s", app.Path())
 
 	// / path
 	err = conn.Export(app.objectManager, app.Path(), bluez.ObjectManagerInterface)
@@ -60,7 +63,7 @@ func (app *Application) exportTree() error {
 		Children: childrenNode,
 	}
 
-	err := app.config.conn.Export(
+	err := app.config.conn.ExportSubtree(
 		introspect.NewIntrospectable(node),
 		app.Path(),
 		"org.freedesktop.DBus.Introspectable")
