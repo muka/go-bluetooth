@@ -44,16 +44,16 @@ func registerApplication(adapterID string) (*service.Application, error) {
 		return nil, err
 	}
 
-	err = exposeService(
-		app,
-		app.GenerateUUID("2222"),
-		app.GenerateUUID("2222"),
-		app.GenerateUUID("2222"),
-		false,
-	)
-	if err != nil {
-		return nil, err
-	}
+	// err = exposeService(
+	// 	app,
+	// 	app.GenerateUUID("2222"),
+	// 	app.GenerateUUID("2222"),
+	// 	app.GenerateUUID("2222"),
+	// 	false,
+	// )
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	log.Info("Registering application to DBus")
 
