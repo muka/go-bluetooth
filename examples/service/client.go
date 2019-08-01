@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/muka/go-bluetooth/api"
-	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/muka/go-bluetooth/emitter"
+	"github.com/muka/go-bluetooth/src/gen/profile/adapter"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -15,7 +15,7 @@ func createClient(adapterID, hwaddr, serviceID string) (err error) {
 
 	log.Infof("Discovering devices from %s, looking for %s (serviceID:%s)", adapterID, hwaddr, serviceID)
 
-	a, err := profile.NewAdapter1(adapterID)
+	a, err := adapter.NewAdapter1FromAdapterID(adapterID)
 	if err != nil {
 		return err
 	}

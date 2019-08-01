@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/godbus/dbus"
-	"github.com/muka/go-bluetooth/bluez/profile"
+	"github.com/muka/go-bluetooth/src/gen/profile/adapter"
 	"github.com/muka/go-bluetooth/src/gen/profile/advertising"
 	"github.com/sirupsen/logrus"
 )
@@ -64,7 +64,7 @@ func (app *Application) StartAdvertising(deviceInterface string) error {
 	options := make(map[string]dbus.Variant)
 	// options := make(map[string]interface{})
 
-	adMgr, err := profile.NewLEAdvertisingManager1(deviceInterface)
+	adMgr, err := advertising.NewLEAdvertisingManager1FromAdapterID(deviceInterface)
 	if err != nil {
 		return err
 	}
@@ -78,7 +78,7 @@ func (app *Application) StartAdvertising(deviceInterface string) error {
 		return fmt.Errorf("RegisterAdvertisement: %s", err)
 	}
 
-	adapter, err := profile.NewAdapter1(deviceInterface)
+	adapter, err := adapter.NewAdapter1FromAdapterID(deviceInterface)
 	if err != nil {
 		return err
 	}

@@ -7,7 +7,6 @@ import (
 	"github.com/godbus/dbus"
 
 	"github.com/muka/go-bluetooth/bluez"
-	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/muka/go-bluetooth/emitter"
 	"github.com/muka/go-bluetooth/src/gen/profile/adapter"
 	"github.com/muka/go-bluetooth/src/gen/profile/device"
@@ -136,7 +135,7 @@ func GetAdapter(adapterID string) (*adapter.Adapter1, error) {
 		return nil, errors.New("Adapter " + adapterID + " not found")
 	}
 
-	return profile.NewAdapter1(adapterID)
+	return adapter.NewAdapter1FromAdapterID(adapterID)
 }
 
 //GetGattManager return a GattManager1 instance
@@ -149,7 +148,7 @@ func GetGattManager(adapterID string) (*gatt.GattManager1, error) {
 		return nil, errors.New("Adapter " + adapterID + " not found")
 	}
 
-	return profile.NewGattManager1(adapterID)
+	return gatt.NewGattManager1FromAdapterID(adapterID)
 }
 
 //StartDiscovery on adapter hci0

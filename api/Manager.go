@@ -6,7 +6,6 @@ import (
 
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
-	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/muka/go-bluetooth/emitter"
 	"github.com/muka/go-bluetooth/src/gen/profile/adapter"
 	"github.com/muka/go-bluetooth/src/gen/profile/device"
@@ -208,7 +207,7 @@ func emitChanges(path dbus.ObjectPath, props map[string]map[string]dbus.Variant)
 		parts := strings.Split(strpath, "/")
 		devicePath := strings.Join(parts[:len(parts)-3], "/")
 
-		srvcProps := new(profile.GattDescriptor1Properties)
+		srvcProps := new(gatt.GattDescriptor1Properties)
 		util.MapToStruct(srvcProps, props[gatt.GattDescriptor1Interface])
 
 		ev := GattDescriptorEvent{strpath, devicePath, srvcProps, StatusAdded}

@@ -9,7 +9,6 @@ import (
 
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
-	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/muka/go-bluetooth/emitter"
 	"github.com/muka/go-bluetooth/src/gen/profile/device"
 	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
@@ -27,7 +26,7 @@ func NewDevice(path string) (*Device, error) {
 
 	d := new(Device)
 	d.Path = path
-	dev, err := profile.NewDevice1(path)
+	dev, err := device.NewDevice1(path)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +104,7 @@ func ParseDevice(path dbus.ObjectPath, propsMap map[string]dbus.Variant) (*Devic
 
 	d := new(Device)
 	d.Path = string(path)
-	dev, err := profile.NewDevice1(d.Path)
+	dev, err := device.NewDevice1(d.Path)
 	if err != nil {
 		return nil, err
 	}
@@ -319,12 +318,12 @@ func (d *Device) Emit(name string, data interface{}) error {
 
 //GetService return a GattService
 func (d *Device) GetService(path string) (*gatt.GattService1, error) {
-	return profile.NewGattService1(path)
+	return gatt.NewGattService1(path)
 }
 
 //GetChar return a GattService
 func (d *Device) GetChar(path string) (*gatt.GattCharacteristic1, error) {
-	return profile.NewGattCharacteristic1(path)
+	return gatt.NewGattCharacteristic1(path)
 }
 
 //GetAllServicesAndUUID return a list of uuid's with their corresponding services
@@ -341,7 +340,7 @@ func (d *Device) GetAllServicesAndUUID() ([]string, error) {
 
 		_, ok := d.chars[path]
 		if !ok {
-			char, err := profile.NewGattCharacteristic1(string(path))
+			char, err := gatt.NewGattCharacteristic1(string(path))
 			if err != nil {
 				return nil, err
 			}
@@ -383,7 +382,7 @@ func (d *Device) GetCharsByUUID(uuid string) ([]*gatt.GattCharacteristic1, error
 		// use cache
 		_, ok := d.chars[path]
 		if !ok {
-			char, err := profile.NewGattCharacteristic1(string(path))
+			char, err := gatt.NewGattCharacteristic1(string(path))
 			if err != nil {
 				return nil, err
 			}
@@ -478,7 +477,7 @@ func (d *Device) GetDescriptors(char *gatt.GattCharacteristic1) ([]*gatt.GattDes
 	for _, path := range descrPaths {
 		_, ok := d.descr[path]
 		if !ok {
-			descr, err := profile.NewGattDescriptor1(string(path))
+			descr, err := gatt.NewGattDescriptor1(string(path))
 			if err != nil {
 				return nil, err
 			}

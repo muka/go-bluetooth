@@ -1,11 +1,10 @@
-package profile
+package agent
 
 import (
 	"github.com/godbus/dbus"
 	"github.com/godbus/dbus/introspect"
 	"github.com/godbus/dbus/prop"
 	"github.com/muka/go-bluetooth/bluez"
-	"github.com/muka/go-bluetooth/src/gen/profile/agent"
 )
 
 //All agent capabilities
@@ -29,11 +28,6 @@ type Agent1Interface interface {
 	Cancel() *dbus.Error
 	RegistrationPath() string
 	InterfacePath() string
-}
-
-// NewAgentManager1 create a new AgentManager1 client
-func NewAgentManager1() (*agent.AgentManager1, error) {
-	return agent.NewAgentManager1()
 }
 
 //ExportAgent exports the xml of a go agent to dbus

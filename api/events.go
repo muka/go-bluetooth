@@ -1,7 +1,6 @@
 package api
 
 import (
-	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/muka/go-bluetooth/src/gen/profile/device"
 	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
 )
@@ -69,7 +68,7 @@ type GattCharacteristicEvent struct {
 type GattDescriptorEvent struct {
 	Path       string
 	DevicePath string
-	Properties *profile.GattDescriptor1Properties
+	Properties *gatt.GattDescriptor1Properties
 	Status     EventStatus
 }
 

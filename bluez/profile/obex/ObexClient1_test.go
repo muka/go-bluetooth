@@ -15,9 +15,9 @@ func TestNewObexClient1(t *testing.T) {
 	//temp := map[string]dbus.Variant{}
 	temp["Target"] = "opp"
 
-	session, err := a.CreateSession("98:4E:97:00:3F:3C", temp)
+	_, err := a.CreateSession("98:4E:97:00:3F:3C", temp)
 	if err != nil {
-		t.Log("Error on CreateSession")
-		t.Fatal(session)
+		t.Logf("Error on CreateSession")
+		t.Fatal(err)
 	}
 }
