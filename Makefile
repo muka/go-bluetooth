@@ -16,6 +16,7 @@ gen/clean:
 	mkdir -p src/gen
 
 gen/run:
+	git submodule update
 	go run gen/srcgen/main.go
 
 gen: gen/clean gen/run

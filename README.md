@@ -1,8 +1,22 @@
 # go-bluetooth
 
-Golang bluetooth client based on bluez DBus interfaces
+Golang bluetooth client based on bluez DBus interfaces based on Bluez reference documentation https://git.kernel.org/cgit/bluetooth/bluez.git/tree/doc
 
-See here for reference https://git.kernel.org/cgit/bluetooth/bluez.git/tree/doc
+## Setup
+
+The go Bluez API is generated from the documentation, run `make gen` to generate go sources.
+
+`make gen`
+
+**Note** Ensure to install proper dbus rules on the system. For a dev setup, you can use the library configuration as follow
+
+```sh
+  cd $GOPATH/src/github.com/muka/go-bluetooth
+  sudo ln -s `pwd`/scripts/dbus-go-bluetooth-service.conf /etc/dbus-1/system.d/
+  sudo ln -s `pwd`/scripts/dbus-go-bluetooth-dev.conf /etc/dbus-1/system.d/
+  # Reload dbus to load new policies
+  dbus-send --system --type=method_call --dest=org.freedesktop.DBus / org.freedesktop.DBus.ReloadConfig
+```
 
 ## Features
 
@@ -22,31 +36,11 @@ The features implemented are
 
 ## Examples
 
-The `examples/` folder offer an API overview
+The `examples/` folder offer an API overview. Use `go run main.go` to list the available examples.
 
-- [agent](./examples/agent) a simple agent to support pairing
-- [btmgmt](./examples/btmgmt) interface to CLI btmgmt
-- [discovery](./examples/discovery) find devices around
-- [hci_updown](./examples/hci_updown) HCI based communication example
-- [obex_push](./examples/obex_push) send file to a device
-- [sensortag_info](./examples/sensortag_info) Obtain data from a TI SensorTag
-- [sensortag_temperature](./examples/sensortag_temperature) Obtain temperature from a TI SensorTag
-- [service](./examples/service) expose a bluetooth device with corresponding services
-- [show_miband_info](./examples/show_miband_info) show informations for MiBand2
-- [watch_changes](./examples/watch_changes) register for notifications from a TI SensorTag
+## Requirements
 
-**Note** Ensure to install proper dbus rules on the system. For a dev setup use
-
-```sh
-  sudo ln -s `pwd`/scripts/dbus-go-bluetooth-service.conf /etc/dbus-1/system.d/
-  sudo ln -s `pwd`/scripts/dbus-go-bluetooth-dev.conf /etc/dbus-1/system.d/
-  # Reload dbus to load new policies
-  dbus-send --system --type=method_call --dest=org.freedesktop.DBus / org.freedesktop.DBus.ReloadConfig
-```
-
-## Setup
-
-The library has been tested with
+The library is tested with
 
 - golang `1.11`
 - bluez bluetooth `v5.50`
@@ -98,4 +92,4 @@ Feel free to open an issue and/or a PR to contribute. If you would like to help 
 
 ## License
 
-MIT License
+Apache2 License
