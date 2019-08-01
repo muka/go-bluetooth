@@ -6,7 +6,7 @@ import (
 
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/api"
-	"github.com/muka/go-bluetooth/bluez/profile"
+	"github.com/muka/go-bluetooth/bluez/profile/agent"
 	"github.com/muka/go-bluetooth/linux/btmgmt"
 	log "github.com/sirupsen/logrus"
 )
@@ -14,9 +14,8 @@ import (
 // ToDo: allow enabling "simple pairing" (sspmode set via hcitool)
 
 const (
-	BUS_NAME        = "org.bluez"
-	AGENT_INTERFACE = "org.bluez.Agent1"
-	AGENT_PATH      = "/gameshell/bleagentgo"
+	BUS_NAME   = "org.bluez"
+	AGENT_PATH = "/gameshell/bleagentgo"
 )
 
 func Run(dev_mac, adapterID string) error {
@@ -61,19 +60,19 @@ func Run(dev_mac, adapterID string) error {
 	select {}
 }
 
-func RegisterAgent(agent profile.Agent1Interface, caps string) error {
+func RegisterAgent(ag agent.Agent1Client, caps string) error {
 
-	agentPath := agent.RegistrationPath() // we use the default path
+	agentPath := ag.RegistrationPath() // we use the default path
 	log.Info("Agent Path: ", agentPath)
 
 	// Register agent
-	am, err := profile.NewAgentManager1()
+	am, err := agent.NewAgentManager1()
 	if err != nil {
 		return err
 	}
 
 	// Export the Go interface to DBus
-	err = profile.ExportAgent(agent)
+	err = agent.ExportAgent(ag)
 	if err != nil {
 		return err
 	}
@@ -95,12 +94,12 @@ func RegisterAgent(agent profile.Agent1Interface, caps string) error {
 
 func InitAgent() error {
 
-	agent := new(Agent)
-	agent.BusName = BUS_NAME
-	agent.AgentInterface = AGENT_INTERFACE
-	agent.AgentPath = AGENT_PATH
+	ag := new(Agent)
+	ag.BusName = BUS_NAME
+	ag.AgentInterface = agent.Agent1Interface
+	ag.AgentPath = AGENT_PATH
 
-	return RegisterAgent(agent, profile.AGENT_CAP_KEYBOARD_DISPLAY)
+	return RegisterAgent(ag, agent.AGENT_CAP_KEYBOARD_DISPLAY)
 }
 
 func setTrusted(path string) {

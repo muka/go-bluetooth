@@ -7,25 +7,24 @@ import (
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez"
-	"github.com/muka/go-bluetooth/bluez/profile"
 	"github.com/muka/go-bluetooth/bluez/profile/agent"
 	log "github.com/sirupsen/logrus"
 )
 
-func RegisterAgent(agent profile.Agent1Interface, caps string) error {
+func RegisterAgent(ag agent.Agent1Client, caps string) error {
 
 	// agentPath := AgentDefaultRegisterPath // we use the default path
-	agentPath := agent.RegistrationPath() // we use the default path
+	agentPath := ag.RegistrationPath() // we use the default path
 	log.Infof("Agent path: %s", agentPath)
 
 	// Register agent
-	am, err := profile.NewAgentManager1()
+	am, err := agent.NewAgentManager1()
 	if err != nil {
 		return fmt.Errorf("NewAgentManager1: %s", err)
 	}
 
 	// Export the Go interface to DBus
-	err = profile.ExportAgent(agent)
+	err = agent.ExportAgent(ag)
 	if err != nil {
 		return err
 	}
@@ -53,7 +52,7 @@ func createAgent() (*Agent, error) {
 	a.AgentInterface = agent.Agent1Interface
 	a.AgentPath = agentObjectPath
 
-	return a, RegisterAgent(a, profile.AGENT_CAP_KEYBOARD_DISPLAY)
+	return a, RegisterAgent(a, agent.AGENT_CAP_KEYBOARD_DISPLAY)
 }
 
 func setTrusted(path string) {

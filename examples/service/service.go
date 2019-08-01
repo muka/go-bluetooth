@@ -5,9 +5,8 @@ import (
 
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/api"
-	"github.com/muka/go-bluetooth/bluez/profile"
-	"github.com/muka/go-bluetooth/service"
 	"github.com/muka/go-bluetooth/bluez/profile/gatt"
+	"github.com/muka/go-bluetooth/service"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -105,8 +104,8 @@ func exposeService(
 	charProps := &gatt.GattCharacteristic1Properties{
 		UUID: characteristicUUID,
 		Flags: []string{
-			profile.FlagCharacteristicRead,
-			profile.FlagCharacteristicWrite,
+			gatt.FlagCharacteristicRead,
+			gatt.FlagCharacteristicWrite,
 		},
 	}
 
@@ -125,8 +124,8 @@ func exposeService(
 	descProps := &gatt.GattDescriptor1Properties{
 		UUID: descriptorUUID,
 		Flags: []string{
-			profile.FlagDescriptorRead,
-			profile.FlagDescriptorWrite,
+			gatt.FlagDescriptorRead,
+			gatt.FlagDescriptorWrite,
 		},
 	}
 	desc, err := char.CreateDescriptor(descProps)

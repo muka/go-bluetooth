@@ -16,7 +16,7 @@ const (
 	AGENT_CAP_KEYBOARD_DISPLAY   = "KeyboardDisplay"
 )
 
-type Agent1Interface interface {
+type Agent1Client interface {
 	Release() *dbus.Error                                                    // Callback doesn't trigger on unregister
 	RequestPinCode(device dbus.ObjectPath) (pincode string, err *dbus.Error) // Triggers for pairing when SSP is off and cap != CAP_NO_INPUT_NO_OUTPUT
 	DisplayPinCode(device dbus.ObjectPath, pincode string) *dbus.Error
@@ -31,7 +31,7 @@ type Agent1Interface interface {
 }
 
 //ExportAgent exports the xml of a go agent to dbus
-func ExportAgent(agentInstance Agent1Interface) error {
+func ExportAgent(agentInstance Agent1Client) error {
 
 	//Connect DBus System bus
 	conn, err := dbus.SystemBus()
