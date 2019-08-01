@@ -1,0 +1,237 @@
+// WARNING: generated code, do not edit!
+// Copyright © 2019 luca capra
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+package obex
+
+
+
+import (
+  "sync"
+  "github.com/muka/go-bluetooth/bluez"
+  "github.com/fatih/structs"
+  "github.com/muka/go-bluetooth/util"
+  "github.com/godbus/dbus"
+)
+
+var FileTransferInterface = "org.bluez.obex.FileTransfer"
+
+
+// NewFileTransfer create a new instance of FileTransfer
+//
+// Args:
+// 	objectPath: [Session object path]
+func NewFileTransfer(objectPath string) (*FileTransfer, error) {
+	a := new(FileTransfer)
+	a.client = bluez.NewClient(
+		&bluez.Config{
+			Name:  "org.bluez.obex",
+			Iface: FileTransferInterface,
+			Path:  objectPath,
+			Bus:   bluez.SystemBus,
+		},
+	)
+	
+	a.Properties = new(FileTransferProperties)
+
+	_, err := a.GetProperties()
+	if err != nil {
+		return nil, err
+	}
+	
+	return a, nil
+}
+
+
+// FileTransfer File Transfer hierarchy
+
+type FileTransfer struct {
+	client     *bluez.Client
+	Properties *FileTransferProperties
+}
+
+// FileTransferProperties contains the exposed properties of an interface
+type FileTransferProperties struct {
+	lock sync.RWMutex `dbus:"ignore"`
+
+}
+
+func (p *FileTransferProperties) Lock() {
+	p.lock.Lock()
+}
+
+func (p *FileTransferProperties) Unlock() {
+	p.lock.Unlock()
+}
+
+// Close the connection
+func (a *FileTransfer) Close() {
+	a.client.Disconnect()
+}
+
+
+// ToMap convert a FileTransferProperties to map
+func (a *FileTransferProperties) ToMap() (map[string]interface{}, error) {
+	return structs.Map(a), nil
+}
+
+// FromMap convert a map to an FileTransferProperties
+func (a *FileTransferProperties) FromMap(props map[string]interface{}) (*FileTransferProperties, error) {
+	props1 := map[string]dbus.Variant{}
+	for k, val := range props {
+		props1[k] = dbus.MakeVariant(val)
+	}
+	return a.FromDBusMap(props1)
+}
+
+// FromDBusMap convert a map to an FileTransferProperties
+func (a *FileTransferProperties) FromDBusMap(props map[string]dbus.Variant) (*FileTransferProperties, error) {
+	s := new(FileTransferProperties)
+	err := util.MapToStruct(s, props)
+	return s, err
+}
+
+// GetProperties load all available properties
+func (a *FileTransfer) GetProperties() (*FileTransferProperties, error) {
+	a.Properties.Lock()
+	err := a.client.GetProperties(a.Properties)
+	a.Properties.Unlock()
+	return a.Properties, err
+}
+
+// SetProperty set a property
+func (a *FileTransfer) SetProperty(name string, value interface{}) error {
+	return a.client.SetProperty(name, value)
+}
+
+// GetProperty get a property
+func (a *FileTransfer) GetProperty(name string) (dbus.Variant, error) {
+	return a.client.GetProperty(name)
+}
+
+// Register for changes signalling
+func (a *FileTransfer) Register() (chan *dbus.Signal, error) {
+	return a.client.Register(a.client.Config.Path, bluez.PropertiesInterface)
+}
+
+// Unregister for changes signalling
+func (a *FileTransfer) Unregister(signal chan *dbus.Signal) error {
+	return a.client.Unregister(a.client.Config.Path, bluez.PropertiesInterface, signal)
+}
+
+
+
+//ChangeFolder Change the current folder of the remote device.
+// Possible errors: org.bluez.obex.Error.InvalidArguments
+// org.bluez.obex.Error.Failed
+func (a *FileTransfer) ChangeFolder(folder string) error {
+	
+	return a.client.Call("ChangeFolder", 0, folder).Store()
+	
+}
+
+//CreateFolder Create a new folder in the remote device.
+// Possible errors: org.bluez.obex.Error.InvalidArguments
+// org.bluez.obex.Error.Failed
+func (a *FileTransfer) CreateFolder(folder string) error {
+	
+	return a.client.Call("CreateFolder", 0, folder).Store()
+	
+}
+
+//ListFolder Returns a dictionary containing information about
+// the current folder content.
+// The following keys are defined:
+// string Name : Object name in UTF-8 format
+// string Type : Either "folder" or "file"
+// uint64 Size : Object size or number of items in
+// folder
+// string Permission : Group, owner and other
+// permission
+// uint64 Modified : Last change
+// uint64 Accessed : Last access
+// uint64 Created : Creation date
+// Possible errors: org.bluez.obex.Error.Failed
+func (a *FileTransfer) ListFolder() ([]map[string]dbus.Variant, error) {
+	
+	var val0 []map[string]dbus.Variant
+	err := a.client.Call("ListFolder", 0, ).Store(&val0)
+	return val0, err	
+}
+
+//GetFile Copy the source file (from remote device) to the
+// target file (on local filesystem).
+// If an empty target file is given, a name will be
+// automatically calculated for the temporary file.
+// The returned path represents the newly created transfer,
+// which should be used to find out if the content has been
+// successfully transferred or if the operation fails.
+// The properties of this transfer are also returned along
+// with the object path, to avoid a call to GetProperties.
+// Possible errors: org.bluez.obex.Error.InvalidArguments
+// org.bluez.obex.Error.Failed
+func (a *FileTransfer) GetFile(targetfile string, sourcefile string) (dbus.ObjectPath, map[string]dbus.Variant, error) {
+	
+	var val0 dbus.ObjectPath
+  var val1 map[string]dbus.Variant
+	err := a.client.Call("GetFile", 0, targetfile, sourcefile).Store(&val0, &val1)
+	return val0, val1, err	
+}
+
+//PutFile Copy the source file (from local filesystem) to the
+// target file (on remote device).
+// The returned path represents the newly created transfer,
+// which should be used to find out if the content has been
+// successfully transferred or if the operation fails.
+// The properties of this transfer are also returned along
+// with the object path, to avoid a call to GetProperties.
+// Possible errors: org.bluez.obex.Error.InvalidArguments
+// org.bluez.obex.Error.Failed
+func (a *FileTransfer) PutFile(sourcefile string, targetfile string) (dbus.ObjectPath, map[string]dbus.Variant, error) {
+	
+	var val0 dbus.ObjectPath
+  var val1 map[string]dbus.Variant
+	err := a.client.Call("PutFile", 0, sourcefile, targetfile).Store(&val0, &val1)
+	return val0, val1, err	
+}
+
+//CopyFile Copy a file within the remote device from source file
+// to target file.
+// Possible errors: org.bluez.obex.Error.InvalidArguments
+// org.bluez.obex.Error.Failed
+func (a *FileTransfer) CopyFile(sourcefile string, targetfile string) error {
+	
+	return a.client.Call("CopyFile", 0, sourcefile, targetfile).Store()
+	
+}
+
+//MoveFile Move a file within the remote device from source file
+// to the target file.
+// Possible errors: org.bluez.obex.Error.InvalidArguments
+// org.bluez.obex.Error.Failed
+func (a *FileTransfer) MoveFile(sourcefile string, targetfile string) error {
+	
+	return a.client.Call("MoveFile", 0, sourcefile, targetfile).Store()
+	
+}
+
+//Delete Deletes the specified file/folder.
+// Possible errors: org.bluez.obex.Error.InvalidArguments
+// org.bluez.obex.Error.Failed
+func (a *FileTransfer) Delete(file string) error {
+	
+	return a.client.Call("Delete", 0, file).Store()
+	
+}
+
