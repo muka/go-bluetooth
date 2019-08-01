@@ -1,4 +1,8 @@
 
+.PHONY: gen
+
+DEBUG ?= 0
+
 all: gen/clean gen/run
 
 bluetoothd:
@@ -11,15 +15,18 @@ run/example/service:
 run/example/client:
 	go run examples/service/*.go client
 
-gen/clean:
+gen/dev/clean:
 	rm -rf src/gen
 	mkdir -p src/gen
 
-gen/run:
-	git submodule update
-	go run gen/srcgen/main.go
+gen/dev/run:
+	DEBUG=1 make gen
 
-gen: gen/clean gen/run
+gen/dev: gen/dev/clean gen/dev/run
+
+gen:
+	git submodule update
+	DEBUG=${DEBUG} go run gen/srcgen/main.go
 
 test/switch:
 	sudo go test api/switch*

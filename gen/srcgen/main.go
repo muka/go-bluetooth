@@ -15,12 +15,12 @@ func main() {
 	log.Info("Generating src")
 
 	var api []gen.ApiGroup
-	if os.Getenv("DEBUG") != "" {
+	if os.Getenv("DEBUG") == "1" {
 		api = gen.Parse("./test")
-		generator.Generate(api, "./test/out")
+		generator.Generate(api, "./src/gen")
 	} else {
 		api = gen.Parse("./src/bluez")
-		generator.Generate(api, "./src/gen")
+		generator.Generate(api, "./bluez")
 	}
 
 }

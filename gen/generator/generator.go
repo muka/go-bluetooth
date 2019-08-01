@@ -47,16 +47,17 @@ func Generate(apiGroups []gen.ApiGroup, outDir string) error {
 			continue
 		}
 
-		rootFile := path.Join(dirpath, apiName+".go")
-		if !gen.Exists(rootFile) {
-			err = RootTemplate(rootFile, apiGroup)
-			if err != nil {
-				log.Errorf("Failed to create %s: %s", rootFile, err)
-				continue
-			}
-		} else {
-			log.Infof("Skipped, file exists: %s", rootFile)
-		}
+		// rootFile := path.Join(dirpath, apiName+".go")
+		// if !gen.Exists(rootFile) {
+		// 	err = RootTemplate(rootFile, apiGroup)
+		// 	if err != nil {
+		// 		log.Errorf("Failed to create %s: %s", rootFile, err)
+		// 		continue
+		// 	}
+		// 	log.Debugf("Wrote %s", rootFile)
+		// } else {
+		// 	log.Infof("Skipped, file exists: %s", rootFile)
+		// }
 
 		for _, api := range apiGroup.Api {
 
@@ -81,6 +82,7 @@ func Generate(apiGroups []gen.ApiGroup, outDir string) error {
 				log.Errorf("Api generation failed %s: %s", api.Title, err1)
 				return err1
 			}
+			log.Debugf("Wrote %s", apiGenFilename)
 		}
 
 	}
