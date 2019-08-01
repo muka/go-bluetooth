@@ -12,11 +12,13 @@ run/example/client:
 	go run examples/service/*.go client
 
 gen/clean:
-	rm -rf test/out
-	mkdir -p test/out
+	rm -rf src/gen
+	mkdir -p src/gen
 
 gen/run:
-	go run examples/srcgen/main.go
+	go run gen/srcgen/main.go
+
+gen: gen/clean gen/run
 
 test/switch:
 	sudo go test api/switch*

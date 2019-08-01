@@ -1,4 +1,4 @@
-package main
+package service_example
 
 import (
 	"errors"
@@ -29,7 +29,7 @@ func createClient(adapterID, hwaddr, serviceID string) (err error) {
 	devices, err := api.GetDevices()
 	fail("GetDevices", err)
 	for _, dev := range devices {
-		err = showDeviceInfo(&dev, hwaddr, serviceID)
+		err = showDeviceInfo(dev, hwaddr, serviceID)
 		fail("showDeviceInfo", err)
 	}
 
