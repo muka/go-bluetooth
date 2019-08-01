@@ -8,7 +8,7 @@ import (
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
-	"github.com/muka/go-bluetooth/src/gen/profile/agent"
+	"github.com/muka/go-bluetooth/bluez/profile/agent"
 	log "github.com/sirupsen/logrus"
 )
 

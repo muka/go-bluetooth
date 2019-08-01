@@ -7,7 +7,7 @@ import (
 
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/emitter"
-	"github.com/muka/go-bluetooth/src/gen/profile/adapter"
+	"github.com/muka/go-bluetooth/bluez/profile/adapter"
 	log "github.com/sirupsen/logrus"
 )
 

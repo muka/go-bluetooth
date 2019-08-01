@@ -8,9 +8,9 @@ import (
 
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/emitter"
-	"github.com/muka/go-bluetooth/src/gen/profile/adapter"
-	"github.com/muka/go-bluetooth/src/gen/profile/device"
-	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
+	"github.com/muka/go-bluetooth/bluez/profile/adapter"
+	"github.com/muka/go-bluetooth/bluez/profile/device"
+	"github.com/muka/go-bluetooth/bluez/profile/gatt"
 )
 
 //Exit performs a clean exit

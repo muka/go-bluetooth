@@ -10,8 +10,8 @@ import (
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/emitter"
-	"github.com/muka/go-bluetooth/src/gen/profile/device"
-	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
+	"github.com/muka/go-bluetooth/bluez/profile/device"
+	"github.com/muka/go-bluetooth/bluez/profile/gatt"
 	"github.com/muka/go-bluetooth/util"
 )
 

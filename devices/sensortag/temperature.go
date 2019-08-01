@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/godbus/dbus"
-	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
+	"github.com/muka/go-bluetooth/bluez/profile/gatt"
 )
 
 //.....getting config,data,period characteristics for TEMPERATURE sensor............

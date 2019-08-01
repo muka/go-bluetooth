@@ -4,7 +4,7 @@ import (
 	"errors"
 
 	"github.com/godbus/dbus"
-	"github.com/muka/go-bluetooth/src/gen/profile/advertising"
+	"github.com/muka/go-bluetooth/bluez/profile/advertising"
 )
 
 //UUIDSuffix fixed 128bit UUID [0000]+[xxxx]+[-0000-1000-8000-00805F9B34FB]

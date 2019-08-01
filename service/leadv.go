@@ -3,7 +3,7 @@ package service
 import (
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
-	"github.com/muka/go-bluetooth/src/gen/profile/advertising"
+	"github.com/muka/go-bluetooth/bluez/profile/advertising"
 )
 
 // NewLEAdvertisement1 create a new LEAdvertisement1 client

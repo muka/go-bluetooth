@@ -1,8 +1,8 @@
 package api
 
 import (
-	"github.com/muka/go-bluetooth/src/gen/profile/device"
-	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
+	"github.com/muka/go-bluetooth/bluez/profile/device"
+	"github.com/muka/go-bluetooth/bluez/profile/gatt"
 )
 
 //EventStatus indicate the status related to an event

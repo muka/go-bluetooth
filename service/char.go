@@ -3,7 +3,7 @@ package service
 import (
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
-	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
+	"github.com/muka/go-bluetooth/bluez/profile/gatt"
 	log "github.com/sirupsen/logrus"
 )
 
