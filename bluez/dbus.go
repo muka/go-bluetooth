@@ -41,7 +41,9 @@ type Config struct {
 // CloseConnections close all open connection to DBus
 func CloseConnections() {
 	for _, conn := range conns {
-		conn.Close()
+		if conn != nil {
+			conn.Close()
+		}
 	}
 	conns = make([]*dbus.Conn, 2)
 }

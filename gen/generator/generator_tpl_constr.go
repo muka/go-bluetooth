@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/muka/go-bluetooth/gen"
+	"github.com/muka/go-bluetooth/gen/override"
 )
 
 var defaultService = "org.bluez"
@@ -55,6 +56,33 @@ func createConstructors(api gen.Api) []gen.Constructor {
 		}
 
 		constructors[i] = c
+	}
+
+	if overrides, hasOverride := override.GetConstructorsOverrides(api.Interface); hasOverride {
+
+		for _, coverride := range overrides {
+
+			// add new constructors which take an adapter as arg
+			if coverride.AdapterAsArgument {
+
+				for _, c1 := range constructors {
+					// log.Debugf("------ oveerride %+v", c1)
+
+					c := gen.Constructor{
+						Args:       "adapterID string",
+						ArgsDocs:   "// adapterID: ID of an adapter eg. hci0",
+						Docs:       c1.Docs,
+						ObjectPath: `fmt.Sprintf("/org/bluez/%s", adapterID)`,
+						Service:    c1.Service,
+						Role:       "FromAdapterID",
+					}
+					constructors = append(constructors, c)
+				}
+
+			}
+
+		}
+
 	}
 
 	// log.Debugf("constructors %++v", constructors)

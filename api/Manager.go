@@ -33,7 +33,7 @@ func GetManager() (*Manager, error) {
 func NewManager() (*Manager, error) {
 	m := new(Manager)
 
-	om, err := profile.NewObjectManager("org.bluez", "/")
+	om, err := bluez.NewObjectManager("org.bluez", "/")
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +57,7 @@ func NewManager() (*Manager, error) {
 
 // Manager track changes in the bluez dbus tree reflecting protocol updates
 type Manager struct {
-	objectManager       *profile.ObjectManager
+	objectManager       *bluez.ObjectManager
 	watchChangesEnabled bool
 	objects             *sync.Map
 	channel             chan *dbus.Signal

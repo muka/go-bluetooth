@@ -1,11 +1,7 @@
 package service
 
 import (
-	"strconv"
-
 	"github.com/godbus/dbus"
-	"github.com/godbus/dbus/introspect"
-	"github.com/godbus/dbus/prop"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
 )
@@ -67,6 +63,11 @@ func (s *GattService1) GetApp() *Application {
 	return s.config.app
 }
 
+//Conn return the dbus conn
+func (s *GattService1) Conn() *dbus.Conn {
+	return s.config.conn
+}
+
 //Interface return the dbus interface name
 func (s *GattService1) Interface() string {
 	return gatt.GattService1Interface
@@ -88,114 +89,49 @@ func (s *GattService1) GetProperties() *gatt.GattService1Properties {
 }
 
 //Properties return the properties of the service
-func (s *GattService1) Properties() map[string]bluez.Properties {
-	p := make(map[string]bluez.Properties)
+func (s *GattService1) Properties() bluez.Properties {
 	s.properties.Characteristics = s.GetCharacteristicPaths()
-	p[s.Interface()] = s.properties
-	return p
-}
-
-//GetCharacteristics return the characteristics of the service
-func (s *GattService1) GetCharacteristics() map[dbus.ObjectPath]*GattCharacteristic1 {
-	return s.characteristics
-}
-
-//GetCharacteristicPaths return the characteristics object paths
-func (s *GattService1) GetCharacteristicPaths() []dbus.ObjectPath {
-	paths := make([]dbus.ObjectPath, 0)
-	for path := range s.characteristics {
-		paths = append(paths, path)
-	}
-	return paths
-}
-
-//CreateCharacteristic create a new characteristic
-func (s *GattService1) CreateCharacteristic(props *gatt.GattCharacteristic1Properties) (*GattCharacteristic1, error) {
-	s.charIndex++
-	path := string(s.config.objectPath) + "/char" + strconv.Itoa(s.charIndex)
-	config := &GattCharacteristic1Config{
-		ID:         s.charIndex,
-		objectPath: dbus.ObjectPath(path),
-		conn:       s.config.conn,
-		service:    s,
-	}
-
-	props.Service = s.Path()
-
-	char, err := NewGattCharacteristic1(config, props)
-	return char, err
-}
-
-//AddCharacteristic add a characteristic
-func (s *GattService1) AddCharacteristic(char *GattCharacteristic1) error {
-
-	s.characteristics[char.Path()] = char
-	s.properties.Characteristics = append(s.properties.Characteristics, char.Path())
-
-	err := char.Expose()
-	if err != nil {
-		return err
-	}
-
-	err = s.GetApp().exportTree()
-	if err != nil {
-		return err
-	}
-
-	om := s.config.app.GetObjectManager()
-	return om.AddObject(char.Path(), map[string]bluez.Properties{
-		char.Interface(): char.Properties(),
-	})
-}
-
-//RemoveCharacteristic remove a characteristic
-func (s *GattService1) RemoveCharacteristic(char *GattCharacteristic1) error {
-	if _, ok := s.characteristics[char.Path()]; ok {
-		delete(s.characteristics, char.Path())
-		om := s.config.app.GetObjectManager()
-		return om.RemoveObject(char.Path())
-	}
-	return nil
+	return s.properties
 }
 
 //Expose the service to dbus
 func (s *GattService1) Expose() error {
-
-	conn := s.config.conn
-
-	err := conn.Export(s, s.Path(), s.Interface())
-	if err != nil {
-		return err
-	}
-
-	for iface, props := range s.Properties() {
-		s.PropertiesInterface.AddProperties(iface, props)
-	}
-
-	s.PropertiesInterface.Expose(s.Path())
-
-	node := &introspect.Node{
-		Interfaces: []introspect.Interface{
-			//Introspect
-			introspect.IntrospectData,
-			//Properties
-			prop.IntrospectData,
-			//GattService1
-			{
-				Name:       s.Interface(),
-				Methods:    introspect.Methods(s),
-				Properties: s.PropertiesInterface.Introspection(s.Interface()),
-			},
-		},
-	}
-
-	err = conn.Export(
-		introspect.NewIntrospectable(node),
-		s.Path(),
-		"org.freedesktop.DBus.Introspectable")
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return ExposeService(s)
+	//
+	// conn := s.config.conn
+	//
+	// err := conn.Export(s, s.Path(), s.Interface())
+	// if err != nil {
+	// 	return err
+	// }
+	//
+	// for iface, props := range s.Properties() {
+	// 	s.PropertiesInterface.AddProperties(iface, props)
+	// }
+	//
+	// s.PropertiesInterface.Expose(s.Path())
+	//
+	// node := &introspect.Node{
+	// 	Interfaces: []introspect.Interface{
+	// 		//Introspect
+	// 		introspect.IntrospectData,
+	// 		//Properties
+	// 		prop.IntrospectData,
+	// 		//GattService1
+	// 		{
+	// 			Name:       s.Interface(),
+	// 			Methods:    introspect.Methods(s),
+	// 			Properties: s.PropertiesInterface.Introspection(s.Interface()),
+	// 		},
+	// 	},
+	// }
+	//
+	// err = conn.Export(
+	// 	introspect.NewIntrospectable(node),
+	// 	s.Path(),
+	// 	"org.freedesktop.DBus.Introspectable")
+	// if err != nil {
+	// 	return err
+	// }
+	// return nil
 }

@@ -52,7 +52,7 @@ func GetDeviceByAddress(address string) (*Device, error) {
 }
 
 //GetDevices returns a list of bluetooth discovered Devices
-func GetDevices() ([]Device, error) {
+func GetDevices() ([]*Device, error) {
 
 	list, err := GetDeviceList()
 	if err != nil {
@@ -66,7 +66,7 @@ func GetDevices() ([]Device, error) {
 
 	objects := manager.GetObjects()
 
-	var devices = make([]Device, 0)
+	var devices = make([]*Device, 0)
 	for _, path := range list {
 		object, ok := objects.Load(path)
 		if !ok {
@@ -77,7 +77,7 @@ func GetDevices() ([]Device, error) {
 		if err != nil {
 			return nil, err
 		}
-		devices = append(devices, *dev)
+		devices = append(devices, dev)
 	}
 
 	return devices, nil

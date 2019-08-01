@@ -4,6 +4,7 @@ import (
 	"strconv"
 
 	"github.com/godbus/dbus"
+	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/src/gen/profile/gatt"
 )
 
@@ -48,7 +49,9 @@ func (app *Application) AddService(service *GattService1) error {
 		return err
 	}
 
-	err = app.GetObjectManager().AddObject(service.Path(), service.Properties())
+	err = app.GetObjectManager().AddObject(service.Path(), map[string]bluez.Properties{
+		service.Interface(): service.Properties(),
+	})
 	if err != nil {
 		return err
 	}

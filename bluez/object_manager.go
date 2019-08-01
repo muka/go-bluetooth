@@ -1,19 +1,18 @@
-package profile
+package bluez
 
 import (
 	"github.com/godbus/dbus"
-	"github.com/muka/go-bluetooth/bluez"
 )
 
 // NewObjectManager create a new ObjectManager client
 func NewObjectManager(name string, path string) (*ObjectManager, error) {
 	om := new(ObjectManager)
-	om.client = bluez.NewClient(
-		&bluez.Config{
+	om.client = NewClient(
+		&Config{
 			Name:  name,
 			Iface: "org.freedesktop.DBus.ObjectManager",
 			Path:  path,
-			Bus:   bluez.SystemBus,
+			Bus:   SystemBus,
 		},
 	)
 	return om, nil
@@ -21,7 +20,7 @@ func NewObjectManager(name string, path string) (*ObjectManager, error) {
 
 // ObjectManager manges the list of all available objects
 type ObjectManager struct {
-	client *bluez.Client
+	client *Client
 }
 
 // Close the connection
@@ -52,7 +51,7 @@ func (o *ObjectManager) Unregister(signal chan *dbus.Signal) error {
 
 // SignalAdded notify of interfaces being added
 func (o *ObjectManager) SignalAdded(path dbus.ObjectPath, props map[string]map[string]dbus.Variant) error {
-	return o.client.Emit(path, bluez.InterfacesAdded, props)
+	return o.client.Emit(path, InterfacesAdded, props)
 }
 
 // SignalRemoved notify of interfaces being removed
@@ -60,7 +59,7 @@ func (o *ObjectManager) SignalRemoved(path dbus.ObjectPath, ifaces []string) err
 	if ifaces == nil {
 		ifaces = make([]string, 0)
 	}
-	return o.client.Emit(path, bluez.InterfacesRemoved, ifaces)
+	return o.client.Emit(path, InterfacesRemoved, ifaces)
 }
 
 // GetManagedObject return an up to date view of a single object state.
@@ -75,47 +74,4 @@ func (o *ObjectManager) GetManagedObject(objpath dbus.ObjectPath) (map[string]ma
 	}
 	// return nil, errors.New("Object not found")
 	return nil, nil
-}
-
-// AddObject an object to the managed list
-func (o *ObjectManager) AddObject(path dbus.ObjectPath, object map[string]bluez.Properties) error {
-
-	// 			 ifaces   	prop name    prop value
-	obj := map[string]map[string]dbus.Variant{}
-	for iface, props := range object {
-
-		if _, ok := obj[iface]; !ok {
-			obj[iface] = make(map[string]dbus.Variant)
-		}
-
-		propsVal, err := props.ToMap()
-		if err != nil {
-			return err
-		}
-
-		for key, value := range propsVal {
-			obj[iface][key] = dbus.MakeVariant(value)
-		}
-	}
-
-	return o.SignalAdded(path, obj)
-}
-
-// RemoveObject an object from the managed list
-func (o *ObjectManager) RemoveObject(path dbus.ObjectPath) error {
-	objects, err := o.GetManagedObjects()
-	if err != nil {
-		return err
-	}
-
-	if s, ok := objects[path]; ok {
-		delete(objects, path)
-		ifaces := make([]string, len(s))
-		for i := range s {
-			ifaces = append(ifaces, i)
-		}
-		return o.SignalRemoved(path, ifaces)
-	}
-
-	return nil
 }

@@ -1,6 +1,18 @@
-//
 // WARNING: generated code, do not edit!
+// Copyright © 2019 luca capra
 //
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
 package {{.Package}}
 {{$InterfaceName := .InterfaceName}}
 {{$ExposeProperties := .ExposeProperties}}
@@ -67,6 +79,22 @@ func (a *{{.InterfaceName}}) Close() {
 // ToMap convert a {{.InterfaceName}}Properties to map
 func (a *{{.InterfaceName}}Properties) ToMap() (map[string]interface{}, error) {
 	return structs.Map(a), nil
+}
+
+// FromMap convert a map to an {{.InterfaceName}}Properties
+func (a *{{.InterfaceName}}Properties) FromMap(props map[string]interface{}) (*{{.InterfaceName}}Properties, error) {
+	props1 := map[string]dbus.Variant{}
+	for k, val := range props {
+		props1[k] = dbus.MakeVariant(val)
+	}
+	return a.FromDBusMap(props1)
+}
+
+// FromDBusMap convert a map to an {{.InterfaceName}}Properties
+func (a *{{.InterfaceName}}Properties) FromDBusMap(props map[string]dbus.Variant) (*{{.InterfaceName}}Properties, error) {
+	s := new({{.InterfaceName}}Properties)
+	err := util.MapToStruct(s, props)
+	return s, err
 }
 
 // GetProperties load all available properties

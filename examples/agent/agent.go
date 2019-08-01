@@ -1,8 +1,7 @@
-package main
+package agent_example
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/godbus/dbus"
@@ -14,40 +13,30 @@ import (
 
 // ToDo: allow enabling "simple pairing" (sspmode set via hcitool)
 
-const adapterID = "hci0"
-const dev_mac = "88:B4:A6:6F:12:EF"
-
-const logLevel = log.DebugLevel
-
 const (
 	BUS_NAME        = "org.bluez"
 	AGENT_INTERFACE = "org.bluez.Agent1"
 	AGENT_PATH      = "/gameshell/bleagentgo"
 )
 
-func main() {
-
-	log.SetLevel(logLevel)
+func Run(dev_mac, adapterID string) error {
 
 	defer api.Exit()
 
 	a := btmgmt.NewBtMgmt(adapterID)
 	err := a.Reset()
 	if err != nil {
-		log.Fatal(err)
-		os.Exit(1)
+		return err
 	}
 
 	err = InitAgent()
 	if err != nil {
-		log.Fatal(err)
-		os.Exit(1)
+		return fmt.Errorf("InitAgent: %s", err)
 	}
 
 	devices, err := api.GetDevices()
 	if err != nil {
-		log.Errorf("GetDevices: %s", err)
-		return
+		return fmt.Errorf("GetDevices: %s", err)
 	}
 
 	log.Info(devices)
@@ -59,12 +48,11 @@ func main() {
 			log.Info("Pairing...")
 			err := v.Pair()
 			if err == nil {
-
 				log.Info("Pair succeed,Connecting...")
 				setTrusted(dev_mac_path)
 				v.Connect()
 			} else {
-				log.Error("Pair failed:", err)
+				return fmt.Errorf("Pair failed: %s", err)
 			}
 		}
 	}
@@ -74,12 +62,12 @@ func main() {
 }
 
 func RegisterAgent(agent profile.Agent1Interface, caps string) error {
-	//agent_path := AgentDefaultRegisterPath // we use the default path
-	agent_path := agent.RegistrationPath() // we use the default path
-	log.Info("The Agent Path: ", agent_path)
+
+	agentPath := agent.RegistrationPath() // we use the default path
+	log.Info("Agent Path: ", agentPath)
 
 	// Register agent
-	am, err := profile.NewAgentManager1(agent_path)
+	am, err := profile.NewAgentManager1()
 	if err != nil {
 		return err
 	}
@@ -91,13 +79,13 @@ func RegisterAgent(agent profile.Agent1Interface, caps string) error {
 	}
 
 	// Register the exported interface as application agent via AgenManager API
-	err = am.RegisterAgent(dbus.ObjectPath(agent_path), caps)
+	err = am.RegisterAgent(dbus.ObjectPath(agentPath), caps)
 	if err != nil {
 		return err
 	}
 
 	// Set the new application agent as Default Agent
-	err = am.RequestDefaultAgent(dbus.ObjectPath(agent_path))
+	err = am.RequestDefaultAgent(dbus.ObjectPath(agentPath))
 	if err != nil {
 		return err
 	}
@@ -106,6 +94,7 @@ func RegisterAgent(agent profile.Agent1Interface, caps string) error {
 }
 
 func InitAgent() error {
+
 	agent := new(Agent)
 	agent.BusName = BUS_NAME
 	agent.AgentInterface = AGENT_INTERFACE
@@ -134,6 +123,7 @@ func setTrusted(path string) {
 			err = dev1.SetProperty("Trusted", true)
 			if err != nil {
 				log.Error(err)
+				break
 			}
 		}
 	}

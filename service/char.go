@@ -85,43 +85,5 @@ func (s *GattCharacteristic1) StopNotify() *dbus.Error {
 
 //Expose the char to dbus
 func (s *GattCharacteristic1) Expose() error {
-
 	return ExposeService(s)
-	//
-	// conn := s.config.conn
-	//
-	// err := conn.Export(s, s.Path(), s.Interface())
-	// if err != nil {
-	// 	return err
-	// }
-	//
-	// for iface, props := range s.Properties() {
-	// 	s.PropertiesInterface.AddProperties(iface, props)
-	// }
-	//
-	// s.PropertiesInterface.Expose(s.Path())
-	//
-	// node := &introspect.Node{
-	// 	Interfaces: []introspect.Interface{
-	// 		//Introspect
-	// 		introspect.IntrospectData,
-	// 		//Properties
-	// 		prop.IntrospectData,
-	// 		//GattCharacteristic1
-	// 		{
-	// 			Name:       s.Interface(),
-	// 			Methods:    introspect.Methods(s),
-	// 			Properties: s.PropertiesInterface.Introspection(s.Interface()),
-	// 		},
-	// 	},
-	// }
-	//
-	// err = conn.Export(
-	// 	introspect.NewIntrospectable(node),
-	// 	s.Path(),
-	// 	"org.freedesktop.DBus.Introspectable")
-	// if err != nil {
-	// 	return err
-	// }
-	// return nil
 }

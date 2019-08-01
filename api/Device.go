@@ -62,6 +62,7 @@ func ClearDevice(d *Device) error {
 
 // FlushDevices clears removes device and clears it from cached devices
 func FlushDevices(adapterID string) error {
+
 	adapter, err := GetAdapter(adapterID)
 	if err != nil {
 		return err
@@ -72,13 +73,13 @@ func FlushDevices(adapterID string) error {
 		return err
 	}
 	for _, dev := range devices {
-		err := ClearDevice(&dev)
+		err := ClearDevice(dev)
 		if err != nil {
-			return fmt.Errorf("FlushDevices.ClearDevice %s", err)
+			return fmt.Errorf("FlushDevices.ClearDevice %s: %s", dev.Path, err)
 		}
 		err = adapter.RemoveDevice(dbus.ObjectPath(dev.Path))
 		if err != nil {
-			return fmt.Errorf("FlushDevices.RemoveDevice %s", err)
+			return fmt.Errorf("FlushDevices.RemoveDevice %s: %s", dev.Path, err)
 		}
 	}
 	return nil
@@ -91,7 +92,7 @@ func ClearDevices() error {
 		return err
 	}
 	for _, dev := range devices {
-		err := ClearDevice(&dev)
+		err := ClearDevice(dev)
 		if err != nil {
 			return err
 		}

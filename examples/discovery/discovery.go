@@ -1,5 +1,5 @@
 //shows how to watch for new devices and list them
-package main
+package discovery_example
 
 import (
 	"os"
@@ -10,12 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const logLevel = log.DebugLevel
-const adapterID = "hci0"
-
-func main() {
-
-	log.SetLevel(logLevel)
+func Run(adapterID string) error {
 
 	//clean up connection on exit
 	defer api.Exit()
@@ -30,26 +25,23 @@ func main() {
 
 	err = api.FlushDevices(adapterID)
 	if err != nil {
-		log.Error(err)
-		os.Exit(1)
+		return err
 	}
 
 	devices, err := api.GetDevices()
 	if err != nil {
-		log.Error(err)
-		os.Exit(1)
+		return err
 	}
 
 	log.Infof("Cached devices:")
 	for _, dev := range devices {
-		showDeviceInfo(&dev)
+		showDeviceInfo(dev)
 	}
 
 	log.Infof("Discovered devices:")
 	err = discoverDevices(adapterID)
 	if err != nil {
-		log.Error(err)
-		os.Exit(1)
+		return err
 	}
 
 	select {}

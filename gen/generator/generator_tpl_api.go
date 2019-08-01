@@ -29,6 +29,7 @@ func ApiTemplate(filename string, api gen.Api, apiGroup gen.ApiGroup) error {
 
 	if exposeProps {
 		imports = append(imports, "github.com/fatih/structs")
+		imports = append(imports, "github.com/muka/go-bluetooth/util")
 	}
 
 	// flag to import dbus
@@ -169,6 +170,21 @@ func ApiTemplate(filename string, api gen.Api, apiGroup gen.ApiGroup) error {
 		imports = append(imports, "github.com/godbus/dbus")
 	}
 
+	api.Description = prepareDocs(api.Description, false, 0)
+	api.Title = strings.Trim(api.Title, "\n \t")
+
+	ctrs := createConstructors(api)
+
+	for _, c := range ctrs {
+		importFmt := strings.Contains(c.ObjectPath, "fmt.")
+		if !importFmt {
+			importFmt = strings.Contains(c.Service, "fmt.")
+		}
+		if importFmt {
+			imports = append(imports, "fmt")
+		}
+	}
+
 	importsTpl := ""
 	if len(imports) > 0 {
 		for i := range imports {
@@ -176,11 +192,6 @@ func ApiTemplate(filename string, api gen.Api, apiGroup gen.ApiGroup) error {
 		}
 		importsTpl = fmt.Sprintf("import (\n  %s\n)", strings.Join(imports, "\n  "))
 	}
-
-	api.Description = prepareDocs(api.Description, false, 0)
-	api.Title = strings.Trim(api.Title, "\n \t")
-
-	ctrs := createConstructors(api)
 
 	apidocs := gen.ApiDoc{
 		Imports:          importsTpl,
