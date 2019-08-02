@@ -28,21 +28,21 @@ func (a *LEAdvertisement1Properties) AddServiceUUID(uuids ...string) {
 	}
 }
 
-func (a *LEAdvertisement1Properties) AddData(code byte, data []byte) {
+func (a *LEAdvertisement1Properties) AddData(code byte, data []uint8) {
 	if a.Data == nil {
 		a.Data = make(map[byte]interface{})
 	}
 	a.Data[code] = data
 }
 
-func (a *LEAdvertisement1Properties) AddServiceData(code string, data []byte) {
+func (a *LEAdvertisement1Properties) AddServiceData(code string, data []uint8) {
 	if a.ServiceData == nil {
 		a.ServiceData = make(map[string]interface{})
 	}
 	a.ServiceData[code] = data
 }
 
-func (a *LEAdvertisement1Properties) AddManifacturerData(code uint16, data []byte) {
+func (a *LEAdvertisement1Properties) AddManifacturerData(code uint16, data []uint8) {
 	if a.ManufacturerData == nil {
 		a.ManufacturerData = make(map[uint16]interface{})
 	}

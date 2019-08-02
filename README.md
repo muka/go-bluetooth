@@ -64,9 +64,7 @@ The library is tested with
 
     `sudo dbus-monitor --system "type=error"`
 
-- Start `bluetoothd` with experimental features and verbose debug messages
-
-    `sudo service bluetooth stop && sudo bluetoothd -Edn P hostname`
+- Start `bluetoothd` with experimental features and verbose debug messages `make bluetoothd`
 
 - Enable LE advertisement (on a single pc ensure to use at least 2x bluetooth adapter)
 
@@ -91,6 +89,7 @@ Feel free to open an issue and/or a PR to contribute. If you would like to help 
 - https://www.bluetooth.com/specifications/gatt/services
 - http://events.linuxfoundation.org/sites/events/files/slides/Bluetooth%20on%20Modern%20Linux_0.pdf
 - https://github.com/nettlep/gobbledegook
+- https://dbus.freedesktop.org/doc/dbus-specification.html#type-system
 
 ## License
 

@@ -69,9 +69,9 @@ type LEAdvertisement1 struct {
 type LEAdvertisement1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// ServiceData Service Data elements to include. The keys are the
-  // UUID to associate with the data.
-	ServiceData map[string]interface{}
+	// SolicitUUIDs Array of UUIDs to include in "Service Solicitation"
+  // Advertisement Data.
+	SolicitUUIDs []string
 
 	// Data Advertising Type to include in the Advertising
   // Data. Key is the advertising type and value is the
@@ -99,12 +99,27 @@ type LEAdvertisement1Properties struct {
   // to broadcast.
 	DiscoverableTimeout uint16
 
+	// Includes List of features to be included in the advertising
+  // packet.
+  // Possible values: as found on
+  // LEAdvertisingManager.SupportedIncludes
+	Includes []string
+
 	// LocalName Local name to be used in the advertising report. If the
   // string is too big to fit into the packet it will be
   // truncated.
   // If this property is available 'local-name' cannot be
   // present in the Includes.
 	LocalName string
+
+	// Type Determines the type of advertising packet requested.
+  // Possible values: "broadcast" or "peripheral"
+	Type string
+
+	// ManufacturerData Manufactuer Data fields to include in
+  // the Advertising Data.  Keys are the Manufacturer ID
+  // to associate with the data.
+	ManufacturerData map[uint16]interface{}
 
 	// Appearance Appearance to be used in the advertising report.
   // Possible values: as found on GAP Service.
@@ -115,10 +130,6 @@ type LEAdvertisement1Properties struct {
   // default is 2 seconds.
 	Duration uint16
 
-	// SolicitUUIDs Array of UUIDs to include in "Service Solicitation"
-  // Advertisement Data.
-	SolicitUUIDs []string
-
 	// Timeout Timeout of the advertisement in seconds. This defines
   // the lifetime of the advertisement.
 	Timeout uint16
@@ -127,20 +138,9 @@ type LEAdvertisement1Properties struct {
   // the Advertising Data.
 	ServiceUUIDs []string
 
-	// ManufacturerData Manufactuer Data fields to include in
-  // the Advertising Data.  Keys are the Manufacturer ID
-  // to associate with the data.
-	ManufacturerData map[uint16]interface{}
-
-	// Includes List of features to be included in the advertising
-  // packet.
-  // Possible values: as found on
-  // LEAdvertisingManager.SupportedIncludes
-	Includes []string
-
-	// Type Determines the type of advertising packet requested.
-  // Possible values: "broadcast" or "peripheral"
-	Type string
+	// ServiceData Service Data elements to include. The keys are the
+  // UUID to associate with the data.
+	ServiceData map[string]interface{}
 
 }
 

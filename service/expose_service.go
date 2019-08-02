@@ -1,8 +1,6 @@
 package service
 
 import (
-	"fmt"
-
 	"github.com/godbus/dbus"
 	"github.com/godbus/dbus/introspect"
 	"github.com/godbus/dbus/prop"
@@ -52,7 +50,7 @@ func ExposeService(s ExposableService) error {
 		},
 	}
 
-	fmt.Printf("\n\n%++v\n\n", propInterface.Introspection(s.Interface()))
+	// fmt.Printf("ExposeService\n\n%++v\n\n", propInterface.Introspection(s.Interface()))
 
 	err = conn.Export(
 		introspect.NewIntrospectable(node),

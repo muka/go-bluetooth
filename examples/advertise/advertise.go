@@ -21,14 +21,37 @@ func Run(adapterID string) error {
 	props := advertising.LEAdvertisement1Properties{
 		Type:         advertising.AdvertisementTypePeripheral,
 		Discoverable: true,
-		Duration:     100,
+		Duration:     10,
 		LocalName:    "goadv",
 	}
 
-	props.AddServiceUUID("180D", "180F")
-	props.AddData(0x26, []byte{0x01, 0x01, 0x00})
-	props.AddManifacturerData(0xfff, []byte{0x00, 0x01, 0x02, 0x03, 0x04})
-	props.AddServiceData("9999", []byte{0x00, 0x01, 0x02, 0x03, 0x04})
+	// Based on src/bluez/test/example-advertisement
+	// props.AddServiceUUID("180D", "180F")
+	// props.AddData(0x26, []byte{0x01, 0x01, 0x00})
+	// props.AddManifacturerData(0xfff, []byte{0x00, 0x01, 0x02, 0x03, 0x04})
+	// props.AddServiceData("9999", []byte{0x00, 0x01, 0x02, 0x03, 0x04})
+
+	// Credits
+	// https://scribles.net/creating-ibeacon-using-bluez-example-code-on-raspberry-pi/
+
+	company_id := uint16(0x004C)
+	payload := []uint8{
+		// beacon_type
+		0x02, 0x15,
+		// uuid
+		0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9,
+		0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16,
+		// major
+		// 0x2,
+		// 0x22,
+		// // minor
+		// 0x0,
+		// 0x44,
+		// // tx_power (?)
+		// 0xB3,
+	}
+
+	props.AddManifacturerData(company_id, payload)
 
 	log.Debug("Connecting to DBus")
 	conn, err := dbus.SystemBus()
@@ -69,8 +92,9 @@ func Run(adapterID string) error {
 	if err != nil {
 		return err
 	}
+	defer advManager.UnregisterAdvertisement(adv.Path())
 
-	log.Debug("Ready")
+	log.Debug("IBeacon ready")
 
 	select {}
 }
