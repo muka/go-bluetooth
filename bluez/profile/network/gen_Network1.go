@@ -65,14 +65,14 @@ type Network1 struct {
 type Network1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
+	// Connected Indicates if the device is connected.
+	Connected bool
+
 	// Interface Indicates the network interface name when available.
 	Interface string
 
 	// UUID Indicates the connection role when available.
 	UUID string
-
-	// Connected Indicates if the device is connected.
-	Connected bool
 
 }
 

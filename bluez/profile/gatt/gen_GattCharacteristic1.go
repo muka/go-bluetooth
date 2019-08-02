@@ -66,13 +66,6 @@ type GattCharacteristic1 struct {
 type GattCharacteristic1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// UUID 128-bit characteristic UUID.
-	UUID string
-
-	// Service Object path of the GATT service the characteristic
-  // belongs to.
-	Service dbus.ObjectPath
-
 	// Value The cached value of the characteristic. This property
   // gets updated only after a successful read request and
   // when a notification or indication is received, upon
@@ -123,6 +116,13 @@ type GattCharacteristic1Properties struct {
 
 	// Descriptors 
 	Descriptors []dbus.ObjectPath
+
+	// UUID 128-bit characteristic UUID.
+	UUID string
+
+	// Service Object path of the GATT service the characteristic
+  // belongs to.
+	Service dbus.ObjectPath
 
 }
 

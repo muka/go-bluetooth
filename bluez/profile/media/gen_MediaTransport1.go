@@ -65,6 +65,12 @@ type MediaTransport1 struct {
 type MediaTransport1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
+	// Volume Optional. Indicates volume level of the transport,
+  // this property is only writeable when the transport was
+  // acquired by the sender.
+  // Possible Values: 0-127
+	Volume uint16
+
 	// Device Device object which the transport is connected to.
 	Device dbus.ObjectPath
 
@@ -91,12 +97,6 @@ type MediaTransport1Properties struct {
   // property is only writeable when the transport was
   // acquired by the sender.
 	Delay uint16
-
-	// Volume Optional. Indicates volume level of the transport,
-  // this property is only writeable when the transport was
-  // acquired by the sender.
-  // Possible Values: 0-127
-	Volume uint16
 
 }
 

@@ -89,38 +89,6 @@ type Adapter1 struct {
 type Adapter1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// Discoverable Switch an adapter to discoverable or non-discoverable
-  // to either make it visible or hide it. This is a global
-  // setting and should only be used by the settings
-  // application.
-  // If the DiscoverableTimeout is set to a non-zero
-  // value then the system will set this value back to
-  // false after the timer expired.
-  // In case the adapter is switched off, setting this
-  // value will fail.
-  // When changing the Powered property the new state of
-  // this property will be updated via a PropertiesChanged
-  // signal.
-  // For any new adapter this settings defaults to false.
-	Discoverable bool
-
-	// PairableTimeout The pairable timeout in seconds. A value of zero
-  // means that the timeout is disabled and it will stay in
-  // pairable mode forever.
-  // The default value for pairable timeout should be
-  // disabled (value 0).
-	PairableTimeout uint32
-
-	// DiscoverableTimeout The discoverable timeout in seconds. A value of zero
-  // means that the timeout is disabled and it will stay in
-  // discoverable/limited mode forever.
-  // The default value for the discoverable timeout should
-  // be 180 seconds (3 minutes).
-	DiscoverableTimeout uint32
-
-	// Address The Bluetooth device address.
-	Address string
-
 	// AddressType The Bluetooth  Address Type. For dual-mode and BR/EDR
   // only adapter this defaults to "public". Single mode LE
   // adapters may have either value. With privacy enabled
@@ -150,9 +118,34 @@ type Adapter1Properties struct {
   // back to false.
 	Powered bool
 
-	// Modalias Local Device ID information in modalias format
-  // used by the kernel and udev.
-	Modalias string
+	// Discoverable Switch an adapter to discoverable or non-discoverable
+  // to either make it visible or hide it. This is a global
+  // setting and should only be used by the settings
+  // application.
+  // If the DiscoverableTimeout is set to a non-zero
+  // value then the system will set this value back to
+  // false after the timer expired.
+  // In case the adapter is switched off, setting this
+  // value will fail.
+  // When changing the Powered property the new state of
+  // this property will be updated via a PropertiesChanged
+  // signal.
+  // For any new adapter this settings defaults to false.
+	Discoverable bool
+
+	// PairableTimeout The pairable timeout in seconds. A value of zero
+  // means that the timeout is disabled and it will stay in
+  // pairable mode forever.
+  // The default value for pairable timeout should be
+  // disabled (value 0).
+	PairableTimeout uint32
+
+	// UUIDs List of 128-bit UUIDs that represents the available
+  // local services.
+	UUIDs []string
+
+	// Address The Bluetooth device address.
+	Address string
 
 	// Alias The Bluetooth friendly name. This value can be
   // changed.
@@ -177,12 +170,19 @@ type Adapter1Properties struct {
   // For any new adapter this settings defaults to true.
 	Pairable bool
 
+	// DiscoverableTimeout The discoverable timeout in seconds. A value of zero
+  // means that the timeout is disabled and it will stay in
+  // discoverable/limited mode forever.
+  // The default value for the discoverable timeout should
+  // be 180 seconds (3 minutes).
+	DiscoverableTimeout uint32
+
 	// Discovering Indicates that a device discovery procedure is active.
 	Discovering bool
 
-	// UUIDs List of 128-bit UUIDs that represents the available
-  // local services.
-	UUIDs []string
+	// Modalias Local Device ID information in modalias format
+  // used by the kernel and udev.
+	Modalias string
 
 }
 

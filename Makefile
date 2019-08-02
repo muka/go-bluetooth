@@ -15,14 +15,8 @@ run/example/service:
 run/example/client:
 	go run examples/service/*.go client
 
-gen/dev/clean:
-	rm -rf src/gen
-	mkdir -p src/gen
-
-gen/dev/run:
-	DEBUG=1 make gen
-
-gen/dev: gen/dev/clean gen/dev/run
+gen/clean:
+	rm `ls bluez/profile/*/gen_* -1`
 
 gen:
 	git submodule update

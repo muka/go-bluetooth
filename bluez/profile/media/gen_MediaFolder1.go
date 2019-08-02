@@ -91,20 +91,6 @@ type MediaFolder1 struct {
 type MediaFolder1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// NumberOfItems Number of items in the folder
-	NumberOfItems uint32
-
-	// Name Folder name:
-  // Possible values:
-  // "/Filesystem/...": Filesystem scope
-  // "/NowPlaying/...": NowPlaying scope
-  // Note: /NowPlaying folder might not be listed if player
-  // is stopped, folders created by Search are virtual so
-  // once another Search is perform or the folder is
-  // changed using ChangeFolder it will no longer be listed.
-  // Filters
-	Name string
-
 	// Start Offset of the first item.
   // Default value: 0
 	Start uint32
@@ -119,6 +105,20 @@ type MediaFolder1Properties struct {
   // "number-of-tracks", "number", "duration"
   // Default Value: All
 	Attributes []string
+
+	// NumberOfItems Number of items in the folder
+	NumberOfItems uint32
+
+	// Name Folder name:
+  // Possible values:
+  // "/Filesystem/...": Filesystem scope
+  // "/NowPlaying/...": NowPlaying scope
+  // Note: /NowPlaying folder might not be listed if player
+  // is stopped, folders created by Search are virtual so
+  // once another Search is perform or the folder is
+  // changed using ChangeFolder it will no longer be listed.
+  // Filters
+	Name string
 
 }
 
