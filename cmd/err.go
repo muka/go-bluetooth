@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"os"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func failArg(arg string) {
@@ -16,7 +17,7 @@ func failArgs(args []string) {
 
 func fail(err error) {
 	if err != nil {
-		log.Fatal(err)
+		log.Errorf("Error: %s", err)
 		os.Exit(1)
 	}
 	os.Exit(0)

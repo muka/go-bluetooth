@@ -40,7 +40,7 @@ func (app *Application) StartAdvertising(deviceInterface string) error {
 	}
 
 	props := &advertising.LEAdvertisement1Properties{
-		Type:         "peripheral",
+		Type:         advertising.AdvertisementTypePeripheral,
 		LocalName:    app.config.LocalName,
 		ServiceUUIDs: serviceUUIDs,
 		// Appearance:   0,

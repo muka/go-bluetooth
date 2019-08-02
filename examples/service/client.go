@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/muka/go-bluetooth/api"
-	"github.com/muka/go-bluetooth/emitter"
 	"github.com/muka/go-bluetooth/bluez/profile/adapter"
+	"github.com/muka/go-bluetooth/emitter"
 	log "github.com/sirupsen/logrus"
 )
 

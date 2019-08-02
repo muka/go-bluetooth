@@ -12,8 +12,12 @@ The go Bluez API is generated from the documentation, run `make gen` to generate
   cd $GOPATH/src/github.com/muka/go-bluetooth
   sudo ln -s `pwd`/scripts/dbus-go-bluetooth-service.conf /etc/dbus-1/system.d/
   sudo ln -s `pwd`/scripts/dbus-go-bluetooth-dev.conf /etc/dbus-1/system.d/
-  # Reload dbus to load new policies
-  dbus-send --system --type=method_call --dest=org.freedesktop.DBus / org.freedesktop.DBus.ReloadConfig
+  # Reload dbus to load new policies:
+  # via dbus
+  # dbus-send --system --type=method_call --dest=org.freedesktop.DBus / org.freedesktop.DBus.ReloadConfig
+  # via systemctl
+  systemctl reload dbus
+
 ```
 
 ## Features

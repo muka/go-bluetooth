@@ -1,6 +1,8 @@
 package service
 
 import (
+	"fmt"
+
 	"github.com/godbus/dbus"
 	"github.com/godbus/dbus/introspect"
 	"github.com/godbus/dbus/prop"
@@ -28,10 +30,6 @@ func ExposeService(s ExposableService) error {
 		return err
 	}
 
-	// for iface, props := range s.Properties() {
-	// 	propInterface.AddProperties(iface, props)
-	// }
-
 	err = propInterface.AddProperties(s.Interface(), s.Properties())
 	if err != nil {
 		return err
@@ -53,6 +51,8 @@ func ExposeService(s ExposableService) error {
 			},
 		},
 	}
+
+	fmt.Printf("\n\n%++v\n\n", propInterface.Introspection(s.Interface()))
 
 	err = conn.Export(
 		introspect.NewIntrospectable(node),

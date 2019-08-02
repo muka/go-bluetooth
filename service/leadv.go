@@ -12,7 +12,7 @@ func NewLEAdvertisement1(config *LEAdvertisement1Config, props *advertising.LEAd
 	// propInterface, err := NewProperties(config.conn)
 	// if err != nil {
 	// 	return nil, err
-	// }
+	//
 
 	s := &LEAdvertisement1{
 		config:     config,
@@ -26,6 +26,17 @@ func NewLEAdvertisement1(config *LEAdvertisement1Config, props *advertising.LEAd
 	// }
 
 	return s, nil
+}
+
+func NewLEAdvertisement1Config(objectPath dbus.ObjectPath, conn *dbus.Conn) (*LEAdvertisement1Config, error) {
+	if conn == nil {
+		sysconn, err := dbus.SystemBus()
+		if err != nil {
+			return nil, err
+		}
+		conn = sysconn
+	}
+	return &LEAdvertisement1Config{objectPath, conn}, nil
 }
 
 //LEAdvertisement1Config LEAdvertisement1 configuration

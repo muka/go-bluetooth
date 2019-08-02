@@ -6,8 +6,8 @@ DEBUG ?= 0
 all: gen/clean gen/run
 
 bluetoothd:
-	sudo killall bluetoothd && \
-	sudo bluetoothd -Edn P hostname
+	sudo killall bluetoothd || true && \
+	sudo bluetoothd -E -d -n -P hostname
 
 run/example/service:
 	go run examples/service/*.go

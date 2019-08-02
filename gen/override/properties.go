@@ -26,6 +26,11 @@ var PropertyTypes = map[string]map[string]string{
 		"IsService":       "bool `dbus:\"ignore\"`",
 	},
 	"org.bluez.LEAdvertisement1": map[string]string{
-		"Data": "map[uint8][]byte",
+		// dbus type: (yv) dict of byte variant (array of bytes)
+		"Data": "map[byte]interface{}",
+		// dbus type: (qv) dict of uint16 variant (array of bytes)
+		"ManufacturerData": "map[uint16]interface{}",
+		// dbus type: (s[v]) dict of string variant (array of bytes)
+		"ServiceData": "map[string]interface{}",
 	},
 }
