@@ -6,8 +6,6 @@ Golang bluetooth client based on bluez DBus interfaces based on Bluez reference 
 
 The go Bluez API is generated from the documentation, run `make gen` to generate go sources.
 
-`make gen`
-
 **Note** Ensure to install proper dbus rules on the system. For a dev setup, you can use the library configuration as follow
 
 ```sh
