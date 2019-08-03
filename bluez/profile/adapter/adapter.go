@@ -1,5 +1,7 @@
 package adapter
 
+import "github.com/muka/go-bluetooth/util"
+
 const (
 	DiscoveryFilterTransportAuto  = "auto"
 	DiscoveryFilterTransportBrEdr = "bredr"
@@ -71,6 +73,13 @@ func (a *DiscoveryFilter) AddUUIDs(uuids ...string) {
 			a.UUIDs = append(a.UUIDs, uuid)
 		}
 	}
+}
+
+// ToMap convert to a format compatible with adapter SetDiscoveryFilter
+func (a *DiscoveryFilter) ToMap() map[string]interface{} {
+	m := make(map[string]interface{})
+	util.StructToMap(a, m)
+	return m
 }
 
 func NewDiscoveryFilter() DiscoveryFilter {
