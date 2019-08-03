@@ -134,7 +134,7 @@ func (a *MediaEndpoint1) Unregister(signal chan *dbus.Signal) error {
 
 
 //SetConfiguration Set configuration for the transport.
-func (a *MediaEndpoint1) SetConfiguration(transport dbus.ObjectPath, properties map[string]dbus.Variant) error {
+func (a *MediaEndpoint1) SetConfiguration(transport dbus.ObjectPath, properties map[string]interface{}) error {
 	
 	return a.client.Call("SetConfiguration", 0, transport, properties).Store()
 	

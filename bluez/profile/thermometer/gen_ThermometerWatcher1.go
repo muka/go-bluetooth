@@ -141,7 +141,7 @@ func (a *ThermometerWatcher1) Unregister(signal chan *dbus.Signal) error {
 // Exponent and Mantissa values as
 // extracted from float value defined by
 // IEEE-11073-20601.
-func (a *ThermometerWatcher1) MeasurementReceived(measurement map[string]dbus.Variant) error {
+func (a *ThermometerWatcher1) MeasurementReceived(measurement map[string]interface{}) error {
 	
 	return a.client.Call("MeasurementReceived", 0, measurement).Store()
 	

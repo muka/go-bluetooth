@@ -65,9 +65,66 @@ type MediaPlayer1 struct {
 type MediaPlayer1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
+	// Position Playback position in milliseconds. Changing the
+  // position may generate additional events that will be
+  // sent to the remote device. When position is 0 it means
+  // the track is starting and when it's greater than or
+  // equal to track's duration the track has ended. Note
+  // that even if duration is not available in metadata it's
+  // possible to signal its end by setting position to the
+  // maximum uint32 value.
+	Position uint32
+
+	// Title Track title name
+	Title string
+
+	// TrackNumber Track number
+	TrackNumber uint32
+
+	// Duration Track duration in milliseconds
+	Duration uint32
+
+	// Genre Track genre name
+	Genre string
+
+	// NumberOfTracks Number of tracks in total
+	NumberOfTracks uint32
+
+	// Name Player name
+	Name string
+
+	// Equalizer Possible values: "off" or "on"
+	Equalizer string
+
+	// Repeat Possible values: "off", "singletrack", "alltracks" or
+  // "group"
+	Repeat string
+
+	// Scan Possible values: "off", "alltracks" or "group"
+	Scan string
+
 	// Track Track metadata.
   // Possible values:
-	Track map[string]dbus.Variant
+	Track map[string]interface{}
+
+	// Album Track album name
+	Album string
+
+	// Device Device object path.
+	Device dbus.ObjectPath
+
+	// Playlist Playlist object path.
+	Playlist dbus.ObjectPath
+
+	// Browsable If present indicates the player can be browsed using
+  // MediaFolder interface.
+  // Possible values:
+  // True: Supported and active
+  // False: Supported but inactive
+  // Note: If supported but inactive clients can enable it
+  // by using MediaFolder interface but it might interfere
+  // in the playback of other players.
+	Browsable bool
 
 	// Searchable If present indicates the player can be searched using
   // MediaFolder interface.
@@ -82,42 +139,13 @@ type MediaPlayer1Properties struct {
 	// Shuffle Possible values: "off", "alltracks" or "group"
 	Shuffle string
 
-	// Scan Possible values: "off", "alltracks" or "group"
-	Scan string
-
 	// Status Possible status: "playing", "stopped", "paused",
   // "forward-seek", "reverse-seek"
   // or "error"
 	Status string
 
-	// TrackNumber Track number
-	TrackNumber uint32
-
-	// Equalizer Possible values: "off" or "on"
-	Equalizer string
-
-	// Repeat Possible values: "off", "singletrack", "alltracks" or
-  // "group"
-	Repeat string
-
-	// Title Track title name
-	Title string
-
-	// Name Player name
-	Name string
-
-	// Browsable If present indicates the player can be browsed using
-  // MediaFolder interface.
-  // Possible values:
-  // True: Supported and active
-  // False: Supported but inactive
-  // Note: If supported but inactive clients can enable it
-  // by using MediaFolder interface but it might interfere
-  // in the playback of other players.
-	Browsable bool
-
-	// Device Device object path.
-	Device dbus.ObjectPath
+	// Artist Track artist name
+	Artist string
 
 	// Type Player type
   // Possible values:
@@ -127,39 +155,11 @@ type MediaPlayer1Properties struct {
   // "Video Broadcasting"
 	Type string
 
-	// Position Playback position in milliseconds. Changing the
-  // position may generate additional events that will be
-  // sent to the remote device. When position is 0 it means
-  // the track is starting and when it's greater than or
-  // equal to track's duration the track has ended. Note
-  // that even if duration is not available in metadata it's
-  // possible to signal its end by setting position to the
-  // maximum uint32 value.
-	Position uint32
-
-	// Artist Track artist name
-	Artist string
-
-	// Album Track album name
-	Album string
-
-	// Genre Track genre name
-	Genre string
-
-	// NumberOfTracks Number of tracks in total
-	NumberOfTracks uint32
-
-	// Duration Track duration in milliseconds
-	Duration uint32
-
 	// Subtype Player subtype
   // Possible values:
   // "Audio Book"
   // "Podcast"
 	Subtype string
-
-	// Playlist Playlist object path.
-	Playlist dbus.ObjectPath
 
 }
 

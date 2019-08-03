@@ -147,7 +147,7 @@ func (a *HealthManager1) Unregister(signal chan *dbus.Signal) error {
 // Optional, just for sources. Possible
 // values: "reliable", "streaming"
 // Possible Errors: org.bluez.Error.InvalidArguments
-func (a *HealthManager1) CreateApplication(config map[string]dbus.Variant) (dbus.ObjectPath, error) {
+func (a *HealthManager1) CreateApplication(config map[string]interface{}) (dbus.ObjectPath, error) {
 	
 	var val0 dbus.ObjectPath
 	err := a.client.Call("CreateApplication", 0, config).Store(&val0)

@@ -65,37 +65,8 @@ type Message1 struct {
 type Message1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// RecipientAddress Message recipient address
-	RecipientAddress string
-
-	// Status Message reception status
-  // Possible values: "complete",
-  // "fractioned" and "notification"
-	Status string
-
-	// Deleted Message deleted flag
-	Deleted bool
-
-	// Sender Message sender name
-	Sender string
-
-	// ReplyTo Message Reply-To address
-	ReplyTo string
-
-	// Folder Folder which the message belongs to
-	Folder string
-
-	// Subject Message subject
-	Subject string
-
-	// Timestamp Message timestamp
-	Timestamp string
-
 	// SenderAddress Message sender address
 	SenderAddress string
-
-	// Read Message read flag
-	Read bool
 
 	// Recipient Message recipient name
 	Recipient string
@@ -107,14 +78,43 @@ type Message1Properties struct {
   // Message size in bytes
 	Type string
 
+	// Read Message read flag
+	Read bool
+
+	// Folder Folder which the message belongs to
+	Folder string
+
 	// Priority Message priority flag
 	Priority bool
+
+	// Protected Message protected flag
+	Protected bool
+
+	// Timestamp Message timestamp
+	Timestamp string
+
+	// RecipientAddress Message recipient address
+	RecipientAddress string
+
+	// Deleted Message deleted flag
+	Deleted bool
+
+	// Sender Message sender name
+	Sender string
+
+	// ReplyTo Message Reply-To address
+	ReplyTo string
+
+	// Status Message reception status
+  // Possible values: "complete",
+  // "fractioned" and "notification"
+	Status string
 
 	// Sent Message sent flag
 	Sent bool
 
-	// Protected Message protected flag
-	Protected bool
+	// Subject Message subject
+	Subject string
 
 }
 
@@ -193,10 +193,10 @@ func (a *Message1) Unregister(signal chan *dbus.Signal) error {
 // with the object path, to avoid a call to GetProperties.
 // Possible errors: org.bluez.obex.Error.InvalidArguments
 // org.bluez.obex.Error.Failed
-func (a *Message1) Get(targetfile string, attachment bool) (dbus.ObjectPath, map[string]dbus.Variant, error) {
+func (a *Message1) Get(targetfile string, attachment bool) (dbus.ObjectPath, map[string]interface{}, error) {
 	
 	var val0 dbus.ObjectPath
-  var val1 map[string]dbus.Variant
+  var val1 map[string]interface{}
 	err := a.client.Call("Get", 0, targetfile, attachment).Store(&val0, &val1)
 	return val0, val1, err	
 }

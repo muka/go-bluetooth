@@ -2,8 +2,9 @@ package util
 
 import (
 	"errors"
-	"github.com/godbus/dbus"
 	"reflect"
+
+	"github.com/godbus/dbus"
 )
 
 func mapStructField(obj interface{}, name string, value dbus.Variant) error {
@@ -36,5 +37,16 @@ func MapToStruct(s interface{}, m map[string]dbus.Variant) error {
 			return err
 		}
 	}
+	return nil
+}
+
+// StructToMap converts a struct to a map[string]interface{}
+func StructToMap(s interface{}, m map[string]interface{}) error {
+
+	structValue := reflect.ValueOf(s).Elem()
+	for i := 0; i < structValue.NumField(); i++ {
+		m[structValue.Type().Field(i).Name] = structValue.Field(i).Interface()
+	}
+
 	return nil
 }

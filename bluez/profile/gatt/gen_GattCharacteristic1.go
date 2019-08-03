@@ -66,20 +66,6 @@ type GattCharacteristic1 struct {
 type GattCharacteristic1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// Value The cached value of the characteristic. This property
-  // gets updated only after a successful read request and
-  // when a notification or indication is received, upon
-  // which a PropertiesChanged signal will be emitted.
-	Value []byte `dbus:"emit"`
-
-	// WriteAcquired True, if this characteristic has been acquired by any
-  // client using AcquireWrite.
-  // For client properties is ommited in case
-  // 'write-without-response' flag is not set.
-  // For server the presence of this property indicates
-  // that AcquireWrite is supported.
-	WriteAcquired bool
-
 	// NotifyAcquired True, if this characteristic has been acquired by any
   // client using AcquireNotify.
   // For client this properties is ommited in case 'notify'
@@ -123,6 +109,20 @@ type GattCharacteristic1Properties struct {
 	// Service Object path of the GATT service the characteristic
   // belongs to.
 	Service dbus.ObjectPath
+
+	// Value The cached value of the characteristic. This property
+  // gets updated only after a successful read request and
+  // when a notification or indication is received, upon
+  // which a PropertiesChanged signal will be emitted.
+	Value []byte `dbus:"emit"`
+
+	// WriteAcquired True, if this characteristic has been acquired by any
+  // client using AcquireWrite.
+  // For client properties is ommited in case
+  // 'write-without-response' flag is not set.
+  // For server the presence of this property indicates
+  // that AcquireWrite is supported.
+	WriteAcquired bool
 
 }
 
@@ -202,7 +202,7 @@ func (a *GattCharacteristic1) Unregister(signal chan *dbus.Signal) error {
 // org.bluez.Error.NotAuthorized
 // org.bluez.Error.InvalidOffset
 // org.bluez.Error.NotSupported
-func (a *GattCharacteristic1) ReadValue(options map[string]dbus.Variant) ([]byte, error) {
+func (a *GattCharacteristic1) ReadValue(options map[string]interface{}) ([]byte, error) {
 	
 	var val0 []byte
 	err := a.client.Call("ReadValue", 0, options).Store(&val0)
@@ -223,7 +223,7 @@ func (a *GattCharacteristic1) ReadValue(options map[string]dbus.Variant) ([]byte
 // org.bluez.Error.InvalidValueLength
 // org.bluez.Error.NotAuthorized
 // org.bluez.Error.NotSupported
-func (a *GattCharacteristic1) WriteValue(value []byte, options map[string]dbus.Variant) error {
+func (a *GattCharacteristic1) WriteValue(value []byte, options map[string]interface{}) error {
 	
 	return a.client.Call("WriteValue", 0, value, options).Store()
 	
@@ -250,7 +250,7 @@ func (a *GattCharacteristic1) WriteValue(value []byte, options map[string]dbus.V
 // "link": Link type (Server only)
 // Possible Errors: org.bluez.Error.Failed
 // org.bluez.Error.NotSupported
-func (a *GattCharacteristic1) AcquireWrite(options map[string]dbus.Variant) (dbus.UnixFD, uint16, error) {
+func (a *GattCharacteristic1) AcquireWrite(options map[string]interface{}) (dbus.UnixFD, uint16, error) {
 	
 	var val0 dbus.UnixFD
   var val1 uint16
@@ -284,7 +284,7 @@ func (a *GattCharacteristic1) AcquireWrite(options map[string]dbus.Variant) (dbu
 // "link": Link type (Server only)
 // Possible Errors: org.bluez.Error.Failed
 // org.bluez.Error.NotSupported
-func (a *GattCharacteristic1) AcquireNotify(options map[string]dbus.Variant) (dbus.UnixFD, uint16, error) {
+func (a *GattCharacteristic1) AcquireNotify(options map[string]interface{}) (dbus.UnixFD, uint16, error) {
 	
 	var val0 dbus.UnixFD
   var val1 uint16

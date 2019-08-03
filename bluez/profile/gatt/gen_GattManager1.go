@@ -221,7 +221,7 @@ func (a *GattManager1) Unregister(signal chan *dbus.Signal) error {
 // service or profile.
 // Possible errors: org.bluez.Error.InvalidArguments
 // org.bluez.Error.AlreadyExists
-func (a *GattManager1) RegisterApplication(application dbus.ObjectPath, options map[string]dbus.Variant) error {
+func (a *GattManager1) RegisterApplication(application dbus.ObjectPath, options map[string]interface{}) error {
 	
 	return a.client.Call("RegisterApplication", 0, application, options).Store()
 	

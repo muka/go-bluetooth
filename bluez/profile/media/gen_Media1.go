@@ -152,7 +152,7 @@ func (a *Media1) Unregister(signal chan *dbus.Signal) error {
 // org.bluez.Error.NotSupported - emitted
 // when interface for the end-point is
 // disabled.
-func (a *Media1) RegisterEndpoint(endpoint dbus.ObjectPath, properties map[string]dbus.Variant) error {
+func (a *Media1) RegisterEndpoint(endpoint dbus.ObjectPath, properties map[string]interface{}) error {
 	
 	return a.client.Call("RegisterEndpoint", 0, endpoint, properties).Store()
 	
@@ -175,7 +175,7 @@ func (a *Media1) UnregisterEndpoint(endpoint dbus.ObjectPath) error {
 // automatically unregistered.
 // Possible Errors: org.bluez.Error.InvalidArguments
 // org.bluez.Error.NotSupported
-func (a *Media1) RegisterPlayer(player dbus.ObjectPath, properties map[string]dbus.Variant) error {
+func (a *Media1) RegisterPlayer(player dbus.ObjectPath, properties map[string]interface{}) error {
 	
 	return a.client.Call("RegisterPlayer", 0, player, properties).Store()
 	

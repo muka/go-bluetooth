@@ -151,7 +151,7 @@ func (a *Profile1) Release() error {
 // uint16 Features		Profile features (optional)
 // Possible errors: org.bluez.Error.Rejected
 // org.bluez.Error.Canceled
-func (a *Profile1) NewConnection(device dbus.ObjectPath, fd int32, fd_properties map[string]dbus.Variant) error {
+func (a *Profile1) NewConnection(device dbus.ObjectPath, fd int32, fd_properties map[string]interface{}) error {
 	
 	return a.client.Call("NewConnection", 0, device, fd, fd_properties).Store()
 	

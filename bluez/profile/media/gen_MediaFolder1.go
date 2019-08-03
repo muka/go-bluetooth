@@ -91,14 +91,6 @@ type MediaFolder1 struct {
 type MediaFolder1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// Start Offset of the first item.
-  // Default value: 0
-	Start uint32
-
-	// End Offset of the last item.
-  // Default value: NumbeOfItems
-	End uint32
-
 	// Attributes Item properties that should be included in the list.
   // Possible Values:
   // "title", "artist", "album", "genre",
@@ -119,6 +111,14 @@ type MediaFolder1Properties struct {
   // changed using ChangeFolder it will no longer be listed.
   // Filters
 	Name string
+
+	// Start Offset of the first item.
+  // Default value: 0
+	Start uint32
+
+	// End Offset of the last item.
+  // Default value: NumbeOfItems
+	End uint32
 
 }
 
@@ -192,7 +192,7 @@ func (a *MediaFolder1) Unregister(signal chan *dbus.Signal) error {
 // and pass to ChangeFolder.
 // Possible Errors: org.bluez.Error.NotSupported
 // org.bluez.Error.Failed
-func (a *MediaFolder1) Search(value string, filter map[string]dbus.Variant) (dbus.ObjectPath, error) {
+func (a *MediaFolder1) Search(value string, filter map[string]interface{}) (dbus.ObjectPath, error) {
 	
 	var val0 dbus.ObjectPath
 	err := a.client.Call("Search", 0, value, filter).Store(&val0)

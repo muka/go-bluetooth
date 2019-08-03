@@ -51,8 +51,8 @@ func toType(t string) string {
 	case "uint8_t":
 		return "uint8"
 	case "dict":
-		return "map[string]dbus.Variant"
-		// return "map[string]interface{}"
+		// return "map[string]dbus.Variant"
+		return "map[string]interface{}"
 	// check in media-api
 	case "properties":
 		return "string"

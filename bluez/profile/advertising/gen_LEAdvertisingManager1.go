@@ -91,17 +91,17 @@ type LEAdvertisingManager1 struct {
 type LEAdvertisingManager1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// ActiveInstances Number of active advertising instances.
-	ActiveInstances byte
-
-	// SupportedInstances Number of available advertising instances.
-	SupportedInstances byte
-
 	// SupportedIncludes List of supported system includes.
   // Possible values: "tx-power"
   // "appearance"
   // "local-name"
 	SupportedIncludes []string
+
+	// ActiveInstances Number of active advertising instances.
+	ActiveInstances byte
+
+	// SupportedInstances Number of available advertising instances.
+	SupportedInstances byte
 
 }
 
@@ -186,7 +186,7 @@ func (a *LEAdvertisingManager1) Unregister(signal chan *dbus.Signal) error {
 // Possible errors: org.bluez.Error.InvalidArguments
 // org.bluez.Error.AlreadyExists
 // org.bluez.Error.InvalidLength
-func (a *LEAdvertisingManager1) RegisterAdvertisement(advertisement dbus.ObjectPath, options map[string]dbus.Variant) error {
+func (a *LEAdvertisingManager1) RegisterAdvertisement(advertisement dbus.ObjectPath, options map[string]interface{}) error {
 	
 	return a.client.Call("RegisterAdvertisement", 0, advertisement, options).Store()
 	

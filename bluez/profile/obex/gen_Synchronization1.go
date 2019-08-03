@@ -159,10 +159,10 @@ func (a *Synchronization1) SetLocation(location string) error {
 // with the object path, to avoid a call to GetProperties.
 // Possible errors: org.bluez.obex.Error.InvalidArguments
 // org.bluez.obex.Error.Failed
-func (a *Synchronization1) GetPhonebook(targetfile string) (dbus.ObjectPath, map[string]dbus.Variant, error) {
+func (a *Synchronization1) GetPhonebook(targetfile string) (dbus.ObjectPath, map[string]interface{}, error) {
 	
 	var val0 dbus.ObjectPath
-  var val1 map[string]dbus.Variant
+  var val1 map[string]interface{}
 	err := a.client.Call("GetPhonebook", 0, targetfile).Store(&val0, &val1)
 	return val0, val1, err	
 }
@@ -175,10 +175,10 @@ func (a *Synchronization1) GetPhonebook(targetfile string) (dbus.ObjectPath, map
 // with the object path, to avoid a call to GetProperties.
 // Possible errors: org.bluez.obex.Error.InvalidArguments
 // org.bluez.obex.Error.Failed
-func (a *Synchronization1) PutPhonebook(sourcefile string) (dbus.ObjectPath, map[string]dbus.Variant, error) {
+func (a *Synchronization1) PutPhonebook(sourcefile string) (dbus.ObjectPath, map[string]interface{}, error) {
 	
 	var val0 dbus.ObjectPath
-  var val1 map[string]dbus.Variant
+  var val1 map[string]interface{}
 	err := a.client.Call("PutPhonebook", 0, sourcefile).Store(&val0, &val1)
 	return val0, val1, err	
 }

@@ -65,6 +65,10 @@ type HealthChannel1 struct {
 type HealthChannel1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
+	// Type The quality of service of the data channel. ("reliable"
+  // or "streaming")
+	Type string
+
 	// Device Identifies the Remote Device that is connected with.
   // Maps with a HealthDevice object.
 	Device dbus.ObjectPath
@@ -73,10 +77,6 @@ type HealthChannel1Properties struct {
   // is related to (which indirectly defines its role and
   // data type).
 	Application dbus.ObjectPath
-
-	// Type The quality of service of the data channel. ("reliable"
-  // or "streaming")
-	Type string
 
 }
 

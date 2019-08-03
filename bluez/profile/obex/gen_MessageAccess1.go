@@ -149,9 +149,9 @@ func (a *MessageAccess1) SetFolder(name string) error {
 // Possible filters: Offset and MaxCount
 // Possible errors: org.bluez.obex.Error.InvalidArguments
 // org.bluez.obex.Error.Failed
-func (a *MessageAccess1) ListFolders(filter map[string]dbus.Variant) ([]map[string]dbus.Variant, error) {
+func (a *MessageAccess1) ListFolders(filter map[string]interface{}) ([]map[string]interface{}, error) {
 	
-	var val0 []map[string]dbus.Variant
+	var val0 []map[string]interface{}
 	err := a.client.Call("ListFolders", 0, filter).Store(&val0)
 	return val0, err	
 }
@@ -218,10 +218,10 @@ func (a *MessageAccess1) ListFilterFields() ([]string, error) {
 // Message protected flag
 // Possible errors: org.bluez.obex.Error.InvalidArguments
 // org.bluez.obex.Error.Failed
-func (a *MessageAccess1) ListMessages(folder string, filter map[string]dbus.Variant) ([]dbus.ObjectPath, map[string]dbus.Variant, error) {
+func (a *MessageAccess1) ListMessages(folder string, filter map[string]interface{}) ([]dbus.ObjectPath, map[string]interface{}, error) {
 	
 	var val0 []dbus.ObjectPath
-  var val1 map[string]dbus.Variant
+  var val1 map[string]interface{}
 	err := a.client.Call("ListMessages", 0, folder, filter).Store(&val0, &val1)
 	return val0, val1, err	
 }
@@ -276,7 +276,7 @@ func (a *MessageAccess1) UpdateInbox() error {
 // Filter messages by priority flag.
 // Possible values: True for high priority or False for
 // non-high priority
-func (a *MessageAccess1) PushMessage(sourcefile string, folder string, args map[string]dbus.Variant) error {
+func (a *MessageAccess1) PushMessage(sourcefile string, folder string, args map[string]interface{}) error {
 	
 	return a.client.Call("PushMessage", 0, sourcefile, folder, args).Store()
 	

@@ -163,9 +163,9 @@ func (a *FileTransfer) CreateFolder(folder string) error {
 // uint64 Accessed : Last access
 // uint64 Created : Creation date
 // Possible errors: org.bluez.obex.Error.Failed
-func (a *FileTransfer) ListFolder() ([]map[string]dbus.Variant, error) {
+func (a *FileTransfer) ListFolder() ([]map[string]interface{}, error) {
 	
-	var val0 []map[string]dbus.Variant
+	var val0 []map[string]interface{}
 	err := a.client.Call("ListFolder", 0, ).Store(&val0)
 	return val0, err	
 }
@@ -181,10 +181,10 @@ func (a *FileTransfer) ListFolder() ([]map[string]dbus.Variant, error) {
 // with the object path, to avoid a call to GetProperties.
 // Possible errors: org.bluez.obex.Error.InvalidArguments
 // org.bluez.obex.Error.Failed
-func (a *FileTransfer) GetFile(targetfile string, sourcefile string) (dbus.ObjectPath, map[string]dbus.Variant, error) {
+func (a *FileTransfer) GetFile(targetfile string, sourcefile string) (dbus.ObjectPath, map[string]interface{}, error) {
 	
 	var val0 dbus.ObjectPath
-  var val1 map[string]dbus.Variant
+  var val1 map[string]interface{}
 	err := a.client.Call("GetFile", 0, targetfile, sourcefile).Store(&val0, &val1)
 	return val0, val1, err	
 }
@@ -198,10 +198,10 @@ func (a *FileTransfer) GetFile(targetfile string, sourcefile string) (dbus.Objec
 // with the object path, to avoid a call to GetProperties.
 // Possible errors: org.bluez.obex.Error.InvalidArguments
 // org.bluez.obex.Error.Failed
-func (a *FileTransfer) PutFile(sourcefile string, targetfile string) (dbus.ObjectPath, map[string]dbus.Variant, error) {
+func (a *FileTransfer) PutFile(sourcefile string, targetfile string) (dbus.ObjectPath, map[string]interface{}, error) {
 	
 	var val0 dbus.ObjectPath
-  var val1 map[string]dbus.Variant
+  var val1 map[string]interface{}
 	err := a.client.Call("PutFile", 0, sourcefile, targetfile).Store(&val0, &val1)
 	return val0, val1, err	
 }

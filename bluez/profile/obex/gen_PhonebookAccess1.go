@@ -193,10 +193,10 @@ func (a *PhonebookAccess1) Select(location string, phonebook string) error {
 // Fields
 // Possible errors: org.bluez.obex.Error.InvalidArguments
 // org.bluez.obex.Forbidden
-func (a *PhonebookAccess1) PullAll(targetfile string, filters map[string]dbus.Variant) (dbus.ObjectPath, map[string]dbus.Variant, error) {
+func (a *PhonebookAccess1) PullAll(targetfile string, filters map[string]interface{}) (dbus.ObjectPath, map[string]interface{}, error) {
 	
 	var val0 dbus.ObjectPath
-  var val1 map[string]dbus.Variant
+  var val1 map[string]interface{}
 	err := a.client.Call("PullAll", 0, targetfile, filters).Store(&val0, &val1)
 	return val0, val1, err	
 }
@@ -214,7 +214,7 @@ func (a *PhonebookAccess1) PullAll(targetfile string, filters map[string]dbus.Va
 // Possible errors: org.bluez.obex.Error.InvalidArguments
 // org.bluez.obex.Error.Forbidden
 // org.bluez.obex.Error.Failed
-func (a *PhonebookAccess1) Pull(vcard string, targetfile string, filters map[string]dbus.Variant) error {
+func (a *PhonebookAccess1) Pull(vcard string, targetfile string, filters map[string]interface{}) error {
 	
 	return a.client.Call("Pull", 0, vcard, targetfile, filters).Store()
 	
@@ -232,7 +232,7 @@ func (a *PhonebookAccess1) Pull(vcard string, targetfile string, filters map[str
 // Possible errors: org.bluez.obex.Error.InvalidArguments
 // org.bluez.obex.Error.Forbidden
 // org.bluez.obex.Error.Failed
-func (a *PhonebookAccess1) Search(field string, value string, filters map[string]dbus.Variant) error {
+func (a *PhonebookAccess1) Search(field string, value string, filters map[string]interface{}) error {
 	
 	return a.client.Call("Search", 0, field, value, filters).Store()
 	

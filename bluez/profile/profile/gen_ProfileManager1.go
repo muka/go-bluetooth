@@ -142,7 +142,7 @@ func (a *ProfileManager1) Unregister(signal chan *dbus.Signal) error {
 // string Name
 // Human readable name for the profile
 // string Service
-func (a *ProfileManager1) RegisterProfile(profile dbus.ObjectPath, uuid string, options map[string]dbus.Variant) error {
+func (a *ProfileManager1) RegisterProfile(profile dbus.ObjectPath, uuid string, options map[string]interface{}) error {
 	
 	return a.client.Call("RegisterProfile", 0, profile, uuid, options).Store()
 	

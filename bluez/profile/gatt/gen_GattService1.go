@@ -69,6 +69,12 @@ type GattService1 struct {
 type GattService1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
+	// Characteristics 
+	Characteristics []dbus.ObjectPath `dbus:"emit"`
+
+	// IsService 
+	IsService bool `dbus:"ignore"`
+
 	// UUID 128-bit service UUID.
 	UUID string
 
@@ -84,12 +90,6 @@ type GattService1Properties struct {
 	// Includes Array of object paths representing the included
   // services of this service.
 	Includes []dbus.ObjectPath
-
-	// Characteristics 
-	Characteristics []dbus.ObjectPath `dbus:"emit"`
-
-	// IsService 
-	IsService bool `dbus:"ignore"`
 
 }
 

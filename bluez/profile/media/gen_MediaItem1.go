@@ -91,35 +91,49 @@ type MediaItem1 struct {
 type MediaItem1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// Playable Indicates if the item can be played
-  // Available if property Type is "folder"
-	Playable bool
-
-	// Album Item album name
+	// Duration Item duration in milliseconds
   // Available if property Type is "audio"
   // or "video"
-	Album string
+	Duration uint32
+
+	// Name Item displayable name
+	Name string
+
+	// Artist Item artist name
+  // Available if property Type is "audio"
+  // or "video"
+	Artist string
 
 	// Genre Item genre name
   // Available if property Type is "audio"
   // or "video"
 	Genre string
 
-	// Number Item album number
-  // Available if property Type is "audio"
-  // or "video"
-	Number uint32
+	// Playable Indicates if the item can be played
+  // Available if property Type is "folder"
+	Playable bool
 
-	// Duration Item duration in milliseconds
+	// Metadata Item metadata.
+  // Possible values:
+	Metadata map[string]interface{}
+
+	// Title Item title name
   // Available if property Type is "audio"
   // or "video"
-	Duration uint32
+	Title string
+
+	// Album Item album name
+  // Available if property Type is "audio"
+  // or "video"
+	Album string
+
+	// NumberOfTracks Item album number of tracks in total
+  // Available if property Type is "audio"
+  // or "video"
+	NumberOfTracks uint32
 
 	// Player Player object path the item belongs to
 	Player dbus.ObjectPath
-
-	// Name Item displayable name
-	Name string
 
 	// Type Item type
   // Possible values: "video", "audio", "folder"
@@ -130,24 +144,10 @@ type MediaItem1Properties struct {
   // Available if property Type is "Folder"
 	FolderType string
 
-	// Metadata Item metadata.
-  // Possible values:
-	Metadata map[string]dbus.Variant
-
-	// Title Item title name
+	// Number Item album number
   // Available if property Type is "audio"
   // or "video"
-	Title string
-
-	// Artist Item artist name
-  // Available if property Type is "audio"
-  // or "video"
-	Artist string
-
-	// NumberOfTracks Item album number of tracks in total
-  // Available if property Type is "audio"
-  // or "video"
-	NumberOfTracks uint32
+	Number uint32
 
 }
 

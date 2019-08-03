@@ -65,6 +65,11 @@ type MediaTransport1 struct {
 type MediaTransport1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
+	// Delay Optional. Transport delay in 1/10 of millisecond, this
+  // property is only writeable when the transport was
+  // acquired by the sender.
+	Delay uint16
+
 	// Volume Optional. Indicates volume level of the transport,
   // this property is only writeable when the transport was
   // acquired by the sender.
@@ -92,11 +97,6 @@ type MediaTransport1Properties struct {
   // "pending": streaming but not acquired
   // "active": streaming and acquired
 	State string
-
-	// Delay Optional. Transport delay in 1/10 of millisecond, this
-  // property is only writeable when the transport was
-  // acquired by the sender.
-	Delay uint16
 
 }
 

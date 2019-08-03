@@ -65,26 +65,74 @@ type Device1 struct {
 type Device1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// RSSI Received Signal Strength Indicator of the remote
-  // device (inquiry or advertising).
-	RSSI int16
+	// Name The Bluetooth remote name. This value can not be
+  // changed. Use the Alias property instead.
+  // This value is only present for completeness. It is
+  // better to always use the Alias property when
+  // displaying the devices name.
+  // If the Alias property is unset, it will reflect
+  // this value which makes it more convenient.
+	Name string
 
-	// TxPower Advertised transmitted power level (inquiry or
-  // advertising).
-	TxPower int16
-
-	// Icon Proposed icon name according to the freedesktop.org
-  // icon naming specification.
-	Icon string
-
-	// Paired Indicates if the remote device is paired.
-	Paired bool
+	// Appearance External appearance of device, as found on GAP service.
+	Appearance uint16
 
 	// Adapter The object path of the adapter the device belongs to.
 	Adapter dbus.ObjectPath
 
+	// Class The Bluetooth class of device of the remote device.
+	Class uint32
+
+	// Trusted Indicates if the remote is seen as trusted. This
+  // setting can be changed by the application.
+	Trusted bool
+
+	// Blocked If set to true any incoming connections from the
+  // device will be immediately rejected. Any device
+  // drivers will also be removed and no new ones will
+  // be probed as long as the device is blocked.
+	Blocked bool
+
+	// Modalias Remote Device ID information in modalias format
+  // used by the kernel and udev.
+	Modalias string
+
+	// RSSI Received Signal Strength Indicator of the remote
+  // device (inquiry or advertising).
+	RSSI int16
+
 	// AdvertisingFlags The Advertising Data Flags of the remote device.
 	AdvertisingFlags []byte
+
+	// Address The Bluetooth device address of the remote device.
+	Address string
+
+	// AddressType The Bluetooth device Address Type. For dual-mode and
+  // BR/EDR only devices this defaults to "public". Single
+  // mode LE devices may have either value. If remote device
+  // uses privacy than before pairing this represents address
+  // type used for connection and Identity Address after
+  // pairing.
+  // Possible values:
+  // "public" - Public address
+  // "random" - Random address
+	AddressType string
+
+	// Paired Indicates if the remote device is paired.
+	Paired bool
+
+	// Connected Indicates if the remote device is currently connected.
+  // A PropertiesChanged signal indicate changes to this
+  // status.
+	Connected bool
+
+	// ServiceData Service advertisement data. Keys are the UUIDs in
+  // string format followed by its byte array value.
+	ServiceData map[string]interface{}
+
+	// ServicesResolved Indicate whether or not service discovery has been
+  // resolved.
+	ServicesResolved bool
 
 	// AdvertisingData The Advertising Data of the remote device. Keys are
   // are 8 bits AD Type followed by data as byte array.
@@ -96,39 +144,15 @@ type Device1Properties struct {
   // Example:
   // <Transport Discovery> <Organization Flags...>
   // 0x26                   0x01         0x01...
-	AdvertisingData map[string]dbus.Variant
+	AdvertisingData map[string]interface{}
 
-	// Address The Bluetooth device address of the remote device.
-	Address string
-
-	// Class The Bluetooth class of device of the remote device.
-	Class uint32
-
-	// Modalias Remote Device ID information in modalias format
-  // used by the kernel and udev.
-	Modalias string
-
-	// Appearance External appearance of device, as found on GAP service.
-	Appearance uint16
+	// Icon Proposed icon name according to the freedesktop.org
+  // icon naming specification.
+	Icon string
 
 	// UUIDs List of 128-bit UUIDs that represents the available
   // remote services.
 	UUIDs []string
-
-	// Connected Indicates if the remote device is currently connected.
-  // A PropertiesChanged signal indicate changes to this
-  // status.
-	Connected bool
-
-	// Trusted Indicates if the remote is seen as trusted. This
-  // setting can be changed by the application.
-	Trusted bool
-
-	// Blocked If set to true any incoming connections from the
-  // device will be immediately rejected. Any device
-  // drivers will also be removed and no new ones will
-  // be probed as long as the device is blocked.
-	Blocked bool
 
 	// Alias The name alias for the remote device. The alias can
   // be used to have a different friendly name for the
@@ -149,38 +173,14 @@ type Device1Properties struct {
   // have disabled Extended Inquiry Response support.
 	LegacyPairing bool
 
+	// TxPower Advertised transmitted power level (inquiry or
+  // advertising).
+	TxPower int16
+
 	// ManufacturerData Manufacturer specific advertisement data. Keys are
   // 16 bits Manufacturer ID followed by its byte array
   // value.
 	ManufacturerData map[uint16]dbus.Variant
-
-	// AddressType The Bluetooth device Address Type. For dual-mode and
-  // BR/EDR only devices this defaults to "public". Single
-  // mode LE devices may have either value. If remote device
-  // uses privacy than before pairing this represents address
-  // type used for connection and Identity Address after
-  // pairing.
-  // Possible values:
-  // "public" - Public address
-  // "random" - Random address
-	AddressType string
-
-	// Name The Bluetooth remote name. This value can not be
-  // changed. Use the Alias property instead.
-  // This value is only present for completeness. It is
-  // better to always use the Alias property when
-  // displaying the devices name.
-  // If the Alias property is unset, it will reflect
-  // this value which makes it more convenient.
-	Name string
-
-	// ServiceData Service advertisement data. Keys are the UUIDs in
-  // string format followed by its byte array value.
-	ServiceData map[string]dbus.Variant
-
-	// ServicesResolved Indicate whether or not service discovery has been
-  // resolved.
-	ServicesResolved bool
 
 }
 

@@ -69,9 +69,52 @@ type LEAdvertisement1 struct {
 type LEAdvertisement1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
+	// Timeout Timeout of the advertisement in seconds. This defines
+  // the lifetime of the advertisement.
+	Timeout uint16
+
+	// Type Determines the type of advertising packet requested.
+  // Possible values: "broadcast" or "peripheral"
+	Type string
+
+	// ManufacturerData Manufactuer Data fields to include in
+  // the Advertising Data.  Keys are the Manufacturer ID
+  // to associate with the data.
+	ManufacturerData map[uint16]interface{}
+
+	// DiscoverableTimeout The discoverable timeout in seconds. A value of zero
+  // means that the timeout is disabled and it will stay in
+  // discoverable/limited mode forever.
+  // Note: This property shall not be set when Type is set
+  // to broadcast.
+	DiscoverableTimeout uint16
+
+	// Includes List of features to be included in the advertising
+  // packet.
+  // Possible values: as found on
+  // LEAdvertisingManager.SupportedIncludes
+	Includes []string
+
+	// Appearance Appearance to be used in the advertising report.
+  // Possible values: as found on GAP Service.
+	Appearance uint16
+
+	// Duration Duration of the advertisement in seconds. If there are
+  // other applications advertising no duration is set the
+  // default is 2 seconds.
+	Duration uint16
+
+	// ServiceUUIDs List of UUIDs to include in the "Service UUID" field of
+  // the Advertising Data.
+	ServiceUUIDs []string
+
 	// SolicitUUIDs Array of UUIDs to include in "Service Solicitation"
   // Advertisement Data.
 	SolicitUUIDs []string
+
+	// ServiceData Service Data elements to include. The keys are the
+  // UUID to associate with the data.
+	ServiceData map[string]interface{}
 
 	// Data Advertising Type to include in the Advertising
   // Data. Key is the advertising type and value is the
@@ -92,55 +135,12 @@ type LEAdvertisement1Properties struct {
   // to broadcast.
 	Discoverable bool
 
-	// DiscoverableTimeout The discoverable timeout in seconds. A value of zero
-  // means that the timeout is disabled and it will stay in
-  // discoverable/limited mode forever.
-  // Note: This property shall not be set when Type is set
-  // to broadcast.
-	DiscoverableTimeout uint16
-
-	// Includes List of features to be included in the advertising
-  // packet.
-  // Possible values: as found on
-  // LEAdvertisingManager.SupportedIncludes
-	Includes []string
-
 	// LocalName Local name to be used in the advertising report. If the
   // string is too big to fit into the packet it will be
   // truncated.
   // If this property is available 'local-name' cannot be
   // present in the Includes.
 	LocalName string
-
-	// Type Determines the type of advertising packet requested.
-  // Possible values: "broadcast" or "peripheral"
-	Type string
-
-	// ManufacturerData Manufactuer Data fields to include in
-  // the Advertising Data.  Keys are the Manufacturer ID
-  // to associate with the data.
-	ManufacturerData map[uint16]interface{}
-
-	// Appearance Appearance to be used in the advertising report.
-  // Possible values: as found on GAP Service.
-	Appearance uint16
-
-	// Duration Duration of the advertisement in seconds. If there are
-  // other applications advertising no duration is set the
-  // default is 2 seconds.
-	Duration uint16
-
-	// Timeout Timeout of the advertisement in seconds. This defines
-  // the lifetime of the advertisement.
-	Timeout uint16
-
-	// ServiceUUIDs List of UUIDs to include in the "Service UUID" field of
-  // the Advertising Data.
-	ServiceUUIDs []string
-
-	// ServiceData Service Data elements to include. The keys are the
-  // UUID to associate with the data.
-	ServiceData map[string]interface{}
 
 }
 

@@ -65,18 +65,6 @@ type GattDescriptor1 struct {
 type GattDescriptor1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// UUID 128-bit descriptor UUID.
-	UUID string
-
-	// Characteristic Object path of the GATT characteristic the descriptor
-  // belongs to.
-	Characteristic dbus.ObjectPath
-
-	// Value The cached value of the descriptor. This property
-  // gets updated only after a successful read request, upon
-  // which a PropertiesChanged signal will be emitted.
-	Value []byte `dbus:"emit"`
-
 	// Flags Defines how the descriptor value can be used.
   // Possible values:
   // "read"
@@ -89,6 +77,18 @@ type GattDescriptor1Properties struct {
   // "secure-write" (Server Only)
   // "authorize"
 	Flags []string
+
+	// UUID 128-bit descriptor UUID.
+	UUID string
+
+	// Characteristic Object path of the GATT characteristic the descriptor
+  // belongs to.
+	Characteristic dbus.ObjectPath
+
+	// Value The cached value of the descriptor. This property
+  // gets updated only after a successful read request, upon
+  // which a PropertiesChanged signal will be emitted.
+	Value []byte `dbus:"emit"`
 
 }
 
@@ -168,7 +168,7 @@ func (a *GattDescriptor1) Unregister(signal chan *dbus.Signal) error {
 // org.bluez.Error.NotPermitted
 // org.bluez.Error.NotAuthorized
 // org.bluez.Error.NotSupported
-func (a *GattDescriptor1) ReadValue(flags map[string]dbus.Variant) ([]byte, error) {
+func (a *GattDescriptor1) ReadValue(flags map[string]interface{}) ([]byte, error) {
 	
 	var val0 []byte
 	err := a.client.Call("ReadValue", 0, flags).Store(&val0)
@@ -189,7 +189,7 @@ func (a *GattDescriptor1) ReadValue(flags map[string]dbus.Variant) ([]byte, erro
 // org.bluez.Error.InvalidValueLength
 // org.bluez.Error.NotAuthorized
 // org.bluez.Error.NotSupported
-func (a *GattDescriptor1) WriteValue(value []byte, flags map[string]dbus.Variant) error {
+func (a *GattDescriptor1) WriteValue(value []byte, flags map[string]interface{}) error {
 	
 	return a.client.Call("WriteValue", 0, value, flags).Store()
 	

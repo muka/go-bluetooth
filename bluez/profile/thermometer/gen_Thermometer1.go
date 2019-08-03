@@ -65,6 +65,14 @@ type Thermometer1 struct {
 type Thermometer1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
+	// Maximum (optional) Defines the maximum value allowed for the interval
+  // between periodic measurements.
+	Maximum uint16
+
+	// Minimum (optional) Defines the minimum value allowed for the interval
+  // between periodic measurements.
+	Minimum uint16
+
 	// Intermediate True if the thermometer supports intermediate
   // measurement notifications.
 	Intermediate bool
@@ -76,14 +84,6 @@ type Thermometer1Properties struct {
   // to zero means that no periodic measurements will
   // be taken.
 	Interval uint16
-
-	// Maximum (optional) Defines the maximum value allowed for the interval
-  // between periodic measurements.
-	Maximum uint16
-
-	// Minimum (optional) Defines the minimum value allowed for the interval
-  // between periodic measurements.
-	Minimum uint16
 
 }
 
