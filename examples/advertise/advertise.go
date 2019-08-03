@@ -19,7 +19,7 @@ func Run(beaconType, adapterID string) error {
 	}
 
 	props := advertising.LEAdvertisement1Properties{
-		Duration:            10,
+		Duration:            100,
 		Timeout:             1,
 		DiscoverableTimeout: 0,
 	}
@@ -134,7 +134,7 @@ func iBeacon(props *advertising.LEAdvertisement1Properties) error {
 func eddystoneBeacon(props *advertising.LEAdvertisement1Properties) error {
 
 	props.LocalName = "goeddystone"
-	props.Type = advertising.AdvertisementTypeBroadcast
+	props.Type = advertising.AdvertisementTypePeripheral
 
 	props.AddServiceUUID("FEAA")
 	// props.AddServiceData("FEAA", f)
