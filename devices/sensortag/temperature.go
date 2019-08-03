@@ -79,7 +79,7 @@ func (s *TemperatureSensor) Enable() error {
 	if enabled {
 		return nil
 	}
-	options := make(map[string]dbus.Variant)
+	options := getOptions()
 	err = s.cfg.WriteValue([]byte{1}, options)
 
 	if err != nil {
@@ -98,7 +98,7 @@ func (s *TemperatureSensor) Disable() error {
 	if !enabled {
 		return nil
 	}
-	options := make(map[string]dbus.Variant)
+	options := getOptions()
 	err = s.cfg.WriteValue([]byte{0}, options)
 	if err != nil {
 		return err
@@ -108,7 +108,7 @@ func (s *TemperatureSensor) Disable() error {
 
 //IsEnabled check if measurements are enabled
 func (s *TemperatureSensor) IsEnabled() (bool, error) {
-	options := make(map[string]dbus.Variant)
+	options := getOptions()
 
 	val, err := s.cfg.ReadValue(options)
 	if err != nil {
@@ -141,7 +141,7 @@ func (s *TemperatureSensor) Read() (float64, error) {
 		return 0, err
 	}
 
-	options := make(map[string]dbus.Variant)
+	options := getOptions()
 	b, err := s.data.ReadValue(options)
 
 	if err != nil {

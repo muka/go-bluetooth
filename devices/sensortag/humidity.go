@@ -79,7 +79,7 @@ func (s *HumiditySensor) Enable() error {
 	if enabled {
 		return nil
 	}
-	options := make(map[string]dbus.Variant)
+	options := getOptions()
 	err = s.cfg.WriteValue([]byte{1}, options)
 	if err != nil {
 		return err
@@ -96,7 +96,7 @@ func (s *HumiditySensor) Disable() error {
 	if !enabled {
 		return nil
 	}
-	options := make(map[string]dbus.Variant)
+	options := make(map[string]interface{})
 	err = s.cfg.WriteValue([]byte{0}, options)
 	if err != nil {
 		return err
@@ -106,7 +106,7 @@ func (s *HumiditySensor) Disable() error {
 
 // IsEnabled check if humidity measurements are enabled
 func (s *HumiditySensor) IsEnabled() (bool, error) {
-	options := make(map[string]dbus.Variant)
+	options := make(map[string]interface{})
 
 	val, err := s.cfg.ReadValue(options)
 	if err != nil {
@@ -138,7 +138,7 @@ func (s *HumiditySensor) Read() (float64, error) {
 		return 0, err
 	}
 
-	options := make(map[string]dbus.Variant)
+	options := make(map[string]interface{})
 	b, err := s.data.ReadValue(options)
 
 	if err != nil {

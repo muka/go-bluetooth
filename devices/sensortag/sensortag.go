@@ -7,8 +7,8 @@ import (
 
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/api"
-	"github.com/muka/go-bluetooth/emitter"
 	"github.com/muka/go-bluetooth/bluez/profile/gatt"
+	"github.com/muka/go-bluetooth/emitter"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -328,22 +328,22 @@ type SensorTagDeviceInfo struct {
 //Read device info from sensorTag
 func (s *SensorTagDeviceInfo) Read() (*SensorTagDataEvent, error) {
 
-	options1 := make(map[string]dbus.Variant)
+	options1 := getOptions()
 	fw, err := s.firmwareInfo.ReadValue(options1)
 	if err != nil {
 		return nil, err
 	}
-	options2 := make(map[string]dbus.Variant)
+	options2 := getOptions()
 	hw, err := s.hardwareInfo.ReadValue(options2)
 	if err != nil {
 		return nil, err
 	}
-	options3 := make(map[string]dbus.Variant)
+	options3 := getOptions()
 	manufacturer, err := s.manufacturerInfo.ReadValue(options3)
 	if err != nil {
 		return nil, err
 	}
-	options4 := make(map[string]dbus.Variant)
+	options4 := getOptions()
 	model, err := s.modelInfo.ReadValue(options4)
 	if err != nil {
 		return nil, err

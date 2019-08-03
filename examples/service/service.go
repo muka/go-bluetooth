@@ -3,7 +3,6 @@ package service_example
 import (
 	"fmt"
 
-	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez/profile/gatt"
 	"github.com/muka/go-bluetooth/service"
@@ -64,7 +63,7 @@ func registerApplication(adapterID string) (*service.Application, error) {
 
 	log.Debugf("Application path %s", app.Path())
 
-	err = gattManager.RegisterApplication(app.Path(), map[string]dbus.Variant{})
+	err = gattManager.RegisterApplication(app.Path(), map[string]interface{}{})
 	if err != nil {
 		return nil, fmt.Errorf("RegisterApplication: %s", err.Error())
 	}

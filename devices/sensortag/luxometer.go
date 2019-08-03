@@ -83,7 +83,7 @@ func (s *LuxometerSensor) Enable() error {
 	if enabled {
 		return nil
 	}
-	options := make(map[string]dbus.Variant)
+	options := make(map[string]interface{})
 	err = s.cfg.WriteValue([]byte{1}, options)
 	if err != nil {
 		return err
@@ -100,7 +100,7 @@ func (s *LuxometerSensor) Disable() error {
 	if !enabled {
 		return nil
 	}
-	options := make(map[string]dbus.Variant)
+	options := make(map[string]interface{})
 	err = s.cfg.WriteValue([]byte{0}, options)
 	if err != nil {
 		return err
@@ -110,7 +110,7 @@ func (s *LuxometerSensor) Disable() error {
 
 //IsEnabled check if LuxometerSensor measurements are enabled
 func (s *LuxometerSensor) IsEnabled() (bool, error) {
-	options := make(map[string]dbus.Variant)
+	options := make(map[string]interface{})
 
 	val, err := s.cfg.ReadValue(options)
 	if err != nil {
@@ -143,7 +143,7 @@ func (s *LuxometerSensor) Read() (float64, error) {
 		return 0, err
 	}
 
-	options := make(map[string]dbus.Variant)
+	options := getOptions()
 	b, err := s.data.ReadValue(options)
 
 	if err != nil {

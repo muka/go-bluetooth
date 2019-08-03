@@ -81,7 +81,7 @@ func (s *MpuSensor) Enable() error {
 	if enabled {
 		return nil
 	}
-	options := make(map[string]dbus.Variant)
+	options := make(map[string]interface{})
 	err = s.cfg.WriteValue([]byte{0x0007f, 0x0007f}, options)
 	if err != nil {
 		return err
@@ -98,7 +98,7 @@ func (s *MpuSensor) Disable() error {
 	if !enabled {
 		return nil
 	}
-	options := make(map[string]dbus.Variant)
+	options := make(map[string]interface{})
 	err = s.cfg.WriteValue([]byte{0}, options)
 	if err != nil {
 		return err
@@ -108,7 +108,7 @@ func (s *MpuSensor) Disable() error {
 
 //IsEnabled check if mpu measurements are enabled
 func (s *MpuSensor) IsEnabled() (bool, error) {
-	options := make(map[string]dbus.Variant)
+	options := make(map[string]interface{})
 
 	val, err := s.cfg.ReadValue(options)
 	if err != nil {
@@ -141,7 +141,7 @@ func (s *MpuSensor) Read() (float64, error) {
 		return 0, err
 	}
 
-	options := make(map[string]dbus.Variant)
+	options := make(map[string]interface{})
 	b, err := s.data.ReadValue(options)
 
 	if err != nil {

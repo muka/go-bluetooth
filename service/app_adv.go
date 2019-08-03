@@ -61,8 +61,7 @@ func (app *Application) StartAdvertising(deviceInterface string) error {
 		return fmt.Errorf("Expose: %s", err)
 	}
 
-	options := make(map[string]dbus.Variant)
-	// options := make(map[string]interface{})
+	options := make(map[string]interface{})
 
 	adMgr, err := advertising.NewLEAdvertisingManager1FromAdapterID(deviceInterface)
 	if err != nil {
