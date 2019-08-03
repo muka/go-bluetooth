@@ -30,7 +30,11 @@ var advertiseCmd = &cobra.Command{
 			fail(err)
 		}
 
-		fail(advertise_example.Run(adapterID))
+		if len(args) == 0 {
+			failArg("type: ibeacon or eddystone")
+		}
+
+		fail(advertise_example.Run(args[0], adapterID))
 	},
 }
 
