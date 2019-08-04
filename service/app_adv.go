@@ -103,9 +103,15 @@ func (app *Application) StopAdvertising() error {
 		return nil
 	}
 
-	err := app.adMgr.UnregisterAdvertisement(app.advertisement.config.objectPath)
+	err := app.advertisement.Release()
+	if err != nil {
+		return err
+	}
 
-	app.advertisement.Release()
+	// err = app.adMgr.UnregisterAdvertisement(app.advertisement.config.objectPath)
+	// if err != nil {
+	// 	return err
+	// }
 
 	app.advertisement = nil
 	app.adMgr = nil

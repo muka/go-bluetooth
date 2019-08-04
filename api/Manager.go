@@ -6,10 +6,10 @@ import (
 
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
-	"github.com/muka/go-bluetooth/emitter"
 	"github.com/muka/go-bluetooth/bluez/profile/adapter"
 	"github.com/muka/go-bluetooth/bluez/profile/device"
 	"github.com/muka/go-bluetooth/bluez/profile/gatt"
+	"github.com/muka/go-bluetooth/emitter"
 	"github.com/muka/go-bluetooth/util"
 	log "github.com/sirupsen/logrus"
 )
@@ -150,7 +150,7 @@ func emitChanges(path dbus.ObjectPath, props map[string]map[string]dbus.Variant)
 
 	//Device1
 	if props[device.Device1Interface] != nil {
-		dev, err := ParseDevice(path, props[device.Device1Interface])
+		dev, err := parseDevice(path, props[device.Device1Interface])
 		if err != nil {
 			log.Fatalf("Failed to parse device: %v\n", err)
 			return

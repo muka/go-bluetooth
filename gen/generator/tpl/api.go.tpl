@@ -75,6 +75,16 @@ func (a *{{.InterfaceName}}) Close() {
 	a.client.Disconnect()
 }
 
+// Path return {{.InterfaceName}} object path
+func (a *{{.InterfaceName}}) Path() dbus.ObjectPath {
+	return a.client.Config.Path
+}
+
+// Interface return {{.InterfaceName}} interface
+func (a *{{.InterfaceName}}) Interface() string {
+	return a.client.Config.Iface
+}
+
 {{if .ExposeProperties }}
 // ToMap convert a {{.InterfaceName}}Properties to map
 func (a *{{.InterfaceName}}Properties) ToMap() (map[string]interface{}, error) {
@@ -122,6 +132,8 @@ func (a *{{.InterfaceName}}) Register() (chan *dbus.Signal, error) {
 
 // Unregister for changes signalling
 func (a *{{.InterfaceName}}) Unregister(signal chan *dbus.Signal) error {
+	signal <- nil
+	close(signal)
 	return a.client.Unregister(a.client.Config.Path, bluez.PropertiesInterface, signal)
 }
 {{end}}

@@ -5,37 +5,71 @@ import (
 	"github.com/godbus/dbus"
 )
 
+var (
 
-// NotReady map to org.bluez.Error.NotReady
-var NotReady = dbus.NewError("org.bluez.Error.NotReady", nil)
+	// NotReady map to org.bluez.Error.NotReady
+	ErrNotReady = dbus.Error{
+		Name: "org.bluez.Error.NotReady",
+		Body: []interface{}{"NotReady"},
+	}
 
-// InvalidArguments map to org.bluez.Error.InvalidArguments
-var InvalidArguments = dbus.NewError("org.bluez.Error.InvalidArguments", nil)
+	// InvalidArguments map to org.bluez.Error.InvalidArguments
+	ErrInvalidArguments = dbus.Error{
+		Name: "org.bluez.Error.InvalidArguments",
+		Body: []interface{}{"InvalidArguments"},
+	}
 
-// Failed map to org.bluez.Error.Failed
-var Failed = dbus.NewError("org.bluez.Error.Failed", nil)
+	// Failed map to org.bluez.Error.Failed
+	ErrFailed = dbus.Error{
+		Name: "org.bluez.Error.Failed",
+		Body: []interface{}{"Failed"},
+	}
 
-// NotPermitted map to org.bluez.Error.NotPermitted
-var NotPermitted = dbus.NewError("org.bluez.Error.NotPermitted", nil)
+	// NotPermitted map to org.bluez.Error.NotPermitted
+	ErrNotPermitted = dbus.Error{
+		Name: "org.bluez.Error.NotPermitted",
+		Body: []interface{}{"NotPermitted"},
+	}
 
-// DoesNotExist map to org.bluez.Error.DoesNotExist
-var DoesNotExist = dbus.NewError("org.bluez.Error.DoesNotExist", nil)
+	// DoesNotExist map to org.bluez.Error.DoesNotExist
+	ErrDoesNotExist = dbus.Error{
+		Name: "org.bluez.Error.DoesNotExist",
+		Body: []interface{}{"DoesNotExist"},
+	}
 
-// Rejected map to org.bluez.Error.Rejected
-var Rejected = dbus.NewError("org.bluez.Error.Rejected", nil)
+	// Rejected map to org.bluez.Error.Rejected
+	ErrRejected = dbus.Error{
+		Name: "org.bluez.Error.Rejected",
+		Body: []interface{}{"Rejected"},
+	}
 
-// NotConnected map to org.bluez.Error.NotConnected
-var NotConnected = dbus.NewError("org.bluez.Error.NotConnected", nil)
+	// NotConnected map to org.bluez.Error.NotConnected
+	ErrNotConnected = dbus.Error{
+		Name: "org.bluez.Error.NotConnected",
+		Body: []interface{}{"NotConnected"},
+	}
 
-// NotAcquired map to org.bluez.Error.NotAcquired
-var NotAcquired = dbus.NewError("org.bluez.Error.NotAcquired", nil)
+	// NotAcquired map to org.bluez.Error.NotAcquired
+	ErrNotAcquired = dbus.Error{
+		Name: "org.bluez.Error.NotAcquired",
+		Body: []interface{}{"NotAcquired"},
+	}
 
-// NotSupported map to org.bluez.Error.NotSupported
-var NotSupported = dbus.NewError("org.bluez.Error.NotSupported", nil)
+	// NotSupported map to org.bluez.Error.NotSupported
+	ErrNotSupported = dbus.Error{
+		Name: "org.bluez.Error.NotSupported",
+		Body: []interface{}{"NotSupported"},
+	}
 
-// NotAuthorized map to org.bluez.Error.NotAuthorized
-var NotAuthorized = dbus.NewError("org.bluez.Error.NotAuthorized", nil)
+	// NotAuthorized map to org.bluez.Error.NotAuthorized
+	ErrNotAuthorized = dbus.Error{
+		Name: "org.bluez.Error.NotAuthorized",
+		Body: []interface{}{"NotAuthorized"},
+	}
 
-// NotAvailable map to org.bluez.Error.NotAvailable
-var NotAvailable = dbus.NewError("org.bluez.Error.NotAvailable", nil)
-
+	// NotAvailable map to org.bluez.Error.NotAvailable
+	ErrNotAvailable = dbus.Error{
+		Name: "org.bluez.Error.NotAvailable",
+		Body: []interface{}{"NotAvailable"},
+	}
+)

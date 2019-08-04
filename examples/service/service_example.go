@@ -14,8 +14,8 @@ const (
 	clientAdapterID  = "hci1"
 
 	objectName      = "org.bluez"
-	objectPath      = "/go_bluetooth/example/service"
-	agentObjectPath = "/go_bluetooth/example/agent"
+	objectPath      = "/go_bluetooth/service"
+	agentObjectPath = "/go_bluetooth/agent"
 )
 
 func reset() {

@@ -29,7 +29,7 @@ const (
 type DiscoveredDeviceEvent struct {
 	Path   string
 	Status DeviceStatus
-	Device *Device
+	Device *device.Device1
 }
 
 // AdapterEvent reports the availability of a bluetooth adapter

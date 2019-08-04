@@ -12,17 +12,19 @@ type DiscoveryFilter struct {
 
 	// Filter by service UUIDs, empty means match
 	// _any_ UUID.
+	//
 	// When a remote device is found that advertises
 	// any UUID from UUIDs, it will be reported if:
 	// - Pathloss and RSSI are both empty.
 	// - only Pathloss param is set, device advertise
-	// TX pwer, and computed pathloss is less than
-	// Pathloss param.
+	// 	TX pwer, and computed pathloss is less than
+	// 	Pathloss param.
 	// - only RSSI param is set, and received RSSI is
-	// higher than RSSI param.
+	// 	higher than RSSI param.
 	UUIDs []string
 
 	// RSSI threshold value.
+	//
 	// PropertiesChanged signals will be emitted
 	// for already existing Device objects, with
 	// updated RSSI value. If one or more discovery
@@ -32,18 +34,20 @@ type DiscoveryFilter struct {
 	RSSI int16
 
 	// Pathloss threshold value.
+	//
 	// PropertiesChanged signals will be emitted
 	// for already existing Device objects, with
 	// updated Pathloss value.
 	Pathloss uint16
 
-	// string Transport (Default "auto")
 	// Transport parameter determines the type of
 	// scan.
+	//
 	// Possible values:
-	// "auto"	- interleaved scan
-	// "bredr"	- BR/EDR inquiry
-	// "le"	- LE scan only
+	// 	"auto"	- interleaved scan
+	// 	"bredr"	- BR/EDR inquiry
+	// 	"le"	- LE scan only
+	//
 	// If "le" or "bredr" Transport is requested,
 	// and the controller doesn't support it,
 	// org.bluez.Error.Failed error will be returned.
@@ -52,9 +56,12 @@ type DiscoveryFilter struct {
 	// currently enabled on the controller.
 	Transport string
 
-	// bool DuplicateData (Default: true)
 	// Disables duplicate detection of advertisement
 	// data.
+	//
+	// When enabled PropertiesChanged signals will be
+	// generated for either ManufacturerData and
+	// ServiceData everytime they are discovered.
 	DuplicateData bool
 }
 
@@ -77,14 +84,24 @@ func (a *DiscoveryFilter) AddUUIDs(uuids ...string) {
 
 // ToMap convert to a format compatible with adapter SetDiscoveryFilter
 func (a *DiscoveryFilter) ToMap() map[string]interface{} {
+
 	m := make(map[string]interface{})
 	util.StructToMap(a, m)
+
+	if a.RSSI == 0 {
+		delete(m, "RSSI")
+	}
+	if a.Pathloss == 0 {
+		delete(m, "Pathloss")
+	}
+
 	return m
 }
 
 func NewDiscoveryFilter() DiscoveryFilter {
 	return DiscoveryFilter{
-		// default true
+		// defaults
 		DuplicateData: true,
+		Transport:     DiscoveryFilterTransportAuto,
 	}
 }

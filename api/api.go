@@ -5,12 +5,10 @@ import (
 	"fmt"
 
 	"github.com/godbus/dbus"
-
 	"github.com/muka/go-bluetooth/bluez"
-	"github.com/muka/go-bluetooth/emitter"
-	"github.com/muka/go-bluetooth/bluez/profile/adapter"
 	"github.com/muka/go-bluetooth/bluez/profile/device"
 	"github.com/muka/go-bluetooth/bluez/profile/gatt"
+	"github.com/muka/go-bluetooth/emitter"
 )
 
 //Exit performs a clean exit
@@ -23,27 +21,21 @@ func Exit() {
 }
 
 //GetDeviceByAddress return a Device object based on its address
-func GetDeviceByAddress(address string) (*Device, error) {
-	list, err := GetDeviceList()
+func GetDeviceByAddress(adapterID, address string) (*device.Device1, error) {
+
+	list, err := GetDeviceList(adapterID)
 	if err != nil {
 		return nil, err
 	}
+
 	for _, path := range list {
 
-		dev, err := NewDevice(string(path))
+		dev, err := device.NewDevice1(string(path))
 		if err != nil {
 			return nil, err
 		}
 
-		dev.lock.RLock()
-		// get current Properties pointer (can be changed by other goroutine)
-		props := dev.Properties
-		dev.lock.RUnlock()
-
-		props.Lock()
-		prop_address := props.Address
-		props.Unlock()
-		if prop_address == address {
+		if dev.Properties.Address == address {
 			return dev, nil
 		}
 	}
@@ -51,9 +43,9 @@ func GetDeviceByAddress(address string) (*Device, error) {
 }
 
 //GetDevices returns a list of bluetooth discovered Devices
-func GetDevices() ([]*Device, error) {
+func GetDevices(adapterID string) ([]*device.Device1, error) {
 
-	list, err := GetDeviceList()
+	list, err := GetDeviceList(adapterID)
 	if err != nil {
 		return nil, err
 	}
@@ -69,10 +61,10 @@ func GetDevices() ([]*Device, error) {
 	for _, path := range list {
 		object, ok := objects.Load(path)
 		if !ok {
-			return nil, errors.New("Path " + string(path) + " does not exists.")
+			return nil, fmt.Errorf("Path %s does not exists", path)
 		}
 		props := (object.(map[string]map[string]dbus.Variant))[device.Device1Interface]
-		dev, err := ParseDevice(path, props)
+		dev, err := parseDevice(path, props)
 		if err != nil {
 			return nil, err
 		}
@@ -83,7 +75,19 @@ func GetDevices() ([]*Device, error) {
 }
 
 //GetDeviceList returns a list of discovered Devices paths
-func GetDeviceList() ([]dbus.ObjectPath, error) {
+func GetDeviceList(adapterID string) ([]dbus.ObjectPath, error) {
+
+	list := []dbus.ObjectPath{}
+
+	// in case it is left empty, return all devices avaliable?
+	exists, err := AdapterExists(adapterID)
+	if err != nil {
+		return list, err
+	}
+
+	if !exists {
+		return list, fmt.Errorf("Adapter %s not found", adapterID)
+	}
 
 	manager, err := GetManager()
 	if err != nil {
@@ -107,35 +111,6 @@ func GetDeviceList() ([]dbus.ObjectPath, error) {
 	})
 
 	return devices, nil
-}
-
-//AdapterExists checks if an adapter is available
-func AdapterExists(adapterID string) (bool, error) {
-
-	manager, err := GetManager()
-	if err != nil {
-		return false, err
-	}
-
-	objects := manager.GetObjects()
-
-	path := dbus.ObjectPath("/org/bluez/" + adapterID)
-	_, exists := objects.Load(path)
-
-	return exists, nil
-}
-
-//GetAdapter return an adapter object instance
-func GetAdapter(adapterID string) (*adapter.Adapter1, error) {
-
-	if exists, err := AdapterExists(adapterID); !exists {
-		if err != nil {
-			return nil, fmt.Errorf("AdapterExists: %s", err)
-		}
-		return nil, errors.New("Adapter " + adapterID + " not found")
-	}
-
-	return adapter.NewAdapter1FromAdapterID(adapterID)
 }
 
 //GetGattManager return a GattManager1 instance

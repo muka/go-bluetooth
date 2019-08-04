@@ -15,18 +15,16 @@
 
 package device
 
-
-
 import (
-  "sync"
-  "github.com/muka/go-bluetooth/bluez"
-  "github.com/fatih/structs"
-  "github.com/muka/go-bluetooth/util"
-  "github.com/godbus/dbus"
+	"sync"
+
+	"github.com/fatih/structs"
+	"github.com/godbus/dbus"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var Device1Interface = "org.bluez.Device1"
-
 
 // NewDevice1 create a new instance of Device1
 //
@@ -42,23 +40,29 @@ func NewDevice1(objectPath string) (*Device1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
+
 	a.Properties = new(Device1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return a, nil
 }
 
-
 // Device1 Device hierarchy
-
 type Device1 struct {
 	client     *bluez.Client
 	Properties *Device1Properties
+}
+
+func (a *Device1) Path() {
+	return a.client.Config.Path
+}
+
+func (a *Device1) Interface() {
+	return a.client.Config.Iface
 }
 
 // Device1Properties contains the exposed properties of an interface
@@ -66,12 +70,12 @@ type Device1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	// Name The Bluetooth remote name. This value can not be
-  // changed. Use the Alias property instead.
-  // This value is only present for completeness. It is
-  // better to always use the Alias property when
-  // displaying the devices name.
-  // If the Alias property is unset, it will reflect
-  // this value which makes it more convenient.
+	// changed. Use the Alias property instead.
+	// This value is only present for completeness. It is
+	// better to always use the Alias property when
+	// displaying the devices name.
+	// If the Alias property is unset, it will reflect
+	// this value which makes it more convenient.
 	Name string
 
 	// Appearance External appearance of device, as found on GAP service.
@@ -84,21 +88,21 @@ type Device1Properties struct {
 	Class uint32
 
 	// Trusted Indicates if the remote is seen as trusted. This
-  // setting can be changed by the application.
+	// setting can be changed by the application.
 	Trusted bool
 
 	// Blocked If set to true any incoming connections from the
-  // device will be immediately rejected. Any device
-  // drivers will also be removed and no new ones will
-  // be probed as long as the device is blocked.
+	// device will be immediately rejected. Any device
+	// drivers will also be removed and no new ones will
+	// be probed as long as the device is blocked.
 	Blocked bool
 
 	// Modalias Remote Device ID information in modalias format
-  // used by the kernel and udev.
+	// used by the kernel and udev.
 	Modalias string
 
 	// RSSI Received Signal Strength Indicator of the remote
-  // device (inquiry or advertising).
+	// device (inquiry or advertising).
 	RSSI int16
 
 	// AdvertisingFlags The Advertising Data Flags of the remote device.
@@ -108,80 +112,79 @@ type Device1Properties struct {
 	Address string
 
 	// AddressType The Bluetooth device Address Type. For dual-mode and
-  // BR/EDR only devices this defaults to "public". Single
-  // mode LE devices may have either value. If remote device
-  // uses privacy than before pairing this represents address
-  // type used for connection and Identity Address after
-  // pairing.
-  // Possible values:
-  // "public" - Public address
-  // "random" - Random address
+	// BR/EDR only devices this defaults to "public". Single
+	// mode LE devices may have either value. If remote device
+	// uses privacy than before pairing this represents address
+	// type used for connection and Identity Address after
+	// pairing.
+	// Possible values:
+	// "public" - Public address
+	// "random" - Random address
 	AddressType string
 
 	// Paired Indicates if the remote device is paired.
 	Paired bool
 
 	// Connected Indicates if the remote device is currently connected.
-  // A PropertiesChanged signal indicate changes to this
-  // status.
+	// A PropertiesChanged signal indicate changes to this
+	// status.
 	Connected bool
 
 	// ServiceData Service advertisement data. Keys are the UUIDs in
-  // string format followed by its byte array value.
+	// string format followed by its byte array value.
 	ServiceData map[string]interface{}
 
 	// ServicesResolved Indicate whether or not service discovery has been
-  // resolved.
+	// resolved.
 	ServicesResolved bool
 
 	// AdvertisingData The Advertising Data of the remote device. Keys are
-  // are 8 bits AD Type followed by data as byte array.
-  // Note: Only types considered safe to be handled by
-  // application are exposed.
-  // Possible values:
-  // <type> <byte array>
-  // ...
-  // Example:
-  // <Transport Discovery> <Organization Flags...>
-  // 0x26                   0x01         0x01...
+	// are 8 bits AD Type followed by data as byte array.
+	// Note: Only types considered safe to be handled by
+	// application are exposed.
+	// Possible values:
+	// <type> <byte array>
+	// ...
+	// Example:
+	// <Transport Discovery> <Organization Flags...>
+	// 0x26                   0x01         0x01...
 	AdvertisingData map[string]interface{}
 
 	// Icon Proposed icon name according to the freedesktop.org
-  // icon naming specification.
+	// icon naming specification.
 	Icon string
 
 	// UUIDs List of 128-bit UUIDs that represents the available
-  // remote services.
+	// remote services.
 	UUIDs []string
 
 	// Alias The name alias for the remote device. The alias can
-  // be used to have a different friendly name for the
-  // remote device.
-  // In case no alias is set, it will return the remote
-  // device name. Setting an empty string as alias will
-  // convert it back to the remote device name.
-  // When resetting the alias with an empty string, the
-  // property will default back to the remote name.
+	// be used to have a different friendly name for the
+	// remote device.
+	// In case no alias is set, it will return the remote
+	// device name. Setting an empty string as alias will
+	// convert it back to the remote device name.
+	// When resetting the alias with an empty string, the
+	// property will default back to the remote name.
 	Alias string
 
 	// LegacyPairing Set to true if the device only supports the pre-2.1
-  // pairing mechanism. This property is useful during
-  // device discovery to anticipate whether legacy or
-  // simple pairing will occur if pairing is initiated.
-  // Note that this property can exhibit false-positives
-  // in the case of Bluetooth 2.1 (or newer) devices that
-  // have disabled Extended Inquiry Response support.
+	// pairing mechanism. This property is useful during
+	// device discovery to anticipate whether legacy or
+	// simple pairing will occur if pairing is initiated.
+	// Note that this property can exhibit false-positives
+	// in the case of Bluetooth 2.1 (or newer) devices that
+	// have disabled Extended Inquiry Response support.
 	LegacyPairing bool
 
 	// TxPower Advertised transmitted power level (inquiry or
-  // advertising).
+	// advertising).
 	TxPower int16
 
 	// ManufacturerData Manufacturer specific advertisement data. Keys are
-  // 16 bits Manufacturer ID followed by its byte array
-  // value.
+	// 16 bits Manufacturer ID followed by its byte array
+	// value.
 	ManufacturerData map[uint16]dbus.Variant
-
 }
 
 func (p *Device1Properties) Lock() {
@@ -196,7 +199,6 @@ func (p *Device1Properties) Unlock() {
 func (a *Device1) Close() {
 	a.client.Disconnect()
 }
-
 
 // ToMap convert a Device1Properties to map
 func (a *Device1Properties) ToMap() (map[string]interface{}, error) {
@@ -247,8 +249,6 @@ func (a *Device1) Unregister(signal chan *dbus.Signal) error {
 	return a.client.Unregister(a.client.Config.Path, bluez.PropertiesInterface, signal)
 }
 
-
-
 //Connect This is a generic method to connect any profiles
 // the remote device supports that can be connected
 // to and have been flagged as auto-connectable on
@@ -272,9 +272,9 @@ func (a *Device1) Unregister(signal chan *dbus.Signal) error {
 // org.bluez.Error.InProgress
 // org.bluez.Error.AlreadyConnected
 func (a *Device1) Connect() error {
-	
-	return a.client.Call("Connect", 0, ).Store()
-	
+
+	return a.client.Call("Connect", 0).Store()
+
 }
 
 //Disconnect This method gracefully disconnects all connected
@@ -289,9 +289,9 @@ func (a *Device1) Connect() error {
 // Connect method is called again.
 // Possible errors: org.bluez.Error.NotConnected
 func (a *Device1) Disconnect() error {
-	
-	return a.client.Call("Disconnect", 0, ).Store()
-	
+
+	return a.client.Call("Disconnect", 0).Store()
+
 }
 
 //ConnectProfile This method connects a specific profile of this
@@ -303,9 +303,9 @@ func (a *Device1) Disconnect() error {
 // org.bluez.Error.NotAvailable
 // org.bluez.Error.NotReady
 func (a *Device1) ConnectProfile(uuid string) error {
-	
+
 	return a.client.Call("ConnectProfile", 0, uuid).Store()
-	
+
 }
 
 //DisconnectProfile This method disconnects a specific profile of
@@ -319,16 +319,16 @@ func (a *Device1) ConnectProfile(uuid string) error {
 // org.bluez.Error.InvalidArguments
 // org.bluez.Error.NotSupported
 func (a *Device1) DisconnectProfile(uuid string) error {
-	
+
 	return a.client.Call("DisconnectProfile", 0, uuid).Store()
-	
+
 }
 
 //Pair This method will connect to the remote device,
 func (a *Device1) Pair() error {
-	
-	return a.client.Call("Pair", 0, ).Store()
-	
+
+	return a.client.Call("Pair", 0).Store()
+
 }
 
 //CancelPairing This method can be used to cancel a pairing
@@ -336,8 +336,7 @@ func (a *Device1) Pair() error {
 // Possible errors: org.bluez.Error.DoesNotExist
 // org.bluez.Error.Failed
 func (a *Device1) CancelPairing() error {
-	
-	return a.client.Call("CancelPairing", 0, ).Store()
-	
-}
 
+	return a.client.Call("CancelPairing", 0).Store()
+
+}

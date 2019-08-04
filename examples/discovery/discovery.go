@@ -28,7 +28,7 @@ func Run(adapterID string) error {
 		return err
 	}
 
-	devices, err := api.GetDevices()
+	devices, err := api.GetDevices(adapterID)
 	if err != nil {
 		return err
 	}

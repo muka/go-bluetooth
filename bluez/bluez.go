@@ -3,6 +3,7 @@ package bluez
 import "github.com/godbus/dbus/introspect"
 
 const (
+	OrgBluezPath      = "/org/bluez"
 	OrgBluezInterface = "org.bluez"
 
 	//ObjectManagerInterface the dbus object manager interface

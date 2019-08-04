@@ -1,19 +1,24 @@
 package agent
 
 import (
+	"fmt"
+	"strings"
+
 	"github.com/godbus/dbus"
 	"github.com/godbus/dbus/introspect"
 	"github.com/godbus/dbus/prop"
+	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez"
+	log "github.com/sirupsen/logrus"
 )
 
 //All agent capabilities
 const (
-	AGENT_CAP_DISPLAY_ONLY       = "DisplayOnly"
-	AGENT_CAP_DISPLAY_YES_NO     = "DisplayYesNo"
-	AGENT_CAP_KEYBOARD_ONLY      = "KeyboardOnly"
-	AGENT_CAP_NO_INPUT_NO_OUTPUT = "NoInputNoOutput"
-	AGENT_CAP_KEYBOARD_DISPLAY   = "KeyboardDisplay"
+	CapDisplayOnly     = "DisplayOnly"
+	CapDisplayYesNo    = "DisplayYesNo"
+	CapKeyboardOnly    = "KeyboardOnly"
+	CapNoInputNoOutput = "NoInputNoOutput"
+	CapKeyboardDisplay = "KeyboardDisplay"
 )
 
 type Agent1Client interface {
@@ -26,12 +31,68 @@ type Agent1Client interface {
 	RequestAuthorization(device dbus.ObjectPath) *dbus.Error
 	AuthorizeService(device dbus.ObjectPath, uuid string) *dbus.Error
 	Cancel() *dbus.Error
-	RegistrationPath() string
-	InterfacePath() string
+	Path() dbus.ObjectPath
+	Interface() string
+}
+
+// SetTrusted lookup for a device by object path and set it to trusted
+func SetTrusted(adapterID string, devicePath dbus.ObjectPath) error {
+
+	devices, err := api.GetDevices(adapterID)
+	if err != nil {
+		return err
+	}
+
+	path := string(devicePath)
+	for _, v := range devices {
+		if strings.Contains(v.Path, path) {
+			log.Debugf("Trust device at %s", path)
+			dev1, _ := v.GetClient()
+			err := dev1.SetProperty("Trusted", true)
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+	}
+
+	return fmt.Errorf("Cannot trust device %s, not found", path)
+}
+
+// ExposeAgent expose an Agent1 implementation to DBus and set as default agent
+func ExposeAgent(ag Agent1Client, caps string, setAsDefaultAgent bool) error {
+
+	// Register agent
+	am, err := NewAgentManager1()
+	if err != nil {
+		return err
+	}
+
+	// Export the Go interface to DBus
+	err = exportAgent(ag)
+	if err != nil {
+		return err
+	}
+
+	// Register the exported interface as application agent via AgenManager API
+	err = am.RegisterAgent(ag.Path(), caps)
+	if err != nil {
+		return err
+	}
+
+	if setAsDefaultAgent {
+		// Set the new application agent as Default Agent
+		err = am.RequestDefaultAgent(ag.Path())
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
 
 //ExportAgent exports the xml of a go agent to dbus
-func ExportAgent(agentInstance Agent1Client) error {
+func exportAgent(agentInstance Agent1Client) error {
 
 	//Connect DBus System bus
 	conn, err := dbus.SystemBus()
@@ -39,11 +100,11 @@ func ExportAgent(agentInstance Agent1Client) error {
 		return err
 	}
 
-	targetPath := agentInstance.RegistrationPath()
-	agentInterfacePath := agentInstance.InterfacePath()
+	targetPath := agentInstance.Path()
+	agentInterfacePath := agentInstance.Interface()
 
 	//Export the given agent to the given path as interface "org.bluez.Agent1"
-	err = conn.Export(agentInstance, dbus.ObjectPath(targetPath), agentInterfacePath)
+	err = conn.Export(agentInstance, targetPath, agentInterfacePath)
 	if err != nil {
 		return err
 	}
@@ -64,7 +125,7 @@ func ExportAgent(agentInstance Agent1Client) error {
 	}
 
 	// Export Introspectable for the given agent instance
-	err = conn.Export(introspect.NewIntrospectable(node), dbus.ObjectPath(targetPath), bluez.Introspectable)
+	err = conn.Export(introspect.NewIntrospectable(node), targetPath, bluez.Introspectable)
 	if err != nil {
 		return err
 	}

@@ -8,23 +8,10 @@ import (
 
 // NewLEAdvertisement1 create a new LEAdvertisement1 client
 func NewLEAdvertisement1(config *LEAdvertisement1Config, props *advertising.LEAdvertisement1Properties) (*LEAdvertisement1, error) {
-
-	// propInterface, err := NewProperties(config.conn)
-	// if err != nil {
-	// 	return nil, err
-	//
-
 	s := &LEAdvertisement1{
 		config:     config,
 		properties: props,
-		// PropertiesInterface: propInterface,
 	}
-
-	// err = propInterface.AddProperties(s.Interface(), props)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
 	return s, nil
 }
 
@@ -47,9 +34,8 @@ type LEAdvertisement1Config struct {
 
 // LEAdvertisement1 client
 type LEAdvertisement1 struct {
-	config              *LEAdvertisement1Config
-	properties          *advertising.LEAdvertisement1Properties
-	PropertiesInterface *Properties
+	config     *LEAdvertisement1Config
+	properties *advertising.LEAdvertisement1Properties
 }
 
 //Interface return the dbus interface name

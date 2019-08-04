@@ -20,13 +20,24 @@ func createClient(adapterID, hwaddr, serviceID string) (err error) {
 		return err
 	}
 
+	log.Info("Set discovery filter")
+	filter := adapter.NewDiscoveryFilter()
+	filter.AddUUIDs(serviceID)
+
+	err = a.SetDiscoveryFilter(filter.ToMap())
+	if err != nil {
+		return fmt.Errorf("SetDiscoveryFilter: %s", err)
+	}
+
+	log.Debugf("Start discovery on %s", adapterID)
 	err = a.StartDiscovery()
 	if err != nil {
 		log.Errorf("Failed to start discovery: %s", err.Error())
 		return err
 	}
 
-	devices, err := api.GetDevices()
+	log.Debug("List devices")
+	devices, err := api.GetDevices(adapterID)
 	fail("GetDevices", err)
 	for _, dev := range devices {
 		err = showDeviceInfo(dev, hwaddr, serviceID)
@@ -100,10 +111,16 @@ func showDeviceInfo(dev *api.Device, hwaddr, serviceID string) error {
 
 	chars, err := dev.GetCharsList()
 	if err != nil {
-		return fmt.Errorf("Service UUID %s not found on %s", serviceID, hwaddr)
+		return fmt.Errorf("Failed to list chars: %s", err)
+	}
+
+	descr, err := dev.GetDescriptorList()
+	if err != nil {
+		return fmt.Errorf("Failed to list descr: %s", err)
 	}
 
 	log.Infof("CHARS %++v", chars)
+	log.Infof("DESCR %++v", descr)
 
 	return nil
 }
