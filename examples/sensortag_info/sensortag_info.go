@@ -15,81 +15,27 @@ import (
 
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/devices/sensortag"
-	"github.com/muka/go-bluetooth/emitter"
 	log "github.com/sirupsen/logrus"
 )
 
-func Run(address string) error {
+func Run(address, adapterID string) error {
 
-	manager, err := api.NewManager()
+	a, err := api.GetAdapter(adapterID)
 	if err != nil {
 		return err
 	}
 
-	err = manager.RefreshState()
-	if err != nil {
-		return err
-	}
-
-	return ConnectAndFetchSensorDetailAndData(address)
-}
-
-//
-// //ShowSensorTagInfo show info from a sensor tag
-// func ShowSensorTagInfo(adapterID string) error {
-//
-// 	boo, err := api.AdapterExists(adapterID)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	log.Debugf("AdapterExists: %t", boo)
-//
-// 	err = api.StartDiscoveryOn(adapterID)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	// wait a moment for the device to be spawn
-// 	time.Sleep(time.Second)
-//
-// 	devarr, err := api.GetDevices()
-// 	if err != nil {
-// 		return err
-// 	}
-// 	//log.Debug("devarr",devarr[0])
-// 	len := len(devarr)
-// 	log.Debugf("length: %d", len)
-//
-// 	for i := 0; i < len; i++ {
-// 		prop1, err := devarr[i].GetProperties()
-// 		if err != nil {
-// 			log.Fatalf("Cannot load properties of %s: %s", devarr[i].Path, err.Error())
-// 			continue
-// 		}
-// 		log.Debugf("DeviceProperties - ADDRESS: %s", prop1.Address)
-//
-// 		err = ConnectAndFetchSensorDetailAndData(prop1.Address)
-// 		if err != nil {
-// 			return err
-// 		}
-// 	}
-//
-// 	return nil
-// }
-
-// ConnectAndFetchSensorDetailAndData load an show sensor data
-func ConnectAndFetchSensorDetailAndData(tagAddress string) error {
-
-	dev, err := api.GetDeviceByAddress(tagAddress)
+	dev, err := a.GetDeviceByAddress(address)
 	if err != nil {
 		return err
 	}
 
 	if dev == nil {
-		return fmt.Errorf("device %s not found", tagAddress)
+		return fmt.Errorf("device %s not found", address)
 	}
 	log.Debugf("device (dev): %v", dev)
 
-	if !dev.IsConnected() {
+	if !dev.Properties.Connected {
 		log.Debug("not connected")
 		err = dev.Connect()
 		if err != nil {
@@ -137,25 +83,25 @@ func ConnectAndFetchSensorDetailAndData(tagAddress string) error {
 		return err
 	}
 
-	err = sensorTag.Mpu.StartNotify(tagAddress)
+	err = sensorTag.Mpu.StartNotify(address)
 	if err != nil {
 		return err
 	}
 
-	err = sensorTag.Barometric.StartNotify(tagAddress)
+	err = sensorTag.Barometric.StartNotify(address)
 	if err != nil {
 		return err
 	}
 
-	err = sensorTag.Luxometer.StartNotify(tagAddress)
+	err = sensorTag.Luxometer.StartNotify(address)
 	if err != nil {
 		return err
 	}
 
-	err = dev.On("data", emitter.NewCallback(func(ev emitter.Event) {
-		x := ev.GetData().(sensortag.SensorTagDataEvent)
-		log.Debugf("data received: %++v", x)
-	}))
+	// sensortag.SensorTagDataEvent
+	for data := range sensorTag.Data() {
+		log.Debugf("data received: %++v", data)
+	}
 
 	return err
 }

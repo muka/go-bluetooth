@@ -25,11 +25,16 @@ var obexPushCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 
+		adapterID, err := cmd.Flags().GetString("adapterID")
+		if err != nil {
+			fail(err)
+		}
+
 		if len(args) < 2 {
 			failArgs([]string{"target_address", "file_path"})
 		}
 
-		fail(obex_push_example.Run(args[0], args[1]))
+		fail(obex_push_example.Run(args[0], args[1], adapterID))
 	},
 }
 

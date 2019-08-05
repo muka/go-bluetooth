@@ -20,6 +20,7 @@ package obex
 import (
   "sync"
   "github.com/muka/go-bluetooth/bluez"
+  "reflect"
   "github.com/fatih/structs"
   "github.com/muka/go-bluetooth/util"
   "github.com/godbus/dbus"
@@ -32,13 +33,14 @@ var Message1Interface = "org.bluez.obex.Message1"
 //
 // Args:
 // 	objectPath: [Session object path]/{message0,...}
-func NewMessage1(objectPath string) (*Message1, error) {
+func NewMessage1(objectPath dbus.ObjectPath) (*Message1, error) {
 	a := new(Message1)
+	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez.obex",
 			Iface: Message1Interface,
-			Path:  objectPath,
+			Path:  dbus.ObjectPath(objectPath),
 			Bus:   bluez.SystemBus,
 		},
 	)
@@ -57,19 +59,50 @@ func NewMessage1(objectPath string) (*Message1, error) {
 // Message1 Message hierarchy
 
 type Message1 struct {
-	client     *bluez.Client
-	Properties *Message1Properties
+	client     				*bluez.Client
+	propertiesSignal 	chan *dbus.Signal
+	Properties 				*Message1Properties
 }
 
 // Message1Properties contains the exposed properties of an interface
 type Message1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// SenderAddress Message sender address
-	SenderAddress string
+	// Read Message read flag
+	Read bool
+
+	// Deleted Message deleted flag
+	Deleted bool
+
+	// Subject Message subject
+	Subject string
+
+	// Timestamp Message timestamp
+	Timestamp string
+
+	// Sender Message sender name
+	Sender string
+
+	// ReplyTo Message Reply-To address
+	ReplyTo string
 
 	// Recipient Message recipient name
 	Recipient string
+
+	// RecipientAddress Message recipient address
+	RecipientAddress string
+
+	// Priority Message priority flag
+	Priority bool
+
+	// Sent Message sent flag
+	Sent bool
+
+	// Protected Message protected flag
+	Protected bool
+
+	// Folder Folder which the message belongs to
+	Folder string
 
 	// Type Message type
   // Possible values: "email", "sms-gsm",
@@ -78,43 +111,13 @@ type Message1Properties struct {
   // Message size in bytes
 	Type string
 
-	// Read Message read flag
-	Read bool
-
-	// Folder Folder which the message belongs to
-	Folder string
-
-	// Priority Message priority flag
-	Priority bool
-
-	// Protected Message protected flag
-	Protected bool
-
-	// Timestamp Message timestamp
-	Timestamp string
-
-	// RecipientAddress Message recipient address
-	RecipientAddress string
-
-	// Deleted Message deleted flag
-	Deleted bool
-
-	// Sender Message sender name
-	Sender string
-
-	// ReplyTo Message Reply-To address
-	ReplyTo string
+	// SenderAddress Message sender address
+	SenderAddress string
 
 	// Status Message reception status
   // Possible values: "complete",
   // "fractioned" and "notification"
 	Status string
-
-	// Sent Message sent flag
-	Sent bool
-
-	// Subject Message subject
-	Subject string
 
 }
 
@@ -128,7 +131,20 @@ func (p *Message1Properties) Unlock() {
 
 // Close the connection
 func (a *Message1) Close() {
+	
+	a.unregisterSignal()
+	
 	a.client.Disconnect()
+}
+
+// Path return Message1 object path
+func (a *Message1) Path() dbus.ObjectPath {
+	return a.client.Config.Path
+}
+
+// Interface return Message1 interface
+func (a *Message1) Interface() string {
+	return a.client.Config.Iface
 }
 
 
@@ -171,15 +187,101 @@ func (a *Message1) GetProperty(name string) (dbus.Variant, error) {
 	return a.client.GetProperty(name)
 }
 
-// Register for changes signalling
-func (a *Message1) Register() (chan *dbus.Signal, error) {
-	return a.client.Register(a.client.Config.Path, bluez.PropertiesInterface)
+// GetPropertiesSignal return a channel for receiving udpdates on property changes
+func (a *Message1) GetPropertiesSignal() (chan *dbus.Signal, error) {
+
+	if a.propertiesSignal == nil {
+		s, err := a.client.Register(a.client.Config.Path, bluez.PropertiesInterface)
+		if err != nil {
+			return nil, err
+		}
+		a.propertiesSignal = s
+	}
+
+	return a.propertiesSignal, nil
 }
 
 // Unregister for changes signalling
-func (a *Message1) Unregister(signal chan *dbus.Signal) error {
-	return a.client.Unregister(a.client.Config.Path, bluez.PropertiesInterface, signal)
+func (a *Message1) unregisterSignal() {
+	if a.propertiesSignal == nil {
+		a.propertiesSignal <- nil
+	}
 }
+
+// WatchProperties updates on property changes
+func (a *Message1) WatchProperties() (chan *bluez.PropertyChanged, error) {
+
+	channel, err := a.client.Register(a.Path(), a.Interface())
+	if err != nil {
+		return nil, err
+	}
+
+	ch := make(chan *bluez.PropertyChanged)
+
+	go (func() {
+		for {
+
+			if channel == nil {
+				break
+			}
+
+			sig := <-channel
+
+			if sig == nil {
+				return
+			}
+
+			if sig.Name != bluez.PropertiesChanged {
+				continue
+			}
+			if sig.Path != a.Path() {
+				continue
+			}
+
+			iface := sig.Body[0].(string)
+			changes := sig.Body[1].(map[string]dbus.Variant)
+
+			for field, val := range changes {
+
+				// updates [*]Properties struct
+				props := a.Properties
+
+				s := reflect.ValueOf(props).Elem()
+				// exported field
+				f := s.FieldByName(field)
+				if f.IsValid() {
+					// A Value can be changed only if it is
+					// addressable and was not obtained by
+					// the use of unexported struct fields.
+					if f.CanSet() {
+						x := reflect.ValueOf(val.Value())
+						props.Lock()
+						f.Set(x)
+						props.Unlock()
+					}
+				}
+
+				propChanged := &bluez.PropertyChanged{
+					Interface: iface,
+					Name:      field,
+					Value:     val.Value(),
+				}
+				ch <- propChanged
+			}
+
+		}
+	})()
+
+	return ch, nil
+}
+
+func (a *Message1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
+	ch <- nil
+	close(ch)
+	return nil
+}
+
+
 
 
 

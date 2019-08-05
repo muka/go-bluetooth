@@ -4,6 +4,15 @@ import (
 	"github.com/godbus/dbus"
 )
 
+// GetObjectManager return a client instance of the Bluez object manager
+func GetObjectManager() (*ObjectManager, error) {
+	om, err := NewObjectManager(OrgBluezInterface, "/")
+	if err != nil {
+		return nil, err
+	}
+	return om, nil
+}
+
 // NewObjectManager create a new ObjectManager client
 func NewObjectManager(name string, path string) (*ObjectManager, error) {
 	om := new(ObjectManager)
@@ -11,7 +20,7 @@ func NewObjectManager(name string, path string) (*ObjectManager, error) {
 		&Config{
 			Name:  name,
 			Iface: "org.freedesktop.DBus.ObjectManager",
-			Path:  path,
+			Path:  dbus.ObjectPath(path),
 			Bus:   SystemBus,
 		},
 	)
@@ -39,14 +48,14 @@ func (o *ObjectManager) GetManagedObjects() (map[dbus.ObjectPath]map[string]map[
 func (o *ObjectManager) Register() (chan *dbus.Signal, error) {
 	path := o.client.Config.Path
 	iface := o.client.Config.Iface
-	return o.client.Register(path, iface)
+	return o.client.Register(dbus.ObjectPath(path), iface)
 }
 
 //Unregister watch for signal events
 func (o *ObjectManager) Unregister(signal chan *dbus.Signal) error {
 	path := o.client.Config.Path
 	iface := o.client.Config.Iface
-	return o.client.Unregister(path, iface, signal)
+	return o.client.Unregister(dbus.ObjectPath(path), iface, signal)
 }
 
 // SignalAdded notify of interfaces being added

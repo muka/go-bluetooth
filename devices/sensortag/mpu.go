@@ -5,16 +5,14 @@ import (
 	"encoding/binary"
 	"errors"
 	"fmt"
-	"strings"
 
-	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez/profile/gatt"
 )
 
 //getting config,data,period characteristics for Humidity sensor
 func newMpuSensor(tag *SensorTag) (*MpuSensor, error) {
 
-	dev := tag.Device
+	dev := tag.Device1
 
 	//accelerometer,magnetometer,gyroscope
 	MpuConfigUUID, err := getUUID("MPU9250_CONFIG_UUID")
@@ -157,106 +155,72 @@ func (s *MpuSensor) Read() (float64, error) {
 //StartNotify enable mpuDataChannel
 func (s *MpuSensor) StartNotify(macAddress string) error {
 
-	//log.Debug("MpuSensor tag value: ",s.tag.Device)
-	d := s.tag.Device
-	serv, err1 := d.GetAllServicesAndUUID()
-
-	if err1 != nil {
-
-	}
-	var uuidAndService string
-	serviceArrLength := len(serv)
-	for i := 0; i < serviceArrLength; i++ {
-		val := strings.Split(serv[i], ":")
-
-		if val[0] == "F000AA82-0451-4000-B000-000000000000" {
-			uuidAndService = val[1]
-		}
-	}
-
 	err := s.Enable()
 	if err != nil {
 		return err
 	}
 
-	dataChannel, err := s.data.Register()
+	propsChanged, err := s.data.WatchProperties()
 	if err != nil {
 		return err
 	}
 
 	go func() {
-		for event1 := range dataChannel {
+		for prop := range propsChanged {
 
-			if event1 == nil {
+			if prop == nil {
 				return
 			}
 
-			if strings.Contains(fmt.Sprint(event1.Path), uuidAndService) {
-				switch event1.Body[0].(type) {
-
-				case dbus.ObjectPath:
-					continue
-				case string:
-				}
-
-				if event1.Body[0] != gatt.GattCharacteristic1Interface {
-
-					continue
-				}
-
-				props1 := event1.Body[1].(map[string]dbus.Variant)
-
-				if _, ok := props1["Value"]; !ok {
-
-					continue
-				}
-
-				b1 := props1["Value"].Value().([]byte)
-				var mpuAccelerometer string
-				var mpuGyroscope string
-				var mpuMagnetometer string
-
-				//... calculate Gyroscope...........
-
-				mpuXg := binary.LittleEndian.Uint16(b1[0:2])
-				mpuYg := binary.LittleEndian.Uint16(b1[2:4])
-				mpuZg := binary.LittleEndian.Uint16(b1[4:6])
-
-				mpuGyX, mpuGyY, mpuGyZ := calcMpuGyroscope(uint16(mpuXg), uint16(mpuYg), uint16(mpuZg))
-				mpuGyroscope = fmt.Sprint(mpuGyX, " , ", mpuGyY, " , ", mpuGyZ)
-
-				//... calculate Accelerometer.......
-
-				mpuXa := binary.LittleEndian.Uint16(b1[6:8])
-				mpuYa := binary.LittleEndian.Uint16(b1[8:10])
-				mpuZa := binary.LittleEndian.Uint16(b1[10:12])
-
-				mpuAcX, mpuAcY, mpuAcZ := calcMpuAccelerometer(uint16(mpuXa), uint16(mpuYa), uint16(mpuZa))
-				mpuAccelerometer = fmt.Sprint(mpuAcX, " , ", mpuAcY, " , ", mpuAcZ)
-
-				//... calculate Magnetometer.......
-
-				mpuXm := binary.LittleEndian.Uint16(b1[12:14])
-				mpuYm := binary.LittleEndian.Uint16(b1[14:16])
-				mpuZm := binary.LittleEndian.Uint16(b1[16:18])
-
-				mpuMgX, mpuMgY, mpuMgZ := calcMpuMagnetometer(uint16(mpuXm), uint16(mpuYm), uint16(mpuZm))
-				mpuMagnetometer = fmt.Sprint(mpuMgX, " , ", mpuMgY, " , ", mpuMgZ)
-
-				dataEvent := SensorTagDataEvent{
-
-					Device:                s.tag.Device,
-					SensorType:            "mpu",
-					MpuGyroscopeValue:     mpuGyroscope,
-					MpuGyroscopeUnit:      "deg/s",
-					MpuAccelerometerValue: mpuAccelerometer,
-					MpuAccelerometerUnit:  "G",
-					MpuMagnetometerValue:  mpuMagnetometer,
-					MpuMagnetometerUnit:   "uT",
-					SensorID:              macAddress,
-				}
-				s.tag.Device.Emit("data", dataEvent)
+			if prop.Name != "Value" {
+				return
 			}
+
+			b1 := prop.Value.([]byte)
+			var mpuAccelerometer string
+			var mpuGyroscope string
+			var mpuMagnetometer string
+
+			//... calculate Gyroscope...........
+
+			mpuXg := binary.LittleEndian.Uint16(b1[0:2])
+			mpuYg := binary.LittleEndian.Uint16(b1[2:4])
+			mpuZg := binary.LittleEndian.Uint16(b1[4:6])
+
+			mpuGyX, mpuGyY, mpuGyZ := calcMpuGyroscope(uint16(mpuXg), uint16(mpuYg), uint16(mpuZg))
+			mpuGyroscope = fmt.Sprint(mpuGyX, " , ", mpuGyY, " , ", mpuGyZ)
+
+			//... calculate Accelerometer.......
+
+			mpuXa := binary.LittleEndian.Uint16(b1[6:8])
+			mpuYa := binary.LittleEndian.Uint16(b1[8:10])
+			mpuZa := binary.LittleEndian.Uint16(b1[10:12])
+
+			mpuAcX, mpuAcY, mpuAcZ := calcMpuAccelerometer(uint16(mpuXa), uint16(mpuYa), uint16(mpuZa))
+			mpuAccelerometer = fmt.Sprint(mpuAcX, " , ", mpuAcY, " , ", mpuAcZ)
+
+			//... calculate Magnetometer.......
+
+			mpuXm := binary.LittleEndian.Uint16(b1[12:14])
+			mpuYm := binary.LittleEndian.Uint16(b1[14:16])
+			mpuZm := binary.LittleEndian.Uint16(b1[16:18])
+
+			mpuMgX, mpuMgY, mpuMgZ := calcMpuMagnetometer(uint16(mpuXm), uint16(mpuYm), uint16(mpuZm))
+			mpuMagnetometer = fmt.Sprint(mpuMgX, " , ", mpuMgY, " , ", mpuMgZ)
+
+			dataEvent := SensorTagDataEvent{
+				Device:                s.tag.Device1,
+				SensorType:            "mpu",
+				MpuGyroscopeValue:     mpuGyroscope,
+				MpuGyroscopeUnit:      "deg/s",
+				MpuAccelerometerValue: mpuAccelerometer,
+				MpuAccelerometerUnit:  "G",
+				MpuMagnetometerValue:  mpuMagnetometer,
+				MpuMagnetometerUnit:   "uT",
+				SensorID:              macAddress,
+			}
+
+			s.tag.Data() <- &dataEvent
 		}
 	}()
 

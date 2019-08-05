@@ -20,6 +20,7 @@ package media
 import (
   "sync"
   "github.com/muka/go-bluetooth/bluez"
+  "reflect"
   "github.com/fatih/structs"
   "github.com/muka/go-bluetooth/util"
   "github.com/godbus/dbus"
@@ -32,13 +33,14 @@ var MediaTransport1Interface = "org.bluez.MediaTransport1"
 //
 // Args:
 // 	objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/fdX
-func NewMediaTransport1(objectPath string) (*MediaTransport1, error) {
+func NewMediaTransport1(objectPath dbus.ObjectPath) (*MediaTransport1, error) {
 	a := new(MediaTransport1)
+	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
 			Iface: MediaTransport1Interface,
-			Path:  objectPath,
+			Path:  dbus.ObjectPath(objectPath),
 			Bus:   bluez.SystemBus,
 		},
 	)
@@ -57,18 +59,14 @@ func NewMediaTransport1(objectPath string) (*MediaTransport1, error) {
 // MediaTransport1 MediaTransport1 hierarchy
 
 type MediaTransport1 struct {
-	client     *bluez.Client
-	Properties *MediaTransport1Properties
+	client     				*bluez.Client
+	propertiesSignal 	chan *dbus.Signal
+	Properties 				*MediaTransport1Properties
 }
 
 // MediaTransport1Properties contains the exposed properties of an interface
 type MediaTransport1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
-	// Delay Optional. Transport delay in 1/10 of millisecond, this
-  // property is only writeable when the transport was
-  // acquired by the sender.
-	Delay uint16
 
 	// Volume Optional. Indicates volume level of the transport,
   // this property is only writeable when the transport was
@@ -98,6 +96,11 @@ type MediaTransport1Properties struct {
   // "active": streaming and acquired
 	State string
 
+	// Delay Optional. Transport delay in 1/10 of millisecond, this
+  // property is only writeable when the transport was
+  // acquired by the sender.
+	Delay uint16
+
 }
 
 func (p *MediaTransport1Properties) Lock() {
@@ -110,7 +113,20 @@ func (p *MediaTransport1Properties) Unlock() {
 
 // Close the connection
 func (a *MediaTransport1) Close() {
+	
+	a.unregisterSignal()
+	
 	a.client.Disconnect()
+}
+
+// Path return MediaTransport1 object path
+func (a *MediaTransport1) Path() dbus.ObjectPath {
+	return a.client.Config.Path
+}
+
+// Interface return MediaTransport1 interface
+func (a *MediaTransport1) Interface() string {
+	return a.client.Config.Iface
 }
 
 
@@ -153,15 +169,101 @@ func (a *MediaTransport1) GetProperty(name string) (dbus.Variant, error) {
 	return a.client.GetProperty(name)
 }
 
-// Register for changes signalling
-func (a *MediaTransport1) Register() (chan *dbus.Signal, error) {
-	return a.client.Register(a.client.Config.Path, bluez.PropertiesInterface)
+// GetPropertiesSignal return a channel for receiving udpdates on property changes
+func (a *MediaTransport1) GetPropertiesSignal() (chan *dbus.Signal, error) {
+
+	if a.propertiesSignal == nil {
+		s, err := a.client.Register(a.client.Config.Path, bluez.PropertiesInterface)
+		if err != nil {
+			return nil, err
+		}
+		a.propertiesSignal = s
+	}
+
+	return a.propertiesSignal, nil
 }
 
 // Unregister for changes signalling
-func (a *MediaTransport1) Unregister(signal chan *dbus.Signal) error {
-	return a.client.Unregister(a.client.Config.Path, bluez.PropertiesInterface, signal)
+func (a *MediaTransport1) unregisterSignal() {
+	if a.propertiesSignal == nil {
+		a.propertiesSignal <- nil
+	}
 }
+
+// WatchProperties updates on property changes
+func (a *MediaTransport1) WatchProperties() (chan *bluez.PropertyChanged, error) {
+
+	channel, err := a.client.Register(a.Path(), a.Interface())
+	if err != nil {
+		return nil, err
+	}
+
+	ch := make(chan *bluez.PropertyChanged)
+
+	go (func() {
+		for {
+
+			if channel == nil {
+				break
+			}
+
+			sig := <-channel
+
+			if sig == nil {
+				return
+			}
+
+			if sig.Name != bluez.PropertiesChanged {
+				continue
+			}
+			if sig.Path != a.Path() {
+				continue
+			}
+
+			iface := sig.Body[0].(string)
+			changes := sig.Body[1].(map[string]dbus.Variant)
+
+			for field, val := range changes {
+
+				// updates [*]Properties struct
+				props := a.Properties
+
+				s := reflect.ValueOf(props).Elem()
+				// exported field
+				f := s.FieldByName(field)
+				if f.IsValid() {
+					// A Value can be changed only if it is
+					// addressable and was not obtained by
+					// the use of unexported struct fields.
+					if f.CanSet() {
+						x := reflect.ValueOf(val.Value())
+						props.Lock()
+						f.Set(x)
+						props.Unlock()
+					}
+				}
+
+				propChanged := &bluez.PropertyChanged{
+					Interface: iface,
+					Name:      field,
+					Value:     val.Value(),
+				}
+				ch <- propChanged
+			}
+
+		}
+	})()
+
+	return ch, nil
+}
+
+func (a *MediaTransport1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
+	ch <- nil
+	close(ch)
+	return nil
+}
+
+
 
 
 

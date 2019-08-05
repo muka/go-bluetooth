@@ -20,6 +20,7 @@ package obex
 import (
   "sync"
   "github.com/muka/go-bluetooth/bluez"
+  "reflect"
   "github.com/fatih/structs"
   "github.com/muka/go-bluetooth/util"
   "github.com/godbus/dbus"
@@ -32,13 +33,14 @@ var PhonebookAccess1Interface = "org.bluez.obex.PhonebookAccess1"
 //
 // Args:
 // 	objectPath: [Session object path]
-func NewPhonebookAccess1(objectPath string) (*PhonebookAccess1, error) {
+func NewPhonebookAccess1(objectPath dbus.ObjectPath) (*PhonebookAccess1, error) {
 	a := new(PhonebookAccess1)
+	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez.obex",
 			Iface: PhonebookAccess1Interface,
-			Path:  objectPath,
+			Path:  dbus.ObjectPath(objectPath),
 			Bus:   bluez.SystemBus,
 		},
 	)
@@ -57,8 +59,9 @@ func NewPhonebookAccess1(objectPath string) (*PhonebookAccess1, error) {
 // PhonebookAccess1 Phonebook Access hierarchy
 
 type PhonebookAccess1 struct {
-	client     *bluez.Client
-	Properties *PhonebookAccess1Properties
+	client     				*bluez.Client
+	propertiesSignal 	chan *dbus.Signal
+	Properties 				*PhonebookAccess1Properties
 }
 
 // PhonebookAccess1Properties contains the exposed properties of an interface
@@ -100,7 +103,20 @@ func (p *PhonebookAccess1Properties) Unlock() {
 
 // Close the connection
 func (a *PhonebookAccess1) Close() {
+	
+	a.unregisterSignal()
+	
 	a.client.Disconnect()
+}
+
+// Path return PhonebookAccess1 object path
+func (a *PhonebookAccess1) Path() dbus.ObjectPath {
+	return a.client.Config.Path
+}
+
+// Interface return PhonebookAccess1 interface
+func (a *PhonebookAccess1) Interface() string {
+	return a.client.Config.Iface
 }
 
 
@@ -143,15 +159,101 @@ func (a *PhonebookAccess1) GetProperty(name string) (dbus.Variant, error) {
 	return a.client.GetProperty(name)
 }
 
-// Register for changes signalling
-func (a *PhonebookAccess1) Register() (chan *dbus.Signal, error) {
-	return a.client.Register(a.client.Config.Path, bluez.PropertiesInterface)
+// GetPropertiesSignal return a channel for receiving udpdates on property changes
+func (a *PhonebookAccess1) GetPropertiesSignal() (chan *dbus.Signal, error) {
+
+	if a.propertiesSignal == nil {
+		s, err := a.client.Register(a.client.Config.Path, bluez.PropertiesInterface)
+		if err != nil {
+			return nil, err
+		}
+		a.propertiesSignal = s
+	}
+
+	return a.propertiesSignal, nil
 }
 
 // Unregister for changes signalling
-func (a *PhonebookAccess1) Unregister(signal chan *dbus.Signal) error {
-	return a.client.Unregister(a.client.Config.Path, bluez.PropertiesInterface, signal)
+func (a *PhonebookAccess1) unregisterSignal() {
+	if a.propertiesSignal == nil {
+		a.propertiesSignal <- nil
+	}
 }
+
+// WatchProperties updates on property changes
+func (a *PhonebookAccess1) WatchProperties() (chan *bluez.PropertyChanged, error) {
+
+	channel, err := a.client.Register(a.Path(), a.Interface())
+	if err != nil {
+		return nil, err
+	}
+
+	ch := make(chan *bluez.PropertyChanged)
+
+	go (func() {
+		for {
+
+			if channel == nil {
+				break
+			}
+
+			sig := <-channel
+
+			if sig == nil {
+				return
+			}
+
+			if sig.Name != bluez.PropertiesChanged {
+				continue
+			}
+			if sig.Path != a.Path() {
+				continue
+			}
+
+			iface := sig.Body[0].(string)
+			changes := sig.Body[1].(map[string]dbus.Variant)
+
+			for field, val := range changes {
+
+				// updates [*]Properties struct
+				props := a.Properties
+
+				s := reflect.ValueOf(props).Elem()
+				// exported field
+				f := s.FieldByName(field)
+				if f.IsValid() {
+					// A Value can be changed only if it is
+					// addressable and was not obtained by
+					// the use of unexported struct fields.
+					if f.CanSet() {
+						x := reflect.ValueOf(val.Value())
+						props.Lock()
+						f.Set(x)
+						props.Unlock()
+					}
+				}
+
+				propChanged := &bluez.PropertyChanged{
+					Interface: iface,
+					Name:      field,
+					Value:     val.Value(),
+				}
+				ch <- propChanged
+			}
+
+		}
+	})()
+
+	return ch, nil
+}
+
+func (a *PhonebookAccess1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
+	ch <- nil
+	close(ch)
+	return nil
+}
+
+
 
 
 

@@ -20,6 +20,7 @@ package gatt
 import (
   "sync"
   "github.com/muka/go-bluetooth/bluez"
+  "reflect"
   "github.com/fatih/structs"
   "github.com/muka/go-bluetooth/util"
   "github.com/godbus/dbus"
@@ -32,13 +33,14 @@ var GattCharacteristic1Interface = "org.bluez.GattCharacteristic1"
 //
 // Args:
 // 	objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/serviceXX/charYYYY
-func NewGattCharacteristic1(objectPath string) (*GattCharacteristic1, error) {
+func NewGattCharacteristic1(objectPath dbus.ObjectPath) (*GattCharacteristic1, error) {
 	a := new(GattCharacteristic1)
+	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
 			Iface: GattCharacteristic1Interface,
-			Path:  objectPath,
+			Path:  dbus.ObjectPath(objectPath),
 			Bus:   bluez.SystemBus,
 		},
 	)
@@ -58,13 +60,32 @@ func NewGattCharacteristic1(objectPath string) (*GattCharacteristic1, error) {
 // For local GATT defined services, the object paths need to follow the service
 // path hierarchy and are freely definable.
 type GattCharacteristic1 struct {
-	client     *bluez.Client
-	Properties *GattCharacteristic1Properties
+	client     				*bluez.Client
+	propertiesSignal 	chan *dbus.Signal
+	Properties 				*GattCharacteristic1Properties
 }
 
 // GattCharacteristic1Properties contains the exposed properties of an interface
 type GattCharacteristic1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
+
+	// Service Object path of the GATT service the characteristic
+  // belongs to.
+	Service dbus.ObjectPath
+
+	// Value The cached value of the characteristic. This property
+  // gets updated only after a successful read request and
+  // when a notification or indication is received, upon
+  // which a PropertiesChanged signal will be emitted.
+	Value []byte `dbus:"emit"`
+
+	// WriteAcquired True, if this characteristic has been acquired by any
+  // client using AcquireWrite.
+  // For client properties is ommited in case
+  // 'write-without-response' flag is not set.
+  // For server the presence of this property indicates
+  // that AcquireWrite is supported.
+	WriteAcquired bool
 
 	// NotifyAcquired True, if this characteristic has been acquired by any
   // client using AcquireNotify.
@@ -106,24 +127,6 @@ type GattCharacteristic1Properties struct {
 	// UUID 128-bit characteristic UUID.
 	UUID string
 
-	// Service Object path of the GATT service the characteristic
-  // belongs to.
-	Service dbus.ObjectPath
-
-	// Value The cached value of the characteristic. This property
-  // gets updated only after a successful read request and
-  // when a notification or indication is received, upon
-  // which a PropertiesChanged signal will be emitted.
-	Value []byte `dbus:"emit"`
-
-	// WriteAcquired True, if this characteristic has been acquired by any
-  // client using AcquireWrite.
-  // For client properties is ommited in case
-  // 'write-without-response' flag is not set.
-  // For server the presence of this property indicates
-  // that AcquireWrite is supported.
-	WriteAcquired bool
-
 }
 
 func (p *GattCharacteristic1Properties) Lock() {
@@ -136,7 +139,20 @@ func (p *GattCharacteristic1Properties) Unlock() {
 
 // Close the connection
 func (a *GattCharacteristic1) Close() {
+	
+	a.unregisterSignal()
+	
 	a.client.Disconnect()
+}
+
+// Path return GattCharacteristic1 object path
+func (a *GattCharacteristic1) Path() dbus.ObjectPath {
+	return a.client.Config.Path
+}
+
+// Interface return GattCharacteristic1 interface
+func (a *GattCharacteristic1) Interface() string {
+	return a.client.Config.Iface
 }
 
 
@@ -179,15 +195,101 @@ func (a *GattCharacteristic1) GetProperty(name string) (dbus.Variant, error) {
 	return a.client.GetProperty(name)
 }
 
-// Register for changes signalling
-func (a *GattCharacteristic1) Register() (chan *dbus.Signal, error) {
-	return a.client.Register(a.client.Config.Path, bluez.PropertiesInterface)
+// GetPropertiesSignal return a channel for receiving udpdates on property changes
+func (a *GattCharacteristic1) GetPropertiesSignal() (chan *dbus.Signal, error) {
+
+	if a.propertiesSignal == nil {
+		s, err := a.client.Register(a.client.Config.Path, bluez.PropertiesInterface)
+		if err != nil {
+			return nil, err
+		}
+		a.propertiesSignal = s
+	}
+
+	return a.propertiesSignal, nil
 }
 
 // Unregister for changes signalling
-func (a *GattCharacteristic1) Unregister(signal chan *dbus.Signal) error {
-	return a.client.Unregister(a.client.Config.Path, bluez.PropertiesInterface, signal)
+func (a *GattCharacteristic1) unregisterSignal() {
+	if a.propertiesSignal == nil {
+		a.propertiesSignal <- nil
+	}
 }
+
+// WatchProperties updates on property changes
+func (a *GattCharacteristic1) WatchProperties() (chan *bluez.PropertyChanged, error) {
+
+	channel, err := a.client.Register(a.Path(), a.Interface())
+	if err != nil {
+		return nil, err
+	}
+
+	ch := make(chan *bluez.PropertyChanged)
+
+	go (func() {
+		for {
+
+			if channel == nil {
+				break
+			}
+
+			sig := <-channel
+
+			if sig == nil {
+				return
+			}
+
+			if sig.Name != bluez.PropertiesChanged {
+				continue
+			}
+			if sig.Path != a.Path() {
+				continue
+			}
+
+			iface := sig.Body[0].(string)
+			changes := sig.Body[1].(map[string]dbus.Variant)
+
+			for field, val := range changes {
+
+				// updates [*]Properties struct
+				props := a.Properties
+
+				s := reflect.ValueOf(props).Elem()
+				// exported field
+				f := s.FieldByName(field)
+				if f.IsValid() {
+					// A Value can be changed only if it is
+					// addressable and was not obtained by
+					// the use of unexported struct fields.
+					if f.CanSet() {
+						x := reflect.ValueOf(val.Value())
+						props.Lock()
+						f.Set(x)
+						props.Unlock()
+					}
+				}
+
+				propChanged := &bluez.PropertyChanged{
+					Interface: iface,
+					Name:      field,
+					Value:     val.Value(),
+				}
+				ch <- propChanged
+			}
+
+		}
+	})()
+
+	return ch, nil
+}
+
+func (a *GattCharacteristic1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
+	ch <- nil
+	close(ch)
+	return nil
+}
+
+
 
 
 

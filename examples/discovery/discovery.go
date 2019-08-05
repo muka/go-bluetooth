@@ -2,11 +2,12 @@
 package discovery_example
 
 import (
-	"os"
+	"fmt"
 
+	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/api"
-	"github.com/muka/go-bluetooth/emitter"
-	"github.com/muka/go-bluetooth/linux/btmgmt"
+	"github.com/muka/go-bluetooth/bluez/profile/adapter"
+	"github.com/muka/go-bluetooth/bluez/profile/device"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -16,30 +17,22 @@ func Run(adapterID string) error {
 	defer api.Exit()
 
 	log.Debugf("Reset bluetooth device")
-	a := btmgmt.NewBtMgmt(adapterID)
-	err := a.Reset()
-	if err != nil {
-		log.Error(err)
-		os.Exit(1)
-	}
-
-	err = api.FlushDevices(adapterID)
+	err := api.ResetController(adapterID)
 	if err != nil {
 		return err
 	}
 
-	devices, err := api.GetDevices(adapterID)
+	a, err := adapter.GetAdapter(adapterID)
 	if err != nil {
 		return err
 	}
 
-	log.Infof("Cached devices:")
-	for _, dev := range devices {
-		showDeviceInfo(dev)
+	err = a.FlushDevices()
+	if err != nil {
+		return err
 	}
 
-	log.Infof("Discovered devices:")
-	err = discoverDevices(adapterID)
+	err = discoverDevices(a)
 	if err != nil {
 		return err
 	}
@@ -47,31 +40,50 @@ func Run(adapterID string) error {
 	select {}
 }
 
-func discoverDevices(adapterID string) error {
+func discoverDevices(a *adapter.Adapter1) error {
 
-	err := api.StartDiscovery()
+	err := a.StartDiscovery()
+	if err != nil {
+		return err
+	}
+	defer a.StopDiscovery()
+
+	log.Debugf("Started discovery")
+	discovery, err := a.DeviceDiscovered()
 	if err != nil {
 		return err
 	}
 
-	log.Debugf("Started discovery")
-	err = api.On("discovery", emitter.NewCallback(func(ev emitter.Event) {
-		discoveryEvent := ev.GetData().(api.DiscoveredDeviceEvent)
-		dev := discoveryEvent.Device
-		showDeviceInfo(dev)
-	}))
+	for ev := range discovery {
+
+		if ev.Type == adapter.DeviceRemoved {
+			continue
+		}
+
+		err = showDeviceInfo(ev.Path)
+		if err != nil {
+			return err
+		}
+	}
 
 	return err
 }
 
-func showDeviceInfo(dev *api.Device) {
+func showDeviceInfo(path dbus.ObjectPath) error {
+
+	dev, err := device.NewDevice1(path)
+	if err != nil {
+		return err
+	}
+
 	if dev == nil {
-		return
+		return fmt.Errorf("Device not found %s", path)
 	}
 	props, err := dev.GetProperties()
 	if err != nil {
-		log.Errorf("%s: Failed to get properties: %s", dev.Path, err.Error())
-		return
+		return fmt.Errorf("%s: Failed to get properties: %s", dev.Path(), err.Error())
 	}
+
 	log.Infof("name=%s addr=%s rssi=%d", props.Name, props.Address, props.RSSI)
+	return nil
 }

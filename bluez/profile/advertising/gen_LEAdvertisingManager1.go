@@ -20,6 +20,7 @@ package advertising
 import (
   "sync"
   "github.com/muka/go-bluetooth/bluez"
+  "reflect"
   "github.com/fatih/structs"
   "github.com/muka/go-bluetooth/util"
   "github.com/godbus/dbus"
@@ -33,13 +34,14 @@ var LEAdvertisingManager1Interface = "org.bluez.LEAdvertisingManager1"
 //
 // Args:
 // 	objectPath: /org/bluez/{hci0,hci1,...}
-func NewLEAdvertisingManager1(objectPath string) (*LEAdvertisingManager1, error) {
+func NewLEAdvertisingManager1(objectPath dbus.ObjectPath) (*LEAdvertisingManager1, error) {
 	a := new(LEAdvertisingManager1)
+	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
 			Iface: LEAdvertisingManager1Interface,
-			Path:  objectPath,
+			Path:  dbus.ObjectPath(objectPath),
 			Bus:   bluez.SystemBus,
 		},
 	)
@@ -58,11 +60,12 @@ func NewLEAdvertisingManager1(objectPath string) (*LEAdvertisingManager1, error)
 // adapterID: ID of an adapter eg. hci0
 func NewLEAdvertisingManager1FromAdapterID(adapterID string) (*LEAdvertisingManager1, error) {
 	a := new(LEAdvertisingManager1)
+	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
 			Iface: LEAdvertisingManager1Interface,
-			Path:  fmt.Sprintf("/org/bluez/%s", adapterID),
+			Path:  dbus.ObjectPath(fmt.Sprintf("/org/bluez/%s", adapterID)),
 			Bus:   bluez.SystemBus,
 		},
 	)
@@ -83,25 +86,26 @@ func NewLEAdvertisingManager1FromAdapterID(adapterID string) (*LEAdvertisingMana
 // Data which should be broadcast to devices.  Advertisement Data elements must
 // follow the API for LE Advertisement Data described above.
 type LEAdvertisingManager1 struct {
-	client     *bluez.Client
-	Properties *LEAdvertisingManager1Properties
+	client     				*bluez.Client
+	propertiesSignal 	chan *dbus.Signal
+	Properties 				*LEAdvertisingManager1Properties
 }
 
 // LEAdvertisingManager1Properties contains the exposed properties of an interface
 type LEAdvertisingManager1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// SupportedIncludes List of supported system includes.
-  // Possible values: "tx-power"
-  // "appearance"
-  // "local-name"
-	SupportedIncludes []string
-
 	// ActiveInstances Number of active advertising instances.
 	ActiveInstances byte
 
 	// SupportedInstances Number of available advertising instances.
 	SupportedInstances byte
+
+	// SupportedIncludes List of supported system includes.
+  // Possible values: "tx-power"
+  // "appearance"
+  // "local-name"
+	SupportedIncludes []string
 
 }
 
@@ -115,7 +119,20 @@ func (p *LEAdvertisingManager1Properties) Unlock() {
 
 // Close the connection
 func (a *LEAdvertisingManager1) Close() {
+	
+	a.unregisterSignal()
+	
 	a.client.Disconnect()
+}
+
+// Path return LEAdvertisingManager1 object path
+func (a *LEAdvertisingManager1) Path() dbus.ObjectPath {
+	return a.client.Config.Path
+}
+
+// Interface return LEAdvertisingManager1 interface
+func (a *LEAdvertisingManager1) Interface() string {
+	return a.client.Config.Iface
 }
 
 
@@ -158,15 +175,101 @@ func (a *LEAdvertisingManager1) GetProperty(name string) (dbus.Variant, error) {
 	return a.client.GetProperty(name)
 }
 
-// Register for changes signalling
-func (a *LEAdvertisingManager1) Register() (chan *dbus.Signal, error) {
-	return a.client.Register(a.client.Config.Path, bluez.PropertiesInterface)
+// GetPropertiesSignal return a channel for receiving udpdates on property changes
+func (a *LEAdvertisingManager1) GetPropertiesSignal() (chan *dbus.Signal, error) {
+
+	if a.propertiesSignal == nil {
+		s, err := a.client.Register(a.client.Config.Path, bluez.PropertiesInterface)
+		if err != nil {
+			return nil, err
+		}
+		a.propertiesSignal = s
+	}
+
+	return a.propertiesSignal, nil
 }
 
 // Unregister for changes signalling
-func (a *LEAdvertisingManager1) Unregister(signal chan *dbus.Signal) error {
-	return a.client.Unregister(a.client.Config.Path, bluez.PropertiesInterface, signal)
+func (a *LEAdvertisingManager1) unregisterSignal() {
+	if a.propertiesSignal == nil {
+		a.propertiesSignal <- nil
+	}
 }
+
+// WatchProperties updates on property changes
+func (a *LEAdvertisingManager1) WatchProperties() (chan *bluez.PropertyChanged, error) {
+
+	channel, err := a.client.Register(a.Path(), a.Interface())
+	if err != nil {
+		return nil, err
+	}
+
+	ch := make(chan *bluez.PropertyChanged)
+
+	go (func() {
+		for {
+
+			if channel == nil {
+				break
+			}
+
+			sig := <-channel
+
+			if sig == nil {
+				return
+			}
+
+			if sig.Name != bluez.PropertiesChanged {
+				continue
+			}
+			if sig.Path != a.Path() {
+				continue
+			}
+
+			iface := sig.Body[0].(string)
+			changes := sig.Body[1].(map[string]dbus.Variant)
+
+			for field, val := range changes {
+
+				// updates [*]Properties struct
+				props := a.Properties
+
+				s := reflect.ValueOf(props).Elem()
+				// exported field
+				f := s.FieldByName(field)
+				if f.IsValid() {
+					// A Value can be changed only if it is
+					// addressable and was not obtained by
+					// the use of unexported struct fields.
+					if f.CanSet() {
+						x := reflect.ValueOf(val.Value())
+						props.Lock()
+						f.Set(x)
+						props.Unlock()
+					}
+				}
+
+				propChanged := &bluez.PropertyChanged{
+					Interface: iface,
+					Name:      field,
+					Value:     val.Value(),
+				}
+				ch <- propChanged
+			}
+
+		}
+	})()
+
+	return ch, nil
+}
+
+func (a *LEAdvertisingManager1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
+	ch <- nil
+	close(ch)
+	return nil
+}
+
+
 
 
 

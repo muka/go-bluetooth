@@ -12,7 +12,7 @@ func NewObexTransfer1(path string) *ObexTransfer1 {
 		&bluez.Config{
 			Name:  "org.bluez.obex",
 			Iface: "org.bluez.obex.Transfer1",
-			Path:  path,
+			Path:  dbus.ObjectPath(path),
 			Bus:   bluez.SessionBus,
 		},
 	)

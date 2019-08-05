@@ -25,11 +25,16 @@ var sensortagInfoCmd = &cobra.Command{
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
 
+		adapterID, err := cmd.Flags().GetString("adapterID")
+		if err != nil {
+			fail(err)
+		}
+
 		if len(args) < 1 {
 			failArgs([]string{"sensortag_address"})
 		}
 
-		fail(sensortag_info_example.Run(args[0]))
+		fail(sensortag_info_example.Run(args[0], adapterID))
 	},
 }
 

@@ -1,99 +1,217 @@
 package device
 
 import (
+	"errors"
 	"fmt"
-	"reflect"
 	"strings"
 
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/bluez/profile/gatt"
 )
 
 func NewDevice(adapterID string, address string) (*Device1, error) {
-	return NewDevice1(fmt.Sprintf("%s/%s/dev_%s", bluez.OrgBluezPath, adapterID, strings.Replace(address, ":", "_", -1)))
+	path := fmt.Sprintf("%s/%s/dev_%s", bluez.OrgBluezPath, adapterID, strings.Replace(address, ":", "_", -1))
+	return NewDevice1(dbus.ObjectPath(path))
 }
 
-type PropertyChanged struct{}
+// GetCharacteristicsList return device characteristics object path list
+func (d *Device1) GetCharacteristicsList() ([]dbus.ObjectPath, error) {
 
-func (d *Device1) OnChange() (chan PropertyChanged, error) {
+	var chars []dbus.ObjectPath
 
-	channel, err := d.client.Register(d.Path(), bluez.PropertiesInterface)
+	om, err := bluez.GetObjectManager()
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	go (func() {
-		for {
+	list, err := om.GetManagedObjects()
+	if err != nil {
+		return nil, err
+	}
 
-			if channel == nil {
-				break
-			}
+	for path := range list {
 
-			sig := <-channel
+		spath := string(path)
 
-			if sig == nil {
-				return
-			}
-
-			if sig.Name != bluez.PropertiesChanged {
-				continue
-			}
-			if fmt.Sprint(sig.Path) != d.Path {
-				continue
-			}
-
-			// for i := 0; i < len(sig.Body); i++ {
-			// log.Printf("%s -> %s\n", reflect.TypeOf(sig.Body[i]), sig.Body[i])
-			// }
-
-			iface := sig.Body[0].(string)
-			changes := sig.Body[1].(map[string]dbus.Variant)
-			propertyChangedEvents := make([]PropertyChangedEvent, 0)
-			for field, val := range changes {
-
-				// updates [*]Properties struct
-				d.lock.RLock()
-				props := d.Properties
-				d.lock.RUnlock()
-
-				s := reflect.ValueOf(props).Elem()
-				// exported field
-				f := s.FieldByName(field)
-				if f.IsValid() {
-					// A Value can be changed only if it is
-					// addressable and was not obtained by
-					// the use of unexported struct fields.
-					if f.CanSet() {
-						x := reflect.ValueOf(val.Value())
-						props.Lock()
-						f.Set(x)
-						props.Unlock()
-					}
-				}
-
-				propChanged := PropertyChangedEvent{string(iface), field, val.Value(), props, d}
-				propertyChangedEvents = append(propertyChangedEvents, propChanged)
-			}
-
-			for _, propChanged := range propertyChangedEvents {
-				d.Emit("changed", propChanged)
-			}
-
+		if !strings.HasPrefix(spath, string(d.Path())) {
+			continue
 		}
-	})()
 
-	return nil
+		charPos := strings.Index(spath, "char")
+		if charPos == -1 {
+			continue
+		}
+
+		if strings.Index(spath[charPos:], "desc") == -1 {
+			continue
+		}
+
+		chars = append(chars, path)
+	}
+
+	return chars, nil
 }
 
-func (d *Device1) unwatchProperties() error {
-	var err error
-	d.Lock()
-	defer d.Unlock()
-	if d.watchPropertiesChannel != nil {
-		err = d.client.Unregister(d.watchPropertiesChannel)
-		close(d.watchPropertiesChannel)
-		d.watchPropertiesChannel = nil
+// GetDescriptorList returns all descriptors
+func (d *Device1) GetDescriptorList() ([]dbus.ObjectPath, error) {
+	var descr []dbus.ObjectPath
+
+	om, err := bluez.GetObjectManager()
+	if err != nil {
+		return nil, err
 	}
 
-	return err
+	list, err := om.GetManagedObjects()
+	if err != nil {
+		return nil, err
+	}
+	for path := range list {
+
+		spath := string(path)
+
+		if !strings.HasPrefix(spath, string(d.Path())) {
+			continue
+		}
+
+		charPos := strings.Index(spath, "char")
+		if charPos == -1 {
+			continue
+		}
+
+		if strings.Index(spath[charPos:], "desc") == -1 {
+			continue
+		}
+
+		descr = append(descr, path)
+	}
+
+	return descr, nil
+}
+
+//GetDescriptors returns all descriptors for a given characteristic
+func (d *Device1) GetDescriptors(char *gatt.GattCharacteristic1) ([]*gatt.GattDescriptor1, error) {
+
+	descrPaths, err := d.GetDescriptorList()
+	if err != nil {
+		return nil, err
+	}
+
+	descrFound := []*gatt.GattDescriptor1{}
+	for _, path := range descrPaths {
+
+		descr, err := gatt.NewGattDescriptor1(path)
+		if err != nil {
+			return nil, err
+		}
+
+		charPath := fmt.Sprintf("%s/%s", char.Properties.Service, strings.Replace(char.Properties.UUID, "-", "_", -1))
+
+		if dbus.ObjectPath(charPath) == descr.Properties.Characteristic {
+			descrFound = append(descrFound, descr)
+		}
+
+	}
+
+	if len(descrFound) == 0 {
+		return nil, errors.New("descriptors not found")
+	}
+
+	return descrFound, nil
+}
+
+//GetCharacteristics return a list of characteristics
+func (d *Device1) GetCharacteristics() ([]*gatt.GattCharacteristic1, error) {
+
+	list, err := d.GetCharacteristicsList()
+	if err != nil {
+		return nil, err
+	}
+
+	chars := []*gatt.GattCharacteristic1{}
+	for _, path := range list {
+
+		char, err := gatt.NewGattCharacteristic1(path)
+		if err != nil {
+			return nil, err
+		}
+		chars = append(chars, char)
+	}
+
+	return chars, nil
+}
+
+//GetAllServicesAndUUID return a list of uuid's with their corresponding services
+func (d *Device1) GetAllServicesAndUUID() ([]string, error) {
+
+	list, err := d.GetCharacteristicsList()
+	if err != nil {
+		return nil, err
+	}
+
+	chars := map[dbus.ObjectPath]*gatt.GattCharacteristic1{}
+
+	var deviceFound []string
+	var uuidAndService string
+	for _, path := range list {
+
+		char, err := gatt.NewGattCharacteristic1(path)
+		if err != nil {
+			return nil, err
+		}
+		chars[path] = char
+
+		props := chars[path].Properties
+		cuuid := strings.ToUpper(props.UUID)
+		service := string(props.Service)
+
+		uuidAndService = fmt.Sprint(cuuid, ":", service)
+		deviceFound = append(deviceFound, uuidAndService)
+	}
+
+	return deviceFound, nil
+}
+
+//GetCharByUUID return a GattService by its uuid, return nil if not found
+func (d *Device1) GetCharByUUID(uuid string) (*gatt.GattCharacteristic1, error) {
+	devices, err := d.GetCharsByUUID(uuid)
+	if len(devices) > 0 {
+		return devices[0], err
+	}
+	return nil, err
+}
+
+// GetCharsByUUID returns all characteristics that match the given UUID.
+func (d *Device1) GetCharsByUUID(uuid string) ([]*gatt.GattCharacteristic1, error) {
+	uuid = strings.ToUpper(uuid)
+
+	list, err := d.GetCharacteristicsList()
+	if err != nil {
+		return nil, err
+	}
+
+	chars := map[dbus.ObjectPath]*gatt.GattCharacteristic1{}
+	charsFound := []*gatt.GattCharacteristic1{}
+
+	for _, path := range list {
+
+		char, err := gatt.NewGattCharacteristic1(path)
+		if err != nil {
+			return nil, err
+		}
+		chars[path] = char
+
+		props := chars[path].Properties
+		cuuid := strings.ToUpper(props.UUID)
+
+		if cuuid == uuid {
+			charsFound = append(charsFound, chars[path])
+		}
+	}
+
+	if len(charsFound) == 0 {
+		return nil, errors.New("characteristic not found")
+	}
+
+	return charsFound, nil
 }

@@ -12,7 +12,7 @@ func NewObexSession1(path string) *ObexSession1 {
 		&bluez.Config{
 			Name:  "org.bluez.obex",
 			Iface: "org.bluez.obex.Session1",
-			Path:  path,
+			Path:  dbus.ObjectPath(path),
 			Bus:   bluez.SessionBus,
 		},
 	)

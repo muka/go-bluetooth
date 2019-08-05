@@ -4,16 +4,14 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
-	"strings"
 
-	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez/profile/gatt"
 )
 
 //.....getting config,data,period characteristics for TEMPERATURE sensor............
 func newTemperatureSensor(tag *SensorTag) (*TemperatureSensor, error) {
 
-	dev := tag.Device
+	dev := tag.Device1
 
 	TemperatureConfigUUID, err := getUUID("TemperatureConfig")
 	if err != nil {
@@ -157,76 +155,44 @@ func (s *TemperatureSensor) Read() (float64, error) {
 //StartNotify enable temperature DataChannel
 func (s *TemperatureSensor) StartNotify() error {
 
-	d := s.tag.Device
-	serv, err1 := d.GetAllServicesAndUUID()
-
-	if err1 != nil {
-
-	}
-	var uuidAndService string
-	serviceArrLength := len(serv)
-	for i := 0; i < serviceArrLength; i++ {
-
-		val := strings.Split(serv[i], ":")
-
-		if val[0] == "F000AA01-0451-4000-B000-000000000000" {
-			uuidAndService = val[1]
-		}
-	}
-
 	err := s.Enable()
 	if err != nil {
 		return err
 	}
 
-	dataChannel, err := s.data.Register()
+	dataChannel, err := s.data.WatchProperties()
 	if err != nil {
 		return err
 	}
 
 	go func() {
-		for event := range dataChannel {
-
-			if event == nil {
+		for prop := range dataChannel {
+			if prop == nil {
 				return
 			}
-			if strings.Contains(fmt.Sprint(event.Path), uuidAndService) {
 
-				switch event.Body[0].(type) {
-
-				case dbus.ObjectPath:
-					continue
-
-				case string:
-				}
-
-				if event.Body[0] != gatt.GattCharacteristic1Interface {
-					continue
-				}
-
-				props := event.Body[1].(map[string]dbus.Variant)
-
-				if _, ok := props["Value"]; !ok {
-					continue
-				}
-
-				b := props["Value"].Value().([]byte)
-				amb := binary.LittleEndian.Uint16(b[2:])
-				ambientValue := calcTmpLocal(uint16(amb))
-
-				die := binary.LittleEndian.Uint16(b[0:2])
-				dieValue := calcTmpTarget(uint16(die))
-				dataEvent := SensorTagDataEvent{
-					Device:           s.tag.Device,
-					SensorType:       "temperature",
-					AmbientTempValue: ambientValue,
-					AmbientTempUnit:  "C",
-					ObjectTempValue:  dieValue,
-					ObjectTempUnit:   "C",
-					SensorID:         s.tag.Properties.Address,
-				}
-				s.tag.Device.Emit("data", dataEvent)
+			if prop.Name != "Value" {
+				return
 			}
+
+			b := prop.Value.([]byte)
+			amb := binary.LittleEndian.Uint16(b[2:])
+			ambientValue := calcTmpLocal(uint16(amb))
+
+			die := binary.LittleEndian.Uint16(b[0:2])
+			dieValue := calcTmpTarget(uint16(die))
+			dataEvent := SensorTagDataEvent{
+				Device:           s.tag.Device1,
+				SensorType:       "temperature",
+				AmbientTempValue: ambientValue,
+				AmbientTempUnit:  "C",
+				ObjectTempValue:  dieValue,
+				ObjectTempUnit:   "C",
+				SensorID:         s.tag.Properties.Address,
+			}
+
+			s.tag.Data() <- &dataEvent
+
 		}
 	}()
 

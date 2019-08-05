@@ -10,9 +10,14 @@ import (
 )
 
 // example of reading temperature from a TI sensortag
-func Run(tagAddress string) error {
+func Run(tagAddress, adapterID string) error {
 
-	dev, err := api.GetDeviceByAddress(tagAddress)
+	a, err := api.GetAdapter(adapterID)
+	if err != nil {
+		return err
+	}
+
+	dev, err := a.GetDeviceByAddress(tagAddress)
 	if err != nil {
 		return err
 	}

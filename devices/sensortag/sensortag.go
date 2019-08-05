@@ -6,9 +6,8 @@ import (
 	"time"
 
 	"github.com/godbus/dbus"
-	"github.com/muka/go-bluetooth/api"
+	"github.com/muka/go-bluetooth/bluez/profile/device"
 	"github.com/muka/go-bluetooth/bluez/profile/gatt"
-	"github.com/muka/go-bluetooth/emitter"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -77,7 +76,7 @@ var sensorTagUUIDs = map[string]string{
 
 //SensorTagDataEvent contains SensorTagSpecific data structure
 type SensorTagDataEvent struct {
-	Device     *api.Device
+	Device     *device.Device1
 	SensorType string
 
 	AmbientTempValue interface{}
@@ -152,12 +151,14 @@ func retryCall(times int, sleep int64, fn func() (interface{}, error)) (intf int
 }
 
 //NewSensorTag creates a new sensortag instance
-func NewSensorTag(d *api.Device) (*SensorTag, error) {
+func NewSensorTag(d *device.Device1) (*SensorTag, error) {
 
 	s := new(SensorTag)
 
-	var connect = func(dev *api.Device) error {
-		if !dev.IsConnected() {
+	s.dataChannel = make(chan *SensorTagDataEvent)
+
+	var connect = func(dev *device.Device1) error {
+		if !dev.Properties.Connected {
 			err := dev.Connect()
 			if err != nil {
 				return err
@@ -166,21 +167,24 @@ func NewSensorTag(d *api.Device) (*SensorTag, error) {
 		return nil
 	}
 
-	err := d.On("changed", emitter.NewCallback(func(ev emitter.Event) {
-		changed := ev.GetData().(api.PropertyChangedEvent)
-		if changed.Field == "Connected" {
-			conn := changed.Value.(bool)
-			if !conn {
+	propsChannel, err := d.WatchProperties()
+	if err != nil {
+		return nil, err
+	}
 
-				// TODO clean up properly
-
-				if dataChannel != nil {
-					close(dataChannel)
+	go func() {
+		for prop := range propsChannel {
+			if prop.Name == "Connected" {
+				val := prop.Value.(bool)
+				if val == true {
+					if dataChannel != nil {
+						close(dataChannel)
+						break
+					}
 				}
-
 			}
 		}
-	}))
+	}()
 
 	if err != nil {
 		return nil, err
@@ -192,7 +196,7 @@ func NewSensorTag(d *api.Device) (*SensorTag, error) {
 		return nil, err
 	}
 
-	s.Device = d
+	s.Device1 = d
 
 	//initiating things for temperature sensor...(getting config,data,period characteristics...).....
 
@@ -248,13 +252,18 @@ func NewSensorTag(d *api.Device) (*SensorTag, error) {
 
 //SensorTag a SensorTag object representation
 type SensorTag struct {
-	*api.Device
+	*device.Device1
+	dataChannel chan *SensorTagDataEvent
 	Temperature TemperatureSensor
 	Humidity    HumiditySensor
 	Mpu         MpuSensor
 	Barometric  BarometricSensor
 	Luxometer   LuxometerSensor
 	DeviceInfo  SensorTagDeviceInfo
+}
+
+func (s *SensorTag) Data() chan *SensorTagDataEvent {
+	return s.dataChannel
 }
 
 //Sensor generic sensor interface
@@ -267,7 +276,7 @@ type Sensor interface {
 
 func newDeviceInfo(tag *SensorTag) (SensorTagDeviceInfo, error) {
 
-	dev := tag.Device
+	dev := tag.Device1
 
 	DeviceFirmwareUUID := getDeviceInfoUUID("FIRMWARE_REVISION_UUID")
 	DeviceHardwareUUID := getDeviceInfoUUID("HARDWARE_REVISION_UUID")

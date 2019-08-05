@@ -7,7 +7,7 @@ import (
 
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez/profile/adapter"
-	"github.com/muka/go-bluetooth/emitter"
+	"github.com/muka/go-bluetooth/bluez/profile/device"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -29,33 +29,38 @@ func createClient(adapterID, hwaddr, serviceID string) (err error) {
 		return fmt.Errorf("SetDiscoveryFilter: %s", err)
 	}
 
-	log.Debugf("Start discovery on %s", adapterID)
-	err = a.StartDiscovery()
-	if err != nil {
-		log.Errorf("Failed to start discovery: %s", err.Error())
-		return err
-	}
-
 	log.Debug("List devices")
-	devices, err := api.GetDevices(adapterID)
+	devices, err := a.GetDevices()
 	fail("GetDevices", err)
 	for _, dev := range devices {
 		err = showDeviceInfo(dev, hwaddr, serviceID)
 		fail("showDeviceInfo", err)
 	}
 
-	err = api.On("discovery", emitter.NewCallback(func(ev emitter.Event) {
-		discoveryEvent := ev.GetData().(api.DiscoveredDeviceEvent)
-		if discoveryEvent.Status == api.DeviceAdded {
-			err = showDeviceInfo(discoveryEvent.Device, hwaddr, serviceID)
-			fail("showDeviceInfo", err)
+	discovery, cancel, err := api.Discover(adapterID, &filter)
+	if err != nil {
+		return err
+	}
+
+	defer cancel()
+
+	for ev := range discovery {
+		dev, err := device.NewDevice1(ev.Path)
+		if err != nil {
+			return err
 		}
-	}))
+
+		err = showDeviceInfo(dev, hwaddr, serviceID)
+		if err != nil {
+			return err
+		}
+
+	}
 
 	return err
 }
 
-func showDeviceInfo(dev *api.Device, hwaddr, serviceID string) error {
+func showDeviceInfo(dev *device.Device1, hwaddr, serviceID string) error {
 
 	if dev == nil {
 		return errors.New("Device is nil")
@@ -63,7 +68,7 @@ func showDeviceInfo(dev *api.Device, hwaddr, serviceID string) error {
 
 	props, err := dev.GetProperties()
 	if err != nil {
-		return fmt.Errorf("%s: Failed to get properties: %s", dev.Path, err.Error())
+		return fmt.Errorf("%s: Failed to get properties: %s", dev.Path(), err.Error())
 	}
 
 	// device1, err := dev.GetClient()
@@ -109,7 +114,7 @@ func showDeviceInfo(dev *api.Device, hwaddr, serviceID string) error {
 
 	log.Infof("Found UUID %s", serviceID)
 
-	chars, err := dev.GetCharsList()
+	chars, err := dev.GetCharacteristicsList()
 	if err != nil {
 		return fmt.Errorf("Failed to list chars: %s", err)
 	}

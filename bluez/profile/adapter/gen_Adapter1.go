@@ -20,6 +20,7 @@ package adapter
 import (
   "sync"
   "github.com/muka/go-bluetooth/bluez"
+  "reflect"
   "github.com/fatih/structs"
   "github.com/muka/go-bluetooth/util"
   "github.com/godbus/dbus"
@@ -33,13 +34,14 @@ var Adapter1Interface = "org.bluez.Adapter1"
 //
 // Args:
 // 	objectPath: [variable prefix]/{hci0,hci1,...}
-func NewAdapter1(objectPath string) (*Adapter1, error) {
+func NewAdapter1(objectPath dbus.ObjectPath) (*Adapter1, error) {
 	a := new(Adapter1)
+	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
 			Iface: Adapter1Interface,
-			Path:  objectPath,
+			Path:  dbus.ObjectPath(objectPath),
 			Bus:   bluez.SystemBus,
 		},
 	)
@@ -58,11 +60,12 @@ func NewAdapter1(objectPath string) (*Adapter1, error) {
 // adapterID: ID of an adapter eg. hci0
 func NewAdapter1FromAdapterID(adapterID string) (*Adapter1, error) {
 	a := new(Adapter1)
+	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
 			Iface: Adapter1Interface,
-			Path:  fmt.Sprintf("/org/bluez/%s", adapterID),
+			Path:  dbus.ObjectPath(fmt.Sprintf("/org/bluez/%s", adapterID)),
 			Bus:   bluez.SystemBus,
 		},
 	)
@@ -81,38 +84,14 @@ func NewAdapter1FromAdapterID(adapterID string) (*Adapter1, error) {
 // Adapter1 Adapter hierarchy
 
 type Adapter1 struct {
-	client     *bluez.Client
-	Properties *Adapter1Properties
+	client     				*bluez.Client
+	propertiesSignal 	chan *dbus.Signal
+	Properties 				*Adapter1Properties
 }
 
 // Adapter1Properties contains the exposed properties of an interface
 type Adapter1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
-	// Discoverable Switch an adapter to discoverable or non-discoverable
-  // to either make it visible or hide it. This is a global
-  // setting and should only be used by the settings
-  // application.
-  // If the DiscoverableTimeout is set to a non-zero
-  // value then the system will set this value back to
-  // false after the timer expired.
-  // In case the adapter is switched off, setting this
-  // value will fail.
-  // When changing the Powered property the new state of
-  // this property will be updated via a PropertiesChanged
-  // signal.
-  // For any new adapter this settings defaults to false.
-	Discoverable bool
-
-	// Discovering Indicates that a device discovery procedure is active.
-	Discovering bool
-
-	// UUIDs List of 128-bit UUIDs that represents the available
-  // local services.
-	UUIDs []string
-
-	// Address The Bluetooth device address.
-	Address string
 
 	// AddressType The Bluetooth  Address Type. For dual-mode and BR/EDR
   // only adapter this defaults to "public". Single mode LE
@@ -123,38 +102,6 @@ type Adapter1Properties struct {
   // "public" - Public address
   // "random" - Random address
 	AddressType string
-
-	// Name The Bluetooth system name (pretty hostname).
-  // This property is either a static system default
-  // or controlled by an external daemon providing
-  // access to the pretty hostname configuration.
-	Name string
-
-	// Pairable Switch an adapter to pairable or non-pairable. This is
-  // a global setting and should only be used by the
-  // settings application.
-  // Note that this property only affects incoming pairing
-  // requests.
-  // For any new adapter this settings defaults to true.
-	Pairable bool
-
-	// PairableTimeout The pairable timeout in seconds. A value of zero
-  // means that the timeout is disabled and it will stay in
-  // pairable mode forever.
-  // The default value for pairable timeout should be
-  // disabled (value 0).
-	PairableTimeout uint32
-
-	// DiscoverableTimeout The discoverable timeout in seconds. A value of zero
-  // means that the timeout is disabled and it will stay in
-  // discoverable/limited mode forever.
-  // The default value for the discoverable timeout should
-  // be 180 seconds (3 minutes).
-	DiscoverableTimeout uint32
-
-	// Modalias Local Device ID information in modalias format
-  // used by the kernel and udev.
-	Modalias string
 
 	// Alias The Bluetooth friendly name. This value can be
   // changed.
@@ -177,12 +124,69 @@ type Adapter1Properties struct {
   // or provided as static configuration.
 	Class uint32
 
+	// Pairable Switch an adapter to pairable or non-pairable. This is
+  // a global setting and should only be used by the
+  // settings application.
+  // Note that this property only affects incoming pairing
+  // requests.
+  // For any new adapter this settings defaults to true.
+	Pairable bool
+
+	// UUIDs List of 128-bit UUIDs that represents the available
+  // local services.
+	UUIDs []string
+
+	// Address The Bluetooth device address.
+	Address string
+
+	// Name The Bluetooth system name (pretty hostname).
+  // This property is either a static system default
+  // or controlled by an external daemon providing
+  // access to the pretty hostname configuration.
+	Name string
+
 	// Powered Switch an adapter on or off. This will also set the
   // appropriate connectable state of the controller.
   // The value of this property is not persistent. After
   // restart or unplugging of the adapter it will reset
   // back to false.
 	Powered bool
+
+	// Discoverable Switch an adapter to discoverable or non-discoverable
+  // to either make it visible or hide it. This is a global
+  // setting and should only be used by the settings
+  // application.
+  // If the DiscoverableTimeout is set to a non-zero
+  // value then the system will set this value back to
+  // false after the timer expired.
+  // In case the adapter is switched off, setting this
+  // value will fail.
+  // When changing the Powered property the new state of
+  // this property will be updated via a PropertiesChanged
+  // signal.
+  // For any new adapter this settings defaults to false.
+	Discoverable bool
+
+	// PairableTimeout The pairable timeout in seconds. A value of zero
+  // means that the timeout is disabled and it will stay in
+  // pairable mode forever.
+  // The default value for pairable timeout should be
+  // disabled (value 0).
+	PairableTimeout uint32
+
+	// DiscoverableTimeout The discoverable timeout in seconds. A value of zero
+  // means that the timeout is disabled and it will stay in
+  // discoverable/limited mode forever.
+  // The default value for the discoverable timeout should
+  // be 180 seconds (3 minutes).
+	DiscoverableTimeout uint32
+
+	// Discovering Indicates that a device discovery procedure is active.
+	Discovering bool
+
+	// Modalias Local Device ID information in modalias format
+  // used by the kernel and udev.
+	Modalias string
 
 }
 
@@ -196,7 +200,20 @@ func (p *Adapter1Properties) Unlock() {
 
 // Close the connection
 func (a *Adapter1) Close() {
+	
+	a.unregisterSignal()
+	
 	a.client.Disconnect()
+}
+
+// Path return Adapter1 object path
+func (a *Adapter1) Path() dbus.ObjectPath {
+	return a.client.Config.Path
+}
+
+// Interface return Adapter1 interface
+func (a *Adapter1) Interface() string {
+	return a.client.Config.Iface
 }
 
 
@@ -239,15 +256,101 @@ func (a *Adapter1) GetProperty(name string) (dbus.Variant, error) {
 	return a.client.GetProperty(name)
 }
 
-// Register for changes signalling
-func (a *Adapter1) Register() (chan *dbus.Signal, error) {
-	return a.client.Register(a.client.Config.Path, bluez.PropertiesInterface)
+// GetPropertiesSignal return a channel for receiving udpdates on property changes
+func (a *Adapter1) GetPropertiesSignal() (chan *dbus.Signal, error) {
+
+	if a.propertiesSignal == nil {
+		s, err := a.client.Register(a.client.Config.Path, bluez.PropertiesInterface)
+		if err != nil {
+			return nil, err
+		}
+		a.propertiesSignal = s
+	}
+
+	return a.propertiesSignal, nil
 }
 
 // Unregister for changes signalling
-func (a *Adapter1) Unregister(signal chan *dbus.Signal) error {
-	return a.client.Unregister(a.client.Config.Path, bluez.PropertiesInterface, signal)
+func (a *Adapter1) unregisterSignal() {
+	if a.propertiesSignal == nil {
+		a.propertiesSignal <- nil
+	}
 }
+
+// WatchProperties updates on property changes
+func (a *Adapter1) WatchProperties() (chan *bluez.PropertyChanged, error) {
+
+	channel, err := a.client.Register(a.Path(), a.Interface())
+	if err != nil {
+		return nil, err
+	}
+
+	ch := make(chan *bluez.PropertyChanged)
+
+	go (func() {
+		for {
+
+			if channel == nil {
+				break
+			}
+
+			sig := <-channel
+
+			if sig == nil {
+				return
+			}
+
+			if sig.Name != bluez.PropertiesChanged {
+				continue
+			}
+			if sig.Path != a.Path() {
+				continue
+			}
+
+			iface := sig.Body[0].(string)
+			changes := sig.Body[1].(map[string]dbus.Variant)
+
+			for field, val := range changes {
+
+				// updates [*]Properties struct
+				props := a.Properties
+
+				s := reflect.ValueOf(props).Elem()
+				// exported field
+				f := s.FieldByName(field)
+				if f.IsValid() {
+					// A Value can be changed only if it is
+					// addressable and was not obtained by
+					// the use of unexported struct fields.
+					if f.CanSet() {
+						x := reflect.ValueOf(val.Value())
+						props.Lock()
+						f.Set(x)
+						props.Unlock()
+					}
+				}
+
+				propChanged := &bluez.PropertyChanged{
+					Interface: iface,
+					Name:      field,
+					Value:     val.Value(),
+				}
+				ch <- propChanged
+			}
+
+		}
+	})()
+
+	return ch, nil
+}
+
+func (a *Adapter1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
+	ch <- nil
+	close(ch)
+	return nil
+}
+
+
 
 
 

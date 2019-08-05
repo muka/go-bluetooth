@@ -72,4 +72,5 @@ var (
 		Name: "org.bluez.Error.NotAvailable",
 		Body: []interface{}{"NotAvailable"},
 	}
+
 )

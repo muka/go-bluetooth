@@ -20,6 +20,7 @@ package advertising
 import (
   "sync"
   "github.com/muka/go-bluetooth/bluez"
+  "reflect"
   "github.com/fatih/structs"
   "github.com/muka/go-bluetooth/util"
   "github.com/godbus/dbus"
@@ -32,13 +33,14 @@ var LEAdvertisement1Interface = "org.bluez.LEAdvertisement1"
 //
 // Args:
 // 	objectPath: freely definable
-func NewLEAdvertisement1(objectPath string) (*LEAdvertisement1, error) {
+func NewLEAdvertisement1(objectPath dbus.ObjectPath) (*LEAdvertisement1, error) {
 	a := new(LEAdvertisement1)
+	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
 			Iface: LEAdvertisement1Interface,
-			Path:  objectPath,
+			Path:  dbus.ObjectPath(objectPath),
 			Bus:   bluez.SystemBus,
 		},
 	)
@@ -61,60 +63,14 @@ func NewLEAdvertisement1(objectPath string) (*LEAdvertisement1, error) {
 // All UUIDs are 128-bit versions in the API, and 16 or 32-bit
 // versions of the same UUID will be used in the advertising data as appropriate.
 type LEAdvertisement1 struct {
-	client     *bluez.Client
-	Properties *LEAdvertisement1Properties
+	client     				*bluez.Client
+	propertiesSignal 	chan *dbus.Signal
+	Properties 				*LEAdvertisement1Properties
 }
 
 // LEAdvertisement1Properties contains the exposed properties of an interface
 type LEAdvertisement1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
-	// Timeout Timeout of the advertisement in seconds. This defines
-  // the lifetime of the advertisement.
-	Timeout uint16
-
-	// Type Determines the type of advertising packet requested.
-  // Possible values: "broadcast" or "peripheral"
-	Type string
-
-	// ManufacturerData Manufactuer Data fields to include in
-  // the Advertising Data.  Keys are the Manufacturer ID
-  // to associate with the data.
-	ManufacturerData map[uint16]interface{}
-
-	// DiscoverableTimeout The discoverable timeout in seconds. A value of zero
-  // means that the timeout is disabled and it will stay in
-  // discoverable/limited mode forever.
-  // Note: This property shall not be set when Type is set
-  // to broadcast.
-	DiscoverableTimeout uint16
-
-	// Includes List of features to be included in the advertising
-  // packet.
-  // Possible values: as found on
-  // LEAdvertisingManager.SupportedIncludes
-	Includes []string
-
-	// Appearance Appearance to be used in the advertising report.
-  // Possible values: as found on GAP Service.
-	Appearance uint16
-
-	// Duration Duration of the advertisement in seconds. If there are
-  // other applications advertising no duration is set the
-  // default is 2 seconds.
-	Duration uint16
-
-	// ServiceUUIDs List of UUIDs to include in the "Service UUID" field of
-  // the Advertising Data.
-	ServiceUUIDs []string
-
-	// SolicitUUIDs Array of UUIDs to include in "Service Solicitation"
-  // Advertisement Data.
-	SolicitUUIDs []string
-
-	// ServiceData Service Data elements to include. The keys are the
-  // UUID to associate with the data.
-	ServiceData map[string]interface{}
 
 	// Data Advertising Type to include in the Advertising
   // Data. Key is the advertising type and value is the
@@ -135,12 +91,59 @@ type LEAdvertisement1Properties struct {
   // to broadcast.
 	Discoverable bool
 
+	// Includes List of features to be included in the advertising
+  // packet.
+  // Possible values: as found on
+  // LEAdvertisingManager.SupportedIncludes
+	Includes []string
+
 	// LocalName Local name to be used in the advertising report. If the
   // string is too big to fit into the packet it will be
   // truncated.
   // If this property is available 'local-name' cannot be
   // present in the Includes.
 	LocalName string
+
+	// Appearance Appearance to be used in the advertising report.
+  // Possible values: as found on GAP Service.
+	Appearance uint16
+
+	// Duration Duration of the advertisement in seconds. If there are
+  // other applications advertising no duration is set the
+  // default is 2 seconds.
+	Duration uint16
+
+	// Type Determines the type of advertising packet requested.
+  // Possible values: "broadcast" or "peripheral"
+	Type string
+
+	// SolicitUUIDs Array of UUIDs to include in "Service Solicitation"
+  // Advertisement Data.
+	SolicitUUIDs []string
+
+	// Timeout Timeout of the advertisement in seconds. This defines
+  // the lifetime of the advertisement.
+	Timeout uint16
+
+	// ServiceData Service Data elements to include. The keys are the
+  // UUID to associate with the data.
+	ServiceData map[string]interface{}
+
+	// DiscoverableTimeout The discoverable timeout in seconds. A value of zero
+  // means that the timeout is disabled and it will stay in
+  // discoverable/limited mode forever.
+  // Note: This property shall not be set when Type is set
+  // to broadcast.
+	DiscoverableTimeout uint16
+
+	// ServiceUUIDs List of UUIDs to include in the "Service UUID" field of
+  // the Advertising Data.
+	ServiceUUIDs []string
+
+	// ManufacturerData Manufactuer Data fields to include in
+  // the Advertising Data.  Keys are the Manufacturer ID
+  // to associate with the data.
+	ManufacturerData map[uint16]interface{}
 
 }
 
@@ -154,7 +157,20 @@ func (p *LEAdvertisement1Properties) Unlock() {
 
 // Close the connection
 func (a *LEAdvertisement1) Close() {
+	
+	a.unregisterSignal()
+	
 	a.client.Disconnect()
+}
+
+// Path return LEAdvertisement1 object path
+func (a *LEAdvertisement1) Path() dbus.ObjectPath {
+	return a.client.Config.Path
+}
+
+// Interface return LEAdvertisement1 interface
+func (a *LEAdvertisement1) Interface() string {
+	return a.client.Config.Iface
 }
 
 
@@ -197,15 +213,101 @@ func (a *LEAdvertisement1) GetProperty(name string) (dbus.Variant, error) {
 	return a.client.GetProperty(name)
 }
 
-// Register for changes signalling
-func (a *LEAdvertisement1) Register() (chan *dbus.Signal, error) {
-	return a.client.Register(a.client.Config.Path, bluez.PropertiesInterface)
+// GetPropertiesSignal return a channel for receiving udpdates on property changes
+func (a *LEAdvertisement1) GetPropertiesSignal() (chan *dbus.Signal, error) {
+
+	if a.propertiesSignal == nil {
+		s, err := a.client.Register(a.client.Config.Path, bluez.PropertiesInterface)
+		if err != nil {
+			return nil, err
+		}
+		a.propertiesSignal = s
+	}
+
+	return a.propertiesSignal, nil
 }
 
 // Unregister for changes signalling
-func (a *LEAdvertisement1) Unregister(signal chan *dbus.Signal) error {
-	return a.client.Unregister(a.client.Config.Path, bluez.PropertiesInterface, signal)
+func (a *LEAdvertisement1) unregisterSignal() {
+	if a.propertiesSignal == nil {
+		a.propertiesSignal <- nil
+	}
 }
+
+// WatchProperties updates on property changes
+func (a *LEAdvertisement1) WatchProperties() (chan *bluez.PropertyChanged, error) {
+
+	channel, err := a.client.Register(a.Path(), a.Interface())
+	if err != nil {
+		return nil, err
+	}
+
+	ch := make(chan *bluez.PropertyChanged)
+
+	go (func() {
+		for {
+
+			if channel == nil {
+				break
+			}
+
+			sig := <-channel
+
+			if sig == nil {
+				return
+			}
+
+			if sig.Name != bluez.PropertiesChanged {
+				continue
+			}
+			if sig.Path != a.Path() {
+				continue
+			}
+
+			iface := sig.Body[0].(string)
+			changes := sig.Body[1].(map[string]dbus.Variant)
+
+			for field, val := range changes {
+
+				// updates [*]Properties struct
+				props := a.Properties
+
+				s := reflect.ValueOf(props).Elem()
+				// exported field
+				f := s.FieldByName(field)
+				if f.IsValid() {
+					// A Value can be changed only if it is
+					// addressable and was not obtained by
+					// the use of unexported struct fields.
+					if f.CanSet() {
+						x := reflect.ValueOf(val.Value())
+						props.Lock()
+						f.Set(x)
+						props.Unlock()
+					}
+				}
+
+				propChanged := &bluez.PropertyChanged{
+					Interface: iface,
+					Name:      field,
+					Value:     val.Value(),
+				}
+				ch <- propChanged
+			}
+
+		}
+	})()
+
+	return ch, nil
+}
+
+func (a *LEAdvertisement1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
+	ch <- nil
+	close(ch)
+	return nil
+}
+
+
 
 
 

@@ -34,7 +34,7 @@ func createConstructors(api gen.Api) []gen.Constructor {
 		}
 
 		if c.ObjectPath == "" {
-			args = append(args, "objectPath string")
+			args = append(args, "objectPath dbus.ObjectPath")
 			c.ObjectPath = "objectPath"
 		} else {
 			c.ObjectPath = fmt.Sprintf(`"%s"`, c.ObjectPath)

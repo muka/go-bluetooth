@@ -72,7 +72,7 @@ func (o *ObjectManager) GetManagedObjects() (map[dbus.ObjectPath]map[string]map[
 			l, err := m.ToMap()
 			if err != nil {
 				log.Errorf("Failed to serialize properties: %s", err.Error())
-				return nil, profile.InvalidArguments
+				return nil, &profile.ErrInvalidArguments
 			}
 			for k, v := range l {
 				vrt := dbus.MakeVariant(v)

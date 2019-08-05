@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/muka/go-bluetooth/api"
-	"github.com/muka/go-bluetooth/linux/btmgmt"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -21,25 +20,17 @@ const (
 func reset() {
 
 	// turn off/on
-	btmgmt1 := btmgmt.NewBtMgmt(serviceAdapterID)
-	err := btmgmt1.Reset()
+	err := api.ResetController(serviceAdapterID)
 	if err != nil {
 		log.Warnf("Reset %s: %s", serviceAdapterID, err)
 		os.Exit(1)
 	}
 
-	btmgmt2 := btmgmt.NewBtMgmt(clientAdapterID)
-	err = btmgmt2.Reset()
+	err = api.ResetController(clientAdapterID)
 	if err != nil {
 		log.Warnf("Reset %s: %s", clientAdapterID, err)
 		os.Exit(1)
 	}
-
-	// err = api.FlushDevices(serviceAdapterID)
-	// fail("FlushDevices "+serviceAdapterID, err)
-	//
-	// err = api.FlushDevices(clientAdapterID)
-	// fail("FlushDevices "+clientAdapterID, err)
 
 	time.Sleep(time.Millisecond * 500)
 	log.Info("Controllers resetted")
@@ -72,10 +63,7 @@ func Run() error {
 
 	defer app.StopAdvertising()
 
-	adapter, err := api.GetAdapter(serviceAdapterID)
-	fail("GetAdapter", err)
-
-	adapterProps, err := adapter.GetProperties()
+	adapterProps, err := app.GetAdapter().GetProperties()
 	fail("GetProperties", err)
 
 	hwaddr := adapterProps.Address

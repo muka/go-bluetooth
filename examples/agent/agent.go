@@ -3,10 +3,9 @@ package agent_example
 import (
 	"fmt"
 
-	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/api"
+	"github.com/muka/go-bluetooth/bluez/profile/adapter"
 	"github.com/muka/go-bluetooth/bluez/profile/agent"
-	"github.com/muka/go-bluetooth/linux/btmgmt"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -15,8 +14,7 @@ func Run(deviceAddress, adapterID string) error {
 
 	defer api.Exit()
 
-	a := btmgmt.NewBtMgmt(adapterID)
-	err := a.Reset()
+	err := api.ResetController(adapterID)
 	if err != nil {
 		return err
 	}
@@ -27,7 +25,12 @@ func Run(deviceAddress, adapterID string) error {
 		return fmt.Errorf("SimpleAgent: %s", err)
 	}
 
-	devices, err := api.GetDevices(adapterID)
+	a, err := adapter.GetAdapter(adapterID)
+	if err != nil {
+		return err
+	}
+
+	devices, err := a.GetDevices()
 	if err != nil {
 		return fmt.Errorf("GetDevices: %s", err)
 	}
@@ -47,7 +50,7 @@ func Run(deviceAddress, adapterID string) error {
 		}
 
 		log.Info("Pair succeed, connecting...")
-		agent.SetTrusted(adapterID, dbus.ObjectPath(dev.Path))
+		agent.SetTrusted(adapterID, dev.Path())
 
 		err = dev.Connect()
 		if err != nil {

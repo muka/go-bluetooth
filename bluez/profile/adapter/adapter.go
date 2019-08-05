@@ -1,107 +1,94 @@
 package adapter
 
-import "github.com/muka/go-bluetooth/util"
+import (
+	"fmt"
+	"strings"
 
-const (
-	DiscoveryFilterTransportAuto  = "auto"
-	DiscoveryFilterTransportBrEdr = "bredr"
-	DiscoveryFilterTransportLE    = "le"
+	"github.com/godbus/dbus"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/bluez/profile/device"
 )
 
-type DiscoveryFilter struct {
-
-	// Filter by service UUIDs, empty means match
-	// _any_ UUID.
-	//
-	// When a remote device is found that advertises
-	// any UUID from UUIDs, it will be reported if:
-	// - Pathloss and RSSI are both empty.
-	// - only Pathloss param is set, device advertise
-	// 	TX pwer, and computed pathloss is less than
-	// 	Pathloss param.
-	// - only RSSI param is set, and received RSSI is
-	// 	higher than RSSI param.
-	UUIDs []string
-
-	// RSSI threshold value.
-	//
-	// PropertiesChanged signals will be emitted
-	// for already existing Device objects, with
-	// updated RSSI value. If one or more discovery
-	// filters have been set, the RSSI delta-threshold,
-	// that is imposed by StartDiscovery by default,
-	// will not be applied.
-	RSSI int16
-
-	// Pathloss threshold value.
-	//
-	// PropertiesChanged signals will be emitted
-	// for already existing Device objects, with
-	// updated Pathloss value.
-	Pathloss uint16
-
-	// Transport parameter determines the type of
-	// scan.
-	//
-	// Possible values:
-	// 	"auto"	- interleaved scan
-	// 	"bredr"	- BR/EDR inquiry
-	// 	"le"	- LE scan only
-	//
-	// If "le" or "bredr" Transport is requested,
-	// and the controller doesn't support it,
-	// org.bluez.Error.Failed error will be returned.
-	// If "auto" transport is requested, scan will use
-	// LE, BREDR, or both, depending on what's
-	// currently enabled on the controller.
-	Transport string
-
-	// Disables duplicate detection of advertisement
-	// data.
-	//
-	// When enabled PropertiesChanged signals will be
-	// generated for either ManufacturerData and
-	// ServiceData everytime they are discovered.
-	DuplicateData bool
+func (a *Adapter1) GetAdapterID() (string, error) {
+	return ParseAdapterID(a.Path())
 }
 
-func (a *DiscoveryFilter) uuidExists(uuid string) bool {
-	for _, uiid1 := range a.UUIDs {
-		if uiid1 == uuid {
-			return true
+var defaultAdapterName = "hci0"
+
+func SetDefaultAdapterName(a string) {
+	defaultAdapterName = a
+}
+
+func GetDefaultAdapterName() string {
+	return defaultAdapterName
+}
+
+// ParseAdapterID read the adapterID from an object path in the form /org/bluez/hci[0-9]*[/...]
+func ParseAdapterID(path dbus.ObjectPath) (string, error) {
+
+	spath := string(path)
+
+	if !strings.HasPrefix(spath, bluez.OrgBluezPath) {
+		return "", fmt.Errorf("Failed to parse adapterID from %s", path)
+	}
+
+	parts := strings.Split(spath[len(bluez.OrgBluezPath)+1:], "/")
+	adapterID := parts[0]
+
+	if adapterID[:3] != "hci" {
+		return "", fmt.Errorf("adapterID missing hci* prefix from %s", path)
+	}
+
+	return adapterID, nil
+}
+
+// AdapterExists checks if an adapter is available
+func AdapterExists(adapterID string) (bool, error) {
+
+	om, err := bluez.GetObjectManager()
+	if err != nil {
+		return false, err
+	}
+
+	objects, err := om.GetManagedObjects()
+	if err != nil {
+		return false, err
+	}
+
+	path := dbus.ObjectPath(fmt.Sprintf("%s/%s", bluez.OrgBluezPath, adapterID))
+	_, exists := objects[path]
+
+	return exists, nil
+}
+
+func GetDefaultAdapter() (*Adapter1, error) {
+	return GetAdapter(GetDefaultAdapterName())
+}
+
+// GetAdapter return an adapter object instance
+func GetAdapter(adapterID string) (*Adapter1, error) {
+
+	if exists, err := AdapterExists(adapterID); !exists {
+		if err != nil {
+			return nil, fmt.Errorf("AdapterExists: %s", err)
 		}
+		return nil, fmt.Errorf("Adapter %s not found", adapterID)
 	}
-	return false
+
+	return NewAdapter1FromAdapterID(adapterID)
 }
 
-func (a *DiscoveryFilter) AddUUIDs(uuids ...string) {
-	for _, uuid := range uuids {
-		if !a.uuidExists(uuid) {
-			a.UUIDs = append(a.UUIDs, uuid)
-		}
-	}
-}
+func GetAdapterFromDevicePath(path dbus.ObjectPath) (*Adapter1, error) {
 
-// ToMap convert to a format compatible with adapter SetDiscoveryFilter
-func (a *DiscoveryFilter) ToMap() map[string]interface{} {
-
-	m := make(map[string]interface{})
-	util.StructToMap(a, m)
-
-	if a.RSSI == 0 {
-		delete(m, "RSSI")
-	}
-	if a.Pathloss == 0 {
-		delete(m, "Pathloss")
+	d, err := device.NewDevice1(path)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to load device %s", path)
 	}
 
-	return m
-}
-
-func NewDiscoveryFilter() DiscoveryFilter {
-	return DiscoveryFilter{
-		// defaults
-		DuplicateData: true,
-		Transport:     DiscoveryFilterTransportAuto,
+	a, err := NewAdapter1(d.Properties.Adapter)
+	if err != nil {
+		return nil, err
 	}
+
+	return a, nil
 }

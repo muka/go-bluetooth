@@ -21,27 +21,19 @@ import (
 
 var wg sync.WaitGroup
 
-func Run(addrFrom, filePath string) error {
-	manager, err := api.NewManager()
-	if err != nil {
-		return err
-	}
-	err = manager.RefreshState()
+func Run(targetAddress, filePath, adapterID string) error {
+
+	a, err := api.GetAdapter(adapterID)
 	if err != nil {
 		return err
 	}
 
-	return SendFile(addrFrom, filePath)
-}
-
-//SendFile send a file
-func SendFile(targetAddress string, filePath string) error {
-
-	dev, err := api.GetDeviceByAddress(targetAddress)
+	dev, err := a.GetDeviceByAddress(targetAddress)
 	if err != nil {
 		return err
 	}
-	log.Debug("device (dev): ", dev)
+
+	log.Debugf("device %s (%s)", dev.Properties.Name, dev.Properties.Address)
 
 	if dev == nil {
 		return err

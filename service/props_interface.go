@@ -108,7 +108,7 @@ func (p *Properties) onChange(ev *prop.Change) *dbus.Error {
 				err := s.Field(ev.Name).Set(ev.Value)
 				if err != nil {
 					log.Errorf("Failed to set %s.%s: %s", ev.Iface, ev.Name, err.Error())
-					return profile.Rejected
+					return &profile.ErrRejected
 				}
 			}
 		}

@@ -3,7 +3,6 @@ package service_example
 import (
 	"fmt"
 
-	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez/profile/gatt"
 	"github.com/muka/go-bluetooth/service"
 	log "github.com/sirupsen/logrus"
@@ -12,6 +11,7 @@ import (
 func registerApplication(adapterID string) (*service.Application, error) {
 
 	cfg := &service.ApplicationConfig{
+		AdapterID:  adapterID,
 		UUIDSuffix: "-0000-1000-8000-00805F9B34FB",
 		UUID:       "AAAA",
 		ObjectName: objectName,
@@ -56,7 +56,7 @@ func registerApplication(adapterID string) (*service.Application, error) {
 	log.Info("Registering application to DBus")
 
 	//Register Application
-	gattManager, err := api.GetGattManager(adapterID)
+	gattManager, err := app.GetAdapter().GetGattManager()
 	if err != nil {
 		return nil, fmt.Errorf("GetGattManager: %s", err)
 	}
@@ -69,8 +69,9 @@ func registerApplication(adapterID string) (*service.Application, error) {
 	}
 
 	log.Info("Starting device advertising")
+
 	// Register our advertisement
-	err = app.StartAdvertising(adapterID)
+	err = app.StartAdvertising()
 	if err != nil {
 		return nil, fmt.Errorf("StartAdvertising: %s", err)
 	}

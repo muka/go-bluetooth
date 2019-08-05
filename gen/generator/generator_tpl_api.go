@@ -28,6 +28,7 @@ func ApiTemplate(filename string, api gen.Api, apiGroup gen.ApiGroup) error {
 	exposeProps := override.ExposeProperties(api.Interface)
 
 	if exposeProps {
+		imports = append(imports, "reflect")
 		imports = append(imports, "github.com/fatih/structs")
 		imports = append(imports, "github.com/muka/go-bluetooth/util")
 	}

@@ -2,12 +2,14 @@ package util
 
 import (
 	"errors"
+	"fmt"
 	"reflect"
 
 	"github.com/godbus/dbus"
 )
 
 func mapStructField(obj interface{}, name string, value dbus.Variant) error {
+
 	structValue := reflect.ValueOf(obj).Elem()
 	structFieldValue := structValue.FieldByName(name)
 
@@ -22,7 +24,7 @@ func mapStructField(obj interface{}, name string, value dbus.Variant) error {
 	structFieldType := structFieldValue.Type()
 	val := reflect.ValueOf(value.Value())
 	if structFieldType != val.Type() {
-		return errors.New("Provided value type didn't match obj field type")
+		return fmt.Errorf("Provided value type didn't match obj field type. field=%s expected=%s actual=%s", name, structFieldType, val.Type())
 	}
 
 	structFieldValue.Set(val)

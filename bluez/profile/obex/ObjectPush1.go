@@ -13,7 +13,7 @@ func NewObjectPush1(sessionPath string) *ObjectPush1 {
 		&bluez.Config{
 			Name:  "org.bluez.obex",
 			Iface: "org.bluez.obex.ObjectPush1",
-			Path:  sessionPath,
+			Path:  dbus.ObjectPath(sessionPath),
 			Bus:   bluez.SessionBus,
 		},
 	)

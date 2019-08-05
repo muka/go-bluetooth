@@ -4,17 +4,14 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"fmt"
-	"strings"
 
-	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez/profile/gatt"
 )
 
 //getting config,data,period characteristics for BAROMETRIC sensor
 func newBarometricSensor(tag *SensorTag) (*BarometricSensor, error) {
 
-	dev := tag.Device
+	dev := tag.Device1
 
 	BarometerConfigUUID, err := getUUID("BarometerConfig")
 	if err != nil {
@@ -80,8 +77,7 @@ func (s *BarometricSensor) Enable() error {
 	if enabled {
 		return nil
 	}
-	options := make(map[string]interface{})
-
+	options := getOptions()
 	err = s.cfg.WriteValue([]byte{1}, options)
 	if err != nil {
 		return err
@@ -158,80 +154,47 @@ func (s *BarometricSensor) Read() (float64, error) {
 //StartNotify enable BarometricSensorDataChannel
 func (s *BarometricSensor) StartNotify(macAddress string) error {
 
-	d := s.tag.Device
-	serv, err1 := d.GetAllServicesAndUUID()
-
-	if err1 != nil {
-
-	}
-	var uuidAndService string
-	serviceArrLength := len(serv)
-	for i := 0; i < serviceArrLength; i++ {
-
-		val := strings.Split(serv[i], ":")
-		if val[0] == "F000AA42-0451-4000-B000-000000000000" {
-			uuidAndService = val[1]
-		}
-	}
-
 	err := s.Enable()
 	if err != nil {
 		return err
 	}
 
-	dataChannel, err := s.data.Register()
+	propsChanged, err := s.data.WatchProperties()
 	if err != nil {
 		return err
 	}
 
 	go func() {
-		for event1 := range dataChannel {
+		for prop := range propsChanged {
 
-			if event1 == nil {
+			if prop == nil {
 				return
 			}
-			if strings.Contains(fmt.Sprint(event1.Path), uuidAndService) {
 
-				switch event1.Body[0].(type) {
-
-				case dbus.ObjectPath:
-
-					continue
-				case string:
-				}
-
-				if event1.Body[0] != gatt.GattCharacteristic1Interface {
-
-					continue
-				}
-
-				props1 := event1.Body[1].(map[string]dbus.Variant)
-
-				if _, ok := props1["Value"]; !ok {
-
-					continue
-				}
-
-				b1 := props1["Value"].Value().([]byte)
-
-				barometer := binary.LittleEndian.Uint32(b1[2:])
-				barometericPressureValue := calcBarometricPressure(uint32(barometer))
-
-				barometerTemperature := binary.LittleEndian.Uint32(b1[0:4])
-				barometerTempValue := calcBarometricTemperature(uint32(barometerTemperature))
-
-				dataEvent := SensorTagDataEvent{
-
-					Device:                   s.tag.Device,
-					SensorType:               "pressure",
-					BarometericPressureValue: barometericPressureValue,
-					BarometericPressureUnit:  "hPa",
-					BarometericTempValue:     barometerTempValue,
-					BarometericTempUnit:      "C",
-					SensorID:                 macAddress,
-				}
-				s.tag.Device.Emit("data", dataEvent)
+			if prop.Name != "Value" {
+				return
 			}
+
+			b1 := prop.Value.([]byte)
+
+			barometer := binary.LittleEndian.Uint32(b1[2:])
+			barometericPressureValue := calcBarometricPressure(uint32(barometer))
+
+			barometerTemperature := binary.LittleEndian.Uint32(b1[0:4])
+			barometerTempValue := calcBarometricTemperature(uint32(barometerTemperature))
+
+			dataEvent := SensorTagDataEvent{
+				Device:                   s.tag.Device1,
+				SensorType:               "pressure",
+				BarometericPressureValue: barometericPressureValue,
+				BarometericPressureUnit:  "hPa",
+				BarometericTempValue:     barometerTempValue,
+				BarometericTempUnit:      "C",
+				SensorID:                 macAddress,
+			}
+
+			s.tag.Data() <- &dataEvent
+
 		}
 	}()
 

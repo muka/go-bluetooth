@@ -7,8 +7,8 @@ import (
 	"github.com/godbus/dbus"
 	"github.com/godbus/dbus/introspect"
 	"github.com/godbus/dbus/prop"
-	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/bluez/profile/adapter"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -38,17 +38,21 @@ type Agent1Client interface {
 // SetTrusted lookup for a device by object path and set it to trusted
 func SetTrusted(adapterID string, devicePath dbus.ObjectPath) error {
 
-	devices, err := api.GetDevices(adapterID)
+	a, err := adapter.GetAdapter(adapterID)
+	if err != nil {
+		return err
+	}
+
+	devices, err := a.GetDevices()
 	if err != nil {
 		return err
 	}
 
 	path := string(devicePath)
-	for _, v := range devices {
-		if strings.Contains(v.Path, path) {
+	for _, dev := range devices {
+		if strings.Contains(string(dev.Path()), path) {
 			log.Debugf("Trust device at %s", path)
-			dev1, _ := v.GetClient()
-			err := dev1.SetProperty("Trusted", true)
+			err := dev.SetProperty("Trusted", true)
 			if err != nil {
 				return err
 			}

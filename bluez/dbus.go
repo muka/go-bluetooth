@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/godbus/dbus"
+	log "github.com/sirupsen/logrus"
 )
 
 //Properties dbus serializable struct
@@ -34,7 +35,7 @@ var conns = make([]*dbus.Conn, 2)
 type Config struct {
 	Name  string
 	Iface string
-	Path  string
+	Path  dbus.ObjectPath
 	Bus   BusType
 }
 
@@ -42,7 +43,10 @@ type Config struct {
 func CloseConnections() {
 	for _, conn := range conns {
 		if conn != nil {
-			conn.Close()
+			err := conn.Close()
+			if err != nil {
+				log.Warnf("Close: %s", err)
+			}
 		}
 	}
 	conns = make([]*dbus.Conn, 2)

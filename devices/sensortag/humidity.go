@@ -4,17 +4,14 @@ import (
 	"bytes"
 	"encoding/binary"
 	"errors"
-	"fmt"
-	"strings"
 
-	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez/profile/gatt"
 )
 
 //getting config,data,period characteristics for Humidity sensor
 func newHumiditySensor(tag *SensorTag) (*HumiditySensor, error) {
 
-	dev := tag.Device
+	dev := tag.Device1
 	HumidityConfigUUID, err := getUUID("HumidityConfig")
 	if err != nil {
 		return nil, err
@@ -154,82 +151,45 @@ func (s *HumiditySensor) Read() (float64, error) {
 //StartNotify enable DataChannel for humidity
 func (s *HumiditySensor) StartNotify() error {
 
-	d := s.tag.Device
-	serv, err1 := d.GetAllServicesAndUUID()
-
-	if err1 != nil {
-
-	}
-	var uuidAndService string
-	serviceArrLength := len(serv)
-	for i := 0; i < serviceArrLength; i++ {
-
-		val := strings.Split(serv[i], ":")
-
-		if val[0] == "F000AA22-0451-4000-B000-000000000000" {
-			uuidAndService = val[1]
-		}
-	}
-
 	err := s.Enable()
 	if err != nil {
 		return err
 	}
 
-	dataChannel, err := s.data.Register()
-
+	dataChannel, err := s.data.WatchProperties()
 	if err != nil {
 		return err
 	}
 
 	go func() {
-		for event1 := range dataChannel {
+		for prop := range dataChannel {
 
-			if event1 == nil {
+			if prop == nil {
 				return
 			}
 
-			if strings.Contains(fmt.Sprint(event1.Path), uuidAndService) {
-
-				switch event1.Body[0].(type) {
-
-				case dbus.ObjectPath:
-					continue
-
-				case string:
-				}
-
-				if event1.Body[0] != gatt.GattCharacteristic1Interface {
-
-					continue
-				}
-
-				props1 := event1.Body[1].(map[string]dbus.Variant)
-
-				if _, ok := props1["Value"]; !ok {
-					continue
-				}
-
-				b1 := props1["Value"].Value().([]byte)
-
-				humid := binary.LittleEndian.Uint16(b1[2:])
-
-				humidityValue := calcHumidLocal(uint16(humid))
-
-				temperature := binary.LittleEndian.Uint16(b1[0:2])
-				tempValue := calcTmpFromHumidSensor(uint16(temperature))
-				dataEvent := SensorTagDataEvent{
-
-					Device:            s.tag.Device,
-					SensorType:        "humidity",
-					HumidityValue:     humidityValue,
-					HumidityUnit:      "%RH",
-					HumidityTempValue: tempValue,
-					HumidityTempUnit:  "C",
-					SensorID:          s.tag.Properties.Address,
-				}
-				s.tag.Device.Emit("data", dataEvent)
+			if prop.Name != "Value" {
+				return
 			}
+
+			b1 := prop.Value.([]byte)
+
+			humid := binary.LittleEndian.Uint16(b1[2:])
+			humidityValue := calcHumidLocal(uint16(humid))
+
+			temperature := binary.LittleEndian.Uint16(b1[0:2])
+			tempValue := calcTmpFromHumidSensor(uint16(temperature))
+			dataEvent := SensorTagDataEvent{
+				Device:            s.tag.Device1,
+				SensorType:        "humidity",
+				HumidityValue:     humidityValue,
+				HumidityUnit:      "%RH",
+				HumidityTempValue: tempValue,
+				HumidityTempUnit:  "C",
+				SensorID:          s.tag.Properties.Address,
+			}
+
+			s.tag.Data() <- &dataEvent
 		}
 	}()
 

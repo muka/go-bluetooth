@@ -11,10 +11,15 @@ import (
 )
 
 //StartAdvertising advertise information for a service
-func (app *Application) StartAdvertising(deviceInterface string) error {
+func (app *Application) StartAdvertising() error {
+
+	deviceInterface, err := app.GetAdapter().GetAdapterID()
+	if err != nil {
+		return err
+	}
 
 	if app.advertisement != nil || app.adMgr != nil {
-		logrus.Debugf("Already advertising on %s", deviceInterface)
+		logrus.Debug("Already advertising", deviceInterface)
 		return nil
 	}
 
@@ -45,8 +50,6 @@ func (app *Application) StartAdvertising(deviceInterface string) error {
 		ServiceUUIDs: serviceUUIDs,
 		// Appearance:   0,
 	}
-
-	var err error
 
 	advertisement, err := NewLEAdvertisement1(config, props)
 	if err != nil {

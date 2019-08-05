@@ -26,11 +26,12 @@ var {{.InterfaceName}}Interface = "{{.Api.Interface}}"
 {{.ArgsDocs}}
 func New{{$InterfaceName}}{{.Role}}({{.Args}}) (*{{$InterfaceName}}, error) {
 	a := new({{$InterfaceName}})
+	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  {{.Service}},
 			Iface: {{$InterfaceName}}Interface,
-			Path:  {{.ObjectPath}},
+			Path:  dbus.ObjectPath({{.ObjectPath}}),
 			Bus:   bluez.SystemBus,
 		},
 	)
@@ -49,8 +50,9 @@ func New{{$InterfaceName}}{{.Role}}({{.Args}}) (*{{$InterfaceName}}, error) {
 // {{.InterfaceName}} {{.Api.Title}}
 {{.Api.Description}}
 type {{.InterfaceName}} struct {
-	client     *bluez.Client
-	Properties *{{.InterfaceName}}Properties
+	client     				*bluez.Client
+	propertiesSignal 	chan *dbus.Signal
+	Properties 				*{{.InterfaceName}}Properties
 }
 
 // {{.InterfaceName}}Properties contains the exposed properties of an interface
@@ -72,6 +74,9 @@ func (p *{{.InterfaceName}}Properties) Unlock() {
 
 // Close the connection
 func (a *{{.InterfaceName}}) Close() {
+	{{if $ExposeProperties }}
+	a.unregisterSignal()
+	{{end}}
 	a.client.Disconnect()
 }
 
@@ -125,17 +130,101 @@ func (a *{{.InterfaceName}}) GetProperty(name string) (dbus.Variant, error) {
 	return a.client.GetProperty(name)
 }
 
-// Register for changes signalling
-func (a *{{.InterfaceName}}) Register() (chan *dbus.Signal, error) {
-	return a.client.Register(a.client.Config.Path, bluez.PropertiesInterface)
+// GetPropertiesSignal return a channel for receiving udpdates on property changes
+func (a *{{.InterfaceName}}) GetPropertiesSignal() (chan *dbus.Signal, error) {
+
+	if a.propertiesSignal == nil {
+		s, err := a.client.Register(a.client.Config.Path, bluez.PropertiesInterface)
+		if err != nil {
+			return nil, err
+		}
+		a.propertiesSignal = s
+	}
+
+	return a.propertiesSignal, nil
 }
 
 // Unregister for changes signalling
-func (a *{{.InterfaceName}}) Unregister(signal chan *dbus.Signal) error {
-	signal <- nil
-	close(signal)
-	return a.client.Unregister(a.client.Config.Path, bluez.PropertiesInterface, signal)
+func (a *{{.InterfaceName}}) unregisterSignal() {
+	if a.propertiesSignal == nil {
+		a.propertiesSignal <- nil
+	}
 }
+
+// WatchProperties updates on property changes
+func (a *{{.InterfaceName}}) WatchProperties() (chan *bluez.PropertyChanged, error) {
+
+	channel, err := a.client.Register(a.Path(), a.Interface())
+	if err != nil {
+		return nil, err
+	}
+
+	ch := make(chan *bluez.PropertyChanged)
+
+	go (func() {
+		for {
+
+			if channel == nil {
+				break
+			}
+
+			sig := <-channel
+
+			if sig == nil {
+				return
+			}
+
+			if sig.Name != bluez.PropertiesChanged {
+				continue
+			}
+			if sig.Path != a.Path() {
+				continue
+			}
+
+			iface := sig.Body[0].(string)
+			changes := sig.Body[1].(map[string]dbus.Variant)
+
+			for field, val := range changes {
+
+				// updates [*]Properties struct
+				props := a.Properties
+
+				s := reflect.ValueOf(props).Elem()
+				// exported field
+				f := s.FieldByName(field)
+				if f.IsValid() {
+					// A Value can be changed only if it is
+					// addressable and was not obtained by
+					// the use of unexported struct fields.
+					if f.CanSet() {
+						x := reflect.ValueOf(val.Value())
+						props.Lock()
+						f.Set(x)
+						props.Unlock()
+					}
+				}
+
+				propChanged := &bluez.PropertyChanged{
+					Interface: iface,
+					Name:      field,
+					Value:     val.Value(),
+				}
+				ch <- propChanged
+			}
+
+		}
+	})()
+
+	return ch, nil
+}
+
+func (a *{{.InterfaceName}}) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
+	ch <- nil
+	close(ch)
+	return nil
+}
+
+
 {{end}}
 
 {{range .Methods}}

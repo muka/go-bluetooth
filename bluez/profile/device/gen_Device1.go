@@ -16,6 +16,7 @@
 package device
 
 import (
+	"reflect"
 	"sync"
 
 	"github.com/fatih/structs"
@@ -30,13 +31,14 @@ var Device1Interface = "org.bluez.Device1"
 //
 // Args:
 // 	objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX
-func NewDevice1(objectPath string) (*Device1, error) {
+func NewDevice1(objectPath dbus.ObjectPath) (*Device1, error) {
 	a := new(Device1)
+	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
 			Iface: Device1Interface,
-			Path:  objectPath,
+			Path:  dbus.ObjectPath(objectPath),
 			Bus:   bluez.SystemBus,
 		},
 	)
@@ -52,64 +54,41 @@ func NewDevice1(objectPath string) (*Device1, error) {
 }
 
 // Device1 Device hierarchy
+
 type Device1 struct {
-	client     *bluez.Client
-	Properties *Device1Properties
-}
-
-func (a *Device1) Path() {
-	return a.client.Config.Path
-}
-
-func (a *Device1) Interface() {
-	return a.client.Config.Iface
+	client           *bluez.Client
+	propertiesSignal chan *dbus.Signal
+	Properties       *Device1Properties
 }
 
 // Device1Properties contains the exposed properties of an interface
 type Device1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// Name The Bluetooth remote name. This value can not be
-	// changed. Use the Alias property instead.
-	// This value is only present for completeness. It is
-	// better to always use the Alias property when
-	// displaying the devices name.
-	// If the Alias property is unset, it will reflect
-	// this value which makes it more convenient.
-	Name string
+	// Address The Bluetooth device address of the remote device.
+	Address string
 
-	// Appearance External appearance of device, as found on GAP service.
-	Appearance uint16
+	// Icon Proposed icon name according to the freedesktop.org
+	// icon naming specification.
+	Icon string
 
-	// Adapter The object path of the adapter the device belongs to.
-	Adapter dbus.ObjectPath
-
-	// Class The Bluetooth class of device of the remote device.
-	Class uint32
+	// Paired Indicates if the remote device is paired.
+	Paired bool
 
 	// Trusted Indicates if the remote is seen as trusted. This
 	// setting can be changed by the application.
 	Trusted bool
 
-	// Blocked If set to true any incoming connections from the
-	// device will be immediately rejected. Any device
-	// drivers will also be removed and no new ones will
-	// be probed as long as the device is blocked.
-	Blocked bool
+	// Adapter The object path of the adapter the device belongs to.
+	Adapter dbus.ObjectPath
 
-	// Modalias Remote Device ID information in modalias format
-	// used by the kernel and udev.
-	Modalias string
+	// TxPower Advertised transmitted power level (inquiry or
+	// advertising).
+	TxPower int16
 
-	// RSSI Received Signal Strength Indicator of the remote
-	// device (inquiry or advertising).
-	RSSI int16
-
-	// AdvertisingFlags The Advertising Data Flags of the remote device.
-	AdvertisingFlags []byte
-
-	// Address The Bluetooth device address of the remote device.
-	Address string
+	// ServiceData Service advertisement data. Keys are the UUIDs in
+	// string format followed by its byte array value.
+	ServiceData map[string]interface{}
 
 	// AddressType The Bluetooth device Address Type. For dual-mode and
 	// BR/EDR only devices this defaults to "public". Single
@@ -122,37 +101,44 @@ type Device1Properties struct {
 	// "random" - Random address
 	AddressType string
 
-	// Paired Indicates if the remote device is paired.
-	Paired bool
+	// Class The Bluetooth class of device of the remote device.
+	Class uint32
 
 	// Connected Indicates if the remote device is currently connected.
 	// A PropertiesChanged signal indicate changes to this
 	// status.
 	Connected bool
 
-	// ServiceData Service advertisement data. Keys are the UUIDs in
-	// string format followed by its byte array value.
-	ServiceData map[string]interface{}
+	// Blocked If set to true any incoming connections from the
+	// device will be immediately rejected. Any device
+	// drivers will also be removed and no new ones will
+	// be probed as long as the device is blocked.
+	Blocked bool
 
 	// ServicesResolved Indicate whether or not service discovery has been
 	// resolved.
 	ServicesResolved bool
 
-	// AdvertisingData The Advertising Data of the remote device. Keys are
-	// are 8 bits AD Type followed by data as byte array.
-	// Note: Only types considered safe to be handled by
-	// application are exposed.
-	// Possible values:
-	// <type> <byte array>
-	// ...
-	// Example:
-	// <Transport Discovery> <Organization Flags...>
-	// 0x26                   0x01         0x01...
-	AdvertisingData map[string]interface{}
+	// RSSI Received Signal Strength Indicator of the remote
+	// device (inquiry or advertising).
+	RSSI int16
 
-	// Icon Proposed icon name according to the freedesktop.org
-	// icon naming specification.
-	Icon string
+	// ManufacturerData Manufacturer specific advertisement data. Keys are
+	// 16 bits Manufacturer ID followed by its byte array
+	// value.
+	ManufacturerData map[uint16]dbus.Variant
+
+	// Name The Bluetooth remote name. This value can not be
+	// changed. Use the Alias property instead.
+	// This value is only present for completeness. It is
+	// better to always use the Alias property when
+	// displaying the devices name.
+	// If the Alias property is unset, it will reflect
+	// this value which makes it more convenient.
+	Name string
+
+	// Appearance External appearance of device, as found on GAP service.
+	Appearance uint16
 
 	// UUIDs List of 128-bit UUIDs that represents the available
 	// remote services.
@@ -177,14 +163,24 @@ type Device1Properties struct {
 	// have disabled Extended Inquiry Response support.
 	LegacyPairing bool
 
-	// TxPower Advertised transmitted power level (inquiry or
-	// advertising).
-	TxPower int16
+	// Modalias Remote Device ID information in modalias format
+	// used by the kernel and udev.
+	Modalias string
 
-	// ManufacturerData Manufacturer specific advertisement data. Keys are
-	// 16 bits Manufacturer ID followed by its byte array
-	// value.
-	ManufacturerData map[uint16]dbus.Variant
+	// AdvertisingFlags The Advertising Data Flags of the remote device.
+	AdvertisingFlags []byte
+
+	// AdvertisingData The Advertising Data of the remote device. Keys are
+	// are 8 bits AD Type followed by data as byte array.
+	// Note: Only types considered safe to be handled by
+	// application are exposed.
+	// Possible values:
+	// <type> <byte array>
+	// ...
+	// Example:
+	// <Transport Discovery> <Organization Flags...>
+	// 0x26                   0x01         0x01...
+	AdvertisingData map[string]interface{}
 }
 
 func (p *Device1Properties) Lock() {
@@ -197,7 +193,20 @@ func (p *Device1Properties) Unlock() {
 
 // Close the connection
 func (a *Device1) Close() {
+
+	a.unregisterSignal()
+
 	a.client.Disconnect()
+}
+
+// Path return Device1 object path
+func (a *Device1) Path() dbus.ObjectPath {
+	return a.client.Config.Path
+}
+
+// Interface return Device1 interface
+func (a *Device1) Interface() string {
+	return a.client.Config.Iface
 }
 
 // ToMap convert a Device1Properties to map
@@ -239,14 +248,98 @@ func (a *Device1) GetProperty(name string) (dbus.Variant, error) {
 	return a.client.GetProperty(name)
 }
 
-// Register for changes signalling
-func (a *Device1) Register() (chan *dbus.Signal, error) {
-	return a.client.Register(a.client.Config.Path, bluez.PropertiesInterface)
+// GetPropertiesSignal return a channel for receiving udpdates on property changes
+func (a *Device1) GetPropertiesSignal() (chan *dbus.Signal, error) {
+
+	if a.propertiesSignal == nil {
+		s, err := a.client.Register(a.client.Config.Path, bluez.PropertiesInterface)
+		if err != nil {
+			return nil, err
+		}
+		a.propertiesSignal = s
+	}
+
+	return a.propertiesSignal, nil
 }
 
 // Unregister for changes signalling
-func (a *Device1) Unregister(signal chan *dbus.Signal) error {
-	return a.client.Unregister(a.client.Config.Path, bluez.PropertiesInterface, signal)
+func (a *Device1) unregisterSignal() {
+	if a.propertiesSignal == nil {
+		a.propertiesSignal <- nil
+	}
+}
+
+// WatchProperties updates on property changes
+func (a *Device1) WatchProperties() (chan *bluez.PropertyChanged, error) {
+
+	channel, err := a.client.Register(a.Path(), a.Interface())
+	if err != nil {
+		return nil, err
+	}
+
+	ch := make(chan *bluez.PropertyChanged)
+
+	go (func() {
+		for {
+
+			if channel == nil {
+				break
+			}
+
+			sig := <-channel
+
+			if sig == nil {
+				return
+			}
+
+			if sig.Name != bluez.PropertiesChanged {
+				continue
+			}
+			if sig.Path != a.Path() {
+				continue
+			}
+
+			iface := sig.Body[0].(string)
+			changes := sig.Body[1].(map[string]dbus.Variant)
+
+			for field, val := range changes {
+
+				// updates [*]Properties struct
+				props := a.Properties
+
+				s := reflect.ValueOf(props).Elem()
+				// exported field
+				f := s.FieldByName(field)
+				if f.IsValid() {
+					// A Value can be changed only if it is
+					// addressable and was not obtained by
+					// the use of unexported struct fields.
+					if f.CanSet() {
+						x := reflect.ValueOf(val.Value())
+						props.Lock()
+						f.Set(x)
+						props.Unlock()
+					}
+				}
+
+				propChanged := &bluez.PropertyChanged{
+					Interface: iface,
+					Name:      field,
+					Value:     val.Value(),
+				}
+				ch <- propChanged
+			}
+
+		}
+	})()
+
+	return ch, nil
+}
+
+func (a *Device1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
+	ch <- nil
+	close(ch)
+	return nil
 }
 
 //Connect This is a generic method to connect any profiles

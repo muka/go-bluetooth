@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/godbus/dbus"
+	"github.com/muka/go-bluetooth/bluez/profile/adapter"
 	"github.com/muka/go-bluetooth/bluez/profile/advertising"
 )
 
@@ -39,9 +40,15 @@ func NewApplication(config *ApplicationConfig) (*Application, error) {
 	// 	return nil, err
 	// }
 
+	a, err := adapter.GetAdapter(config.AdapterID)
+	if err != nil {
+		return nil, err
+	}
+
 	s := &Application{
 		config:        config,
 		objectManager: om,
+		adapter:       a,
 		services:      make(map[dbus.ObjectPath]*GattService1),
 	}
 
@@ -50,6 +57,7 @@ func NewApplication(config *ApplicationConfig) (*Application, error) {
 
 // ApplicationConfig configuration for the bluetooth service
 type ApplicationConfig struct {
+	AdapterID    string
 	UUIDSuffix   string
 	UUID         string
 	conn         *dbus.Conn
@@ -69,9 +77,14 @@ type Application struct {
 	config        *ApplicationConfig
 	objectManager *ObjectManager
 	services      map[dbus.ObjectPath]*GattService1
-
+	adapter       *adapter.Adapter1
 	adMgr         *advertising.LEAdvertisingManager1
 	advertisement *LEAdvertisement1
+}
+
+//GetAdapter return the Adapter1 interface instance
+func (app *Application) GetAdapter() *adapter.Adapter1 {
+	return app.adapter
 }
 
 //GetObjectManager return the object manager interface handler

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/godbus/dbus"
-	"github.com/muka/go-bluetooth/api"
+	"github.com/muka/go-bluetooth/bluez/profile/adapter"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -61,7 +61,7 @@ func (self *SimpleAgent) RequestPinCode(path dbus.ObjectPath) (string, *dbus.Err
 
 	log.Debugf("SimpleAgent: RequestPinCode: %s", path)
 
-	adapterID, err := api.ParseAdapterIDFromDevicePath(path)
+	adapterID, err := adapter.ParseAdapterID(path)
 	if err != nil {
 		log.Warnf("SimpleAgent: Failed to load adapter %s", err)
 		return "", &dbus.ErrMsgNoObject
@@ -82,7 +82,7 @@ func (self *SimpleAgent) DisplayPinCode(device dbus.ObjectPath, pincode string) 
 
 func (self *SimpleAgent) RequestPasskey(path dbus.ObjectPath) (uint32, *dbus.Error) {
 
-	adapterID, err := api.ParseAdapterIDFromDevicePath(path)
+	adapterID, err := adapter.ParseAdapterID(path)
 	if err != nil {
 		log.Warnf("SimpleAgent: Failed to load adapter %s", err)
 		return 0, &dbus.ErrMsgNoObject
@@ -105,7 +105,7 @@ func (self *SimpleAgent) RequestConfirmation(path dbus.ObjectPath, passkey uint3
 
 	log.Debugf("SimpleAgent: RequestConfirmation (%s, %06d)", path, passkey)
 
-	adapterID, err := api.ParseAdapterIDFromDevicePath(path)
+	adapterID, err := adapter.ParseAdapterID(path)
 	if err != nil {
 		log.Warnf("SimpleAgent: Failed to load adapter %s", err)
 		return &dbus.ErrMsgNoObject

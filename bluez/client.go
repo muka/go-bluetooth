@@ -1,6 +1,8 @@
 package bluez
 
 import (
+	"fmt"
+
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/util"
 )
@@ -62,8 +64,7 @@ func (c *Client) Call(method string, flags dbus.Flags, args ...interface{}) *dbu
 		}
 	}
 
-	methodPath := c.Config.Iface + "." + method
-
+	methodPath := fmt.Sprint(c.Config.Iface, ".", method)
 	return c.dbusObject.Call(methodPath, flags, args...)
 }
 
@@ -105,15 +106,20 @@ func (c *Client) GetProperties(props interface{}) error {
 		return err
 	}
 
-	return util.MapToStruct(props, result)
+	err = util.MapToStruct(props, result)
+	if err != nil {
+		return fmt.Errorf("MapToStruct: %s", err)
+	}
+
+	return nil
 }
 
-func getMatchString(path string, iface string) string {
-	return "type='signal',interface='" + iface + "',path='" + path + "'"
+func getMatchString(path dbus.ObjectPath, iface string) string {
+	return fmt.Sprintf("type='signal',interface='%s',path='%s'", iface, path)
 }
 
 //Register for signals
-func (c *Client) Register(path string, iface string) (chan *dbus.Signal, error) {
+func (c *Client) Register(path dbus.ObjectPath, iface string) (chan *dbus.Signal, error) {
 
 	if !c.isConnected() {
 		err := c.Connect()
@@ -132,7 +138,7 @@ func (c *Client) Register(path string, iface string) (chan *dbus.Signal, error) 
 }
 
 //Unregister for signals
-func (c *Client) Unregister(path string, iface string, signal chan *dbus.Signal) error {
+func (c *Client) Unregister(path dbus.ObjectPath, iface string, signal chan *dbus.Signal) error {
 	if !c.isConnected() {
 		err := c.Connect()
 		if err != nil {

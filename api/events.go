@@ -45,7 +45,7 @@ type PropertyChangedEvent struct {
 	Field      string
 	Value      interface{}
 	Properties *device.Device1Properties
-	Device     *Device
+	Device     *device.Device1
 }
 
 // GattServiceEvent triggered when a new GattService1 is added or removed
@@ -74,7 +74,7 @@ type GattDescriptorEvent struct {
 
 // DataEvent triggered when a new data value is available
 type DataEvent struct {
-	Device *Device
+	Device *device.Device1
 	Sensor string
 	Value  interface{}
 	Unit   string
