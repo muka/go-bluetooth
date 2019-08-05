@@ -9,8 +9,8 @@ func GetPropertiesOverride(iface string) (map[string]string, bool) {
 
 var PropertyTypes = map[string]map[string]string{
 	"org.bluez.Device1": map[string]string{
-		// "ServiceData":      "map[string]dbus.Variant",
-		"ManufacturerData": "map[uint16]dbus.Variant",
+		"ServiceData":      "map[string]interface{}",
+		"ManufacturerData": "map[uint16]interface{}",
 	},
 	"org.bluez.GattCharacteristic1": map[string]string{
 		"Value":       "[]byte `dbus:\"emit\"`",

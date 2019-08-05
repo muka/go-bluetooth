@@ -68,41 +68,38 @@ type Message1 struct {
 type Message1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// Read Message read flag
-	Read bool
+	// Folder Folder which the message belongs to
+	Folder string
 
-	// Deleted Message deleted flag
-	Deleted bool
-
-	// Subject Message subject
-	Subject string
-
-	// Timestamp Message timestamp
-	Timestamp string
-
-	// Sender Message sender name
-	Sender string
+	// SenderAddress Message sender address
+	SenderAddress string
 
 	// ReplyTo Message Reply-To address
 	ReplyTo string
 
+	// Timestamp Message timestamp
+	Timestamp string
+
 	// Recipient Message recipient name
 	Recipient string
 
-	// RecipientAddress Message recipient address
-	RecipientAddress string
-
-	// Priority Message priority flag
-	Priority bool
+	// Read Message read flag
+	Read bool
 
 	// Sent Message sent flag
 	Sent bool
 
+	// Deleted Message deleted flag
+	Deleted bool
+
 	// Protected Message protected flag
 	Protected bool
 
-	// Folder Folder which the message belongs to
-	Folder string
+	// Sender Message sender name
+	Sender string
+
+	// RecipientAddress Message recipient address
+	RecipientAddress string
 
 	// Type Message type
   // Possible values: "email", "sms-gsm",
@@ -111,13 +108,16 @@ type Message1Properties struct {
   // Message size in bytes
 	Type string
 
-	// SenderAddress Message sender address
-	SenderAddress string
-
 	// Status Message reception status
   // Possible values: "complete",
   // "fractioned" and "notification"
 	Status string
+
+	// Priority Message priority flag
+	Priority bool
+
+	// Subject Message subject
+	Subject string
 
 }
 

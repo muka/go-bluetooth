@@ -95,22 +95,10 @@ type MediaItem1 struct {
 type MediaItem1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// Player Player object path the item belongs to
-	Player dbus.ObjectPath
-
-	// Type Item type
-  // Possible values: "video", "audio", "folder"
-	Type string
-
-	// Title Item title name
+	// Artist Item artist name
   // Available if property Type is "audio"
   // or "video"
-	Title string
-
-	// Duration Item duration in milliseconds
-  // Available if property Type is "audio"
-  // or "video"
-	Duration uint32
+	Artist string
 
 	// Album Item album name
   // Available if property Type is "audio"
@@ -130,6 +118,27 @@ type MediaItem1Properties struct {
 	// Name Item displayable name
 	Name string
 
+	// Type Item type
+  // Possible values: "video", "audio", "folder"
+	Type string
+
+	// Metadata Item metadata.
+  // Possible values:
+	Metadata map[string]interface{}
+
+	// Title Item title name
+  // Available if property Type is "audio"
+  // or "video"
+	Title string
+
+	// Duration Item duration in milliseconds
+  // Available if property Type is "audio"
+  // or "video"
+	Duration uint32
+
+	// Player Player object path the item belongs to
+	Player dbus.ObjectPath
+
 	// FolderType Folder type.
   // Possible values: "mixed", "titles", "albums", "artists"
   // Available if property Type is "Folder"
@@ -138,15 +147,6 @@ type MediaItem1Properties struct {
 	// Playable Indicates if the item can be played
   // Available if property Type is "folder"
 	Playable bool
-
-	// Metadata Item metadata.
-  // Possible values:
-	Metadata map[string]interface{}
-
-	// Artist Item artist name
-  // Available if property Type is "audio"
-  // or "video"
-	Artist string
 
 	// Number Item album number
   // Available if property Type is "audio"

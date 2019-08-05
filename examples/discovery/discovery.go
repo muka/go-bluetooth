@@ -32,17 +32,7 @@ func Run(adapterID string) error {
 		return err
 	}
 
-	err = discoverDevices(a)
-	if err != nil {
-		return err
-	}
-
-	select {}
-}
-
-func discoverDevices(a *adapter.Adapter1) error {
-
-	err := a.StartDiscovery()
+	err = a.StartDiscovery()
 	if err != nil {
 		return err
 	}

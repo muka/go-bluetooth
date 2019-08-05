@@ -88,11 +88,11 @@ type GattService1Properties struct {
   // services of this service.
 	Includes []dbus.ObjectPath
 
-	// Characteristics 
-	Characteristics []dbus.ObjectPath `dbus:"emit"`
-
 	// IsService 
 	IsService bool `dbus:"ignore"`
+
+	// Characteristics 
+	Characteristics []dbus.ObjectPath `dbus:"emit"`
 
 }
 

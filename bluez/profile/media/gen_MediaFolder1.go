@@ -95,16 +95,6 @@ type MediaFolder1 struct {
 type MediaFolder1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// Attributes Item properties that should be included in the list.
-  // Possible Values:
-  // "title", "artist", "album", "genre",
-  // "number-of-tracks", "number", "duration"
-  // Default Value: All
-	Attributes []string
-
-	// NumberOfItems Number of items in the folder
-	NumberOfItems uint32
-
 	// Name Folder name:
   // Possible values:
   // "/Filesystem/...": Filesystem scope
@@ -123,6 +113,16 @@ type MediaFolder1Properties struct {
 	// End Offset of the last item.
   // Default value: NumbeOfItems
 	End uint32
+
+	// Attributes Item properties that should be included in the list.
+  // Possible Values:
+  // "title", "artist", "album", "genre",
+  // "number-of-tracks", "number", "duration"
+  // Default Value: All
+	Attributes []string
+
+	// NumberOfItems Number of items in the folder
+	NumberOfItems uint32
 
 }
 

@@ -68,6 +68,11 @@ type PhonebookAccess1 struct {
 type PhonebookAccess1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
+	// FixedImageSize Indicate support for fixed image size.
+  // Possible values: True if image is JPEG 300x300 pixels
+  // otherwise False.
+	FixedImageSize bool
+
 	// Folder Current folder.
 	Folder string
 
@@ -85,11 +90,6 @@ type PhonebookAccess1Properties struct {
   // Possible values: 32-character hexadecimal such
   // as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
 	SecondaryCounter string
-
-	// FixedImageSize Indicate support for fixed image size.
-  // Possible values: True if image is JPEG 300x300 pixels
-  // otherwise False.
-	FixedImageSize bool
 
 }
 

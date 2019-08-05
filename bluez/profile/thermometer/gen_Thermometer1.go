@@ -68,6 +68,14 @@ type Thermometer1 struct {
 type Thermometer1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
+	// Interval (optional) The Measurement Interval defines the time (in
+  // seconds) between measurements. This interval is
+  // not related to the intermediate measurements and
+  // must be defined into a valid range. Setting it
+  // to zero means that no periodic measurements will
+  // be taken.
+	Interval uint16
+
 	// Maximum (optional) Defines the maximum value allowed for the interval
   // between periodic measurements.
 	Maximum uint16
@@ -79,14 +87,6 @@ type Thermometer1Properties struct {
 	// Intermediate True if the thermometer supports intermediate
   // measurement notifications.
 	Intermediate bool
-
-	// Interval (optional) The Measurement Interval defines the time (in
-  // seconds) between measurements. This interval is
-  // not related to the intermediate measurements and
-  // must be defined into a valid range. Setting it
-  // to zero means that no periodic measurements will
-  // be taken.
-	Interval uint16
 
 }
 

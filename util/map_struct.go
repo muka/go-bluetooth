@@ -1,11 +1,11 @@
 package util
 
 import (
-	"errors"
 	"fmt"
 	"reflect"
 
 	"github.com/godbus/dbus"
+	log "github.com/sirupsen/logrus"
 )
 
 func mapStructField(obj interface{}, name string, value dbus.Variant) error {
@@ -14,21 +14,57 @@ func mapStructField(obj interface{}, name string, value dbus.Variant) error {
 	structFieldValue := structValue.FieldByName(name)
 
 	if !structFieldValue.IsValid() {
-		return errors.New("No such field: " + name + " in obj")
+		return fmt.Errorf("Field not found: %s", name)
 	}
 
 	if !structFieldValue.CanSet() {
-		return errors.New("Cannot set " + name + " field value")
+		return fmt.Errorf("Cannot set value for: %s", name)
 	}
 
 	structFieldType := structFieldValue.Type()
 	val := reflect.ValueOf(value.Value())
-	if structFieldType != val.Type() {
-		return fmt.Errorf("Provided value type didn't match obj field type. field=%s expected=%s actual=%s", name, structFieldType, val.Type())
+
+	if structFieldType == val.Type() {
+		structFieldValue.Set(val)
+		return nil
 	}
 
-	structFieldValue.Set(val)
-	return nil
+	// log.Debugf("structFieldType %++v", structFieldType)
+	// log.Debugf("val.Type() %++v", val.Type())
+
+	if val.Type().Kind() == reflect.Map {
+
+		structVal := structFieldType.Elem()
+		structKey := structFieldType.Key()
+
+		// mapVal := val.Type().Elem()
+		mapKey := val.Type().Key()
+
+		if mapKey.Kind() != structKey.Kind() {
+			return fmt.Errorf("Field %s: map key mismatchig values object=%s props=%s", name, structKey.Kind(), mapKey.Kind())
+		}
+
+		// Assign value if signture is map[*]interface{}
+		if structVal.Kind() == reflect.Interface {
+
+			val1MapType := reflect.MapOf(structKey, structVal)
+			val1Map := reflect.MakeMapWithSize(val1MapType, val.Len())
+
+			for _, key := range val.MapKeys() {
+				val1Map.SetMapIndex(key, val.MapIndex(key))
+			}
+
+			structFieldValue.Set(val1Map)
+			return nil
+		}
+
+	}
+
+	if val.Type().Kind() == reflect.Array {
+		log.Warn("@TODO type array to interface{} is not implemented")
+	}
+
+	return fmt.Errorf("Mismatching types for field=%s object=%s props=%s", name, structFieldType, val.Type())
 }
 
 // MapToStruct converts a map[string]interface{} to a struct

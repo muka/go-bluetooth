@@ -68,6 +68,15 @@ type GattDescriptor1 struct {
 type GattDescriptor1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
+	// Characteristic Object path of the GATT characteristic the descriptor
+  // belongs to.
+	Characteristic dbus.ObjectPath
+
+	// Value The cached value of the descriptor. This property
+  // gets updated only after a successful read request, upon
+  // which a PropertiesChanged signal will be emitted.
+	Value []byte `dbus:"emit"`
+
 	// Flags Defines how the descriptor value can be used.
   // Possible values:
   // "read"
@@ -83,15 +92,6 @@ type GattDescriptor1Properties struct {
 
 	// UUID 128-bit descriptor UUID.
 	UUID string
-
-	// Characteristic Object path of the GATT characteristic the descriptor
-  // belongs to.
-	Characteristic dbus.ObjectPath
-
-	// Value The cached value of the descriptor. This property
-  // gets updated only after a successful read request, upon
-  // which a PropertiesChanged signal will be emitted.
-	Value []byte `dbus:"emit"`
 
 }
 

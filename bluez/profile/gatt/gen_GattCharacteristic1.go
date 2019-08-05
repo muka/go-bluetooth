@@ -69,6 +69,12 @@ type GattCharacteristic1 struct {
 type GattCharacteristic1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
+	// Descriptors 
+	Descriptors []dbus.ObjectPath
+
+	// UUID 128-bit characteristic UUID.
+	UUID string
+
 	// Service Object path of the GATT service the characteristic
   // belongs to.
 	Service dbus.ObjectPath
@@ -120,12 +126,6 @@ type GattCharacteristic1Properties struct {
   // "secure-write" (Server only)
   // "authorize"
 	Flags []string
-
-	// Descriptors 
-	Descriptors []dbus.ObjectPath
-
-	// UUID 128-bit characteristic UUID.
-	UUID string
 
 }
 
