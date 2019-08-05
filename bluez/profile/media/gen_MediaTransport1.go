@@ -35,7 +35,6 @@ var MediaTransport1Interface = "org.bluez.MediaTransport1"
 // 	objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/fdX
 func NewMediaTransport1(objectPath dbus.ObjectPath) (*MediaTransport1, error) {
 	a := new(MediaTransport1)
-	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
@@ -61,12 +60,20 @@ func NewMediaTransport1(objectPath dbus.ObjectPath) (*MediaTransport1, error) {
 type MediaTransport1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
+	objectManagerSignal chan *dbus.Signal
+	objectManager       *bluez.ObjectManager	
 	Properties 				*MediaTransport1Properties
 }
 
 // MediaTransport1Properties contains the exposed properties of an interface
 type MediaTransport1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
+
+	// Volume Optional. Indicates volume level of the transport,
+  // this property is only writeable when the transport was
+  // acquired by the sender.
+  // Possible Values: 0-127
+	Volume uint16
 
 	// Device Device object which the transport is connected to.
 	Device dbus.ObjectPath
@@ -95,12 +102,6 @@ type MediaTransport1Properties struct {
   // acquired by the sender.
 	Delay uint16
 
-	// Volume Optional. Indicates volume level of the transport,
-  // this property is only writeable when the transport was
-  // acquired by the sender.
-  // Possible Values: 0-127
-	Volume uint16
-
 }
 
 func (p *MediaTransport1Properties) Lock() {
@@ -114,7 +115,7 @@ func (p *MediaTransport1Properties) Unlock() {
 // Close the connection
 func (a *MediaTransport1) Close() {
 	
-	a.unregisterSignal()
+	a.unregisterPropertiesSignal()
 	
 	a.client.Disconnect()
 }
@@ -127,6 +128,37 @@ func (a *MediaTransport1) Path() dbus.ObjectPath {
 // Interface return MediaTransport1 interface
 func (a *MediaTransport1) Interface() string {
 	return a.client.Config.Iface
+}
+
+// GetObjectManagerSignal return a channel for receiving updates from the ObjectManager
+func (a *MediaTransport1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
+
+	if a.objectManagerSignal == nil {
+		if a.objectManager == nil {
+			om, err := bluez.GetObjectManager()
+			if err != nil {
+				return nil, nil, err
+			}
+			a.objectManager = om
+		}
+
+		s, err := a.objectManager.Register()
+		if err != nil {
+			return nil, nil, err
+		}
+		a.objectManagerSignal = s
+	}
+
+	cancel := func() {
+		if a.objectManagerSignal == nil {
+			return
+		}
+		a.objectManagerSignal <- nil
+		a.objectManager.Unregister(a.objectManagerSignal)
+		a.objectManagerSignal = nil
+	}
+
+	return a.objectManagerSignal, cancel, nil
 }
 
 
@@ -184,9 +216,10 @@ func (a *MediaTransport1) GetPropertiesSignal() (chan *dbus.Signal, error) {
 }
 
 // Unregister for changes signalling
-func (a *MediaTransport1) unregisterSignal() {
-	if a.propertiesSignal == nil {
+func (a *MediaTransport1) unregisterPropertiesSignal() {
+	if a.propertiesSignal != nil {
 		a.propertiesSignal <- nil
+		a.propertiesSignal = nil
 	}
 }
 
@@ -262,7 +295,6 @@ func (a *MediaTransport1) UnwatchProperties(ch chan *bluez.PropertyChanged) erro
 	close(ch)
 	return nil
 }
-
 
 
 

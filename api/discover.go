@@ -25,15 +25,14 @@ func Discover(adapterID string, filter *adapter.DiscoveryFilter) (chan *adapter.
 		return nil, nil, err
 	}
 
-	ch, err := a.DeviceDiscovered()
+	ch, discoveryCancel, err := a.DeviceDiscovered()
 
 	cancel := func() {
-		ch <- nil
-		close(ch)
 		err := a.StopDiscovery()
 		if err != nil {
 			log.Warnf("Error stopping discovery: %s", err)
 		}
+		discoveryCancel()
 	}
 
 	return ch, cancel, nil

@@ -35,7 +35,6 @@ var MediaPlayer1Interface = "org.bluez.MediaPlayer1"
 // 	objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/playerX
 func NewMediaPlayer1(objectPath dbus.ObjectPath) (*MediaPlayer1, error) {
 	a := new(MediaPlayer1)
-	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
@@ -61,6 +60,8 @@ func NewMediaPlayer1(objectPath dbus.ObjectPath) (*MediaPlayer1, error) {
 type MediaPlayer1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
+	objectManagerSignal chan *dbus.Signal
+	objectManager       *bluez.ObjectManager	
 	Properties 				*MediaPlayer1Properties
 }
 
@@ -68,22 +69,21 @@ type MediaPlayer1 struct {
 type MediaPlayer1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
+	// Browsable If present indicates the player can be browsed using
+  // MediaFolder interface.
+  // Possible values:
+  // True: Supported and active
+  // False: Supported but inactive
+  // Note: If supported but inactive clients can enable it
+  // by using MediaFolder interface but it might interfere
+  // in the playback of other players.
+	Browsable bool
+
 	// Scan Possible values: "off", "alltracks" or "group"
 	Scan string
 
 	// TrackNumber Track number
 	TrackNumber uint32
-
-	// Name Player name
-	Name string
-
-	// Type Player type
-  // Possible values:
-  // "Audio"
-  // "Video"
-  // "Audio Broadcasting"
-  // "Video Broadcasting"
-	Type string
 
 	// Subtype Player subtype
   // Possible values:
@@ -101,18 +101,40 @@ type MediaPlayer1Properties struct {
 	// Shuffle Possible values: "off", "alltracks" or "group"
 	Shuffle string
 
+	// Status Possible status: "playing", "stopped", "paused",
+  // "forward-seek", "reverse-seek"
+  // or "error"
+	Status string
+
+	// Genre Track genre name
+	Genre string
+
+	// NumberOfTracks Number of tracks in total
+	NumberOfTracks uint32
+
+	// Duration Track duration in milliseconds
+	Duration uint32
+
+	// Device Device object path.
+	Device dbus.ObjectPath
+
+	// Type Player type
+  // Possible values:
+  // "Audio"
+  // "Video"
+  // "Audio Broadcasting"
+  // "Video Broadcasting"
+	Type string
+
+	// Equalizer Possible values: "off" or "on"
+	Equalizer string
+
 	// Track Track metadata.
   // Possible values:
 	Track map[string]interface{}
 
 	// Album Track album name
 	Album string
-
-	// NumberOfTracks Number of tracks in total
-	NumberOfTracks uint32
-
-	// Device Device object path.
-	Device dbus.ObjectPath
 
 	// Searchable If present indicates the player can be searched using
   // MediaFolder interface.
@@ -124,29 +146,8 @@ type MediaPlayer1Properties struct {
   // in the playback of other players.
 	Searchable bool
 
-	// Equalizer Possible values: "off" or "on"
-	Equalizer string
-
-	// Title Track title name
-	Title string
-
-	// Artist Track artist name
-	Artist string
-
-	// Browsable If present indicates the player can be browsed using
-  // MediaFolder interface.
-  // Possible values:
-  // True: Supported and active
-  // False: Supported but inactive
-  // Note: If supported but inactive clients can enable it
-  // by using MediaFolder interface but it might interfere
-  // in the playback of other players.
-	Browsable bool
-
-	// Status Possible status: "playing", "stopped", "paused",
-  // "forward-seek", "reverse-seek"
-  // or "error"
-	Status string
+	// Name Player name
+	Name string
 
 	// Position Playback position in milliseconds. Changing the
   // position may generate additional events that will be
@@ -158,11 +159,11 @@ type MediaPlayer1Properties struct {
   // maximum uint32 value.
 	Position uint32
 
-	// Genre Track genre name
-	Genre string
+	// Title Track title name
+	Title string
 
-	// Duration Track duration in milliseconds
-	Duration uint32
+	// Artist Track artist name
+	Artist string
 
 }
 
@@ -177,7 +178,7 @@ func (p *MediaPlayer1Properties) Unlock() {
 // Close the connection
 func (a *MediaPlayer1) Close() {
 	
-	a.unregisterSignal()
+	a.unregisterPropertiesSignal()
 	
 	a.client.Disconnect()
 }
@@ -190,6 +191,37 @@ func (a *MediaPlayer1) Path() dbus.ObjectPath {
 // Interface return MediaPlayer1 interface
 func (a *MediaPlayer1) Interface() string {
 	return a.client.Config.Iface
+}
+
+// GetObjectManagerSignal return a channel for receiving updates from the ObjectManager
+func (a *MediaPlayer1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
+
+	if a.objectManagerSignal == nil {
+		if a.objectManager == nil {
+			om, err := bluez.GetObjectManager()
+			if err != nil {
+				return nil, nil, err
+			}
+			a.objectManager = om
+		}
+
+		s, err := a.objectManager.Register()
+		if err != nil {
+			return nil, nil, err
+		}
+		a.objectManagerSignal = s
+	}
+
+	cancel := func() {
+		if a.objectManagerSignal == nil {
+			return
+		}
+		a.objectManagerSignal <- nil
+		a.objectManager.Unregister(a.objectManagerSignal)
+		a.objectManagerSignal = nil
+	}
+
+	return a.objectManagerSignal, cancel, nil
 }
 
 
@@ -247,9 +279,10 @@ func (a *MediaPlayer1) GetPropertiesSignal() (chan *dbus.Signal, error) {
 }
 
 // Unregister for changes signalling
-func (a *MediaPlayer1) unregisterSignal() {
-	if a.propertiesSignal == nil {
+func (a *MediaPlayer1) unregisterPropertiesSignal() {
+	if a.propertiesSignal != nil {
 		a.propertiesSignal <- nil
+		a.propertiesSignal = nil
 	}
 }
 
@@ -325,7 +358,6 @@ func (a *MediaPlayer1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	close(ch)
 	return nil
 }
-
 
 
 

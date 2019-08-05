@@ -36,7 +36,6 @@ var GattProfile1Interface = "org.bluez.GattProfile1"
 // 	objectPath: <application dependent>
 func NewGattProfile1(servicePath string, objectPath dbus.ObjectPath) (*GattProfile1, error) {
 	a := new(GattProfile1)
-	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  servicePath,
@@ -65,6 +64,8 @@ func NewGattProfile1(servicePath string, objectPath dbus.ObjectPath) (*GattProfi
 type GattProfile1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
+	objectManagerSignal chan *dbus.Signal
+	objectManager       *bluez.ObjectManager	
 	Properties 				*GattProfile1Properties
 }
 
@@ -88,7 +89,7 @@ func (p *GattProfile1Properties) Unlock() {
 // Close the connection
 func (a *GattProfile1) Close() {
 	
-	a.unregisterSignal()
+	a.unregisterPropertiesSignal()
 	
 	a.client.Disconnect()
 }
@@ -101,6 +102,37 @@ func (a *GattProfile1) Path() dbus.ObjectPath {
 // Interface return GattProfile1 interface
 func (a *GattProfile1) Interface() string {
 	return a.client.Config.Iface
+}
+
+// GetObjectManagerSignal return a channel for receiving updates from the ObjectManager
+func (a *GattProfile1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
+
+	if a.objectManagerSignal == nil {
+		if a.objectManager == nil {
+			om, err := bluez.GetObjectManager()
+			if err != nil {
+				return nil, nil, err
+			}
+			a.objectManager = om
+		}
+
+		s, err := a.objectManager.Register()
+		if err != nil {
+			return nil, nil, err
+		}
+		a.objectManagerSignal = s
+	}
+
+	cancel := func() {
+		if a.objectManagerSignal == nil {
+			return
+		}
+		a.objectManagerSignal <- nil
+		a.objectManager.Unregister(a.objectManagerSignal)
+		a.objectManagerSignal = nil
+	}
+
+	return a.objectManagerSignal, cancel, nil
 }
 
 
@@ -158,9 +190,10 @@ func (a *GattProfile1) GetPropertiesSignal() (chan *dbus.Signal, error) {
 }
 
 // Unregister for changes signalling
-func (a *GattProfile1) unregisterSignal() {
-	if a.propertiesSignal == nil {
+func (a *GattProfile1) unregisterPropertiesSignal() {
+	if a.propertiesSignal != nil {
 		a.propertiesSignal <- nil
+		a.propertiesSignal = nil
 	}
 }
 
@@ -236,7 +269,6 @@ func (a *GattProfile1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	close(ch)
 	return nil
 }
-
 
 
 

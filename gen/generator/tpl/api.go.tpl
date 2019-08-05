@@ -26,7 +26,6 @@ var {{.InterfaceName}}Interface = "{{.Api.Interface}}"
 {{.ArgsDocs}}
 func New{{$InterfaceName}}{{.Role}}({{.Args}}) (*{{$InterfaceName}}, error) {
 	a := new({{$InterfaceName}})
-	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  {{.Service}},
@@ -52,6 +51,8 @@ func New{{$InterfaceName}}{{.Role}}({{.Args}}) (*{{$InterfaceName}}, error) {
 type {{.InterfaceName}} struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
+	objectManagerSignal chan *dbus.Signal
+	objectManager       *bluez.ObjectManager	
 	Properties 				*{{.InterfaceName}}Properties
 }
 
@@ -75,7 +76,7 @@ func (p *{{.InterfaceName}}Properties) Unlock() {
 // Close the connection
 func (a *{{.InterfaceName}}) Close() {
 	{{if $ExposeProperties }}
-	a.unregisterSignal()
+	a.unregisterPropertiesSignal()
 	{{end}}
 	a.client.Disconnect()
 }
@@ -88,6 +89,37 @@ func (a *{{.InterfaceName}}) Path() dbus.ObjectPath {
 // Interface return {{.InterfaceName}} interface
 func (a *{{.InterfaceName}}) Interface() string {
 	return a.client.Config.Iface
+}
+
+// GetObjectManagerSignal return a channel for receiving updates from the ObjectManager
+func (a *{{.InterfaceName}}) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
+
+	if a.objectManagerSignal == nil {
+		if a.objectManager == nil {
+			om, err := bluez.GetObjectManager()
+			if err != nil {
+				return nil, nil, err
+			}
+			a.objectManager = om
+		}
+
+		s, err := a.objectManager.Register()
+		if err != nil {
+			return nil, nil, err
+		}
+		a.objectManagerSignal = s
+	}
+
+	cancel := func() {
+		if a.objectManagerSignal == nil {
+			return
+		}
+		a.objectManagerSignal <- nil
+		a.objectManager.Unregister(a.objectManagerSignal)
+		a.objectManagerSignal = nil
+	}
+
+	return a.objectManagerSignal, cancel, nil
 }
 
 {{if .ExposeProperties }}
@@ -145,9 +177,10 @@ func (a *{{.InterfaceName}}) GetPropertiesSignal() (chan *dbus.Signal, error) {
 }
 
 // Unregister for changes signalling
-func (a *{{.InterfaceName}}) unregisterSignal() {
-	if a.propertiesSignal == nil {
+func (a *{{.InterfaceName}}) unregisterPropertiesSignal() {
+	if a.propertiesSignal != nil {
 		a.propertiesSignal <- nil
+		a.propertiesSignal = nil
 	}
 }
 
@@ -223,7 +256,6 @@ func (a *{{.InterfaceName}}) UnwatchProperties(ch chan *bluez.PropertyChanged) e
 	close(ch)
 	return nil
 }
-
 
 {{end}}
 

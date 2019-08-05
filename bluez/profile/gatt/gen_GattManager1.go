@@ -36,7 +36,6 @@ var GattManager1Interface = "org.bluez.GattManager1"
 // 	objectPath: [variable prefix]/{hci0,hci1,...}
 func NewGattManager1(objectPath dbus.ObjectPath) (*GattManager1, error) {
 	a := new(GattManager1)
-	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
@@ -60,7 +59,6 @@ func NewGattManager1(objectPath dbus.ObjectPath) (*GattManager1, error) {
 // adapterID: ID of an adapter eg. hci0
 func NewGattManager1FromAdapterID(adapterID string) (*GattManager1, error) {
 	a := new(GattManager1)
-	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
@@ -143,6 +141,8 @@ func NewGattManager1FromAdapterID(adapterID string) (*GattManager1, error) {
 type GattManager1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
+	objectManagerSignal chan *dbus.Signal
+	objectManager       *bluez.ObjectManager	
 	Properties 				*GattManager1Properties
 }
 
@@ -163,7 +163,7 @@ func (p *GattManager1Properties) Unlock() {
 // Close the connection
 func (a *GattManager1) Close() {
 	
-	a.unregisterSignal()
+	a.unregisterPropertiesSignal()
 	
 	a.client.Disconnect()
 }
@@ -176,6 +176,37 @@ func (a *GattManager1) Path() dbus.ObjectPath {
 // Interface return GattManager1 interface
 func (a *GattManager1) Interface() string {
 	return a.client.Config.Iface
+}
+
+// GetObjectManagerSignal return a channel for receiving updates from the ObjectManager
+func (a *GattManager1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
+
+	if a.objectManagerSignal == nil {
+		if a.objectManager == nil {
+			om, err := bluez.GetObjectManager()
+			if err != nil {
+				return nil, nil, err
+			}
+			a.objectManager = om
+		}
+
+		s, err := a.objectManager.Register()
+		if err != nil {
+			return nil, nil, err
+		}
+		a.objectManagerSignal = s
+	}
+
+	cancel := func() {
+		if a.objectManagerSignal == nil {
+			return
+		}
+		a.objectManagerSignal <- nil
+		a.objectManager.Unregister(a.objectManagerSignal)
+		a.objectManagerSignal = nil
+	}
+
+	return a.objectManagerSignal, cancel, nil
 }
 
 
@@ -233,9 +264,10 @@ func (a *GattManager1) GetPropertiesSignal() (chan *dbus.Signal, error) {
 }
 
 // Unregister for changes signalling
-func (a *GattManager1) unregisterSignal() {
-	if a.propertiesSignal == nil {
+func (a *GattManager1) unregisterPropertiesSignal() {
+	if a.propertiesSignal != nil {
 		a.propertiesSignal <- nil
+		a.propertiesSignal = nil
 	}
 }
 
@@ -311,7 +343,6 @@ func (a *GattManager1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	close(ch)
 	return nil
 }
-
 
 
 

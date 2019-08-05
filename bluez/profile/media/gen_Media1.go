@@ -35,7 +35,6 @@ var Media1Interface = "org.bluez.Media1"
 // 	objectPath: [variable prefix]/{hci0,hci1,...}
 func NewMedia1(objectPath dbus.ObjectPath) (*Media1, error) {
 	a := new(Media1)
-	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
@@ -61,6 +60,8 @@ func NewMedia1(objectPath dbus.ObjectPath) (*Media1, error) {
 type Media1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
+	objectManagerSignal chan *dbus.Signal
+	objectManager       *bluez.ObjectManager	
 	Properties 				*Media1Properties
 }
 
@@ -81,7 +82,7 @@ func (p *Media1Properties) Unlock() {
 // Close the connection
 func (a *Media1) Close() {
 	
-	a.unregisterSignal()
+	a.unregisterPropertiesSignal()
 	
 	a.client.Disconnect()
 }
@@ -94,6 +95,37 @@ func (a *Media1) Path() dbus.ObjectPath {
 // Interface return Media1 interface
 func (a *Media1) Interface() string {
 	return a.client.Config.Iface
+}
+
+// GetObjectManagerSignal return a channel for receiving updates from the ObjectManager
+func (a *Media1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
+
+	if a.objectManagerSignal == nil {
+		if a.objectManager == nil {
+			om, err := bluez.GetObjectManager()
+			if err != nil {
+				return nil, nil, err
+			}
+			a.objectManager = om
+		}
+
+		s, err := a.objectManager.Register()
+		if err != nil {
+			return nil, nil, err
+		}
+		a.objectManagerSignal = s
+	}
+
+	cancel := func() {
+		if a.objectManagerSignal == nil {
+			return
+		}
+		a.objectManagerSignal <- nil
+		a.objectManager.Unregister(a.objectManagerSignal)
+		a.objectManagerSignal = nil
+	}
+
+	return a.objectManagerSignal, cancel, nil
 }
 
 
@@ -151,9 +183,10 @@ func (a *Media1) GetPropertiesSignal() (chan *dbus.Signal, error) {
 }
 
 // Unregister for changes signalling
-func (a *Media1) unregisterSignal() {
-	if a.propertiesSignal == nil {
+func (a *Media1) unregisterPropertiesSignal() {
+	if a.propertiesSignal != nil {
 		a.propertiesSignal <- nil
+		a.propertiesSignal = nil
 	}
 }
 
@@ -229,7 +262,6 @@ func (a *Media1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	close(ch)
 	return nil
 }
-
 
 
 

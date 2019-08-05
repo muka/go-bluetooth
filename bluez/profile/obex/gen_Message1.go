@@ -35,7 +35,6 @@ var Message1Interface = "org.bluez.obex.Message1"
 // 	objectPath: [Session object path]/{message0,...}
 func NewMessage1(objectPath dbus.ObjectPath) (*Message1, error) {
 	a := new(Message1)
-	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez.obex",
@@ -61,6 +60,8 @@ func NewMessage1(objectPath dbus.ObjectPath) (*Message1, error) {
 type Message1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
+	objectManagerSignal chan *dbus.Signal
+	objectManager       *bluez.ObjectManager	
 	Properties 				*Message1Properties
 }
 
@@ -68,38 +69,43 @@ type Message1 struct {
 type Message1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// Folder Folder which the message belongs to
-	Folder string
-
-	// SenderAddress Message sender address
-	SenderAddress string
+	// Sent Message sent flag
+	Sent bool
 
 	// ReplyTo Message Reply-To address
 	ReplyTo string
 
-	// Timestamp Message timestamp
-	Timestamp string
-
-	// Recipient Message recipient name
-	Recipient string
-
-	// Read Message read flag
-	Read bool
-
-	// Sent Message sent flag
-	Sent bool
+	// Priority Message priority flag
+	Priority bool
 
 	// Deleted Message deleted flag
 	Deleted bool
 
-	// Protected Message protected flag
-	Protected bool
+	// RecipientAddress Message recipient address
+	RecipientAddress string
+
+	// Subject Message subject
+	Subject string
 
 	// Sender Message sender name
 	Sender string
 
-	// RecipientAddress Message recipient address
-	RecipientAddress string
+	// Recipient Message recipient name
+	Recipient string
+
+	// Status Message reception status
+  // Possible values: "complete",
+  // "fractioned" and "notification"
+	Status string
+
+	// Read Message read flag
+	Read bool
+
+	// Folder Folder which the message belongs to
+	Folder string
+
+	// Timestamp Message timestamp
+	Timestamp string
 
 	// Type Message type
   // Possible values: "email", "sms-gsm",
@@ -108,16 +114,11 @@ type Message1Properties struct {
   // Message size in bytes
 	Type string
 
-	// Status Message reception status
-  // Possible values: "complete",
-  // "fractioned" and "notification"
-	Status string
+	// SenderAddress Message sender address
+	SenderAddress string
 
-	// Priority Message priority flag
-	Priority bool
-
-	// Subject Message subject
-	Subject string
+	// Protected Message protected flag
+	Protected bool
 
 }
 
@@ -132,7 +133,7 @@ func (p *Message1Properties) Unlock() {
 // Close the connection
 func (a *Message1) Close() {
 	
-	a.unregisterSignal()
+	a.unregisterPropertiesSignal()
 	
 	a.client.Disconnect()
 }
@@ -145,6 +146,37 @@ func (a *Message1) Path() dbus.ObjectPath {
 // Interface return Message1 interface
 func (a *Message1) Interface() string {
 	return a.client.Config.Iface
+}
+
+// GetObjectManagerSignal return a channel for receiving updates from the ObjectManager
+func (a *Message1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
+
+	if a.objectManagerSignal == nil {
+		if a.objectManager == nil {
+			om, err := bluez.GetObjectManager()
+			if err != nil {
+				return nil, nil, err
+			}
+			a.objectManager = om
+		}
+
+		s, err := a.objectManager.Register()
+		if err != nil {
+			return nil, nil, err
+		}
+		a.objectManagerSignal = s
+	}
+
+	cancel := func() {
+		if a.objectManagerSignal == nil {
+			return
+		}
+		a.objectManagerSignal <- nil
+		a.objectManager.Unregister(a.objectManagerSignal)
+		a.objectManagerSignal = nil
+	}
+
+	return a.objectManagerSignal, cancel, nil
 }
 
 
@@ -202,9 +234,10 @@ func (a *Message1) GetPropertiesSignal() (chan *dbus.Signal, error) {
 }
 
 // Unregister for changes signalling
-func (a *Message1) unregisterSignal() {
-	if a.propertiesSignal == nil {
+func (a *Message1) unregisterPropertiesSignal() {
+	if a.propertiesSignal != nil {
 		a.propertiesSignal <- nil
+		a.propertiesSignal = nil
 	}
 }
 
@@ -280,7 +313,6 @@ func (a *Message1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	close(ch)
 	return nil
 }
-
 
 
 

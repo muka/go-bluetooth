@@ -8,7 +8,6 @@ import (
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile/device"
 	"github.com/muka/go-bluetooth/util"
-	log "github.com/sirupsen/logrus"
 )
 
 //GetDeviceByAddress return a Device object based on its address
@@ -123,14 +122,15 @@ func (a *Adapter1) FlushDevices() error {
 // ParseDevice parse a Device from a ObjectManager map
 func parseDevice(path dbus.ObjectPath, propsMap map[string]dbus.Variant) (*device.Device1, error) {
 
-	log.Debugf("propsMap %++v", propsMap)
-
 	dev, err := device.NewDevice1(path)
 	if err != nil {
 		return nil, err
 	}
 
-	util.MapToStruct(dev.Properties, propsMap)
+	err = util.MapToStruct(dev.Properties, propsMap)
+	if err != nil {
+		return nil, err
+	}
 
 	return dev, nil
 }

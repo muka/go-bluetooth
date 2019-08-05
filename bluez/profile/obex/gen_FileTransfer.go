@@ -35,7 +35,6 @@ var FileTransferInterface = "org.bluez.obex.FileTransfer"
 // 	objectPath: [Session object path]
 func NewFileTransfer(objectPath dbus.ObjectPath) (*FileTransfer, error) {
 	a := new(FileTransfer)
-	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez.obex",
@@ -61,6 +60,8 @@ func NewFileTransfer(objectPath dbus.ObjectPath) (*FileTransfer, error) {
 type FileTransfer struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
+	objectManagerSignal chan *dbus.Signal
+	objectManager       *bluez.ObjectManager	
 	Properties 				*FileTransferProperties
 }
 
@@ -81,7 +82,7 @@ func (p *FileTransferProperties) Unlock() {
 // Close the connection
 func (a *FileTransfer) Close() {
 	
-	a.unregisterSignal()
+	a.unregisterPropertiesSignal()
 	
 	a.client.Disconnect()
 }
@@ -94,6 +95,37 @@ func (a *FileTransfer) Path() dbus.ObjectPath {
 // Interface return FileTransfer interface
 func (a *FileTransfer) Interface() string {
 	return a.client.Config.Iface
+}
+
+// GetObjectManagerSignal return a channel for receiving updates from the ObjectManager
+func (a *FileTransfer) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
+
+	if a.objectManagerSignal == nil {
+		if a.objectManager == nil {
+			om, err := bluez.GetObjectManager()
+			if err != nil {
+				return nil, nil, err
+			}
+			a.objectManager = om
+		}
+
+		s, err := a.objectManager.Register()
+		if err != nil {
+			return nil, nil, err
+		}
+		a.objectManagerSignal = s
+	}
+
+	cancel := func() {
+		if a.objectManagerSignal == nil {
+			return
+		}
+		a.objectManagerSignal <- nil
+		a.objectManager.Unregister(a.objectManagerSignal)
+		a.objectManagerSignal = nil
+	}
+
+	return a.objectManagerSignal, cancel, nil
 }
 
 
@@ -151,9 +183,10 @@ func (a *FileTransfer) GetPropertiesSignal() (chan *dbus.Signal, error) {
 }
 
 // Unregister for changes signalling
-func (a *FileTransfer) unregisterSignal() {
-	if a.propertiesSignal == nil {
+func (a *FileTransfer) unregisterPropertiesSignal() {
+	if a.propertiesSignal != nil {
 		a.propertiesSignal <- nil
+		a.propertiesSignal = nil
 	}
 }
 
@@ -229,7 +262,6 @@ func (a *FileTransfer) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	close(ch)
 	return nil
 }
-
 
 
 

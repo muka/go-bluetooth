@@ -16,47 +16,61 @@ type DeviceDiscovered struct {
 	Type uint8
 }
 
-func (a *Adapter1) DeviceDiscovered() (chan *DeviceDiscovered, error) {
+func (a *Adapter1) DeviceDiscovered() (chan *DeviceDiscovered, func(), error) {
 
-	signal, err := a.GetPropertiesSignal()
+	signal, omSignalCancel, err := a.GetObjectManagerSignal()
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
 	ch := make(chan *DeviceDiscovered)
 	go (func() {
 		for v := range signal {
 
+			// log.Debugf("signal %v", v.Body)
+
 			if v == nil {
-				ch <- nil
 				return
 			}
 
+			var op uint8
+			if v.Name == bluez.InterfacesAdded {
+				op = DeviceAdded
+			} else {
+				if v.Name == bluez.InterfacesRemoved {
+					op = DeviceRemoved
+				} else {
+					continue
+				}
+			}
+
 			path := v.Body[0].(dbus.ObjectPath)
+
+			if op == DeviceRemoved {
+				ifaces := v.Body[1].([]string)
+				for _, iface := range ifaces {
+					if iface == device.Device1Interface {
+						ch <- &DeviceDiscovered{path, op}
+					}
+				}
+				continue
+			}
+
 			ifaces := v.Body[1].(map[string]map[string]dbus.Variant)
-
 			if p, ok := ifaces[device.Device1Interface]; ok {
-
 				if p == nil {
 					continue
 				}
-
-				var op uint8
-				if v.Name == bluez.InterfacesAdded {
-					op = DeviceAdded
-				} else {
-					if v.Name == bluez.InterfacesRemoved {
-						op = DeviceRemoved
-					} else {
-						continue
-					}
-				}
-
 				ch <- &DeviceDiscovered{path, op}
 			}
 
 		}
 	})()
 
-	return ch, nil
+	cancel := func() {
+		omSignalCancel()
+		close(ch)
+	}
+
+	return ch, cancel, nil
 }

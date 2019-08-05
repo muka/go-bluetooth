@@ -35,7 +35,6 @@ var HealthChannel1Interface = "org.bluez.HealthChannel1"
 // 	objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/chanZZZ
 func NewHealthChannel1(objectPath dbus.ObjectPath) (*HealthChannel1, error) {
 	a := new(HealthChannel1)
-	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
@@ -61,17 +60,14 @@ func NewHealthChannel1(objectPath dbus.ObjectPath) (*HealthChannel1, error) {
 type HealthChannel1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
+	objectManagerSignal chan *dbus.Signal
+	objectManager       *bluez.ObjectManager	
 	Properties 				*HealthChannel1Properties
 }
 
 // HealthChannel1Properties contains the exposed properties of an interface
 type HealthChannel1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
-	// Application Identifies the HealthApplication to which this channel
-  // is related to (which indirectly defines its role and
-  // data type).
-	Application dbus.ObjectPath
 
 	// Type The quality of service of the data channel. ("reliable"
   // or "streaming")
@@ -80,6 +76,11 @@ type HealthChannel1Properties struct {
 	// Device Identifies the Remote Device that is connected with.
   // Maps with a HealthDevice object.
 	Device dbus.ObjectPath
+
+	// Application Identifies the HealthApplication to which this channel
+  // is related to (which indirectly defines its role and
+  // data type).
+	Application dbus.ObjectPath
 
 }
 
@@ -94,7 +95,7 @@ func (p *HealthChannel1Properties) Unlock() {
 // Close the connection
 func (a *HealthChannel1) Close() {
 	
-	a.unregisterSignal()
+	a.unregisterPropertiesSignal()
 	
 	a.client.Disconnect()
 }
@@ -107,6 +108,37 @@ func (a *HealthChannel1) Path() dbus.ObjectPath {
 // Interface return HealthChannel1 interface
 func (a *HealthChannel1) Interface() string {
 	return a.client.Config.Iface
+}
+
+// GetObjectManagerSignal return a channel for receiving updates from the ObjectManager
+func (a *HealthChannel1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
+
+	if a.objectManagerSignal == nil {
+		if a.objectManager == nil {
+			om, err := bluez.GetObjectManager()
+			if err != nil {
+				return nil, nil, err
+			}
+			a.objectManager = om
+		}
+
+		s, err := a.objectManager.Register()
+		if err != nil {
+			return nil, nil, err
+		}
+		a.objectManagerSignal = s
+	}
+
+	cancel := func() {
+		if a.objectManagerSignal == nil {
+			return
+		}
+		a.objectManagerSignal <- nil
+		a.objectManager.Unregister(a.objectManagerSignal)
+		a.objectManagerSignal = nil
+	}
+
+	return a.objectManagerSignal, cancel, nil
 }
 
 
@@ -164,9 +196,10 @@ func (a *HealthChannel1) GetPropertiesSignal() (chan *dbus.Signal, error) {
 }
 
 // Unregister for changes signalling
-func (a *HealthChannel1) unregisterSignal() {
-	if a.propertiesSignal == nil {
+func (a *HealthChannel1) unregisterPropertiesSignal() {
+	if a.propertiesSignal != nil {
 		a.propertiesSignal <- nil
+		a.propertiesSignal = nil
 	}
 }
 
@@ -242,7 +275,6 @@ func (a *HealthChannel1) UnwatchProperties(ch chan *bluez.PropertyChanged) error
 	close(ch)
 	return nil
 }
-
 
 
 

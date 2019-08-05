@@ -14,10 +14,11 @@ func TestDiscovery(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	discovery, err := a.DeviceDiscovered()
+	discovery, cancel, err := a.DeviceDiscovered()
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer cancel()
 
 	wait := make(chan error)
 

@@ -36,7 +36,6 @@ var LEAdvertisingManager1Interface = "org.bluez.LEAdvertisingManager1"
 // 	objectPath: /org/bluez/{hci0,hci1,...}
 func NewLEAdvertisingManager1(objectPath dbus.ObjectPath) (*LEAdvertisingManager1, error) {
 	a := new(LEAdvertisingManager1)
-	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
@@ -60,7 +59,6 @@ func NewLEAdvertisingManager1(objectPath dbus.ObjectPath) (*LEAdvertisingManager
 // adapterID: ID of an adapter eg. hci0
 func NewLEAdvertisingManager1FromAdapterID(adapterID string) (*LEAdvertisingManager1, error) {
 	a := new(LEAdvertisingManager1)
-	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
@@ -88,6 +86,8 @@ func NewLEAdvertisingManager1FromAdapterID(adapterID string) (*LEAdvertisingMana
 type LEAdvertisingManager1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
+	objectManagerSignal chan *dbus.Signal
+	objectManager       *bluez.ObjectManager	
 	Properties 				*LEAdvertisingManager1Properties
 }
 
@@ -120,7 +120,7 @@ func (p *LEAdvertisingManager1Properties) Unlock() {
 // Close the connection
 func (a *LEAdvertisingManager1) Close() {
 	
-	a.unregisterSignal()
+	a.unregisterPropertiesSignal()
 	
 	a.client.Disconnect()
 }
@@ -133,6 +133,37 @@ func (a *LEAdvertisingManager1) Path() dbus.ObjectPath {
 // Interface return LEAdvertisingManager1 interface
 func (a *LEAdvertisingManager1) Interface() string {
 	return a.client.Config.Iface
+}
+
+// GetObjectManagerSignal return a channel for receiving updates from the ObjectManager
+func (a *LEAdvertisingManager1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
+
+	if a.objectManagerSignal == nil {
+		if a.objectManager == nil {
+			om, err := bluez.GetObjectManager()
+			if err != nil {
+				return nil, nil, err
+			}
+			a.objectManager = om
+		}
+
+		s, err := a.objectManager.Register()
+		if err != nil {
+			return nil, nil, err
+		}
+		a.objectManagerSignal = s
+	}
+
+	cancel := func() {
+		if a.objectManagerSignal == nil {
+			return
+		}
+		a.objectManagerSignal <- nil
+		a.objectManager.Unregister(a.objectManagerSignal)
+		a.objectManagerSignal = nil
+	}
+
+	return a.objectManagerSignal, cancel, nil
 }
 
 
@@ -190,9 +221,10 @@ func (a *LEAdvertisingManager1) GetPropertiesSignal() (chan *dbus.Signal, error)
 }
 
 // Unregister for changes signalling
-func (a *LEAdvertisingManager1) unregisterSignal() {
-	if a.propertiesSignal == nil {
+func (a *LEAdvertisingManager1) unregisterPropertiesSignal() {
+	if a.propertiesSignal != nil {
 		a.propertiesSignal <- nil
+		a.propertiesSignal = nil
 	}
 }
 
@@ -268,7 +300,6 @@ func (a *LEAdvertisingManager1) UnwatchProperties(ch chan *bluez.PropertyChanged
 	close(ch)
 	return nil
 }
-
 
 
 

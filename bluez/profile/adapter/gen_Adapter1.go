@@ -36,7 +36,6 @@ var Adapter1Interface = "org.bluez.Adapter1"
 // 	objectPath: [variable prefix]/{hci0,hci1,...}
 func NewAdapter1(objectPath dbus.ObjectPath) (*Adapter1, error) {
 	a := new(Adapter1)
-	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
@@ -60,7 +59,6 @@ func NewAdapter1(objectPath dbus.ObjectPath) (*Adapter1, error) {
 // adapterID: ID of an adapter eg. hci0
 func NewAdapter1FromAdapterID(adapterID string) (*Adapter1, error) {
 	a := new(Adapter1)
-	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
@@ -86,12 +84,32 @@ func NewAdapter1FromAdapterID(adapterID string) (*Adapter1, error) {
 type Adapter1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
+	objectManagerSignal chan *dbus.Signal
+	objectManager       *bluez.ObjectManager	
 	Properties 				*Adapter1Properties
 }
 
 // Adapter1Properties contains the exposed properties of an interface
 type Adapter1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
+
+	// DiscoverableTimeout The discoverable timeout in seconds. A value of zero
+  // means that the timeout is disabled and it will stay in
+  // discoverable/limited mode forever.
+  // The default value for the discoverable timeout should
+  // be 180 seconds (3 minutes).
+	DiscoverableTimeout uint32
+
+	// Discovering Indicates that a device discovery procedure is active.
+	Discovering bool
+
+	// UUIDs List of 128-bit UUIDs that represents the available
+  // local services.
+	UUIDs []string
+
+	// Modalias Local Device ID information in modalias format
+  // used by the kernel and udev.
+	Modalias string
 
 	// AddressType The Bluetooth  Address Type. For dual-mode and BR/EDR
   // only adapter this defaults to "public". Single mode LE
@@ -103,57 +121,12 @@ type Adapter1Properties struct {
   // "random" - Random address
 	AddressType string
 
-	// Name The Bluetooth system name (pretty hostname).
-  // This property is either a static system default
-  // or controlled by an external daemon providing
-  // access to the pretty hostname configuration.
-	Name string
-
 	// Powered Switch an adapter on or off. This will also set the
   // appropriate connectable state of the controller.
   // The value of this property is not persistent. After
   // restart or unplugging of the adapter it will reset
   // back to false.
 	Powered bool
-
-	// Pairable Switch an adapter to pairable or non-pairable. This is
-  // a global setting and should only be used by the
-  // settings application.
-  // Note that this property only affects incoming pairing
-  // requests.
-  // For any new adapter this settings defaults to true.
-	Pairable bool
-
-	// Discovering Indicates that a device discovery procedure is active.
-	Discovering bool
-
-	// UUIDs List of 128-bit UUIDs that represents the available
-  // local services.
-	UUIDs []string
-
-	// Address The Bluetooth device address.
-	Address string
-
-	// Alias The Bluetooth friendly name. This value can be
-  // changed.
-  // In case no alias is set, it will return the system
-  // provided name. Setting an empty string as alias will
-  // convert it back to the system provided name.
-  // When resetting the alias with an empty string, the
-  // property will default back to system name.
-  // On a well configured system, this property never
-  // needs to be changed since it defaults to the system
-  // name and provides the pretty hostname. Only if the
-  // local name needs to be different from the pretty
-  // hostname, this property should be used as last
-  // resort.
-	Alias string
-
-	// Class The Bluetooth class of device.
-  // This property represents the value that is either
-  // automatically configured by DMI/ACPI information
-  // or provided as static configuration.
-	Class uint32
 
 	// Discoverable Switch an adapter to discoverable or non-discoverable
   // to either make it visible or hide it. This is a global
@@ -177,16 +150,43 @@ type Adapter1Properties struct {
   // disabled (value 0).
 	PairableTimeout uint32
 
-	// DiscoverableTimeout The discoverable timeout in seconds. A value of zero
-  // means that the timeout is disabled and it will stay in
-  // discoverable/limited mode forever.
-  // The default value for the discoverable timeout should
-  // be 180 seconds (3 minutes).
-	DiscoverableTimeout uint32
+	// Pairable Switch an adapter to pairable or non-pairable. This is
+  // a global setting and should only be used by the
+  // settings application.
+  // Note that this property only affects incoming pairing
+  // requests.
+  // For any new adapter this settings defaults to true.
+	Pairable bool
 
-	// Modalias Local Device ID information in modalias format
-  // used by the kernel and udev.
-	Modalias string
+	// Address The Bluetooth device address.
+	Address string
+
+	// Name The Bluetooth system name (pretty hostname).
+  // This property is either a static system default
+  // or controlled by an external daemon providing
+  // access to the pretty hostname configuration.
+	Name string
+
+	// Alias The Bluetooth friendly name. This value can be
+  // changed.
+  // In case no alias is set, it will return the system
+  // provided name. Setting an empty string as alias will
+  // convert it back to the system provided name.
+  // When resetting the alias with an empty string, the
+  // property will default back to system name.
+  // On a well configured system, this property never
+  // needs to be changed since it defaults to the system
+  // name and provides the pretty hostname. Only if the
+  // local name needs to be different from the pretty
+  // hostname, this property should be used as last
+  // resort.
+	Alias string
+
+	// Class The Bluetooth class of device.
+  // This property represents the value that is either
+  // automatically configured by DMI/ACPI information
+  // or provided as static configuration.
+	Class uint32
 
 }
 
@@ -201,7 +201,7 @@ func (p *Adapter1Properties) Unlock() {
 // Close the connection
 func (a *Adapter1) Close() {
 	
-	a.unregisterSignal()
+	a.unregisterPropertiesSignal()
 	
 	a.client.Disconnect()
 }
@@ -214,6 +214,37 @@ func (a *Adapter1) Path() dbus.ObjectPath {
 // Interface return Adapter1 interface
 func (a *Adapter1) Interface() string {
 	return a.client.Config.Iface
+}
+
+// GetObjectManagerSignal return a channel for receiving updates from the ObjectManager
+func (a *Adapter1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
+
+	if a.objectManagerSignal == nil {
+		if a.objectManager == nil {
+			om, err := bluez.GetObjectManager()
+			if err != nil {
+				return nil, nil, err
+			}
+			a.objectManager = om
+		}
+
+		s, err := a.objectManager.Register()
+		if err != nil {
+			return nil, nil, err
+		}
+		a.objectManagerSignal = s
+	}
+
+	cancel := func() {
+		if a.objectManagerSignal == nil {
+			return
+		}
+		a.objectManagerSignal <- nil
+		a.objectManager.Unregister(a.objectManagerSignal)
+		a.objectManagerSignal = nil
+	}
+
+	return a.objectManagerSignal, cancel, nil
 }
 
 
@@ -271,9 +302,10 @@ func (a *Adapter1) GetPropertiesSignal() (chan *dbus.Signal, error) {
 }
 
 // Unregister for changes signalling
-func (a *Adapter1) unregisterSignal() {
-	if a.propertiesSignal == nil {
+func (a *Adapter1) unregisterPropertiesSignal() {
+	if a.propertiesSignal != nil {
 		a.propertiesSignal <- nil
+		a.propertiesSignal = nil
 	}
 }
 
@@ -349,7 +381,6 @@ func (a *Adapter1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	close(ch)
 	return nil
 }
-
 
 
 

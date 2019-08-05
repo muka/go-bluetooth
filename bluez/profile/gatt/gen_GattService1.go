@@ -35,7 +35,6 @@ var GattService1Interface = "org.bluez.GattService1"
 // 	objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/serviceXX
 func NewGattService1(objectPath dbus.ObjectPath) (*GattService1, error) {
 	a := new(GattService1)
-	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
@@ -65,12 +64,20 @@ func NewGattService1(objectPath dbus.ObjectPath) (*GattService1, error) {
 type GattService1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
+	objectManagerSignal chan *dbus.Signal
+	objectManager       *bluez.ObjectManager	
 	Properties 				*GattService1Properties
 }
 
 // GattService1Properties contains the exposed properties of an interface
 type GattService1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
+
+	// Characteristics 
+	Characteristics []dbus.ObjectPath `dbus:"emit"`
+
+	// IsService 
+	IsService bool `dbus:"ignore"`
 
 	// UUID 128-bit service UUID.
 	UUID string
@@ -88,12 +95,6 @@ type GattService1Properties struct {
   // services of this service.
 	Includes []dbus.ObjectPath
 
-	// IsService 
-	IsService bool `dbus:"ignore"`
-
-	// Characteristics 
-	Characteristics []dbus.ObjectPath `dbus:"emit"`
-
 }
 
 func (p *GattService1Properties) Lock() {
@@ -107,7 +108,7 @@ func (p *GattService1Properties) Unlock() {
 // Close the connection
 func (a *GattService1) Close() {
 	
-	a.unregisterSignal()
+	a.unregisterPropertiesSignal()
 	
 	a.client.Disconnect()
 }
@@ -120,6 +121,37 @@ func (a *GattService1) Path() dbus.ObjectPath {
 // Interface return GattService1 interface
 func (a *GattService1) Interface() string {
 	return a.client.Config.Iface
+}
+
+// GetObjectManagerSignal return a channel for receiving updates from the ObjectManager
+func (a *GattService1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
+
+	if a.objectManagerSignal == nil {
+		if a.objectManager == nil {
+			om, err := bluez.GetObjectManager()
+			if err != nil {
+				return nil, nil, err
+			}
+			a.objectManager = om
+		}
+
+		s, err := a.objectManager.Register()
+		if err != nil {
+			return nil, nil, err
+		}
+		a.objectManagerSignal = s
+	}
+
+	cancel := func() {
+		if a.objectManagerSignal == nil {
+			return
+		}
+		a.objectManagerSignal <- nil
+		a.objectManager.Unregister(a.objectManagerSignal)
+		a.objectManagerSignal = nil
+	}
+
+	return a.objectManagerSignal, cancel, nil
 }
 
 
@@ -177,9 +209,10 @@ func (a *GattService1) GetPropertiesSignal() (chan *dbus.Signal, error) {
 }
 
 // Unregister for changes signalling
-func (a *GattService1) unregisterSignal() {
-	if a.propertiesSignal == nil {
+func (a *GattService1) unregisterPropertiesSignal() {
+	if a.propertiesSignal != nil {
 		a.propertiesSignal <- nil
+		a.propertiesSignal = nil
 	}
 }
 
@@ -255,7 +288,6 @@ func (a *GattService1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	close(ch)
 	return nil
 }
-
 
 
 

@@ -36,7 +36,6 @@ var MediaFolder1Interface = "org.bluez.MediaFolder1"
 // 	objectPath: freely definable
 func NewMediaFolder1(servicePath string, objectPath dbus.ObjectPath) (*MediaFolder1, error) {
 	a := new(MediaFolder1)
-	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  servicePath,
@@ -62,7 +61,6 @@ func NewMediaFolder1(servicePath string, objectPath dbus.ObjectPath) (*MediaFold
 // 	objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/playerX
 func NewMediaFolder1Controller(objectPath dbus.ObjectPath) (*MediaFolder1, error) {
 	a := new(MediaFolder1)
-	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
@@ -88,12 +86,17 @@ func NewMediaFolder1Controller(objectPath dbus.ObjectPath) (*MediaFolder1, error
 type MediaFolder1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
+	objectManagerSignal chan *dbus.Signal
+	objectManager       *bluez.ObjectManager	
 	Properties 				*MediaFolder1Properties
 }
 
 // MediaFolder1Properties contains the exposed properties of an interface
 type MediaFolder1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
+
+	// NumberOfItems Number of items in the folder
+	NumberOfItems uint32
 
 	// Name Folder name:
   // Possible values:
@@ -121,9 +124,6 @@ type MediaFolder1Properties struct {
   // Default Value: All
 	Attributes []string
 
-	// NumberOfItems Number of items in the folder
-	NumberOfItems uint32
-
 }
 
 func (p *MediaFolder1Properties) Lock() {
@@ -137,7 +137,7 @@ func (p *MediaFolder1Properties) Unlock() {
 // Close the connection
 func (a *MediaFolder1) Close() {
 	
-	a.unregisterSignal()
+	a.unregisterPropertiesSignal()
 	
 	a.client.Disconnect()
 }
@@ -150,6 +150,37 @@ func (a *MediaFolder1) Path() dbus.ObjectPath {
 // Interface return MediaFolder1 interface
 func (a *MediaFolder1) Interface() string {
 	return a.client.Config.Iface
+}
+
+// GetObjectManagerSignal return a channel for receiving updates from the ObjectManager
+func (a *MediaFolder1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
+
+	if a.objectManagerSignal == nil {
+		if a.objectManager == nil {
+			om, err := bluez.GetObjectManager()
+			if err != nil {
+				return nil, nil, err
+			}
+			a.objectManager = om
+		}
+
+		s, err := a.objectManager.Register()
+		if err != nil {
+			return nil, nil, err
+		}
+		a.objectManagerSignal = s
+	}
+
+	cancel := func() {
+		if a.objectManagerSignal == nil {
+			return
+		}
+		a.objectManagerSignal <- nil
+		a.objectManager.Unregister(a.objectManagerSignal)
+		a.objectManagerSignal = nil
+	}
+
+	return a.objectManagerSignal, cancel, nil
 }
 
 
@@ -207,9 +238,10 @@ func (a *MediaFolder1) GetPropertiesSignal() (chan *dbus.Signal, error) {
 }
 
 // Unregister for changes signalling
-func (a *MediaFolder1) unregisterSignal() {
-	if a.propertiesSignal == nil {
+func (a *MediaFolder1) unregisterPropertiesSignal() {
+	if a.propertiesSignal != nil {
 		a.propertiesSignal <- nil
+		a.propertiesSignal = nil
 	}
 }
 
@@ -285,7 +317,6 @@ func (a *MediaFolder1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	close(ch)
 	return nil
 }
-
 
 
 

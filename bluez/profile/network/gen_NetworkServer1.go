@@ -35,7 +35,6 @@ var NetworkServer1Interface = "org.bluez.NetworkServer1"
 // 	objectPath: /org/bluez/{hci0,hci1,...}
 func NewNetworkServer1(objectPath dbus.ObjectPath) (*NetworkServer1, error) {
 	a := new(NetworkServer1)
-	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
@@ -61,6 +60,8 @@ func NewNetworkServer1(objectPath dbus.ObjectPath) (*NetworkServer1, error) {
 type NetworkServer1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
+	objectManagerSignal chan *dbus.Signal
+	objectManager       *bluez.ObjectManager	
 	Properties 				*NetworkServer1Properties
 }
 
@@ -81,7 +82,7 @@ func (p *NetworkServer1Properties) Unlock() {
 // Close the connection
 func (a *NetworkServer1) Close() {
 	
-	a.unregisterSignal()
+	a.unregisterPropertiesSignal()
 	
 	a.client.Disconnect()
 }
@@ -94,6 +95,37 @@ func (a *NetworkServer1) Path() dbus.ObjectPath {
 // Interface return NetworkServer1 interface
 func (a *NetworkServer1) Interface() string {
 	return a.client.Config.Iface
+}
+
+// GetObjectManagerSignal return a channel for receiving updates from the ObjectManager
+func (a *NetworkServer1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
+
+	if a.objectManagerSignal == nil {
+		if a.objectManager == nil {
+			om, err := bluez.GetObjectManager()
+			if err != nil {
+				return nil, nil, err
+			}
+			a.objectManager = om
+		}
+
+		s, err := a.objectManager.Register()
+		if err != nil {
+			return nil, nil, err
+		}
+		a.objectManagerSignal = s
+	}
+
+	cancel := func() {
+		if a.objectManagerSignal == nil {
+			return
+		}
+		a.objectManagerSignal <- nil
+		a.objectManager.Unregister(a.objectManagerSignal)
+		a.objectManagerSignal = nil
+	}
+
+	return a.objectManagerSignal, cancel, nil
 }
 
 
@@ -151,9 +183,10 @@ func (a *NetworkServer1) GetPropertiesSignal() (chan *dbus.Signal, error) {
 }
 
 // Unregister for changes signalling
-func (a *NetworkServer1) unregisterSignal() {
-	if a.propertiesSignal == nil {
+func (a *NetworkServer1) unregisterPropertiesSignal() {
+	if a.propertiesSignal != nil {
 		a.propertiesSignal <- nil
+		a.propertiesSignal = nil
 	}
 }
 
@@ -229,7 +262,6 @@ func (a *NetworkServer1) UnwatchProperties(ch chan *bluez.PropertyChanged) error
 	close(ch)
 	return nil
 }
-
 
 
 

@@ -35,7 +35,6 @@ var LEAdvertisement1Interface = "org.bluez.LEAdvertisement1"
 // 	objectPath: freely definable
 func NewLEAdvertisement1(objectPath dbus.ObjectPath) (*LEAdvertisement1, error) {
 	a := new(LEAdvertisement1)
-	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
@@ -65,6 +64,8 @@ func NewLEAdvertisement1(objectPath dbus.ObjectPath) (*LEAdvertisement1, error) 
 type LEAdvertisement1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
+	objectManagerSignal chan *dbus.Signal
+	objectManager       *bluez.ObjectManager	
 	Properties 				*LEAdvertisement1Properties
 }
 
@@ -72,13 +73,26 @@ type LEAdvertisement1 struct {
 type LEAdvertisement1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
+	// Timeout Timeout of the advertisement in seconds. This defines
+  // the lifetime of the advertisement.
+	Timeout uint16
+
+	// Type Determines the type of advertising packet requested.
+  // Possible values: "broadcast" or "peripheral"
+	Type string
+
 	// ServiceUUIDs List of UUIDs to include in the "Service UUID" field of
   // the Advertising Data.
 	ServiceUUIDs []string
 
-	// ServiceData Service Data elements to include. The keys are the
-  // UUID to associate with the data.
-	ServiceData map[string]interface{}
+	// ManufacturerData Manufactuer Data fields to include in
+  // the Advertising Data.  Keys are the Manufacturer ID
+  // to associate with the data.
+	ManufacturerData map[uint16]interface{}
+
+	// SolicitUUIDs Array of UUIDs to include in "Service Solicitation"
+  // Advertisement Data.
+	SolicitUUIDs []string
 
 	// Data Advertising Type to include in the Advertising
   // Data. Key is the advertising type and value is the
@@ -99,6 +113,23 @@ type LEAdvertisement1Properties struct {
   // to broadcast.
 	Discoverable bool
 
+	// DiscoverableTimeout The discoverable timeout in seconds. A value of zero
+  // means that the timeout is disabled and it will stay in
+  // discoverable/limited mode forever.
+  // Note: This property shall not be set when Type is set
+  // to broadcast.
+	DiscoverableTimeout uint16
+
+	// ServiceData Service Data elements to include. The keys are the
+  // UUID to associate with the data.
+	ServiceData map[string]interface{}
+
+	// Includes List of features to be included in the advertising
+  // packet.
+  // Possible values: as found on
+  // LEAdvertisingManager.SupportedIncludes
+	Includes []string
+
 	// LocalName Local name to be used in the advertising report. If the
   // string is too big to fit into the packet it will be
   // truncated.
@@ -110,40 +141,10 @@ type LEAdvertisement1Properties struct {
   // Possible values: as found on GAP Service.
 	Appearance uint16
 
-	// Type Determines the type of advertising packet requested.
-  // Possible values: "broadcast" or "peripheral"
-	Type string
-
-	// ManufacturerData Manufactuer Data fields to include in
-  // the Advertising Data.  Keys are the Manufacturer ID
-  // to associate with the data.
-	ManufacturerData map[uint16]interface{}
-
-	// SolicitUUIDs Array of UUIDs to include in "Service Solicitation"
-  // Advertisement Data.
-	SolicitUUIDs []string
-
-	// DiscoverableTimeout The discoverable timeout in seconds. A value of zero
-  // means that the timeout is disabled and it will stay in
-  // discoverable/limited mode forever.
-  // Note: This property shall not be set when Type is set
-  // to broadcast.
-	DiscoverableTimeout uint16
-
-	// Includes List of features to be included in the advertising
-  // packet.
-  // Possible values: as found on
-  // LEAdvertisingManager.SupportedIncludes
-	Includes []string
-
 	// Duration Duration of the advertisement in seconds. If there are
   // other applications advertising no duration is set the
   // default is 2 seconds.
 	Duration uint16
-
-	// Timeout Timeout of the advertisement in seconds. This defines
-  // the lifetime of the advertisement.
-	Timeout uint16
 
 }
 
@@ -158,7 +159,7 @@ func (p *LEAdvertisement1Properties) Unlock() {
 // Close the connection
 func (a *LEAdvertisement1) Close() {
 	
-	a.unregisterSignal()
+	a.unregisterPropertiesSignal()
 	
 	a.client.Disconnect()
 }
@@ -171,6 +172,37 @@ func (a *LEAdvertisement1) Path() dbus.ObjectPath {
 // Interface return LEAdvertisement1 interface
 func (a *LEAdvertisement1) Interface() string {
 	return a.client.Config.Iface
+}
+
+// GetObjectManagerSignal return a channel for receiving updates from the ObjectManager
+func (a *LEAdvertisement1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
+
+	if a.objectManagerSignal == nil {
+		if a.objectManager == nil {
+			om, err := bluez.GetObjectManager()
+			if err != nil {
+				return nil, nil, err
+			}
+			a.objectManager = om
+		}
+
+		s, err := a.objectManager.Register()
+		if err != nil {
+			return nil, nil, err
+		}
+		a.objectManagerSignal = s
+	}
+
+	cancel := func() {
+		if a.objectManagerSignal == nil {
+			return
+		}
+		a.objectManagerSignal <- nil
+		a.objectManager.Unregister(a.objectManagerSignal)
+		a.objectManagerSignal = nil
+	}
+
+	return a.objectManagerSignal, cancel, nil
 }
 
 
@@ -228,9 +260,10 @@ func (a *LEAdvertisement1) GetPropertiesSignal() (chan *dbus.Signal, error) {
 }
 
 // Unregister for changes signalling
-func (a *LEAdvertisement1) unregisterSignal() {
-	if a.propertiesSignal == nil {
+func (a *LEAdvertisement1) unregisterPropertiesSignal() {
+	if a.propertiesSignal != nil {
 		a.propertiesSignal <- nil
+		a.propertiesSignal = nil
 	}
 }
 
@@ -306,7 +339,6 @@ func (a *LEAdvertisement1) UnwatchProperties(ch chan *bluez.PropertyChanged) err
 	close(ch)
 	return nil
 }
-
 
 
 

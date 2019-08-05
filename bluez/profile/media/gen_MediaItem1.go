@@ -36,7 +36,6 @@ var MediaItem1Interface = "org.bluez.MediaItem1"
 // 	objectPath: freely definable
 func NewMediaItem1(servicePath string, objectPath dbus.ObjectPath) (*MediaItem1, error) {
 	a := new(MediaItem1)
-	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  servicePath,
@@ -62,7 +61,6 @@ func NewMediaItem1(servicePath string, objectPath dbus.ObjectPath) (*MediaItem1,
 // 	objectPath: [variable	prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/playerX/itemX
 func NewMediaItem1Controller(objectPath dbus.ObjectPath) (*MediaItem1, error) {
 	a := new(MediaItem1)
-	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
@@ -88,6 +86,8 @@ func NewMediaItem1Controller(objectPath dbus.ObjectPath) (*MediaItem1, error) {
 type MediaItem1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
+	objectManagerSignal chan *dbus.Signal
+	objectManager       *bluez.ObjectManager	
 	Properties 				*MediaItem1Properties
 }
 
@@ -95,10 +95,23 @@ type MediaItem1 struct {
 type MediaItem1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// Artist Item artist name
+	// Number Item album number
   // Available if property Type is "audio"
   // or "video"
-	Artist string
+	Number uint32
+
+	// Duration Item duration in milliseconds
+  // Available if property Type is "audio"
+  // or "video"
+	Duration uint32
+
+	// Name Item displayable name
+	Name string
+
+	// Title Item title name
+  // Available if property Type is "audio"
+  // or "video"
+	Title string
 
 	// Album Item album name
   // Available if property Type is "audio"
@@ -110,34 +123,26 @@ type MediaItem1Properties struct {
   // or "video"
 	Genre string
 
+	// Metadata Item metadata.
+  // Possible values:
+	Metadata map[string]interface{}
+
+	// Artist Item artist name
+  // Available if property Type is "audio"
+  // or "video"
+	Artist string
+
 	// NumberOfTracks Item album number of tracks in total
   // Available if property Type is "audio"
   // or "video"
 	NumberOfTracks uint32
 
-	// Name Item displayable name
-	Name string
+	// Player Player object path the item belongs to
+	Player dbus.ObjectPath
 
 	// Type Item type
   // Possible values: "video", "audio", "folder"
 	Type string
-
-	// Metadata Item metadata.
-  // Possible values:
-	Metadata map[string]interface{}
-
-	// Title Item title name
-  // Available if property Type is "audio"
-  // or "video"
-	Title string
-
-	// Duration Item duration in milliseconds
-  // Available if property Type is "audio"
-  // or "video"
-	Duration uint32
-
-	// Player Player object path the item belongs to
-	Player dbus.ObjectPath
 
 	// FolderType Folder type.
   // Possible values: "mixed", "titles", "albums", "artists"
@@ -147,11 +152,6 @@ type MediaItem1Properties struct {
 	// Playable Indicates if the item can be played
   // Available if property Type is "folder"
 	Playable bool
-
-	// Number Item album number
-  // Available if property Type is "audio"
-  // or "video"
-	Number uint32
 
 }
 
@@ -166,7 +166,7 @@ func (p *MediaItem1Properties) Unlock() {
 // Close the connection
 func (a *MediaItem1) Close() {
 	
-	a.unregisterSignal()
+	a.unregisterPropertiesSignal()
 	
 	a.client.Disconnect()
 }
@@ -179,6 +179,37 @@ func (a *MediaItem1) Path() dbus.ObjectPath {
 // Interface return MediaItem1 interface
 func (a *MediaItem1) Interface() string {
 	return a.client.Config.Iface
+}
+
+// GetObjectManagerSignal return a channel for receiving updates from the ObjectManager
+func (a *MediaItem1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
+
+	if a.objectManagerSignal == nil {
+		if a.objectManager == nil {
+			om, err := bluez.GetObjectManager()
+			if err != nil {
+				return nil, nil, err
+			}
+			a.objectManager = om
+		}
+
+		s, err := a.objectManager.Register()
+		if err != nil {
+			return nil, nil, err
+		}
+		a.objectManagerSignal = s
+	}
+
+	cancel := func() {
+		if a.objectManagerSignal == nil {
+			return
+		}
+		a.objectManagerSignal <- nil
+		a.objectManager.Unregister(a.objectManagerSignal)
+		a.objectManagerSignal = nil
+	}
+
+	return a.objectManagerSignal, cancel, nil
 }
 
 
@@ -236,9 +267,10 @@ func (a *MediaItem1) GetPropertiesSignal() (chan *dbus.Signal, error) {
 }
 
 // Unregister for changes signalling
-func (a *MediaItem1) unregisterSignal() {
-	if a.propertiesSignal == nil {
+func (a *MediaItem1) unregisterPropertiesSignal() {
+	if a.propertiesSignal != nil {
 		a.propertiesSignal <- nil
+		a.propertiesSignal = nil
 	}
 }
 
@@ -314,7 +346,6 @@ func (a *MediaItem1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	close(ch)
 	return nil
 }
-
 
 
 

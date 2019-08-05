@@ -36,7 +36,6 @@ var MediaEndpoint1Interface = "org.bluez.MediaEndpoint1"
 // 	objectPath: freely definable
 func NewMediaEndpoint1(servicePath string, objectPath dbus.ObjectPath) (*MediaEndpoint1, error) {
 	a := new(MediaEndpoint1)
-	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  servicePath,
@@ -62,6 +61,8 @@ func NewMediaEndpoint1(servicePath string, objectPath dbus.ObjectPath) (*MediaEn
 type MediaEndpoint1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
+	objectManagerSignal chan *dbus.Signal
+	objectManager       *bluez.ObjectManager	
 	Properties 				*MediaEndpoint1Properties
 }
 
@@ -82,7 +83,7 @@ func (p *MediaEndpoint1Properties) Unlock() {
 // Close the connection
 func (a *MediaEndpoint1) Close() {
 	
-	a.unregisterSignal()
+	a.unregisterPropertiesSignal()
 	
 	a.client.Disconnect()
 }
@@ -95,6 +96,37 @@ func (a *MediaEndpoint1) Path() dbus.ObjectPath {
 // Interface return MediaEndpoint1 interface
 func (a *MediaEndpoint1) Interface() string {
 	return a.client.Config.Iface
+}
+
+// GetObjectManagerSignal return a channel for receiving updates from the ObjectManager
+func (a *MediaEndpoint1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
+
+	if a.objectManagerSignal == nil {
+		if a.objectManager == nil {
+			om, err := bluez.GetObjectManager()
+			if err != nil {
+				return nil, nil, err
+			}
+			a.objectManager = om
+		}
+
+		s, err := a.objectManager.Register()
+		if err != nil {
+			return nil, nil, err
+		}
+		a.objectManagerSignal = s
+	}
+
+	cancel := func() {
+		if a.objectManagerSignal == nil {
+			return
+		}
+		a.objectManagerSignal <- nil
+		a.objectManager.Unregister(a.objectManagerSignal)
+		a.objectManagerSignal = nil
+	}
+
+	return a.objectManagerSignal, cancel, nil
 }
 
 
@@ -152,9 +184,10 @@ func (a *MediaEndpoint1) GetPropertiesSignal() (chan *dbus.Signal, error) {
 }
 
 // Unregister for changes signalling
-func (a *MediaEndpoint1) unregisterSignal() {
-	if a.propertiesSignal == nil {
+func (a *MediaEndpoint1) unregisterPropertiesSignal() {
+	if a.propertiesSignal != nil {
 		a.propertiesSignal <- nil
+		a.propertiesSignal = nil
 	}
 }
 
@@ -230,7 +263,6 @@ func (a *MediaEndpoint1) UnwatchProperties(ch chan *bluez.PropertyChanged) error
 	close(ch)
 	return nil
 }
-
 
 
 

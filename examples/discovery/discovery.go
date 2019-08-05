@@ -32,31 +32,30 @@ func Run(adapterID string) error {
 		return err
 	}
 
-	err = a.StartDiscovery()
+	log.Debug("Start discovery")
+	discovery, cancel, err := api.Discover(adapterID, nil)
 	if err != nil {
 		return err
 	}
-	defer a.StopDiscovery()
+	defer cancel()
 
-	log.Debugf("Started discovery")
-	discovery, err := a.DeviceDiscovered()
-	if err != nil {
-		return err
-	}
+	go func() {
 
-	for ev := range discovery {
+		for ev := range discovery {
 
-		if ev.Type == adapter.DeviceRemoved {
-			continue
+			if ev.Type == adapter.DeviceRemoved {
+				continue
+			}
+
+			err = showDeviceInfo(ev.Path)
+			if err != nil {
+				log.Errorf("Error: %s", err)
+			}
 		}
 
-		err = showDeviceInfo(ev.Path)
-		if err != nil {
-			return err
-		}
-	}
+	}()
 
-	return err
+	select {}
 }
 
 func showDeviceInfo(path dbus.ObjectPath) error {

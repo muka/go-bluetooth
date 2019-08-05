@@ -35,7 +35,6 @@ var PhonebookAccess1Interface = "org.bluez.obex.PhonebookAccess1"
 // 	objectPath: [Session object path]
 func NewPhonebookAccess1(objectPath dbus.ObjectPath) (*PhonebookAccess1, error) {
 	a := new(PhonebookAccess1)
-	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez.obex",
@@ -61,20 +60,14 @@ func NewPhonebookAccess1(objectPath dbus.ObjectPath) (*PhonebookAccess1, error) 
 type PhonebookAccess1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
+	objectManagerSignal chan *dbus.Signal
+	objectManager       *bluez.ObjectManager	
 	Properties 				*PhonebookAccess1Properties
 }
 
 // PhonebookAccess1Properties contains the exposed properties of an interface
 type PhonebookAccess1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
-	// FixedImageSize Indicate support for fixed image size.
-  // Possible values: True if image is JPEG 300x300 pixels
-  // otherwise False.
-	FixedImageSize bool
-
-	// Folder Current folder.
-	Folder string
 
 	// DatabaseIdentifier 128 bits persistent database identifier.
   // Possible values: 32-character hexadecimal such
@@ -91,6 +84,14 @@ type PhonebookAccess1Properties struct {
   // as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
 	SecondaryCounter string
 
+	// FixedImageSize Indicate support for fixed image size.
+  // Possible values: True if image is JPEG 300x300 pixels
+  // otherwise False.
+	FixedImageSize bool
+
+	// Folder Current folder.
+	Folder string
+
 }
 
 func (p *PhonebookAccess1Properties) Lock() {
@@ -104,7 +105,7 @@ func (p *PhonebookAccess1Properties) Unlock() {
 // Close the connection
 func (a *PhonebookAccess1) Close() {
 	
-	a.unregisterSignal()
+	a.unregisterPropertiesSignal()
 	
 	a.client.Disconnect()
 }
@@ -117,6 +118,37 @@ func (a *PhonebookAccess1) Path() dbus.ObjectPath {
 // Interface return PhonebookAccess1 interface
 func (a *PhonebookAccess1) Interface() string {
 	return a.client.Config.Iface
+}
+
+// GetObjectManagerSignal return a channel for receiving updates from the ObjectManager
+func (a *PhonebookAccess1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
+
+	if a.objectManagerSignal == nil {
+		if a.objectManager == nil {
+			om, err := bluez.GetObjectManager()
+			if err != nil {
+				return nil, nil, err
+			}
+			a.objectManager = om
+		}
+
+		s, err := a.objectManager.Register()
+		if err != nil {
+			return nil, nil, err
+		}
+		a.objectManagerSignal = s
+	}
+
+	cancel := func() {
+		if a.objectManagerSignal == nil {
+			return
+		}
+		a.objectManagerSignal <- nil
+		a.objectManager.Unregister(a.objectManagerSignal)
+		a.objectManagerSignal = nil
+	}
+
+	return a.objectManagerSignal, cancel, nil
 }
 
 
@@ -174,9 +206,10 @@ func (a *PhonebookAccess1) GetPropertiesSignal() (chan *dbus.Signal, error) {
 }
 
 // Unregister for changes signalling
-func (a *PhonebookAccess1) unregisterSignal() {
-	if a.propertiesSignal == nil {
+func (a *PhonebookAccess1) unregisterPropertiesSignal() {
+	if a.propertiesSignal != nil {
 		a.propertiesSignal <- nil
+		a.propertiesSignal = nil
 	}
 }
 
@@ -252,7 +285,6 @@ func (a *PhonebookAccess1) UnwatchProperties(ch chan *bluez.PropertyChanged) err
 	close(ch)
 	return nil
 }
-
 
 
 

@@ -35,7 +35,6 @@ var Thermometer1Interface = "org.bluez.Thermometer1"
 // 	objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX
 func NewThermometer1(objectPath dbus.ObjectPath) (*Thermometer1, error) {
 	a := new(Thermometer1)
-	a.propertiesSignal = make(chan *dbus.Signal)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  "org.bluez",
@@ -61,20 +60,14 @@ func NewThermometer1(objectPath dbus.ObjectPath) (*Thermometer1, error) {
 type Thermometer1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
+	objectManagerSignal chan *dbus.Signal
+	objectManager       *bluez.ObjectManager	
 	Properties 				*Thermometer1Properties
 }
 
 // Thermometer1Properties contains the exposed properties of an interface
 type Thermometer1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
-	// Interval (optional) The Measurement Interval defines the time (in
-  // seconds) between measurements. This interval is
-  // not related to the intermediate measurements and
-  // must be defined into a valid range. Setting it
-  // to zero means that no periodic measurements will
-  // be taken.
-	Interval uint16
 
 	// Maximum (optional) Defines the maximum value allowed for the interval
   // between periodic measurements.
@@ -87,6 +80,14 @@ type Thermometer1Properties struct {
 	// Intermediate True if the thermometer supports intermediate
   // measurement notifications.
 	Intermediate bool
+
+	// Interval (optional) The Measurement Interval defines the time (in
+  // seconds) between measurements. This interval is
+  // not related to the intermediate measurements and
+  // must be defined into a valid range. Setting it
+  // to zero means that no periodic measurements will
+  // be taken.
+	Interval uint16
 
 }
 
@@ -101,7 +102,7 @@ func (p *Thermometer1Properties) Unlock() {
 // Close the connection
 func (a *Thermometer1) Close() {
 	
-	a.unregisterSignal()
+	a.unregisterPropertiesSignal()
 	
 	a.client.Disconnect()
 }
@@ -114,6 +115,37 @@ func (a *Thermometer1) Path() dbus.ObjectPath {
 // Interface return Thermometer1 interface
 func (a *Thermometer1) Interface() string {
 	return a.client.Config.Iface
+}
+
+// GetObjectManagerSignal return a channel for receiving updates from the ObjectManager
+func (a *Thermometer1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
+
+	if a.objectManagerSignal == nil {
+		if a.objectManager == nil {
+			om, err := bluez.GetObjectManager()
+			if err != nil {
+				return nil, nil, err
+			}
+			a.objectManager = om
+		}
+
+		s, err := a.objectManager.Register()
+		if err != nil {
+			return nil, nil, err
+		}
+		a.objectManagerSignal = s
+	}
+
+	cancel := func() {
+		if a.objectManagerSignal == nil {
+			return
+		}
+		a.objectManagerSignal <- nil
+		a.objectManager.Unregister(a.objectManagerSignal)
+		a.objectManagerSignal = nil
+	}
+
+	return a.objectManagerSignal, cancel, nil
 }
 
 
@@ -171,9 +203,10 @@ func (a *Thermometer1) GetPropertiesSignal() (chan *dbus.Signal, error) {
 }
 
 // Unregister for changes signalling
-func (a *Thermometer1) unregisterSignal() {
-	if a.propertiesSignal == nil {
+func (a *Thermometer1) unregisterPropertiesSignal() {
+	if a.propertiesSignal != nil {
 		a.propertiesSignal <- nil
+		a.propertiesSignal = nil
 	}
 }
 
@@ -249,7 +282,6 @@ func (a *Thermometer1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	close(ch)
 	return nil
 }
-
 
 
 
