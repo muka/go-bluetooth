@@ -7,20 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestResetController(t *testing.T) {
-	err := ResetController(GetDefaultAdapterID())
-	if err != nil {
-		t.Fatal(err)
-	}
-}
-
-func TestResetControllerBadCtrl(t *testing.T) {
-	err := ResetController("hci999")
-	if err == nil {
-		t.Fatal(err)
-	}
-}
-
 func TestGetAdapterID(t *testing.T) {
 
 	defaultAdapterID := adapter.GetDefaultAdapterID()

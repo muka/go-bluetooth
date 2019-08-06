@@ -4,7 +4,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/muka/go-bluetooth/api"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -17,25 +16,6 @@ const (
 	agentObjectPath = "/go_bluetooth/agent"
 )
 
-func reset() {
-
-	// turn off/on
-	err := api.ResetController(serviceAdapterID)
-	if err != nil {
-		log.Warnf("Reset %s: %s", serviceAdapterID, err)
-		os.Exit(1)
-	}
-
-	err = api.ResetController(clientAdapterID)
-	if err != nil {
-		log.Warnf("Reset %s: %s", clientAdapterID, err)
-		os.Exit(1)
-	}
-
-	time.Sleep(time.Millisecond * 500)
-	log.Info("Controllers resetted")
-}
-
 func fail(where string, err error) {
 	if err != nil {
 		log.Errorf("%s: %s", where, err)
@@ -46,8 +26,6 @@ func fail(where string, err error) {
 func Run() error {
 
 	log.Warn("***\nThis example assume two controller are available: hci0 and hci1\n***")
-
-	reset()
 
 	var err error
 

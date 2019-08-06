@@ -4,10 +4,21 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/muka/go-bluetooth/hw/linux/btmgmt"
 	"github.com/muka/go-bluetooth/hw/linux/hci"
 	"github.com/muka/go-bluetooth/hw/linux/hciconfig"
 	log "github.com/sirupsen/logrus"
 )
+
+type BackendType string
+
+const (
+	BackendBtmgmt    BackendType = "btmgmt"
+	BackendHCI       BackendType = "hci"
+	BackendHCIConfig BackendType = "hciconfig"
+)
+
+var Backend BackendType = BackendHCIConfig
 
 type AdapterInfo struct {
 	AdapterID string
@@ -65,14 +76,29 @@ func Up(adapterID string) error {
 		return nil
 	}
 
-	id, err := strconv.Atoi(adapterID[3:])
-	if err != nil {
+	if Backend == BackendHCIConfig {
+		_, err := hciconfig.NewHCIConfig(adapterID).Up()
 		return err
 	}
-	return hci.Up(id)
+
+	if Backend == BackendBtmgmt {
+		return btmgmt.NewBtMgmt(adapterID).SetPowered(true)
+	}
+
+	if Backend == BackendHCI {
+
+		id, err := strconv.Atoi(adapterID[3:])
+		if err != nil {
+			return err
+		}
+		return hci.Up(id)
+	}
+
+	return fmt.Errorf("Unsupported backend type: %s", Backend)
 }
 
 func Down(adapterID string) error {
+
 	status, err := GetAdapter(adapterID)
 	if err != nil {
 		return err
@@ -82,11 +108,24 @@ func Down(adapterID string) error {
 		return nil
 	}
 
-	id, err := strconv.Atoi(adapterID[3:])
-	if err != nil {
+	if Backend == BackendHCIConfig {
+		_, err := hciconfig.NewHCIConfig(adapterID).Down()
 		return err
 	}
-	return hci.Down(id)
+
+	if Backend == BackendBtmgmt {
+		return btmgmt.NewBtMgmt(adapterID).SetPowered(false)
+	}
+
+	if Backend == BackendHCI {
+		id, err := strconv.Atoi(adapterID[3:])
+		if err != nil {
+			return err
+		}
+		return hci.Down(id)
+	}
+
+	return fmt.Errorf("Unsupported backend type: %s", Backend)
 }
 
 func Reset(adapterID string) error {

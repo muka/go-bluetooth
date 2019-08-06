@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestHcitoolGetAdapters(t *testing.T) {
@@ -16,9 +17,7 @@ func TestHcitoolGetAdapters(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(list) == 0 {
-		t.Fatal("At least an adapter should be available")
-	}
+	assert.NotEmpty(t, list)
 
 }
 

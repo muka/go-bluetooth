@@ -38,6 +38,8 @@ type Agent1Client interface {
 // SetTrusted lookup for a device by object path and set it to trusted
 func SetTrusted(adapterID string, devicePath dbus.ObjectPath) error {
 
+	log.Debugf("Trust device %s on %s", devicePath, adapterID)
+
 	a, err := adapter.GetAdapter(adapterID)
 	if err != nil {
 		return err

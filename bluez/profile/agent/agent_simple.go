@@ -63,16 +63,18 @@ func (self *SimpleAgent) RequestPinCode(path dbus.ObjectPath) (string, *dbus.Err
 
 	adapterID, err := adapter.ParseAdapterID(path)
 	if err != nil {
-		log.Warnf("SimpleAgent: Failed to load adapter %s", err)
+		log.Warnf("SimpleAgent.RequestPinCode: Failed to load adapter %s", err)
 		return "", &dbus.ErrMsgNoObject
 	}
 
 	err = SetTrusted(adapterID, path)
 	if err != nil {
+		log.Errorf("SimpleAgent.RequestPinCode failed: %s", err)
 		return "", dbus.MakeFailedError(err)
 	}
 
-	return SimpleAgentPinCode, nil
+	log.Debugf("SimpleAgent: Returning pin code: %s", self.pinCode)
+	return self.pinCode, nil
 }
 
 func (self *SimpleAgent) DisplayPinCode(device dbus.ObjectPath, pincode string) *dbus.Error {
@@ -84,16 +86,18 @@ func (self *SimpleAgent) RequestPasskey(path dbus.ObjectPath) (uint32, *dbus.Err
 
 	adapterID, err := adapter.ParseAdapterID(path)
 	if err != nil {
-		log.Warnf("SimpleAgent: Failed to load adapter %s", err)
+		log.Warnf("SimpleAgent.RequestPassKey: Failed to load adapter %s", err)
 		return 0, &dbus.ErrMsgNoObject
 	}
 
 	err = SetTrusted(adapterID, path)
 	if err != nil {
+		log.Errorf("SimpleAgent.RequestPassKey: %s", err)
 		return 0, dbus.MakeFailedError(err)
 	}
 
-	return SimpleAgentPassKey, nil
+	log.Debugf("RequestPasskey: returning %d", self.passKey)
+	return self.passKey, nil
 }
 
 func (self *SimpleAgent) DisplayPasskey(device dbus.ObjectPath, passkey uint32, entered uint16) *dbus.Error {

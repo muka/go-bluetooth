@@ -14,13 +14,8 @@ func Run(deviceAddress, adapterID string) error {
 
 	defer api.Exit()
 
-	err := api.ResetController(adapterID)
-	if err != nil {
-		return err
-	}
-
 	ag := agent.NewSimpleAgent()
-	err = agent.ExposeAgent(ag, agent.CapKeyboardDisplay, true)
+	err := agent.ExposeAgent(ag, agent.CapKeyboardDisplay, true)
 	if err != nil {
 		return fmt.Errorf("SimpleAgent: %s", err)
 	}

@@ -16,12 +16,6 @@ func Run(adapterID string) error {
 	//clean up connection on exit
 	defer api.Exit()
 
-	log.Debugf("Reset bluetooth device")
-	err := api.ResetController(adapterID)
-	if err != nil {
-		return err
-	}
-
 	a, err := adapter.GetAdapter(adapterID)
 	if err != nil {
 		return err
