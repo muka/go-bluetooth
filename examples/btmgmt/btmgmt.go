@@ -2,7 +2,7 @@
 package btmgmt_example
 
 import (
-	"github.com/muka/go-bluetooth/linux/btmgmt"
+	"github.com/muka/go-bluetooth/hw/linux/btmgmt"
 	log "github.com/sirupsen/logrus"
 )
 
