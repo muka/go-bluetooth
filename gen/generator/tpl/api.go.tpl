@@ -235,10 +235,8 @@ func (a *{{.InterfaceName}}) WatchProperties() (chan *bluez.PropertyChanged, err
 
 			for field, val := range changes {
 
-				// updates [*]Properties struct
-				props := a.Properties
-
-				s := reflect.ValueOf(props).Elem()
+				// updates [*]Properties struct when a property change
+				s := reflect.ValueOf(a.Properties).Elem()
 				// exported field
 				f := s.FieldByName(field)
 				if f.IsValid() {
@@ -247,9 +245,9 @@ func (a *{{.InterfaceName}}) WatchProperties() (chan *bluez.PropertyChanged, err
 					// the use of unexported struct fields.
 					if f.CanSet() {
 						x := reflect.ValueOf(val.Value())
-						props.Lock()
+						a.Properties.Lock()
 						f.Set(x)
-						props.Unlock()
+						a.Properties.Unlock()
 					}
 				}
 

@@ -69,6 +69,14 @@ type PhonebookAccess1 struct {
 type PhonebookAccess1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
+	// Folder Current folder.
+	Folder string
+
+	// DatabaseIdentifier 128 bits persistent database identifier.
+  // Possible values: 32-character hexadecimal such
+  // as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
+	DatabaseIdentifier string
+
 	// PrimaryCounter 128 bits primary version counter.
   // Possible values: 32-character hexadecimal such
   // as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
@@ -84,14 +92,6 @@ type PhonebookAccess1Properties struct {
   // otherwise False.
 	FixedImageSize bool
 
-	// Folder Current folder.
-	Folder string
-
-	// DatabaseIdentifier 128 bits persistent database identifier.
-  // Possible values: 32-character hexadecimal such
-  // as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
-	DatabaseIdentifier string
-
 }
 
 func (p *PhonebookAccess1Properties) Lock() {
@@ -102,6 +102,34 @@ func (p *PhonebookAccess1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
+
+// SetFolder set Folder value
+func (a *PhonebookAccess1) SetFolder(v string) error {
+	return a.SetProperty("Folder", v)
+}
+
+// GetFolder get Folder value
+func (a *PhonebookAccess1) GetFolder() (string, error) {
+	v, err := a.GetProperty("Folder")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+// SetDatabaseIdentifier set DatabaseIdentifier value
+func (a *PhonebookAccess1) SetDatabaseIdentifier(v string) error {
+	return a.SetProperty("DatabaseIdentifier", v)
+}
+
+// GetDatabaseIdentifier get DatabaseIdentifier value
+func (a *PhonebookAccess1) GetDatabaseIdentifier() (string, error) {
+	v, err := a.GetProperty("DatabaseIdentifier")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
 
 // SetPrimaryCounter set PrimaryCounter value
 func (a *PhonebookAccess1) SetPrimaryCounter(v string) error {
@@ -143,34 +171,6 @@ func (a *PhonebookAccess1) GetFixedImageSize() (bool, error) {
 		return false, err
 	}
 	return v.Value().(bool), nil
-}
-
-// SetFolder set Folder value
-func (a *PhonebookAccess1) SetFolder(v string) error {
-	return a.SetProperty("Folder", v)
-}
-
-// GetFolder get Folder value
-func (a *PhonebookAccess1) GetFolder() (string, error) {
-	v, err := a.GetProperty("Folder")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-// SetDatabaseIdentifier set DatabaseIdentifier value
-func (a *PhonebookAccess1) SetDatabaseIdentifier(v string) error {
-	return a.SetProperty("DatabaseIdentifier", v)
-}
-
-// GetDatabaseIdentifier get DatabaseIdentifier value
-func (a *PhonebookAccess1) GetDatabaseIdentifier() (string, error) {
-	v, err := a.GetProperty("DatabaseIdentifier")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
 }
 
 
@@ -320,10 +320,8 @@ func (a *PhonebookAccess1) WatchProperties() (chan *bluez.PropertyChanged, error
 
 			for field, val := range changes {
 
-				// updates [*]Properties struct
-				props := a.Properties
-
-				s := reflect.ValueOf(props).Elem()
+				// updates [*]Properties struct when a property change
+				s := reflect.ValueOf(a.Properties).Elem()
 				// exported field
 				f := s.FieldByName(field)
 				if f.IsValid() {
@@ -332,9 +330,9 @@ func (a *PhonebookAccess1) WatchProperties() (chan *bluez.PropertyChanged, error
 					// the use of unexported struct fields.
 					if f.CanSet() {
 						x := reflect.ValueOf(val.Value())
-						props.Lock()
+						a.Properties.Lock()
 						f.Set(x)
-						props.Unlock()
+						a.Properties.Unlock()
 					}
 				}
 

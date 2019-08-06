@@ -73,6 +73,12 @@ type GattService1 struct {
 type GattService1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
+	// Characteristics 
+	Characteristics []dbus.ObjectPath `dbus:"emit"`
+
+	// IsService 
+	IsService bool `dbus:"ignore"`
+
 	// UUID 128-bit service UUID.
 	UUID string
 
@@ -89,12 +95,6 @@ type GattService1Properties struct {
   // services of this service.
 	Includes []dbus.ObjectPath
 
-	// Characteristics 
-	Characteristics []dbus.ObjectPath `dbus:"emit"`
-
-	// IsService 
-	IsService bool `dbus:"ignore"`
-
 }
 
 func (p *GattService1Properties) Lock() {
@@ -105,6 +105,34 @@ func (p *GattService1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
+
+// SetCharacteristics set Characteristics value
+func (a *GattService1) SetCharacteristics(v []dbus.ObjectPath) error {
+	return a.SetProperty("Characteristics", v)
+}
+
+// GetCharacteristics get Characteristics value
+func (a *GattService1) GetCharacteristics() ([]dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Characteristics")
+	if err != nil {
+		return []dbus.ObjectPath{}, err
+	}
+	return v.Value().([]dbus.ObjectPath), nil
+}
+
+// SetIsService set IsService value
+func (a *GattService1) SetIsService(v bool) error {
+	return a.SetProperty("IsService", v)
+}
+
+// GetIsService get IsService value
+func (a *GattService1) GetIsService() (bool, error) {
+	v, err := a.GetProperty("IsService")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
 
 // SetUUID set UUID value
 func (a *GattService1) SetUUID(v string) error {
@@ -160,34 +188,6 @@ func (a *GattService1) GetIncludes() ([]dbus.ObjectPath, error) {
 		return []dbus.ObjectPath{}, err
 	}
 	return v.Value().([]dbus.ObjectPath), nil
-}
-
-// SetCharacteristics set Characteristics value
-func (a *GattService1) SetCharacteristics(v []dbus.ObjectPath) error {
-	return a.SetProperty("Characteristics", v)
-}
-
-// GetCharacteristics get Characteristics value
-func (a *GattService1) GetCharacteristics() ([]dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Characteristics")
-	if err != nil {
-		return []dbus.ObjectPath{}, err
-	}
-	return v.Value().([]dbus.ObjectPath), nil
-}
-
-// SetIsService set IsService value
-func (a *GattService1) SetIsService(v bool) error {
-	return a.SetProperty("IsService", v)
-}
-
-// GetIsService get IsService value
-func (a *GattService1) GetIsService() (bool, error) {
-	v, err := a.GetProperty("IsService")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
 }
 
 
@@ -337,10 +337,8 @@ func (a *GattService1) WatchProperties() (chan *bluez.PropertyChanged, error) {
 
 			for field, val := range changes {
 
-				// updates [*]Properties struct
-				props := a.Properties
-
-				s := reflect.ValueOf(props).Elem()
+				// updates [*]Properties struct when a property change
+				s := reflect.ValueOf(a.Properties).Elem()
 				// exported field
 				f := s.FieldByName(field)
 				if f.IsValid() {
@@ -349,9 +347,9 @@ func (a *GattService1) WatchProperties() (chan *bluez.PropertyChanged, error) {
 					// the use of unexported struct fields.
 					if f.CanSet() {
 						x := reflect.ValueOf(val.Value())
-						props.Lock()
+						a.Properties.Lock()
 						f.Set(x)
-						props.Unlock()
+						a.Properties.Unlock()
 					}
 				}
 
