@@ -27,3 +27,6 @@ test/api:
 
 test/linux:
 	sudo go test -v github.com/muka/go-bluetooth/linux/btmgmt
+
+build:
+	CGO_ENABLED=0 go build -o go-bluetooth ./main.go
