@@ -13,6 +13,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// GATT remote and local service representation. Object path for local services
+// is freely definable.
+// External applications implementing local services must register the services
+// using GattManager1 registration method and must implement the methods and
+// properties defined in GattService1 interface.
 package gatt
 
 
@@ -73,12 +78,6 @@ type GattService1 struct {
 type GattService1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// Characteristics 
-	Characteristics []dbus.ObjectPath `dbus:"emit"`
-
-	// IsService 
-	IsService bool `dbus:"ignore"`
-
 	// UUID 128-bit service UUID.
 	UUID string
 
@@ -95,6 +94,12 @@ type GattService1Properties struct {
   // services of this service.
 	Includes []dbus.ObjectPath
 
+	// Characteristics 
+	Characteristics []dbus.ObjectPath `dbus:"emit"`
+
+	// IsService 
+	IsService bool `dbus:"ignore"`
+
 }
 
 func (p *GattService1Properties) Lock() {
@@ -105,34 +110,6 @@ func (p *GattService1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-// SetCharacteristics set Characteristics value
-func (a *GattService1) SetCharacteristics(v []dbus.ObjectPath) error {
-	return a.SetProperty("Characteristics", v)
-}
-
-// GetCharacteristics get Characteristics value
-func (a *GattService1) GetCharacteristics() ([]dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Characteristics")
-	if err != nil {
-		return []dbus.ObjectPath{}, err
-	}
-	return v.Value().([]dbus.ObjectPath), nil
-}
-
-// SetIsService set IsService value
-func (a *GattService1) SetIsService(v bool) error {
-	return a.SetProperty("IsService", v)
-}
-
-// GetIsService get IsService value
-func (a *GattService1) GetIsService() (bool, error) {
-	v, err := a.GetProperty("IsService")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
 
 // SetUUID set UUID value
 func (a *GattService1) SetUUID(v string) error {
@@ -188,6 +165,34 @@ func (a *GattService1) GetIncludes() ([]dbus.ObjectPath, error) {
 		return []dbus.ObjectPath{}, err
 	}
 	return v.Value().([]dbus.ObjectPath), nil
+}
+
+// SetCharacteristics set Characteristics value
+func (a *GattService1) SetCharacteristics(v []dbus.ObjectPath) error {
+	return a.SetProperty("Characteristics", v)
+}
+
+// GetCharacteristics get Characteristics value
+func (a *GattService1) GetCharacteristics() ([]dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Characteristics")
+	if err != nil {
+		return []dbus.ObjectPath{}, err
+	}
+	return v.Value().([]dbus.ObjectPath), nil
+}
+
+// SetIsService set IsService value
+func (a *GattService1) SetIsService(v bool) error {
+	return a.SetProperty("IsService", v)
+}
+
+// GetIsService get IsService value
+func (a *GattService1) GetIsService() (bool, error) {
+	v, err := a.GetProperty("IsService")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
 }
 
 

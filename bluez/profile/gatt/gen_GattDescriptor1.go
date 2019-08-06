@@ -13,6 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Local or remote GATT characteristic descriptors hierarchy.
 package gatt
 
 
@@ -69,18 +70,6 @@ type GattDescriptor1 struct {
 type GattDescriptor1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// UUID 128-bit descriptor UUID.
-	UUID string
-
-	// Characteristic Object path of the GATT characteristic the descriptor
-  // belongs to.
-	Characteristic dbus.ObjectPath
-
-	// Value The cached value of the descriptor. This property
-  // gets updated only after a successful read request, upon
-  // which a PropertiesChanged signal will be emitted.
-	Value []byte `dbus:"emit"`
-
 	// Flags Defines how the descriptor value can be used.
   // Possible values:
   // "read"
@@ -94,6 +83,18 @@ type GattDescriptor1Properties struct {
   // "authorize"
 	Flags []string
 
+	// UUID 128-bit descriptor UUID.
+	UUID string
+
+	// Characteristic Object path of the GATT characteristic the descriptor
+  // belongs to.
+	Characteristic dbus.ObjectPath
+
+	// Value The cached value of the descriptor. This property
+  // gets updated only after a successful read request, upon
+  // which a PropertiesChanged signal will be emitted.
+	Value []byte `dbus:"emit"`
+
 }
 
 func (p *GattDescriptor1Properties) Lock() {
@@ -104,6 +105,20 @@ func (p *GattDescriptor1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
+
+// SetFlags set Flags value
+func (a *GattDescriptor1) SetFlags(v []string) error {
+	return a.SetProperty("Flags", v)
+}
+
+// GetFlags get Flags value
+func (a *GattDescriptor1) GetFlags() ([]string, error) {
+	v, err := a.GetProperty("Flags")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
+}
 
 // SetUUID set UUID value
 func (a *GattDescriptor1) SetUUID(v string) error {
@@ -145,20 +160,6 @@ func (a *GattDescriptor1) GetValue() ([]byte, error) {
 		return []byte{}, err
 	}
 	return v.Value().([]byte), nil
-}
-
-// SetFlags set Flags value
-func (a *GattDescriptor1) SetFlags(v []string) error {
-	return a.SetProperty("Flags", v)
-}
-
-// GetFlags get Flags value
-func (a *GattDescriptor1) GetFlags() ([]string, error) {
-	v, err := a.GetProperty("Flags")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
 }
 
 

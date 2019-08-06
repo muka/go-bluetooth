@@ -13,6 +13,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Local profile (GATT client) instance. By registering this type of object
+// an application effectively indicates support for a specific GATT profile
+// and requests automatic connections to be established to devices
+// supporting it.
 package gatt
 
 

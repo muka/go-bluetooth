@@ -13,6 +13,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// The Advertising Manager allows external applications to register Advertisement
+// Data which should be broadcast to devices.  Advertisement Data elements must
+// follow the API for LE Advertisement Data described above.
 package advertising
 
 
@@ -95,6 +98,9 @@ type LEAdvertisingManager1 struct {
 type LEAdvertisingManager1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
+	// ActiveInstances Number of active advertising instances.
+	ActiveInstances byte
+
 	// SupportedInstances Number of available advertising instances.
 	SupportedInstances byte
 
@@ -103,9 +109,6 @@ type LEAdvertisingManager1Properties struct {
   // "appearance"
   // "local-name"
 	SupportedIncludes []string
-
-	// ActiveInstances Number of active advertising instances.
-	ActiveInstances byte
 
 }
 
@@ -117,6 +120,20 @@ func (p *LEAdvertisingManager1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
+
+// SetActiveInstances set ActiveInstances value
+func (a *LEAdvertisingManager1) SetActiveInstances(v byte) error {
+	return a.SetProperty("ActiveInstances", v)
+}
+
+// GetActiveInstances get ActiveInstances value
+func (a *LEAdvertisingManager1) GetActiveInstances() (byte, error) {
+	v, err := a.GetProperty("ActiveInstances")
+	if err != nil {
+		return []uint8{}, err
+	}
+	return v.Value().(byte), nil
+}
 
 // SetSupportedInstances set SupportedInstances value
 func (a *LEAdvertisingManager1) SetSupportedInstances(v byte) error {
@@ -144,20 +161,6 @@ func (a *LEAdvertisingManager1) GetSupportedIncludes() ([]string, error) {
 		return []string{}, err
 	}
 	return v.Value().([]string), nil
-}
-
-// SetActiveInstances set ActiveInstances value
-func (a *LEAdvertisingManager1) SetActiveInstances(v byte) error {
-	return a.SetProperty("ActiveInstances", v)
-}
-
-// GetActiveInstances get ActiveInstances value
-func (a *LEAdvertisingManager1) GetActiveInstances() (byte, error) {
-	v, err := a.GetProperty("ActiveInstances")
-	if err != nil {
-		return []uint8{}, err
-	}
-	return v.Value().(byte), nil
 }
 
 
