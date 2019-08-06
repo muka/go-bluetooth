@@ -49,8 +49,8 @@ func TestGetAdapterIDFromPathFail(t *testing.T) {
 
 func TestDefaultAdapterSetGet(t *testing.T) {
 	testAdapterID := "hci1"
-	SetDefaultAdapterName(testAdapterID)
-	adapterID := GetDefaultAdapterName()
+	SetDefaultAdapterID(testAdapterID)
+	adapterID := GetDefaultAdapterID()
 	if adapterID != testAdapterID {
 		log.Fatal("Failed to set default adapter")
 	}
@@ -58,7 +58,7 @@ func TestDefaultAdapterSetGet(t *testing.T) {
 
 func TestAdapterExists(t *testing.T) {
 
-	adapterID := GetDefaultAdapterName()
+	adapterID := GetDefaultAdapterID()
 
 	exists, err := AdapterExists(adapterID)
 	if err != nil {

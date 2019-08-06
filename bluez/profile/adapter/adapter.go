@@ -13,14 +13,14 @@ func (a *Adapter1) GetAdapterID() (string, error) {
 	return ParseAdapterID(a.Path())
 }
 
-var defaultAdapterName = "hci0"
+var defaultAdapterID = "hci0"
 
-func SetDefaultAdapterName(a string) {
-	defaultAdapterName = a
+func SetDefaultAdapterID(a string) {
+	defaultAdapterID = a
 }
 
-func GetDefaultAdapterName() string {
-	return defaultAdapterName
+func GetDefaultAdapterID() string {
+	return defaultAdapterID
 }
 
 // ParseAdapterID read the adapterID from an object path in the form /org/bluez/hci[0-9]*[/...]
@@ -62,7 +62,7 @@ func AdapterExists(adapterID string) (bool, error) {
 }
 
 func GetDefaultAdapter() (*Adapter1, error) {
-	return GetAdapter(GetDefaultAdapterName())
+	return GetAdapter(GetDefaultAdapterID())
 }
 
 // GetAdapter return an adapter object instance

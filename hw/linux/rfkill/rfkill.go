@@ -1,4 +1,4 @@
-package linux
+package rfkill
 
 // Code based on rfkill.go from skycoin/skycoin project
 // https://github.com/skycoin/skycoin/blob/master/src/aether/wifi/linux/rfkill.go
@@ -44,7 +44,7 @@ type RFKillResult struct {
 }
 
 // IsInstalled Checks if the program rfkill exists using PATH environment variable
-func (rfkill RFKill) IsInstalled() bool {
+func (self RFKill) IsInstalled() bool {
 	_, err := exec.LookPath("rfkill")
 	if err != nil {
 		return false
@@ -53,10 +53,10 @@ func (rfkill RFKill) IsInstalled() bool {
 }
 
 // ListAll Returns a list of rfkill results for every identifier type
-func (rfkill RFKill) ListAll() ([]RFKillResult, error) {
+func (self RFKill) ListAll() ([]RFKillResult, error) {
 	rfks := []RFKillResult{}
 	rfk := RFKillResult{}
-	fq := rfkill.fileQuery
+	fq := self.fileQuery
 
 	// instead of parsing "rfkill list", query the filesystem
 	dirInfos, err := ioutil.ReadDir("/sys/class/rfkill/")
@@ -90,7 +90,7 @@ func (rfkill RFKill) ListAll() ([]RFKillResult, error) {
 }
 
 // SoftBlock RFKill Sets a software block on an identifier
-func (rfkill RFKill) SoftBlock(identifier string) error {
+func (self RFKill) SoftBlock(identifier string) error {
 
 	cmd := exec.Command("rfkill", "block", identifier)
 	out, err := cmd.CombinedOutput()
@@ -103,7 +103,7 @@ func (rfkill RFKill) SoftBlock(identifier string) error {
 }
 
 //SoftUnblock Removes a software block on an identifier
-func (rfkill RFKill) SoftUnblock(identifier string) error {
+func (self RFKill) SoftUnblock(identifier string) error {
 
 	cmd := exec.Command("rfkill", "unblock", identifier)
 	out, err := cmd.CombinedOutput()
@@ -116,10 +116,10 @@ func (rfkill RFKill) SoftUnblock(identifier string) error {
 }
 
 //IsBlocked Checks if an identifier has a software or hardware block
-func (rfkill RFKill) IsBlocked(identifier string) bool {
-	rfks, _ := rfkill.ListAll()
+func (self RFKill) IsBlocked(identifier string) bool {
+	rfks, _ := self.ListAll()
 	for _, rfk := range rfks {
-		if rfkill.checkThis(rfk, identifier) {
+		if self.checkThis(rfk, identifier) {
 			if rfk.SoftBlocked || rfk.HardBlocked {
 				return true
 			}
@@ -129,10 +129,10 @@ func (rfkill RFKill) IsBlocked(identifier string) bool {
 }
 
 //IsSoftBlocked Checks if an identifier has a software block
-func (rfkill RFKill) IsSoftBlocked(identifier string) bool {
-	rfks, _ := rfkill.ListAll()
+func (self RFKill) IsSoftBlocked(identifier string) bool {
+	rfks, _ := self.ListAll()
 	for _, rfk := range rfks {
-		if rfkill.checkThis(rfk, identifier) {
+		if self.checkThis(rfk, identifier) {
 			if rfk.SoftBlocked {
 				return true
 			}
@@ -142,10 +142,10 @@ func (rfkill RFKill) IsSoftBlocked(identifier string) bool {
 }
 
 //IsHardBlocked Checks if an identifier has a hardware block
-func (rfkill RFKill) IsHardBlocked(identifier string) bool {
-	rfks, _ := rfkill.ListAll()
+func (self RFKill) IsHardBlocked(identifier string) bool {
+	rfks, _ := self.ListAll()
 	for _, rfk := range rfks {
-		if rfkill.checkThis(rfk, identifier) {
+		if self.checkThis(rfk, identifier) {
 			if rfk.HardBlocked {
 				return true
 			}
@@ -156,10 +156,10 @@ func (rfkill RFKill) IsHardBlocked(identifier string) bool {
 
 //IsBlockedAfterUnblocking Checks if an identifier has a software or hardware block after
 // removing a software block if it exists
-func (rfkill RFKill) IsBlockedAfterUnblocking(identifier string) bool {
-	if rfkill.IsBlocked(identifier) {
-		rfkill.SoftUnblock(identifier)
-		if rfkill.IsBlocked(identifier) {
+func (self RFKill) IsBlockedAfterUnblocking(identifier string) bool {
+	if self.IsBlocked(identifier) {
+		self.SoftUnblock(identifier)
+		if self.IsBlocked(identifier) {
 			return true
 		}
 	}
@@ -167,7 +167,7 @@ func (rfkill RFKill) IsBlockedAfterUnblocking(identifier string) bool {
 	return false
 }
 
-func (rfkill RFKill) checkThis(rfk RFKillResult, identifier string) bool {
+func (self RFKill) checkThis(rfk RFKillResult, identifier string) bool {
 	switch identifier {
 	case "":
 		return true
@@ -179,7 +179,7 @@ func (rfkill RFKill) checkThis(rfk RFKillResult, identifier string) bool {
 	return false
 }
 
-func (rfkill RFKill) fileQuery(queryFile string) string {
+func (self RFKill) fileQuery(queryFile string) string {
 	out, _ := ioutil.ReadFile(queryFile)
 	outs := string(out)
 	outs = strings.TrimSpace(outs)

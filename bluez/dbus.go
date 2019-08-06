@@ -40,16 +40,17 @@ type Config struct {
 }
 
 // CloseConnections close all open connection to DBus
-func CloseConnections() {
+func CloseConnections() (err error) {
 	for _, conn := range conns {
 		if conn != nil {
-			err := conn.Close()
+			err = conn.Close()
 			if err != nil {
 				log.Warnf("Close: %s", err)
 			}
 		}
 	}
 	conns = make([]*dbus.Conn, 2)
+	return err
 }
 
 //GetConnection get a DBus connection

@@ -1,11 +1,10 @@
-package api
+package rfkill
 
 import (
 	"errors"
 	"strconv"
 
-	"github.com/muka/go-bluetooth/linux"
-	"github.com/muka/go-bluetooth/linux/hciconfig"
+	"github.com/muka/go-bluetooth/hw/linux/hciconfig"
 )
 
 var rfclass = [...]string{
@@ -13,7 +12,7 @@ var rfclass = [...]string{
 	"wifi",
 }
 
-var rfkill = linux.NewRFKill()
+var rfkillHandler = NewRFKill()
 
 // GetHCIConfig return an HCIConfig struct
 func GetHCIConfig(adapterID string) *hciconfig.HCIConfig {
@@ -21,13 +20,13 @@ func GetHCIConfig(adapterID string) *hciconfig.HCIConfig {
 }
 
 // GetAdapterStatus return the status of an adapter
-func GetAdapterStatus(adapterID string) (*linux.RFKillResult, error) {
+func GetAdapterStatus(adapterID string) (*RFKillResult, error) {
 
-	if !rfkill.IsInstalled() {
+	if !rfkillHandler.IsInstalled() {
 		return nil, errors.New("rfkill is not available")
 	}
 
-	list, err := rfkill.ListAll()
+	list, err := rfkillHandler.ListAll()
 	if err != nil {
 		return nil, err
 	}
@@ -72,13 +71,13 @@ func TurnOnAdapter(adapterID string) error {
 		identifier = strconv.Itoa(adapter.Index)
 	}
 
-	if rfkill.IsSoftBlocked(adapterID) {
-		err := rfkill.SoftUnblock(identifier)
+	if rfkillHandler.IsSoftBlocked(adapterID) {
+		err := rfkillHandler.SoftUnblock(identifier)
 		if err != nil {
 			return err
 		}
 	}
-	if rfkill.IsHardBlocked(adapterID) {
+	if rfkillHandler.IsHardBlocked(adapterID) {
 		return errors.New("Adapter is hard locked, check for a physical switch to enable it")
 	}
 	return nil
@@ -98,8 +97,8 @@ func TurnOffAdapter(adapterID string) error {
 		identifier = strconv.Itoa(adapter.Index)
 	}
 
-	if !rfkill.IsSoftBlocked(adapterID) {
-		err := rfkill.SoftBlock(identifier)
+	if !rfkillHandler.IsSoftBlocked(adapterID) {
+		err := rfkillHandler.SoftBlock(identifier)
 		if err != nil {
 			return err
 		}

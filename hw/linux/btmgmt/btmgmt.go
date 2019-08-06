@@ -6,7 +6,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/muka/go-bluetooth/linux"
+	"github.com/muka/go-bluetooth/hw/linux/cmd"
 )
 
 //BtAdapter contains info about adapter from btmgmt
@@ -39,7 +39,7 @@ func GetAdapter(adapterID string) (*BtAdapter, error) {
 //GetAdapters return a list of adapters
 func GetAdapters() ([]*BtAdapter, error) {
 
-	raw, err := linux.CmdExec("btmgmt", "info")
+	raw, err := cmd.Exec("btmgmt", "info")
 	if err != nil {
 		return nil, err
 	}
@@ -136,7 +136,7 @@ type BtMgmt struct {
 func (h *BtMgmt) cmd(args ...string) error {
 	cmdArgs := []string{"btmgmt", "--index", h.adapterID}
 	cmdArgs = append(cmdArgs, args...)
-	_, err := linux.CmdExec(cmdArgs...)
+	_, err := cmd.Exec(cmdArgs...)
 	if err != nil {
 		return err
 	}

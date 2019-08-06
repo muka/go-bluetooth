@@ -4,7 +4,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/muka/go-bluetooth/linux"
+	"github.com/muka/go-bluetooth/hw/linux/cmd"
 )
 
 type HcitoolDev struct {
@@ -33,7 +33,7 @@ func GetAdapter(adapterID string) (*HcitoolDev, error) {
 func GetAdapters() ([]*HcitoolDev, error) {
 
 	list := make([]*HcitoolDev, 0)
-	raw, err := linux.CmdExec("hcitool", "dev")
+	raw, err := cmd.Exec("hcitool", "dev")
 	if err != nil {
 		return nil, err
 	}

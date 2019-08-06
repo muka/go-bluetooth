@@ -22,5 +22,8 @@ gen:
 	git submodule update
 	DEBUG=${DEBUG} go run gen/srcgen/main.go
 
-test/switch:
-	sudo go test api/switch*
+test/api:
+	sudo go test github.com/muka/go-bluetooth/api
+
+test/linux:
+	sudo go test -v github.com/muka/go-bluetooth/linux/btmgmt

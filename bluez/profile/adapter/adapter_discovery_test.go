@@ -22,25 +22,17 @@ func TestDiscovery(t *testing.T) {
 
 	wait := make(chan error)
 
-	defer func() {
-		discovery <- nil
-		close(discovery)
-	}()
-
 	go func() {
 		for dev := range discovery {
-
 			if dev == nil {
 				return
 			}
-
-			fmt.Printf("GOT DEV %++v", dev)
 			wait <- nil
 		}
 	}()
 
 	go func() {
-		sleep := 15
+		sleep := 30
 		time.Sleep(time.Duration(sleep) * time.Second)
 		wait <- fmt.Errorf("Discovery timeout exceeded (%ds)", sleep)
 	}()

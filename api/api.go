@@ -3,21 +3,16 @@ package api
 import (
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile/adapter"
-	"github.com/muka/go-bluetooth/linux/btmgmt"
+	"github.com/muka/go-bluetooth/hw"
 )
 
 //Exit performs a clean exit
-func Exit() {
-	bluez.CloseConnections()
+func Exit() error {
+	return bluez.CloseConnections()
 }
 
 func ResetController(adapterID string) error {
-	a := btmgmt.NewBtMgmt(adapterID)
-	err := a.Reset()
-	if err != nil {
-		return err
-	}
-	return nil
+	return hw.Reset(adapterID)
 }
 
 func GetAdapter(adapterID string) (*adapter.Adapter1, error) {
@@ -26,4 +21,8 @@ func GetAdapter(adapterID string) (*adapter.Adapter1, error) {
 
 func GetDefaultAdapter() (*adapter.Adapter1, error) {
 	return adapter.GetDefaultAdapter()
+}
+
+func GetDefaultAdapterID() string {
+	return adapter.GetDefaultAdapterID()
 }

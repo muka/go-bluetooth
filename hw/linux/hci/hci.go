@@ -1,4 +1,4 @@
-package linux
+package hci
 
 import "github.com/muka/ble/linux/hci/socket"
 

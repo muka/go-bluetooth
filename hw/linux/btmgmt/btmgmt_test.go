@@ -5,7 +5,7 @@ import log "github.com/sirupsen/logrus"
 
 func TestGetAdapters(t *testing.T) {
 
-	log.SetLevel(log.DebugLevel)
+	log.SetLevel(log.TraceLevel)
 
 	list, err := GetAdapters()
 	if err != nil {
