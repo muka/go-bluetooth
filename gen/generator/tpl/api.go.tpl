@@ -52,7 +52,7 @@ type {{.InterfaceName}} struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
 	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager	
+	objectManager       *bluez.ObjectManager
 	Properties 				*{{.InterfaceName}}Properties
 }
 
@@ -72,6 +72,22 @@ func (p *{{.InterfaceName}}Properties) Lock() {
 func (p *{{.InterfaceName}}Properties) Unlock() {
 	p.lock.Unlock()
 }
+
+{{ range .Properties }}
+// Set{{.Property.Name}} set {{.Property.Name}} value
+func (a *{{$InterfaceName}}) Set{{.Property.Name}}(v {{.RawType}}) error {
+	return a.SetProperty("{{.Property.Name}}", v)
+}
+
+// Get{{.Property.Name}} get {{.Property.Name}} value
+func (a *{{$InterfaceName}}) Get{{.Property.Name}}() ({{.RawType}}, error) {
+	v, err := a.GetProperty("{{.Property.Name}}")
+	if err != nil {
+		return {{.RawTypeInitializer}}, err
+	}
+	return v.Value().({{.RawType}}), nil
+}
+{{end}}
 
 // Close the connection
 func (a *{{.InterfaceName}}) Close() {

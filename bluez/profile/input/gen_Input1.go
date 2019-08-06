@@ -61,7 +61,7 @@ type Input1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
 	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager	
+	objectManager       *bluez.ObjectManager
 	Properties 				*Input1Properties
 }
 
@@ -95,6 +95,22 @@ func (p *Input1Properties) Lock() {
 func (p *Input1Properties) Unlock() {
 	p.lock.Unlock()
 }
+
+
+// SetReconnectMode set ReconnectMode value
+func (a *Input1) SetReconnectMode(v string) error {
+	return a.SetProperty("ReconnectMode", v)
+}
+
+// GetReconnectMode get ReconnectMode value
+func (a *Input1) GetReconnectMode() (string, error) {
+	v, err := a.GetProperty("ReconnectMode")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
 
 // Close the connection
 func (a *Input1) Close() {

@@ -15,19 +15,17 @@
 
 package gatt
 
-
-
 import (
-  "sync"
-  "github.com/muka/go-bluetooth/bluez"
-  "reflect"
-  "github.com/fatih/structs"
-  "github.com/muka/go-bluetooth/util"
-  "github.com/godbus/dbus"
+	"reflect"
+	"sync"
+
+	"github.com/fatih/structs"
+	"github.com/godbus/dbus"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var GattDescriptor1Interface = "org.bluez.GattDescriptor1"
-
 
 // NewGattDescriptor1 create a new instance of GattDescriptor1
 //
@@ -43,57 +41,55 @@ func NewGattDescriptor1(objectPath dbus.ObjectPath) (*GattDescriptor1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
+
 	a.Properties = new(GattDescriptor1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return a, nil
 }
-
 
 // GattDescriptor1 Characteristic Descriptors hierarchy
 // Local or remote GATT characteristic descriptors hierarchy.
 type GattDescriptor1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
+	client              *bluez.Client
+	propertiesSignal    chan *dbus.Signal
 	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager	
-	Properties 				*GattDescriptor1Properties
+	objectManager       *bluez.ObjectManager
+	Properties          *GattDescriptor1Properties
 }
 
 // GattDescriptor1Properties contains the exposed properties of an interface
 type GattDescriptor1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// Characteristic Object path of the GATT characteristic the descriptor
-  // belongs to.
-	Characteristic dbus.ObjectPath
-
-	// Value The cached value of the descriptor. This property
-  // gets updated only after a successful read request, upon
-  // which a PropertiesChanged signal will be emitted.
-	Value []byte `dbus:"emit"`
-
-	// Flags Defines how the descriptor value can be used.
-  // Possible values:
-  // "read"
-  // "write"
-  // "encrypt-read"
-  // "encrypt-write"
-  // "encrypt-authenticated-read"
-  // "encrypt-authenticated-write"
-  // "secure-read" (Server Only)
-  // "secure-write" (Server Only)
-  // "authorize"
-	Flags []string
-
 	// UUID 128-bit descriptor UUID.
 	UUID string
 
+	// Characteristic Object path of the GATT characteristic the descriptor
+	// belongs to.
+	Characteristic dbus.ObjectPath
+
+	// Value The cached value of the descriptor. This property
+	// gets updated only after a successful read request, upon
+	// which a PropertiesChanged signal will be emitted.
+	Value []byte `dbus:"emit"`
+
+	// Flags Defines how the descriptor value can be used.
+	// Possible values:
+	// "read"
+	// "write"
+	// "encrypt-read"
+	// "encrypt-write"
+	// "encrypt-authenticated-read"
+	// "encrypt-authenticated-write"
+	// "secure-read" (Server Only)
+	// "secure-write" (Server Only)
+	// "authorize"
+	Flags []string
 }
 
 func (p *GattDescriptor1Properties) Lock() {
@@ -104,11 +100,67 @@ func (p *GattDescriptor1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
+// SetUUID set UUID value
+func (a *GattDescriptor1) SetUUID(v string) error {
+	return a.SetProperty("UUID", v)
+}
+
+// GetUUID get UUID value
+func (a *GattDescriptor1) GetUUID() (string, error) {
+	v, err := a.GetProperty("UUID")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+// SetCharacteristic set Characteristic value
+func (a *GattDescriptor1) SetCharacteristic(v dbus.ObjectPath) error {
+	return a.SetProperty("Characteristic", v)
+}
+
+// GetCharacteristic get Characteristic value
+func (a *GattDescriptor1) GetCharacteristic() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Characteristic")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
+}
+
+// SetValue set Value value
+func (a *GattDescriptor1) SetValue(v []byte) error {
+	return a.SetProperty("Value", v)
+}
+
+// GetValue get Value value
+func (a *GattDescriptor1) GetValue() ([]byte, error) {
+	v, err := a.GetProperty("Value")
+	if err != nil {
+		return []byte{}, err
+	}
+	return v.Value().([]byte), nil
+}
+
+// SetFlags set Flags value
+func (a *GattDescriptor1) SetFlags(v []string) error {
+	return a.SetProperty("Flags", v)
+}
+
+// GetFlags get Flags value
+func (a *GattDescriptor1) GetFlags() ([]string, error) {
+	v, err := a.GetProperty("Flags")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
+}
+
 // Close the connection
 func (a *GattDescriptor1) Close() {
-	
+
 	a.unregisterPropertiesSignal()
-	
+
 	a.client.Disconnect()
 }
 
@@ -152,7 +204,6 @@ func (a *GattDescriptor1) GetObjectManagerSignal() (chan *dbus.Signal, func(), e
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a GattDescriptor1Properties to map
 func (a *GattDescriptor1Properties) ToMap() (map[string]interface{}, error) {
@@ -288,9 +339,6 @@ func (a *GattDescriptor1) UnwatchProperties(ch chan *bluez.PropertyChanged) erro
 	return nil
 }
 
-
-
-
 //ReadValue Issues a request to read the value of the
 // characteristic and returns the value if the
 // operation was successful.
@@ -303,10 +351,10 @@ func (a *GattDescriptor1) UnwatchProperties(ch chan *bluez.PropertyChanged) erro
 // org.bluez.Error.NotAuthorized
 // org.bluez.Error.NotSupported
 func (a *GattDescriptor1) ReadValue(flags map[string]interface{}) ([]byte, error) {
-	
+
 	var val0 []byte
 	err := a.client.Call("ReadValue", 0, flags).Store(&val0)
-	return val0, err	
+	return val0, err
 }
 
 //WriteValue Issues a request to write the value of the
@@ -324,8 +372,7 @@ func (a *GattDescriptor1) ReadValue(flags map[string]interface{}) ([]byte, error
 // org.bluez.Error.NotAuthorized
 // org.bluez.Error.NotSupported
 func (a *GattDescriptor1) WriteValue(value []byte, flags map[string]interface{}) error {
-	
-	return a.client.Call("WriteValue", 0, value, flags).Store()
-	
-}
 
+	return a.client.Call("WriteValue", 0, value, flags).Store()
+
+}

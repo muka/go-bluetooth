@@ -87,16 +87,13 @@ type LEAdvertisingManager1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
 	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager	
+	objectManager       *bluez.ObjectManager
 	Properties 				*LEAdvertisingManager1Properties
 }
 
 // LEAdvertisingManager1Properties contains the exposed properties of an interface
 type LEAdvertisingManager1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
-	// ActiveInstances Number of active advertising instances.
-	ActiveInstances byte
 
 	// SupportedInstances Number of available advertising instances.
 	SupportedInstances byte
@@ -107,6 +104,9 @@ type LEAdvertisingManager1Properties struct {
   // "local-name"
 	SupportedIncludes []string
 
+	// ActiveInstances Number of active advertising instances.
+	ActiveInstances byte
+
 }
 
 func (p *LEAdvertisingManager1Properties) Lock() {
@@ -116,6 +116,50 @@ func (p *LEAdvertisingManager1Properties) Lock() {
 func (p *LEAdvertisingManager1Properties) Unlock() {
 	p.lock.Unlock()
 }
+
+
+// SetSupportedInstances set SupportedInstances value
+func (a *LEAdvertisingManager1) SetSupportedInstances(v byte) error {
+	return a.SetProperty("SupportedInstances", v)
+}
+
+// GetSupportedInstances get SupportedInstances value
+func (a *LEAdvertisingManager1) GetSupportedInstances() (byte, error) {
+	v, err := a.GetProperty("SupportedInstances")
+	if err != nil {
+		return []uint8{}, err
+	}
+	return v.Value().(byte), nil
+}
+
+// SetSupportedIncludes set SupportedIncludes value
+func (a *LEAdvertisingManager1) SetSupportedIncludes(v []string) error {
+	return a.SetProperty("SupportedIncludes", v)
+}
+
+// GetSupportedIncludes get SupportedIncludes value
+func (a *LEAdvertisingManager1) GetSupportedIncludes() ([]string, error) {
+	v, err := a.GetProperty("SupportedIncludes")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
+}
+
+// SetActiveInstances set ActiveInstances value
+func (a *LEAdvertisingManager1) SetActiveInstances(v byte) error {
+	return a.SetProperty("ActiveInstances", v)
+}
+
+// GetActiveInstances get ActiveInstances value
+func (a *LEAdvertisingManager1) GetActiveInstances() (byte, error) {
+	v, err := a.GetProperty("ActiveInstances")
+	if err != nil {
+		return []uint8{}, err
+	}
+	return v.Value().(byte), nil
+}
+
 
 // Close the connection
 func (a *LEAdvertisingManager1) Close() {

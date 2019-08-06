@@ -61,7 +61,7 @@ type SimAccess1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
 	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager	
+	objectManager       *bluez.ObjectManager
 	Properties 				*SimAccess1Properties
 }
 
@@ -81,6 +81,22 @@ func (p *SimAccess1Properties) Lock() {
 func (p *SimAccess1Properties) Unlock() {
 	p.lock.Unlock()
 }
+
+
+// SetConnected set Connected value
+func (a *SimAccess1) SetConnected(v bool) error {
+	return a.SetProperty("Connected", v)
+}
+
+// GetConnected get Connected value
+func (a *SimAccess1) GetConnected() (bool, error) {
+	v, err := a.GetProperty("Connected")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
 
 // Close the connection
 func (a *SimAccess1) Close() {

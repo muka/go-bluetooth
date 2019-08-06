@@ -61,7 +61,7 @@ type Battery1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
 	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager	
+	objectManager       *bluez.ObjectManager
 	Properties 				*Battery1Properties
 }
 
@@ -81,6 +81,22 @@ func (p *Battery1Properties) Lock() {
 func (p *Battery1Properties) Unlock() {
 	p.lock.Unlock()
 }
+
+
+// SetPercentage set Percentage value
+func (a *Battery1) SetPercentage(v byte) error {
+	return a.SetProperty("Percentage", v)
+}
+
+// GetPercentage get Percentage value
+func (a *Battery1) GetPercentage() (byte, error) {
+	v, err := a.GetProperty("Percentage")
+	if err != nil {
+		return []uint8{}, err
+	}
+	return v.Value().(byte), nil
+}
+
 
 // Close the connection
 func (a *Battery1) Close() {

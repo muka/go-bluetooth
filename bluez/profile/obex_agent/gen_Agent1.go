@@ -62,7 +62,7 @@ type Agent1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
 	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager	
+	objectManager       *bluez.ObjectManager
 	Properties 				*Agent1Properties
 }
 
@@ -79,6 +79,8 @@ func (p *Agent1Properties) Lock() {
 func (p *Agent1Properties) Unlock() {
 	p.lock.Unlock()
 }
+
+
 
 // Close the connection
 func (a *Agent1) Close() {

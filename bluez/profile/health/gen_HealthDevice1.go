@@ -61,7 +61,7 @@ type HealthDevice1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
 	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager	
+	objectManager       *bluez.ObjectManager
 	Properties 				*HealthDevice1Properties
 }
 
@@ -84,6 +84,22 @@ func (p *HealthDevice1Properties) Lock() {
 func (p *HealthDevice1Properties) Unlock() {
 	p.lock.Unlock()
 }
+
+
+// SetMainChannel set MainChannel value
+func (a *HealthDevice1) SetMainChannel(v dbus.ObjectPath) error {
+	return a.SetProperty("MainChannel", v)
+}
+
+// GetMainChannel get MainChannel value
+func (a *HealthDevice1) GetMainChannel() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("MainChannel")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
+}
+
 
 // Close the connection
 func (a *HealthDevice1) Close() {

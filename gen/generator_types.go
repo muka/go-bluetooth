@@ -31,6 +31,8 @@ type InterfacesDoc struct {
 
 type PropertyDoc struct {
 	Property
+	RawType            string
+	RawTypeInitializer string
 }
 
 type ApiGroupDoc struct {

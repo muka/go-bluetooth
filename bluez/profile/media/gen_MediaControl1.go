@@ -85,7 +85,7 @@ type MediaControl1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
 	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager	
+	objectManager       *bluez.ObjectManager
 	Properties 				*MediaControl1Properties
 }
 
@@ -108,6 +108,36 @@ func (p *MediaControl1Properties) Lock() {
 func (p *MediaControl1Properties) Unlock() {
 	p.lock.Unlock()
 }
+
+
+// SetConnected set Connected value
+func (a *MediaControl1) SetConnected(v bool) error {
+	return a.SetProperty("Connected", v)
+}
+
+// GetConnected get Connected value
+func (a *MediaControl1) GetConnected() (bool, error) {
+	v, err := a.GetProperty("Connected")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+// SetPlayer set Player value
+func (a *MediaControl1) SetPlayer(v dbus.ObjectPath) error {
+	return a.SetProperty("Player", v)
+}
+
+// GetPlayer get Player value
+func (a *MediaControl1) GetPlayer() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Player")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
+}
+
 
 // Close the connection
 func (a *MediaControl1) Close() {

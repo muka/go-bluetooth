@@ -61,19 +61,13 @@ type MediaTransport1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
 	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager	
+	objectManager       *bluez.ObjectManager
 	Properties 				*MediaTransport1Properties
 }
 
 // MediaTransport1Properties contains the exposed properties of an interface
 type MediaTransport1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
-	// Volume Optional. Indicates volume level of the transport,
-  // this property is only writeable when the transport was
-  // acquired by the sender.
-  // Possible Values: 0-127
-	Volume uint16
 
 	// Device Device object which the transport is connected to.
 	Device dbus.ObjectPath
@@ -102,6 +96,12 @@ type MediaTransport1Properties struct {
   // acquired by the sender.
 	Delay uint16
 
+	// Volume Optional. Indicates volume level of the transport,
+  // this property is only writeable when the transport was
+  // acquired by the sender.
+  // Possible Values: 0-127
+	Volume uint16
+
 }
 
 func (p *MediaTransport1Properties) Lock() {
@@ -111,6 +111,106 @@ func (p *MediaTransport1Properties) Lock() {
 func (p *MediaTransport1Properties) Unlock() {
 	p.lock.Unlock()
 }
+
+
+// SetDevice set Device value
+func (a *MediaTransport1) SetDevice(v dbus.ObjectPath) error {
+	return a.SetProperty("Device", v)
+}
+
+// GetDevice get Device value
+func (a *MediaTransport1) GetDevice() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Device")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
+}
+
+// SetUUID set UUID value
+func (a *MediaTransport1) SetUUID(v string) error {
+	return a.SetProperty("UUID", v)
+}
+
+// GetUUID get UUID value
+func (a *MediaTransport1) GetUUID() (string, error) {
+	v, err := a.GetProperty("UUID")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+// SetCodec set Codec value
+func (a *MediaTransport1) SetCodec(v byte) error {
+	return a.SetProperty("Codec", v)
+}
+
+// GetCodec get Codec value
+func (a *MediaTransport1) GetCodec() (byte, error) {
+	v, err := a.GetProperty("Codec")
+	if err != nil {
+		return []uint8{}, err
+	}
+	return v.Value().(byte), nil
+}
+
+// SetConfiguration set Configuration value
+func (a *MediaTransport1) SetConfiguration(v []byte) error {
+	return a.SetProperty("Configuration", v)
+}
+
+// GetConfiguration get Configuration value
+func (a *MediaTransport1) GetConfiguration() ([]byte, error) {
+	v, err := a.GetProperty("Configuration")
+	if err != nil {
+		return []byte{}, err
+	}
+	return v.Value().([]byte), nil
+}
+
+// SetState set State value
+func (a *MediaTransport1) SetState(v string) error {
+	return a.SetProperty("State", v)
+}
+
+// GetState get State value
+func (a *MediaTransport1) GetState() (string, error) {
+	v, err := a.GetProperty("State")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+// SetDelay set Delay value
+func (a *MediaTransport1) SetDelay(v uint16) error {
+	return a.SetProperty("Delay", v)
+}
+
+// GetDelay get Delay value
+func (a *MediaTransport1) GetDelay() (uint16, error) {
+	v, err := a.GetProperty("Delay")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
+
+// SetVolume set Volume value
+func (a *MediaTransport1) SetVolume(v uint16) error {
+	return a.SetProperty("Volume", v)
+}
+
+// GetVolume get Volume value
+func (a *MediaTransport1) GetVolume() (uint16, error) {
+	v, err := a.GetProperty("Volume")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
+
 
 // Close the connection
 func (a *MediaTransport1) Close() {

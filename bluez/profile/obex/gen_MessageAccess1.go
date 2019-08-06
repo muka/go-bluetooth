@@ -61,7 +61,7 @@ type MessageAccess1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
 	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager	
+	objectManager       *bluez.ObjectManager
 	Properties 				*MessageAccess1Properties
 }
 
@@ -78,6 +78,8 @@ func (p *MessageAccess1Properties) Lock() {
 func (p *MessageAccess1Properties) Unlock() {
 	p.lock.Unlock()
 }
+
+
 
 // Close the connection
 func (a *MessageAccess1) Close() {

@@ -62,19 +62,13 @@ type GattCharacteristic1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
 	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager	
+	objectManager       *bluez.ObjectManager
 	Properties 				*GattCharacteristic1Properties
 }
 
 // GattCharacteristic1Properties contains the exposed properties of an interface
 type GattCharacteristic1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
-	// Descriptors 
-	Descriptors []dbus.ObjectPath
-
-	// UUID 128-bit characteristic UUID.
-	UUID string
 
 	// Service Object path of the GATT service the characteristic
   // belongs to.
@@ -128,6 +122,12 @@ type GattCharacteristic1Properties struct {
   // "authorize"
 	Flags []string
 
+	// Descriptors 
+	Descriptors []dbus.ObjectPath
+
+	// UUID 128-bit characteristic UUID.
+	UUID string
+
 }
 
 func (p *GattCharacteristic1Properties) Lock() {
@@ -137,6 +137,120 @@ func (p *GattCharacteristic1Properties) Lock() {
 func (p *GattCharacteristic1Properties) Unlock() {
 	p.lock.Unlock()
 }
+
+
+// SetService set Service value
+func (a *GattCharacteristic1) SetService(v dbus.ObjectPath) error {
+	return a.SetProperty("Service", v)
+}
+
+// GetService get Service value
+func (a *GattCharacteristic1) GetService() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Service")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
+}
+
+// SetValue set Value value
+func (a *GattCharacteristic1) SetValue(v []byte) error {
+	return a.SetProperty("Value", v)
+}
+
+// GetValue get Value value
+func (a *GattCharacteristic1) GetValue() ([]byte, error) {
+	v, err := a.GetProperty("Value")
+	if err != nil {
+		return []byte{}, err
+	}
+	return v.Value().([]byte), nil
+}
+
+// SetWriteAcquired set WriteAcquired value
+func (a *GattCharacteristic1) SetWriteAcquired(v bool) error {
+	return a.SetProperty("WriteAcquired", v)
+}
+
+// GetWriteAcquired get WriteAcquired value
+func (a *GattCharacteristic1) GetWriteAcquired() (bool, error) {
+	v, err := a.GetProperty("WriteAcquired")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+// SetNotifyAcquired set NotifyAcquired value
+func (a *GattCharacteristic1) SetNotifyAcquired(v bool) error {
+	return a.SetProperty("NotifyAcquired", v)
+}
+
+// GetNotifyAcquired get NotifyAcquired value
+func (a *GattCharacteristic1) GetNotifyAcquired() (bool, error) {
+	v, err := a.GetProperty("NotifyAcquired")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+// SetNotifying set Notifying value
+func (a *GattCharacteristic1) SetNotifying(v bool) error {
+	return a.SetProperty("Notifying", v)
+}
+
+// GetNotifying get Notifying value
+func (a *GattCharacteristic1) GetNotifying() (bool, error) {
+	v, err := a.GetProperty("Notifying")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+// SetFlags set Flags value
+func (a *GattCharacteristic1) SetFlags(v []string) error {
+	return a.SetProperty("Flags", v)
+}
+
+// GetFlags get Flags value
+func (a *GattCharacteristic1) GetFlags() ([]string, error) {
+	v, err := a.GetProperty("Flags")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
+}
+
+// SetDescriptors set Descriptors value
+func (a *GattCharacteristic1) SetDescriptors(v []dbus.ObjectPath) error {
+	return a.SetProperty("Descriptors", v)
+}
+
+// GetDescriptors get Descriptors value
+func (a *GattCharacteristic1) GetDescriptors() ([]dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Descriptors")
+	if err != nil {
+		return []dbus.ObjectPath{}, err
+	}
+	return v.Value().([]dbus.ObjectPath), nil
+}
+
+// SetUUID set UUID value
+func (a *GattCharacteristic1) SetUUID(v string) error {
+	return a.SetProperty("UUID", v)
+}
+
+// GetUUID get UUID value
+func (a *GattCharacteristic1) GetUUID() (string, error) {
+	v, err := a.GetProperty("UUID")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
 
 // Close the connection
 func (a *GattCharacteristic1) Close() {

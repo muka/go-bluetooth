@@ -85,13 +85,26 @@ type Adapter1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
 	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager	
+	objectManager       *bluez.ObjectManager
 	Properties 				*Adapter1Properties
 }
 
 // Adapter1Properties contains the exposed properties of an interface
 type Adapter1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
+
+	// Class The Bluetooth class of device.
+  // This property represents the value that is either
+  // automatically configured by DMI/ACPI information
+  // or provided as static configuration.
+	Class uint32
+
+	// PairableTimeout The pairable timeout in seconds. A value of zero
+  // means that the timeout is disabled and it will stay in
+  // pairable mode forever.
+  // The default value for pairable timeout should be
+  // disabled (value 0).
+	PairableTimeout uint32
 
 	// DiscoverableTimeout The discoverable timeout in seconds. A value of zero
   // means that the timeout is disabled and it will stay in
@@ -100,16 +113,24 @@ type Adapter1Properties struct {
   // be 180 seconds (3 minutes).
 	DiscoverableTimeout uint32
 
-	// Discovering Indicates that a device discovery procedure is active.
-	Discovering bool
-
-	// UUIDs List of 128-bit UUIDs that represents the available
-  // local services.
-	UUIDs []string
-
 	// Modalias Local Device ID information in modalias format
   // used by the kernel and udev.
 	Modalias string
+
+	// Alias The Bluetooth friendly name. This value can be
+  // changed.
+  // In case no alias is set, it will return the system
+  // provided name. Setting an empty string as alias will
+  // convert it back to the system provided name.
+  // When resetting the alias with an empty string, the
+  // property will default back to system name.
+  // On a well configured system, this property never
+  // needs to be changed since it defaults to the system
+  // name and provides the pretty hostname. Only if the
+  // local name needs to be different from the pretty
+  // hostname, this property should be used as last
+  // resort.
+	Alias string
 
 	// AddressType The Bluetooth  Address Type. For dual-mode and BR/EDR
   // only adapter this defaults to "public". Single mode LE
@@ -120,6 +141,12 @@ type Adapter1Properties struct {
   // "public" - Public address
   // "random" - Random address
 	AddressType string
+
+	// Name The Bluetooth system name (pretty hostname).
+  // This property is either a static system default
+  // or controlled by an external daemon providing
+  // access to the pretty hostname configuration.
+	Name string
 
 	// Powered Switch an adapter on or off. This will also set the
   // appropriate connectable state of the controller.
@@ -143,13 +170,6 @@ type Adapter1Properties struct {
   // For any new adapter this settings defaults to false.
 	Discoverable bool
 
-	// PairableTimeout The pairable timeout in seconds. A value of zero
-  // means that the timeout is disabled and it will stay in
-  // pairable mode forever.
-  // The default value for pairable timeout should be
-  // disabled (value 0).
-	PairableTimeout uint32
-
 	// Pairable Switch an adapter to pairable or non-pairable. This is
   // a global setting and should only be used by the
   // settings application.
@@ -158,35 +178,15 @@ type Adapter1Properties struct {
   // For any new adapter this settings defaults to true.
 	Pairable bool
 
+	// Discovering Indicates that a device discovery procedure is active.
+	Discovering bool
+
+	// UUIDs List of 128-bit UUIDs that represents the available
+  // local services.
+	UUIDs []string
+
 	// Address The Bluetooth device address.
 	Address string
-
-	// Name The Bluetooth system name (pretty hostname).
-  // This property is either a static system default
-  // or controlled by an external daemon providing
-  // access to the pretty hostname configuration.
-	Name string
-
-	// Alias The Bluetooth friendly name. This value can be
-  // changed.
-  // In case no alias is set, it will return the system
-  // provided name. Setting an empty string as alias will
-  // convert it back to the system provided name.
-  // When resetting the alias with an empty string, the
-  // property will default back to system name.
-  // On a well configured system, this property never
-  // needs to be changed since it defaults to the system
-  // name and provides the pretty hostname. Only if the
-  // local name needs to be different from the pretty
-  // hostname, this property should be used as last
-  // resort.
-	Alias string
-
-	// Class The Bluetooth class of device.
-  // This property represents the value that is either
-  // automatically configured by DMI/ACPI information
-  // or provided as static configuration.
-	Class uint32
 
 }
 
@@ -197,6 +197,190 @@ func (p *Adapter1Properties) Lock() {
 func (p *Adapter1Properties) Unlock() {
 	p.lock.Unlock()
 }
+
+
+// SetClass set Class value
+func (a *Adapter1) SetClass(v uint32) error {
+	return a.SetProperty("Class", v)
+}
+
+// GetClass get Class value
+func (a *Adapter1) GetClass() (uint32, error) {
+	v, err := a.GetProperty("Class")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
+
+// SetPairableTimeout set PairableTimeout value
+func (a *Adapter1) SetPairableTimeout(v uint32) error {
+	return a.SetProperty("PairableTimeout", v)
+}
+
+// GetPairableTimeout get PairableTimeout value
+func (a *Adapter1) GetPairableTimeout() (uint32, error) {
+	v, err := a.GetProperty("PairableTimeout")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
+
+// SetDiscoverableTimeout set DiscoverableTimeout value
+func (a *Adapter1) SetDiscoverableTimeout(v uint32) error {
+	return a.SetProperty("DiscoverableTimeout", v)
+}
+
+// GetDiscoverableTimeout get DiscoverableTimeout value
+func (a *Adapter1) GetDiscoverableTimeout() (uint32, error) {
+	v, err := a.GetProperty("DiscoverableTimeout")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
+
+// SetModalias set Modalias value
+func (a *Adapter1) SetModalias(v string) error {
+	return a.SetProperty("Modalias", v)
+}
+
+// GetModalias get Modalias value
+func (a *Adapter1) GetModalias() (string, error) {
+	v, err := a.GetProperty("Modalias")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+// SetAlias set Alias value
+func (a *Adapter1) SetAlias(v string) error {
+	return a.SetProperty("Alias", v)
+}
+
+// GetAlias get Alias value
+func (a *Adapter1) GetAlias() (string, error) {
+	v, err := a.GetProperty("Alias")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+// SetAddressType set AddressType value
+func (a *Adapter1) SetAddressType(v string) error {
+	return a.SetProperty("AddressType", v)
+}
+
+// GetAddressType get AddressType value
+func (a *Adapter1) GetAddressType() (string, error) {
+	v, err := a.GetProperty("AddressType")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+// SetName set Name value
+func (a *Adapter1) SetName(v string) error {
+	return a.SetProperty("Name", v)
+}
+
+// GetName get Name value
+func (a *Adapter1) GetName() (string, error) {
+	v, err := a.GetProperty("Name")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+// SetPowered set Powered value
+func (a *Adapter1) SetPowered(v bool) error {
+	return a.SetProperty("Powered", v)
+}
+
+// GetPowered get Powered value
+func (a *Adapter1) GetPowered() (bool, error) {
+	v, err := a.GetProperty("Powered")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+// SetDiscoverable set Discoverable value
+func (a *Adapter1) SetDiscoverable(v bool) error {
+	return a.SetProperty("Discoverable", v)
+}
+
+// GetDiscoverable get Discoverable value
+func (a *Adapter1) GetDiscoverable() (bool, error) {
+	v, err := a.GetProperty("Discoverable")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+// SetPairable set Pairable value
+func (a *Adapter1) SetPairable(v bool) error {
+	return a.SetProperty("Pairable", v)
+}
+
+// GetPairable get Pairable value
+func (a *Adapter1) GetPairable() (bool, error) {
+	v, err := a.GetProperty("Pairable")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+// SetDiscovering set Discovering value
+func (a *Adapter1) SetDiscovering(v bool) error {
+	return a.SetProperty("Discovering", v)
+}
+
+// GetDiscovering get Discovering value
+func (a *Adapter1) GetDiscovering() (bool, error) {
+	v, err := a.GetProperty("Discovering")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+// SetUUIDs set UUIDs value
+func (a *Adapter1) SetUUIDs(v []string) error {
+	return a.SetProperty("UUIDs", v)
+}
+
+// GetUUIDs get UUIDs value
+func (a *Adapter1) GetUUIDs() ([]string, error) {
+	v, err := a.GetProperty("UUIDs")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
+}
+
+// SetAddress set Address value
+func (a *Adapter1) SetAddress(v string) error {
+	return a.SetProperty("Address", v)
+}
+
+// GetAddress get Address value
+func (a *Adapter1) GetAddress() (string, error) {
+	v, err := a.GetProperty("Address")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
 
 // Close the connection
 func (a *Adapter1) Close() {

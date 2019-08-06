@@ -65,7 +65,7 @@ type GattProfile1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
 	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager	
+	objectManager       *bluez.ObjectManager
 	Properties 				*GattProfile1Properties
 }
 
@@ -85,6 +85,22 @@ func (p *GattProfile1Properties) Lock() {
 func (p *GattProfile1Properties) Unlock() {
 	p.lock.Unlock()
 }
+
+
+// SetUUIDs set UUIDs value
+func (a *GattProfile1) SetUUIDs(v []string) error {
+	return a.SetProperty("UUIDs", v)
+}
+
+// GetUUIDs get UUIDs value
+func (a *GattProfile1) GetUUIDs() ([]string, error) {
+	v, err := a.GetProperty("UUIDs")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
+}
+
 
 // Close the connection
 func (a *GattProfile1) Close() {

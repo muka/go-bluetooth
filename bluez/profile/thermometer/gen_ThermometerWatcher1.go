@@ -62,7 +62,7 @@ type ThermometerWatcher1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
 	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager	
+	objectManager       *bluez.ObjectManager
 	Properties 				*ThermometerWatcher1Properties
 }
 
@@ -79,6 +79,8 @@ func (p *ThermometerWatcher1Properties) Lock() {
 func (p *ThermometerWatcher1Properties) Unlock() {
 	p.lock.Unlock()
 }
+
+
 
 // Close the connection
 func (a *ThermometerWatcher1) Close() {

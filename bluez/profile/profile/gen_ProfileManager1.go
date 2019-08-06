@@ -61,7 +61,7 @@ type ProfileManager1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
 	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager	
+	objectManager       *bluez.ObjectManager
 	Properties 				*ProfileManager1Properties
 }
 
@@ -78,6 +78,8 @@ func (p *ProfileManager1Properties) Lock() {
 func (p *ProfileManager1Properties) Unlock() {
 	p.lock.Unlock()
 }
+
+
 
 // Close the connection
 func (a *ProfileManager1) Close() {

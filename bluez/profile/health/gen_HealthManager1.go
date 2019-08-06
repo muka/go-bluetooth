@@ -61,7 +61,7 @@ type HealthManager1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
 	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager	
+	objectManager       *bluez.ObjectManager
 	Properties 				*HealthManager1Properties
 }
 
@@ -78,6 +78,8 @@ func (p *HealthManager1Properties) Lock() {
 func (p *HealthManager1Properties) Unlock() {
 	p.lock.Unlock()
 }
+
+
 
 // Close the connection
 func (a *HealthManager1) Close() {

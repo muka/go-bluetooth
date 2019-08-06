@@ -61,7 +61,7 @@ type FileTransfer struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
 	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager	
+	objectManager       *bluez.ObjectManager
 	Properties 				*FileTransferProperties
 }
 
@@ -78,6 +78,8 @@ func (p *FileTransferProperties) Lock() {
 func (p *FileTransferProperties) Unlock() {
 	p.lock.Unlock()
 }
+
+
 
 // Close the connection
 func (a *FileTransfer) Close() {

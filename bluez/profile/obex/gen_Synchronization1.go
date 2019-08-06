@@ -61,7 +61,7 @@ type Synchronization1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
 	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager	
+	objectManager       *bluez.ObjectManager
 	Properties 				*Synchronization1Properties
 }
 
@@ -78,6 +78,8 @@ func (p *Synchronization1Properties) Lock() {
 func (p *Synchronization1Properties) Unlock() {
 	p.lock.Unlock()
 }
+
+
 
 // Close the connection
 func (a *Synchronization1) Close() {

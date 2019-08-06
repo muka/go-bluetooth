@@ -61,7 +61,7 @@ type NetworkServer1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
 	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager	
+	objectManager       *bluez.ObjectManager
 	Properties 				*NetworkServer1Properties
 }
 
@@ -78,6 +78,8 @@ func (p *NetworkServer1Properties) Lock() {
 func (p *NetworkServer1Properties) Unlock() {
 	p.lock.Unlock()
 }
+
+
 
 // Close the connection
 func (a *NetworkServer1) Close() {

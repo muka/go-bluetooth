@@ -62,7 +62,7 @@ type MediaEndpoint1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
 	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager	
+	objectManager       *bluez.ObjectManager
 	Properties 				*MediaEndpoint1Properties
 }
 
@@ -79,6 +79,8 @@ func (p *MediaEndpoint1Properties) Lock() {
 func (p *MediaEndpoint1Properties) Unlock() {
 	p.lock.Unlock()
 }
+
+
 
 // Close the connection
 func (a *MediaEndpoint1) Close() {
