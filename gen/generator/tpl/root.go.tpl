@@ -14,5 +14,5 @@
 // limitations under the License.
 
 // {{.Name}}
-// {{.Description}}
+{{.Description}}
 package {{.Package}}

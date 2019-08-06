@@ -70,16 +70,6 @@ type PhonebookAccess1 struct {
 type PhonebookAccess1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// SecondaryCounter 128 bits secondary version counter.
-  // Possible values: 32-character hexadecimal such
-  // as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
-	SecondaryCounter string
-
-	// FixedImageSize Indicate support for fixed image size.
-  // Possible values: True if image is JPEG 300x300 pixels
-  // otherwise False.
-	FixedImageSize bool
-
 	// Folder Current folder.
 	Folder string
 
@@ -93,6 +83,16 @@ type PhonebookAccess1Properties struct {
   // as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
 	PrimaryCounter string
 
+	// SecondaryCounter 128 bits secondary version counter.
+  // Possible values: 32-character hexadecimal such
+  // as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
+	SecondaryCounter string
+
+	// FixedImageSize Indicate support for fixed image size.
+  // Possible values: True if image is JPEG 300x300 pixels
+  // otherwise False.
+	FixedImageSize bool
+
 }
 
 func (p *PhonebookAccess1Properties) Lock() {
@@ -103,34 +103,6 @@ func (p *PhonebookAccess1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-// SetSecondaryCounter set SecondaryCounter value
-func (a *PhonebookAccess1) SetSecondaryCounter(v string) error {
-	return a.SetProperty("SecondaryCounter", v)
-}
-
-// GetSecondaryCounter get SecondaryCounter value
-func (a *PhonebookAccess1) GetSecondaryCounter() (string, error) {
-	v, err := a.GetProperty("SecondaryCounter")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-// SetFixedImageSize set FixedImageSize value
-func (a *PhonebookAccess1) SetFixedImageSize(v bool) error {
-	return a.SetProperty("FixedImageSize", v)
-}
-
-// GetFixedImageSize get FixedImageSize value
-func (a *PhonebookAccess1) GetFixedImageSize() (bool, error) {
-	v, err := a.GetProperty("FixedImageSize")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
 
 // SetFolder set Folder value
 func (a *PhonebookAccess1) SetFolder(v string) error {
@@ -172,6 +144,34 @@ func (a *PhonebookAccess1) GetPrimaryCounter() (string, error) {
 		return "", err
 	}
 	return v.Value().(string), nil
+}
+
+// SetSecondaryCounter set SecondaryCounter value
+func (a *PhonebookAccess1) SetSecondaryCounter(v string) error {
+	return a.SetProperty("SecondaryCounter", v)
+}
+
+// GetSecondaryCounter get SecondaryCounter value
+func (a *PhonebookAccess1) GetSecondaryCounter() (string, error) {
+	v, err := a.GetProperty("SecondaryCounter")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+// SetFixedImageSize set FixedImageSize value
+func (a *PhonebookAccess1) SetFixedImageSize(v bool) error {
+	return a.SetProperty("FixedImageSize", v)
+}
+
+// GetFixedImageSize get FixedImageSize value
+func (a *PhonebookAccess1) GetFixedImageSize() (bool, error) {
+	v, err := a.GetProperty("FixedImageSize")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
 }
 
 

@@ -70,6 +70,13 @@ type MediaTransport1 struct {
 type MediaTransport1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
+	// State Indicates the state of the transport. Possible
+  // values are:
+  // "idle": not streaming
+  // "pending": streaming but not acquired
+  // "active": streaming and acquired
+	State string
+
 	// Delay Optional. Transport delay in 1/10 of millisecond, this
   // property is only writeable when the transport was
   // acquired by the sender.
@@ -96,13 +103,6 @@ type MediaTransport1Properties struct {
   // byte order must match.
 	Configuration []byte
 
-	// State Indicates the state of the transport. Possible
-  // values are:
-  // "idle": not streaming
-  // "pending": streaming but not acquired
-  // "active": streaming and acquired
-	State string
-
 }
 
 func (p *MediaTransport1Properties) Lock() {
@@ -113,6 +113,20 @@ func (p *MediaTransport1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
+
+// SetState set State value
+func (a *MediaTransport1) SetState(v string) error {
+	return a.SetProperty("State", v)
+}
+
+// GetState get State value
+func (a *MediaTransport1) GetState() (string, error) {
+	v, err := a.GetProperty("State")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
 
 // SetDelay set Delay value
 func (a *MediaTransport1) SetDelay(v uint16) error {
@@ -196,20 +210,6 @@ func (a *MediaTransport1) GetConfiguration() ([]byte, error) {
 		return []byte{}, err
 	}
 	return v.Value().([]byte), nil
-}
-
-// SetState set State value
-func (a *MediaTransport1) SetState(v string) error {
-	return a.SetProperty("State", v)
-}
-
-// GetState get State value
-func (a *MediaTransport1) GetState() (string, error) {
-	v, err := a.GetProperty("State")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
 }
 
 

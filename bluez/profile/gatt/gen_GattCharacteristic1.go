@@ -72,10 +72,6 @@ type GattCharacteristic1 struct {
 type GattCharacteristic1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// Service Object path of the GATT service the characteristic
-  // belongs to.
-	Service dbus.ObjectPath
-
 	// Value The cached value of the characteristic. This property
   // gets updated only after a successful read request and
   // when a notification or indication is received, upon
@@ -130,6 +126,10 @@ type GattCharacteristic1Properties struct {
 	// UUID 128-bit characteristic UUID.
 	UUID string
 
+	// Service Object path of the GATT service the characteristic
+  // belongs to.
+	Service dbus.ObjectPath
+
 }
 
 func (p *GattCharacteristic1Properties) Lock() {
@@ -140,20 +140,6 @@ func (p *GattCharacteristic1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-// SetService set Service value
-func (a *GattCharacteristic1) SetService(v dbus.ObjectPath) error {
-	return a.SetProperty("Service", v)
-}
-
-// GetService get Service value
-func (a *GattCharacteristic1) GetService() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Service")
-	if err != nil {
-		return dbus.ObjectPath(""), err
-	}
-	return v.Value().(dbus.ObjectPath), nil
-}
 
 // SetValue set Value value
 func (a *GattCharacteristic1) SetValue(v []byte) error {
@@ -251,6 +237,20 @@ func (a *GattCharacteristic1) GetUUID() (string, error) {
 		return "", err
 	}
 	return v.Value().(string), nil
+}
+
+// SetService set Service value
+func (a *GattCharacteristic1) SetService(v dbus.ObjectPath) error {
+	return a.SetProperty("Service", v)
+}
+
+// GetService get Service value
+func (a *GattCharacteristic1) GetService() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Service")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
 }
 
 
