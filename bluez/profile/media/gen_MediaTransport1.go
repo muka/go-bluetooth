@@ -1,4 +1,3 @@
-
 package media
 
 
@@ -18,7 +17,7 @@ var MediaTransport1Interface = "org.bluez.MediaTransport1"
 // NewMediaTransport1 create a new instance of MediaTransport1
 //
 // Args:
-// 	objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/fdX
+// - objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/fdX
 func NewMediaTransport1(objectPath dbus.ObjectPath) (*MediaTransport1, error) {
 	a := new(MediaTransport1)
 	a.client = bluez.NewClient(
@@ -55,22 +54,6 @@ type MediaTransport1 struct {
 type MediaTransport1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// Codec Assigned number of codec that the transport support.
-  // The values should match the profile specification which
-  // is indicated by the UUID.
-	Codec byte
-
-	// Configuration Configuration blob, it is used as it is so the size and
-  // byte order must match.
-	Configuration []byte
-
-	// State Indicates the state of the transport. Possible
-  // values are:
-  // "idle": not streaming
-  // "pending": streaming but not acquired
-  // "active": streaming and acquired
-	State string
-
 	// Delay Optional. Transport delay in 1/10 of millisecond, this
   // property is only writeable when the transport was
   // acquired by the sender.
@@ -88,6 +71,22 @@ type MediaTransport1Properties struct {
 	// UUID UUID of the profile which the transport is for.
 	UUID string
 
+	// Codec Assigned number of codec that the transport support.
+  // The values should match the profile specification which
+  // is indicated by the UUID.
+	Codec byte
+
+	// Configuration Configuration blob, it is used as it is so the size and
+  // byte order must match.
+	Configuration []byte
+
+	// State Indicates the state of the transport. Possible
+  // values are:
+  // "idle": not streaming
+  // "pending": streaming but not acquired
+  // "active": streaming and acquired
+	State string
+
 }
 
 func (p *MediaTransport1Properties) Lock() {
@@ -98,48 +97,6 @@ func (p *MediaTransport1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-// SetCodec set Codec value
-func (a *MediaTransport1) SetCodec(v byte) error {
-	return a.SetProperty("Codec", v)
-}
-
-// GetCodec get Codec value
-func (a *MediaTransport1) GetCodec() (byte, error) {
-	v, err := a.GetProperty("Codec")
-	if err != nil {
-		return byte(0), err
-	}
-	return v.Value().(byte), nil
-}
-
-// SetConfiguration set Configuration value
-func (a *MediaTransport1) SetConfiguration(v []byte) error {
-	return a.SetProperty("Configuration", v)
-}
-
-// GetConfiguration get Configuration value
-func (a *MediaTransport1) GetConfiguration() ([]byte, error) {
-	v, err := a.GetProperty("Configuration")
-	if err != nil {
-		return []byte{}, err
-	}
-	return v.Value().([]byte), nil
-}
-
-// SetState set State value
-func (a *MediaTransport1) SetState(v string) error {
-	return a.SetProperty("State", v)
-}
-
-// GetState get State value
-func (a *MediaTransport1) GetState() (string, error) {
-	v, err := a.GetProperty("State")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
 
 // SetDelay set Delay value
 func (a *MediaTransport1) SetDelay(v uint16) error {
@@ -191,6 +148,48 @@ func (a *MediaTransport1) SetUUID(v string) error {
 // GetUUID get UUID value
 func (a *MediaTransport1) GetUUID() (string, error) {
 	v, err := a.GetProperty("UUID")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+// SetCodec set Codec value
+func (a *MediaTransport1) SetCodec(v byte) error {
+	return a.SetProperty("Codec", v)
+}
+
+// GetCodec get Codec value
+func (a *MediaTransport1) GetCodec() (byte, error) {
+	v, err := a.GetProperty("Codec")
+	if err != nil {
+		return byte(0), err
+	}
+	return v.Value().(byte), nil
+}
+
+// SetConfiguration set Configuration value
+func (a *MediaTransport1) SetConfiguration(v []byte) error {
+	return a.SetProperty("Configuration", v)
+}
+
+// GetConfiguration get Configuration value
+func (a *MediaTransport1) GetConfiguration() ([]byte, error) {
+	v, err := a.GetProperty("Configuration")
+	if err != nil {
+		return []byte{}, err
+	}
+	return v.Value().([]byte), nil
+}
+
+// SetState set State value
+func (a *MediaTransport1) SetState(v string) error {
+	return a.SetProperty("State", v)
+}
+
+// GetState get State value
+func (a *MediaTransport1) GetState() (string, error) {
+	v, err := a.GetProperty("State")
 	if err != nil {
 		return "", err
 	}

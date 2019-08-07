@@ -1,4 +1,3 @@
-
 package sap
 
 
@@ -18,7 +17,7 @@ var SimAccess1Interface = "org.bluez.SimAccess1"
 // NewSimAccess1 create a new instance of SimAccess1
 //
 // Args:
-// 	objectPath: [variable prefix]/{hci0,hci1,...}
+// - objectPath: [variable prefix]/{hci0,hci1,...}
 func NewSimAccess1(objectPath dbus.ObjectPath) (*SimAccess1, error) {
 	a := new(SimAccess1)
 	a.client = bluez.NewClient(

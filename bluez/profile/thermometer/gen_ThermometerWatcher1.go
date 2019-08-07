@@ -1,4 +1,3 @@
-
 package thermometer
 
 
@@ -18,8 +17,8 @@ var ThermometerWatcher1Interface = "org.bluez.ThermometerWatcher1"
 // NewThermometerWatcher1 create a new instance of ThermometerWatcher1
 //
 // Args:
-// 	servicePath: unique name
-// 	objectPath: freely definable
+// - servicePath: unique name
+// - objectPath: freely definable
 func NewThermometerWatcher1(servicePath string, objectPath dbus.ObjectPath) (*ThermometerWatcher1, error) {
 	a := new(ThermometerWatcher1)
 	a.client = bluez.NewClient(

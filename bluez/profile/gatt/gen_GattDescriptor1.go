@@ -1,4 +1,3 @@
-// Local or remote GATT characteristic descriptors hierarchy.
 package gatt
 
 
@@ -18,7 +17,7 @@ var GattDescriptor1Interface = "org.bluez.GattDescriptor1"
 // NewGattDescriptor1 create a new instance of GattDescriptor1
 //
 // Args:
-// 	objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/serviceXX/charYYYY/descriptorZZZ
+// - objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/serviceXX/charYYYY/descriptorZZZ
 func NewGattDescriptor1(objectPath dbus.ObjectPath) (*GattDescriptor1, error) {
 	a := new(GattDescriptor1)
 	a.client = bluez.NewClient(

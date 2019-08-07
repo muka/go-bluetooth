@@ -1,4 +1,3 @@
-
 package obex_agent
 
 
@@ -18,8 +17,8 @@ var Agent1Interface = "org.bluez.obex.Agent1"
 // NewAgent1 create a new instance of Agent1
 //
 // Args:
-// 	servicePath: unique name
-// 	objectPath: freely definable
+// - servicePath: unique name
+// - objectPath: freely definable
 func NewAgent1(servicePath string, objectPath dbus.ObjectPath) (*Agent1, error) {
 	a := new(Agent1)
 	a.client = bluez.NewClient(

@@ -1,4 +1,3 @@
-
 package thermometer
 
 
@@ -18,7 +17,7 @@ var Thermometer1Interface = "org.bluez.Thermometer1"
 // NewThermometer1 create a new instance of Thermometer1
 //
 // Args:
-// 	objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX
+// - objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX
 func NewThermometer1(objectPath dbus.ObjectPath) (*Thermometer1, error) {
 	a := new(Thermometer1)
 	a.client = bluez.NewClient(
@@ -55,14 +54,6 @@ type Thermometer1 struct {
 type Thermometer1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// Maximum (optional) Defines the maximum value allowed for the interval
-  // between periodic measurements.
-	Maximum uint16
-
-	// Minimum (optional) Defines the minimum value allowed for the interval
-  // between periodic measurements.
-	Minimum uint16
-
 	// Intermediate True if the thermometer supports intermediate
   // measurement notifications.
 	Intermediate bool
@@ -75,6 +66,14 @@ type Thermometer1Properties struct {
   // be taken.
 	Interval uint16
 
+	// Maximum (optional) Defines the maximum value allowed for the interval
+  // between periodic measurements.
+	Maximum uint16
+
+	// Minimum (optional) Defines the minimum value allowed for the interval
+  // between periodic measurements.
+	Minimum uint16
+
 }
 
 func (p *Thermometer1Properties) Lock() {
@@ -85,34 +84,6 @@ func (p *Thermometer1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-// SetMaximum set Maximum value
-func (a *Thermometer1) SetMaximum(v uint16) error {
-	return a.SetProperty("Maximum", v)
-}
-
-// GetMaximum get Maximum value
-func (a *Thermometer1) GetMaximum() (uint16, error) {
-	v, err := a.GetProperty("Maximum")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
-}
-
-// SetMinimum set Minimum value
-func (a *Thermometer1) SetMinimum(v uint16) error {
-	return a.SetProperty("Minimum", v)
-}
-
-// GetMinimum get Minimum value
-func (a *Thermometer1) GetMinimum() (uint16, error) {
-	v, err := a.GetProperty("Minimum")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
-}
 
 // SetIntermediate set Intermediate value
 func (a *Thermometer1) SetIntermediate(v bool) error {
@@ -136,6 +107,34 @@ func (a *Thermometer1) SetInterval(v uint16) error {
 // GetInterval get Interval value
 func (a *Thermometer1) GetInterval() (uint16, error) {
 	v, err := a.GetProperty("Interval")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
+
+// SetMaximum set Maximum value
+func (a *Thermometer1) SetMaximum(v uint16) error {
+	return a.SetProperty("Maximum", v)
+}
+
+// GetMaximum get Maximum value
+func (a *Thermometer1) GetMaximum() (uint16, error) {
+	v, err := a.GetProperty("Maximum")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
+
+// SetMinimum set Minimum value
+func (a *Thermometer1) SetMinimum(v uint16) error {
+	return a.SetProperty("Minimum", v)
+}
+
+// GetMinimum get Minimum value
+func (a *Thermometer1) GetMinimum() (uint16, error) {
+	v, err := a.GetProperty("Minimum")
 	if err != nil {
 		return uint16(0), err
 	}

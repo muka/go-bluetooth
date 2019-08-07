@@ -1,4 +1,3 @@
-
 package media
 
 
@@ -18,8 +17,8 @@ var MediaEndpoint1Interface = "org.bluez.MediaEndpoint1"
 // NewMediaEndpoint1 create a new instance of MediaEndpoint1
 //
 // Args:
-// 	servicePath: unique name
-// 	objectPath: freely definable
+// - servicePath: unique name
+// - objectPath: freely definable
 func NewMediaEndpoint1(servicePath string, objectPath dbus.ObjectPath) (*MediaEndpoint1, error) {
 	a := new(MediaEndpoint1)
 	a.client = bluez.NewClient(

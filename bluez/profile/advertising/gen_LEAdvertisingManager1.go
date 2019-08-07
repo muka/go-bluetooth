@@ -1,6 +1,3 @@
-// The Advertising Manager allows external applications to register Advertisement
-// Data which should be broadcast to devices.  Advertisement Data elements must
-// follow the API for LE Advertisement Data described above.
 package advertising
 
 
@@ -21,7 +18,7 @@ var LEAdvertisingManager1Interface = "org.bluez.LEAdvertisingManager1"
 // NewLEAdvertisingManager1 create a new instance of LEAdvertisingManager1
 //
 // Args:
-// 	objectPath: /org/bluez/{hci0,hci1,...}
+// - objectPath: /org/bluez/{hci0,hci1,...}
 func NewLEAdvertisingManager1(objectPath dbus.ObjectPath) (*LEAdvertisingManager1, error) {
 	a := new(LEAdvertisingManager1)
 	a.client = bluez.NewClient(
@@ -83,17 +80,17 @@ type LEAdvertisingManager1 struct {
 type LEAdvertisingManager1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// SupportedIncludes List of supported system includes.
-  // Possible values: "tx-power"
-  // "appearance"
-  // "local-name"
-	SupportedIncludes []string
-
 	// ActiveInstances Number of active advertising instances.
 	ActiveInstances byte
 
 	// SupportedInstances Number of available advertising instances.
 	SupportedInstances byte
+
+	// SupportedIncludes List of supported system includes.
+  // Possible values: "tx-power"
+  // "appearance"
+  // "local-name"
+	SupportedIncludes []string
 
 }
 
@@ -105,20 +102,6 @@ func (p *LEAdvertisingManager1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-// SetSupportedIncludes set SupportedIncludes value
-func (a *LEAdvertisingManager1) SetSupportedIncludes(v []string) error {
-	return a.SetProperty("SupportedIncludes", v)
-}
-
-// GetSupportedIncludes get SupportedIncludes value
-func (a *LEAdvertisingManager1) GetSupportedIncludes() ([]string, error) {
-	v, err := a.GetProperty("SupportedIncludes")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
-}
 
 // SetActiveInstances set ActiveInstances value
 func (a *LEAdvertisingManager1) SetActiveInstances(v byte) error {
@@ -146,6 +129,20 @@ func (a *LEAdvertisingManager1) GetSupportedInstances() (byte, error) {
 		return byte(0), err
 	}
 	return v.Value().(byte), nil
+}
+
+// SetSupportedIncludes set SupportedIncludes value
+func (a *LEAdvertisingManager1) SetSupportedIncludes(v []string) error {
+	return a.SetProperty("SupportedIncludes", v)
+}
+
+// GetSupportedIncludes get SupportedIncludes value
+func (a *LEAdvertisingManager1) GetSupportedIncludes() ([]string, error) {
+	v, err := a.GetProperty("SupportedIncludes")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
 }
 
 

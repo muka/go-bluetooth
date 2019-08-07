@@ -1,4 +1,3 @@
-
 package battery
 
 
@@ -18,7 +17,7 @@ var Battery1Interface = "org.bluez.Battery1"
 // NewBattery1 create a new instance of Battery1
 //
 // Args:
-// 	objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX
+// - objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX
 func NewBattery1(objectPath dbus.ObjectPath) (*Battery1, error) {
 	a := new(Battery1)
 	a.client = bluez.NewClient(

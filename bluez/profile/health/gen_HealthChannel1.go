@@ -1,4 +1,3 @@
-
 package health
 
 
@@ -18,7 +17,7 @@ var HealthChannel1Interface = "org.bluez.HealthChannel1"
 // NewHealthChannel1 create a new instance of HealthChannel1
 //
 // Args:
-// 	objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/chanZZZ
+// - objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/chanZZZ
 func NewHealthChannel1(objectPath dbus.ObjectPath) (*HealthChannel1, error) {
 	a := new(HealthChannel1)
 	a.client = bluez.NewClient(

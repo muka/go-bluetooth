@@ -1,4 +1,3 @@
-
 package network
 
 
@@ -18,7 +17,7 @@ var NetworkServer1Interface = "org.bluez.NetworkServer1"
 // NewNetworkServer1 create a new instance of NetworkServer1
 //
 // Args:
-// 	objectPath: /org/bluez/{hci0,hci1,...}
+// - objectPath: /org/bluez/{hci0,hci1,...}
 func NewNetworkServer1(objectPath dbus.ObjectPath) (*NetworkServer1, error) {
 	a := new(NetworkServer1)
 	a.client = bluez.NewClient(

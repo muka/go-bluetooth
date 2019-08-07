@@ -1,4 +1,3 @@
-
 package input
 
 
@@ -18,7 +17,7 @@ var Input1Interface = "org.bluez.Input1"
 // NewInput1 create a new instance of Input1
 //
 // Args:
-// 	objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX
+// - objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX
 func NewInput1(objectPath dbus.ObjectPath) (*Input1, error) {
 	a := new(Input1)
 	a.client = bluez.NewClient(

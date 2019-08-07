@@ -1,4 +1,3 @@
-
 package obex
 
 
@@ -18,7 +17,7 @@ var MessageAccess1Interface = "org.bluez.obex.MessageAccess1"
 // NewMessageAccess1 create a new instance of MessageAccess1
 //
 // Args:
-// 	objectPath: [Session object path]
+// - objectPath: [Session object path]
 func NewMessageAccess1(objectPath dbus.ObjectPath) (*MessageAccess1, error) {
 	a := new(MessageAccess1)
 	a.client = bluez.NewClient(

@@ -24,7 +24,7 @@ func main() {
 		log.Fatalf("Failed to serialize JSON: %s", err)
 	}
 
-	err = generator.Generate(api, "./bluez")
+	err = generator.Generate(api, "./bluez", false)
 	if err != nil {
 		log.Fatalf("Generation failed: %s", err)
 	}

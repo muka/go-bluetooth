@@ -1,4 +1,3 @@
-
 package media
 
 
@@ -18,8 +17,8 @@ var MediaFolder1Interface = "org.bluez.MediaFolder1"
 // NewMediaFolder1 create a new instance of MediaFolder1
 //
 // Args:
-// 	servicePath: unique name
-// 	objectPath: freely definable
+// - servicePath: unique name
+// - objectPath: freely definable
 func NewMediaFolder1(servicePath string, objectPath dbus.ObjectPath) (*MediaFolder1, error) {
 	a := new(MediaFolder1)
 	a.client = bluez.NewClient(
@@ -44,7 +43,7 @@ func NewMediaFolder1(servicePath string, objectPath dbus.ObjectPath) (*MediaFold
 // NewMediaFolder1Controller create a new instance of MediaFolder1
 //
 // Args:
-// 	objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/playerX
+// - objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/playerX
 func NewMediaFolder1Controller(objectPath dbus.ObjectPath) (*MediaFolder1, error) {
 	a := new(MediaFolder1)
 	a.client = bluez.NewClient(
@@ -81,17 +80,6 @@ type MediaFolder1 struct {
 type MediaFolder1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// End Offset of the last item.
-  // Default value: NumbeOfItems
-	End uint32
-
-	// Attributes Item properties that should be included in the list.
-  // Possible Values:
-  // "title", "artist", "album", "genre",
-  // "number-of-tracks", "number", "duration"
-  // Default Value: All
-	Attributes []string
-
 	// NumberOfItems Number of items in the folder
 	NumberOfItems uint32
 
@@ -110,6 +98,17 @@ type MediaFolder1Properties struct {
   // Default value: 0
 	Start uint32
 
+	// End Offset of the last item.
+  // Default value: NumbeOfItems
+	End uint32
+
+	// Attributes Item properties that should be included in the list.
+  // Possible Values:
+  // "title", "artist", "album", "genre",
+  // "number-of-tracks", "number", "duration"
+  // Default Value: All
+	Attributes []string
+
 }
 
 func (p *MediaFolder1Properties) Lock() {
@@ -120,34 +119,6 @@ func (p *MediaFolder1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-// SetEnd set End value
-func (a *MediaFolder1) SetEnd(v uint32) error {
-	return a.SetProperty("End", v)
-}
-
-// GetEnd get End value
-func (a *MediaFolder1) GetEnd() (uint32, error) {
-	v, err := a.GetProperty("End")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
-}
-
-// SetAttributes set Attributes value
-func (a *MediaFolder1) SetAttributes(v []string) error {
-	return a.SetProperty("Attributes", v)
-}
-
-// GetAttributes get Attributes value
-func (a *MediaFolder1) GetAttributes() ([]string, error) {
-	v, err := a.GetProperty("Attributes")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
-}
 
 // SetNumberOfItems set NumberOfItems value
 func (a *MediaFolder1) SetNumberOfItems(v uint32) error {
@@ -189,6 +160,34 @@ func (a *MediaFolder1) GetStart() (uint32, error) {
 		return uint32(0), err
 	}
 	return v.Value().(uint32), nil
+}
+
+// SetEnd set End value
+func (a *MediaFolder1) SetEnd(v uint32) error {
+	return a.SetProperty("End", v)
+}
+
+// GetEnd get End value
+func (a *MediaFolder1) GetEnd() (uint32, error) {
+	v, err := a.GetProperty("End")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
+
+// SetAttributes set Attributes value
+func (a *MediaFolder1) SetAttributes(v []string) error {
+	return a.SetProperty("Attributes", v)
+}
+
+// GetAttributes get Attributes value
+func (a *MediaFolder1) GetAttributes() ([]string, error) {
+	v, err := a.GetProperty("Attributes")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
 }
 
 

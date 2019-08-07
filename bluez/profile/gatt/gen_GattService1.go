@@ -1,8 +1,3 @@
-// GATT remote and local service representation. Object path for local services
-// is freely definable.
-// External applications implementing local services must register the services
-// using GattManager1 registration method and must implement the methods and
-// properties defined in GattService1 interface.
 package gatt
 
 
@@ -22,7 +17,7 @@ var GattService1Interface = "org.bluez.GattService1"
 // NewGattService1 create a new instance of GattService1
 //
 // Args:
-// 	objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/serviceXX
+// - objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/serviceXX
 func NewGattService1(objectPath dbus.ObjectPath) (*GattService1, error) {
 	a := new(GattService1)
 	a.client = bluez.NewClient(
@@ -63,6 +58,16 @@ type GattService1 struct {
 type GattService1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
+	// Includes Array of object paths representing the included
+  // services of this service.
+	Includes []dbus.ObjectPath
+
+	// Characteristics 
+	Characteristics []dbus.ObjectPath `dbus:"emit"`
+
+	// IsService 
+	IsService bool `dbus:"ignore"`
+
 	// UUID 128-bit service UUID.
 	UUID string
 
@@ -75,16 +80,6 @@ type GattService1Properties struct {
   // devices.
 	Device []dbus.ObjectPath `dbus:"ignore=isService"`
 
-	// Includes Array of object paths representing the included
-  // services of this service.
-	Includes []dbus.ObjectPath
-
-	// IsService 
-	IsService bool `dbus:"ignore"`
-
-	// Characteristics 
-	Characteristics []dbus.ObjectPath `dbus:"emit"`
-
 }
 
 func (p *GattService1Properties) Lock() {
@@ -95,6 +90,48 @@ func (p *GattService1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
+
+// SetIncludes set Includes value
+func (a *GattService1) SetIncludes(v []dbus.ObjectPath) error {
+	return a.SetProperty("Includes", v)
+}
+
+// GetIncludes get Includes value
+func (a *GattService1) GetIncludes() ([]dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Includes")
+	if err != nil {
+		return []dbus.ObjectPath{}, err
+	}
+	return v.Value().([]dbus.ObjectPath), nil
+}
+
+// SetCharacteristics set Characteristics value
+func (a *GattService1) SetCharacteristics(v []dbus.ObjectPath) error {
+	return a.SetProperty("Characteristics", v)
+}
+
+// GetCharacteristics get Characteristics value
+func (a *GattService1) GetCharacteristics() ([]dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Characteristics")
+	if err != nil {
+		return []dbus.ObjectPath{}, err
+	}
+	return v.Value().([]dbus.ObjectPath), nil
+}
+
+// SetIsService set IsService value
+func (a *GattService1) SetIsService(v bool) error {
+	return a.SetProperty("IsService", v)
+}
+
+// GetIsService get IsService value
+func (a *GattService1) GetIsService() (bool, error) {
+	v, err := a.GetProperty("IsService")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
 
 // SetUUID set UUID value
 func (a *GattService1) SetUUID(v string) error {
@@ -136,48 +173,6 @@ func (a *GattService1) GetDevice() (dbus.ObjectPath, error) {
 		return dbus.ObjectPath(""), err
 	}
 	return v.Value().(dbus.ObjectPath), nil
-}
-
-// SetIncludes set Includes value
-func (a *GattService1) SetIncludes(v []dbus.ObjectPath) error {
-	return a.SetProperty("Includes", v)
-}
-
-// GetIncludes get Includes value
-func (a *GattService1) GetIncludes() ([]dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Includes")
-	if err != nil {
-		return []dbus.ObjectPath{}, err
-	}
-	return v.Value().([]dbus.ObjectPath), nil
-}
-
-// SetIsService set IsService value
-func (a *GattService1) SetIsService(v bool) error {
-	return a.SetProperty("IsService", v)
-}
-
-// GetIsService get IsService value
-func (a *GattService1) GetIsService() (bool, error) {
-	v, err := a.GetProperty("IsService")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-// SetCharacteristics set Characteristics value
-func (a *GattService1) SetCharacteristics(v []dbus.ObjectPath) error {
-	return a.SetProperty("Characteristics", v)
-}
-
-// GetCharacteristics get Characteristics value
-func (a *GattService1) GetCharacteristics() ([]dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Characteristics")
-	if err != nil {
-		return []dbus.ObjectPath{}, err
-	}
-	return v.Value().([]dbus.ObjectPath), nil
 }
 
 

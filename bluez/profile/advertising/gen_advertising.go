@@ -1,4 +1,4 @@
-// BlueZ D-Bus LE Advertising API Description
+// BlueZ D-Bus LE Advertising API Description [advertising-api.txt]
 // Advertising packets are structured data which is broadcast on the LE Advertising
 // channels and available for all devices in range.  Because of the limited space
 // available in LE Advertising packets (31 bytes), each packet's contents must be

@@ -45,7 +45,7 @@ func createConstructors(api gen.Api) []gen.Constructor {
 		docs := []string{}
 		for _, doc := range c.Docs {
 			for _, d1 := range strings.Split(doc, "\n") {
-				docs = append(docs, "// \t"+d1)
+				docs = append(docs, "// - "+d1)
 			}
 		}
 		c.ArgsDocs = "//\n// Args:\n" + strings.Join(docs, "\n")

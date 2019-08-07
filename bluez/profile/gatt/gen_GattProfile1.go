@@ -1,7 +1,3 @@
-// Local profile (GATT client) instance. By registering this type of object
-// an application effectively indicates support for a specific GATT profile
-// and requests automatic connections to be established to devices
-// supporting it.
 package gatt
 
 
@@ -21,8 +17,8 @@ var GattProfile1Interface = "org.bluez.GattProfile1"
 // NewGattProfile1 create a new instance of GattProfile1
 //
 // Args:
-// 	servicePath: <application dependent>
-// 	objectPath: <application dependent>
+// - servicePath: <application dependent>
+// - objectPath: <application dependent>
 func NewGattProfile1(servicePath string, objectPath dbus.ObjectPath) (*GattProfile1, error) {
 	a := new(GattProfile1)
 	a.client = bluez.NewClient(

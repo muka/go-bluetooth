@@ -1,4 +1,3 @@
-
 package media
 
 
@@ -18,7 +17,7 @@ var Media1Interface = "org.bluez.Media1"
 // NewMedia1 create a new instance of Media1
 //
 // Args:
-// 	objectPath: [variable prefix]/{hci0,hci1,...}
+// - objectPath: [variable prefix]/{hci0,hci1,...}
 func NewMedia1(objectPath dbus.ObjectPath) (*Media1, error) {
 	a := new(Media1)
 	a.client = bluez.NewClient(

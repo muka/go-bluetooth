@@ -1,4 +1,3 @@
-{{.Api.Description}}
 package {{.Package}}
 {{$InterfaceName := .InterfaceName}}
 {{$ExposeProperties := .ExposeProperties}}

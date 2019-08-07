@@ -1,4 +1,3 @@
-
 package network
 
 
@@ -18,7 +17,7 @@ var Network1Interface = "org.bluez.Network1"
 // NewNetwork1 create a new instance of Network1
 //
 // Args:
-// 	objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX
+// - objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX
 func NewNetwork1(objectPath dbus.ObjectPath) (*Network1, error) {
 	a := new(Network1)
 	a.client = bluez.NewClient(
@@ -55,14 +54,14 @@ type Network1 struct {
 type Network1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// UUID Indicates the connection role when available.
-	UUID string
-
 	// Connected Indicates if the device is connected.
 	Connected bool
 
 	// Interface Indicates the network interface name when available.
 	Interface string
+
+	// UUID Indicates the connection role when available.
+	UUID string
 
 }
 
@@ -74,20 +73,6 @@ func (p *Network1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-// SetUUID set UUID value
-func (a *Network1) SetUUID(v string) error {
-	return a.SetProperty("UUID", v)
-}
-
-// GetUUID get UUID value
-func (a *Network1) GetUUID() (string, error) {
-	v, err := a.GetProperty("UUID")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
 
 // SetConnected set Connected value
 func (a *Network1) SetConnected(v bool) error {
@@ -111,6 +96,20 @@ func (a *Network1) SetInterface(v string) error {
 // GetInterface get Interface value
 func (a *Network1) GetInterface() (string, error) {
 	v, err := a.GetProperty("Interface")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+// SetUUID set UUID value
+func (a *Network1) SetUUID(v string) error {
+	return a.SetProperty("UUID", v)
+}
+
+// GetUUID get UUID value
+func (a *Network1) GetUUID() (string, error) {
+	v, err := a.GetProperty("UUID")
 	if err != nil {
 		return "", err
 	}

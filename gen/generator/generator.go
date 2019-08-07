@@ -3,7 +3,6 @@ package generator
 import (
 	"fmt"
 	"path"
-	"path/filepath"
 	"strings"
 
 	"github.com/muka/go-bluetooth/gen"
@@ -11,7 +10,7 @@ import (
 )
 
 // Generate go code from the API definition
-func Generate(bluezApi gen.BluezAPI, outDir string) error {
+func Generate(bluezApi gen.BluezAPI, outDir string, forceOverwrite bool) error {
 
 	apiGroups := bluezApi.Api
 
@@ -28,10 +27,12 @@ func Generate(bluezApi gen.BluezAPI, outDir string) error {
 		return err
 	}
 
-	filename := filepath.Join(outDir, "errors.go")
-	err = ErrorsTemplate(filename, apiGroups)
-	if err != nil {
-		return err
+	errorsFile := path.Join(outDir, "gen_errors.go")
+	if forceOverwrite || !gen.Exists(errorsFile) {
+		err = ErrorsTemplate(errorsFile, apiGroups)
+		if err != nil {
+			return err
+		}
 	}
 
 	// filename = filepath.Join(outDir, "interfaces.go")
@@ -51,7 +52,8 @@ func Generate(bluezApi gen.BluezAPI, outDir string) error {
 		}
 
 		rootFile := path.Join(dirpath, "gen_"+apiName+".go")
-		if !gen.Exists(rootFile) {
+
+		if forceOverwrite || !gen.Exists(rootFile) {
 			err = RootTemplate(rootFile, apiGroup)
 			if err != nil {
 				log.Errorf("Failed to create %s: %s", rootFile, err)
@@ -75,7 +77,7 @@ func Generate(bluezApi gen.BluezAPI, outDir string) error {
 				continue
 			}
 
-			if gen.Exists(apiGenFilename) {
+			if !forceOverwrite && gen.Exists(apiGenFilename) {
 				log.Infof("Skipped, file exists: %s", apiGenFilename)
 				continue
 			}

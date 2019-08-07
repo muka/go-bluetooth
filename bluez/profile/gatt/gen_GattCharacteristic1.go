@@ -1,5 +1,3 @@
-// For local GATT defined services, the object paths need to follow the service
-// path hierarchy and are freely definable.
 package gatt
 
 
@@ -19,7 +17,7 @@ var GattCharacteristic1Interface = "org.bluez.GattCharacteristic1"
 // NewGattCharacteristic1 create a new instance of GattCharacteristic1
 //
 // Args:
-// 	objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/serviceXX/charYYYY
+// - objectPath: [variable prefix]/{hci0,hci1,...}/dev_XX_XX_XX_XX_XX_XX/serviceXX/charYYYY
 func NewGattCharacteristic1(objectPath dbus.ObjectPath) (*GattCharacteristic1, error) {
 	a := new(GattCharacteristic1)
 	a.client = bluez.NewClient(
@@ -57,35 +55,6 @@ type GattCharacteristic1 struct {
 type GattCharacteristic1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// Notifying True, if notifications or indications on this
-  // characteristic are currently enabled.
-	Notifying bool
-
-	// Flags Defines how the characteristic value can be used. See
-  // Core spec "Table 3.5: Characteristic Properties bit
-  // field", and "Table 3.8: Characteristic Extended
-  // Properties bit field". Allowed values:
-  // "broadcast"
-  // "read"
-  // "write-without-response"
-  // "write"
-  // "notify"
-  // "indicate"
-  // "authenticated-signed-writes"
-  // "reliable-write"
-  // "writable-auxiliaries"
-  // "encrypt-read"
-  // "encrypt-write"
-  // "encrypt-authenticated-read"
-  // "encrypt-authenticated-write"
-  // "secure-read" (Server only)
-  // "secure-write" (Server only)
-  // "authorize"
-	Flags []string
-
-	// Descriptors 
-	Descriptors []dbus.ObjectPath
-
 	// UUID 128-bit characteristic UUID.
 	UUID string
 
@@ -115,6 +84,35 @@ type GattCharacteristic1Properties struct {
   // that AcquireNotify is supported.
 	NotifyAcquired bool
 
+	// Notifying True, if notifications or indications on this
+  // characteristic are currently enabled.
+	Notifying bool
+
+	// Flags Defines how the characteristic value can be used. See
+  // Core spec "Table 3.5: Characteristic Properties bit
+  // field", and "Table 3.8: Characteristic Extended
+  // Properties bit field". Allowed values:
+  // "broadcast"
+  // "read"
+  // "write-without-response"
+  // "write"
+  // "notify"
+  // "indicate"
+  // "authenticated-signed-writes"
+  // "reliable-write"
+  // "writable-auxiliaries"
+  // "encrypt-read"
+  // "encrypt-write"
+  // "encrypt-authenticated-read"
+  // "encrypt-authenticated-write"
+  // "secure-read" (Server only)
+  // "secure-write" (Server only)
+  // "authorize"
+	Flags []string
+
+	// Descriptors 
+	Descriptors []dbus.ObjectPath
+
 }
 
 func (p *GattCharacteristic1Properties) Lock() {
@@ -125,48 +123,6 @@ func (p *GattCharacteristic1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-// SetNotifying set Notifying value
-func (a *GattCharacteristic1) SetNotifying(v bool) error {
-	return a.SetProperty("Notifying", v)
-}
-
-// GetNotifying get Notifying value
-func (a *GattCharacteristic1) GetNotifying() (bool, error) {
-	v, err := a.GetProperty("Notifying")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-// SetFlags set Flags value
-func (a *GattCharacteristic1) SetFlags(v []string) error {
-	return a.SetProperty("Flags", v)
-}
-
-// GetFlags get Flags value
-func (a *GattCharacteristic1) GetFlags() ([]string, error) {
-	v, err := a.GetProperty("Flags")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
-}
-
-// SetDescriptors set Descriptors value
-func (a *GattCharacteristic1) SetDescriptors(v []dbus.ObjectPath) error {
-	return a.SetProperty("Descriptors", v)
-}
-
-// GetDescriptors get Descriptors value
-func (a *GattCharacteristic1) GetDescriptors() ([]dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Descriptors")
-	if err != nil {
-		return []dbus.ObjectPath{}, err
-	}
-	return v.Value().([]dbus.ObjectPath), nil
-}
 
 // SetUUID set UUID value
 func (a *GattCharacteristic1) SetUUID(v string) error {
@@ -236,6 +192,48 @@ func (a *GattCharacteristic1) GetNotifyAcquired() (bool, error) {
 		return false, err
 	}
 	return v.Value().(bool), nil
+}
+
+// SetNotifying set Notifying value
+func (a *GattCharacteristic1) SetNotifying(v bool) error {
+	return a.SetProperty("Notifying", v)
+}
+
+// GetNotifying get Notifying value
+func (a *GattCharacteristic1) GetNotifying() (bool, error) {
+	v, err := a.GetProperty("Notifying")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+// SetFlags set Flags value
+func (a *GattCharacteristic1) SetFlags(v []string) error {
+	return a.SetProperty("Flags", v)
+}
+
+// GetFlags get Flags value
+func (a *GattCharacteristic1) GetFlags() ([]string, error) {
+	v, err := a.GetProperty("Flags")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
+}
+
+// SetDescriptors set Descriptors value
+func (a *GattCharacteristic1) SetDescriptors(v []dbus.ObjectPath) error {
+	return a.SetProperty("Descriptors", v)
+}
+
+// GetDescriptors get Descriptors value
+func (a *GattCharacteristic1) GetDescriptors() ([]dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Descriptors")
+	if err != nil {
+		return []dbus.ObjectPath{}, err
+	}
+	return v.Value().([]dbus.ObjectPath), nil
 }
 
 

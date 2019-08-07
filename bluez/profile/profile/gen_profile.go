@@ -1,3 +1,3 @@
-// BlueZ D-Bus Profile API description
+// BlueZ D-Bus Profile API description [profile-api.txt]
 
 package profile

@@ -8,6 +8,26 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type ApiGroup struct {
+	FileName    string
+	Name        string
+	Description string
+	Api         []Api
+	debug       bool
+}
+
+type Api struct {
+	Title       string
+	Description string
+	Service     string
+	Interface   string
+	ObjectPath  string
+	Methods     []Method
+	// those are currently avail only in health-api
+	Signals    []Method
+	Properties []Property
+}
+
 type Flag int
 
 const (
@@ -35,26 +55,6 @@ type Property struct {
 	Type  string
 	Docs  string
 	Flags []Flag
-}
-
-type ApiGroup struct {
-	FileName    string
-	Name        string
-	Description string
-	Api         []Api
-	debug       bool
-}
-
-type Api struct {
-	Title       string
-	Description string
-	Service     string
-	Interface   string
-	ObjectPath  string
-	Methods     []Method
-	// those are currently avail only in health-api
-	Signals    []Method
-	Properties []Property
 }
 
 // NewApiGroup initialize a new ApiGroup

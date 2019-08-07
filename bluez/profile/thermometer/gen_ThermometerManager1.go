@@ -1,4 +1,3 @@
-
 package thermometer
 
 
@@ -18,7 +17,7 @@ var ThermometerManager1Interface = "org.bluez.ThermometerManager1"
 // NewThermometerManager1 create a new instance of ThermometerManager1
 //
 // Args:
-// 	objectPath: [variable prefix]/{hci0,hci1,...}
+// - objectPath: [variable prefix]/{hci0,hci1,...}
 func NewThermometerManager1(objectPath dbus.ObjectPath) (*ThermometerManager1, error) {
 	a := new(ThermometerManager1)
 	a.client = bluez.NewClient(

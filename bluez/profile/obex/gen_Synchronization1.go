@@ -1,4 +1,3 @@
-
 package obex
 
 
@@ -18,7 +17,7 @@ var Synchronization1Interface = "org.bluez.obex.Synchronization1"
 // NewSynchronization1 create a new instance of Synchronization1
 //
 // Args:
-// 	objectPath: [Session object path]
+// - objectPath: [Session object path]
 func NewSynchronization1(objectPath dbus.ObjectPath) (*Synchronization1, error) {
 	a := new(Synchronization1)
 	a.client = bluez.NewClient(

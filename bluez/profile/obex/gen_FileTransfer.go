@@ -1,4 +1,3 @@
-
 package obex
 
 
@@ -18,7 +17,7 @@ var FileTransferInterface = "org.bluez.obex.FileTransfer"
 // NewFileTransfer create a new instance of FileTransfer
 //
 // Args:
-// 	objectPath: [Session object path]
+// - objectPath: [Session object path]
 func NewFileTransfer(objectPath dbus.ObjectPath) (*FileTransfer, error) {
 	a := new(FileTransfer)
 	a.client = bluez.NewClient(

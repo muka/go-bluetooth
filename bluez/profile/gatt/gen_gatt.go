@@ -1,4 +1,4 @@
-// BlueZ D-Bus GATT API description
+// BlueZ D-Bus GATT API description [gatt-api.txt]
 // GATT local and remote services share the same high-level D-Bus API. Local
 // refers to GATT based service exported by a BlueZ plugin or an external
 // application. Remote refers to GATT services exported by the peer.

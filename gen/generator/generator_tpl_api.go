@@ -10,55 +10,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// getRawType clean tag from type
-func getRawType(t string) string {
-	if strings.Contains(t, "`") {
-		p1 := strings.Trim(strings.Split(t, "`")[0], " ")
-		return p1
-	}
-	return t
-}
-
-// getRawTypeInitializer return field initializer
-func getRawTypeInitializer(t string) string {
-	t = getRawType(t)
-
-	// array
-	if len(t) >= 2 && t[:2] == "[]" {
-		return t + "{}"
-	}
-	// map
-	if len(t) >= 3 && t[:3] == "map" {
-		return t + "{}"
-	}
-	// int*
-	if len(t) >= 3 && t[:3] == "int" {
-		return t + "(0)"
-	}
-	// uint*
-	if len(t) >= 4 && t[:4] == "uint" {
-		return t + "(0)"
-	}
-	// float*
-	if len(t) >= 5 && t[:5] == "float" {
-		return t + "(0.0)"
-	}
-
-	switch t {
-	case "bool":
-		return "false"
-	case "string":
-		return "\"\""
-	case "byte":
-		return "byte(0)"
-		// return "[]uint8{}"
-	case "dbus.ObjectPath":
-		return "dbus.ObjectPath(\"\")"
-	default:
-		panic(fmt.Sprintf("Unknown type: %s", t))
-	}
-}
-
 func ApiTemplate(filename string, api gen.Api, apiGroup gen.ApiGroup) error {
 
 	fw, err := os.Create(filename)

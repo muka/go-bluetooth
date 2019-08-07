@@ -1,4 +1,3 @@
-
 package profile
 
 
@@ -18,8 +17,8 @@ var Profile1Interface = "org.bluez.Profile1"
 // NewProfile1 create a new instance of Profile1
 //
 // Args:
-// 	servicePath: unique name
-// 	objectPath: freely definable
+// - servicePath: unique name
+// - objectPath: freely definable
 func NewProfile1(servicePath string, objectPath dbus.ObjectPath) (*Profile1, error) {
 	a := new(Profile1)
 	a.client = bluez.NewClient(
