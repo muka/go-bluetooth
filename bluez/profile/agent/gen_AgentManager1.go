@@ -110,7 +110,8 @@ func (a *AgentManager1) GetObjectManagerSignal() (chan *dbus.Signal, func(), err
 
 
 
-//RegisterAgent This registers an agent handler.
+/*
+RegisterAgent This registers an agent handler.
 The object path defines the path of the agent
 that will be called when user input is needed.
 Every application can register its own agent and
@@ -133,28 +134,33 @@ If an empty string is used it will fallback to
 "KeyboardDisplay".
 Possible errors: org.bluez.Error.InvalidArguments
 org.bluez.Error.AlreadyExists
+*/
 func (a *AgentManager1) RegisterAgent(agent dbus.ObjectPath, capability string) error {
 	
 	return a.client.Call("RegisterAgent", 0, agent, capability).Store()
 	
 }
 
-//UnregisterAgent This unregisters the agent that has been previously
+/*
+UnregisterAgent This unregisters the agent that has been previously
 registered. The object path parameter must match the
 same value that has been used on registration.
 Possible errors: org.bluez.Error.DoesNotExist
+*/
 func (a *AgentManager1) UnregisterAgent(agent dbus.ObjectPath) error {
 	
 	return a.client.Call("UnregisterAgent", 0, agent).Store()
 	
 }
 
-//RequestDefaultAgent This requests is to make the application agent
+/*
+RequestDefaultAgent This requests is to make the application agent
 the default agent. The application is required
 to register an agent.
 Special permission might be required to become
 the default agent.
 Possible errors: org.bluez.Error.DoesNotExist
+*/
 func (a *AgentManager1) RequestDefaultAgent(agent dbus.ObjectPath) error {
 	
 	return a.client.Call("RequestDefaultAgent", 0, agent).Store()

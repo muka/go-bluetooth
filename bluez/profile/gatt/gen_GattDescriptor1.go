@@ -56,7 +56,15 @@ type GattDescriptor1 struct {
 type GattDescriptor1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// Flags Defines how the descriptor value can be used.
+	/*
+	Value The cached value of the descriptor. This property
+  gets updated only after a successful read request, upon
+  which a PropertiesChanged signal will be emitted.
+	*/
+	Value []byte `dbus:"emit"`
+
+	/*
+	Flags Defines how the descriptor value can be used.
   Possible values:
   "read"
   "write"
@@ -67,19 +75,19 @@ type GattDescriptor1Properties struct {
   "secure-read" (Server Only)
   "secure-write" (Server Only)
   "authorize"
+	*/
 	Flags []string
 
-	// UUID 128-bit descriptor UUID.
+	/*
+	UUID 128-bit descriptor UUID.
+	*/
 	UUID string
 
-	// Characteristic Object path of the GATT characteristic the descriptor
+	/*
+	Characteristic Object path of the GATT characteristic the descriptor
   belongs to.
+	*/
 	Characteristic dbus.ObjectPath
-
-	// Value The cached value of the descriptor. This property
-  gets updated only after a successful read request, upon
-  which a PropertiesChanged signal will be emitted.
-	Value []byte `dbus:"emit"`
 
 }
 
@@ -93,6 +101,20 @@ func (p *GattDescriptor1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
+
+// SetValue set Value value
+func (a *GattDescriptor1) SetValue(v []byte) error {
+	return a.SetProperty("Value", v)
+}
+
+// GetValue get Value value
+func (a *GattDescriptor1) GetValue() ([]byte, error) {
+	v, err := a.GetProperty("Value")
+	if err != nil {
+		return []byte{}, err
+	}
+	return v.Value().([]byte), nil
+}
 
 // SetFlags set Flags value
 func (a *GattDescriptor1) SetFlags(v []string) error {
@@ -134,20 +156,6 @@ func (a *GattDescriptor1) GetCharacteristic() (dbus.ObjectPath, error) {
 		return dbus.ObjectPath(""), err
 	}
 	return v.Value().(dbus.ObjectPath), nil
-}
-
-// SetValue set Value value
-func (a *GattDescriptor1) SetValue(v []byte) error {
-	return a.SetProperty("Value", v)
-}
-
-// GetValue get Value value
-func (a *GattDescriptor1) GetValue() ([]byte, error) {
-	v, err := a.GetProperty("Value")
-	if err != nil {
-		return []byte{}, err
-	}
-	return v.Value().([]byte), nil
 }
 
 
@@ -336,7 +344,8 @@ func (a *GattDescriptor1) UnwatchProperties(ch chan *bluez.PropertyChanged) erro
 
 
 
-//ReadValue Issues a request to read the value of the
+/*
+ReadValue Issues a request to read the value of the
 characteristic and returns the value if the
 operation was successful.
 Possible options: "offset": Start offset
@@ -347,6 +356,7 @@ org.bluez.Error.InProgress
 org.bluez.Error.NotPermitted
 org.bluez.Error.NotAuthorized
 org.bluez.Error.NotSupported
+*/
 func (a *GattDescriptor1) ReadValue(flags map[string]interface{}) ([]byte, error) {
 	
 	var val0 []byte
@@ -354,7 +364,8 @@ func (a *GattDescriptor1) ReadValue(flags map[string]interface{}) ([]byte, error
 	return val0, err	
 }
 
-//WriteValue Issues a request to write the value of the
+/*
+WriteValue Issues a request to write the value of the
 characteristic.
 Possible options: "offset": Start offset
 "device": Device path (Server only)
@@ -368,6 +379,7 @@ org.bluez.Error.NotPermitted
 org.bluez.Error.InvalidValueLength
 org.bluez.Error.NotAuthorized
 org.bluez.Error.NotSupported
+*/
 func (a *GattDescriptor1) WriteValue(value []byte, flags map[string]interface{}) error {
 	
 	return a.client.Call("WriteValue", 0, value, flags).Store()

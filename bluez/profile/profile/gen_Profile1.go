@@ -256,31 +256,36 @@ func (a *Profile1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 
 
 
-//Release This method gets called when the service daemon
+/*
+Release This method gets called when the service daemon
 unregisters the profile. A profile can use it to do
 cleanup tasks. There is no need to unregister the
 profile, because when this method gets called it has
 already been unregistered.
+*/
 func (a *Profile1) Release() error {
 	
 	return a.client.Call("Release", 0, ).Store()
 	
 }
 
-//NewConnection This method gets called when a new service level
+/*
+NewConnection This method gets called when a new service level
 connection has been made and authorized.
 Common fd_properties:
 uint16 Version		Profile version (optional)
 uint16 Features		Profile features (optional)
 Possible errors: org.bluez.Error.Rejected
 org.bluez.Error.Canceled
+*/
 func (a *Profile1) NewConnection(device dbus.ObjectPath, fd int32, fd_properties map[string]interface{}) error {
 	
 	return a.client.Call("NewConnection", 0, device, fd, fd_properties).Store()
 	
 }
 
-//RequestDisconnection This method gets called when a profile gets
+/*
+RequestDisconnection This method gets called when a profile gets
 disconnected.
 The file descriptor is no longer owned by the service
 daemon and the profile implementation needs to take
@@ -291,6 +296,7 @@ are disconnected before returning from this
 method call.
 Possible errors: org.bluez.Error.Rejected
 org.bluez.Error.Canceled
+*/
 func (a *Profile1) RequestDisconnection(device dbus.ObjectPath) error {
 	
 	return a.client.Call("RequestDisconnection", 0, device).Store()

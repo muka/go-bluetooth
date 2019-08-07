@@ -47,7 +47,9 @@ type {{.InterfaceName}} struct {
 type {{.InterfaceName}}Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 {{ range .Properties }}
-	// {{.Property.Name}} {{.Property.Docs}}
+	/*
+	{{.Property.Name}} {{.Property.Docs}}
+	*/
 	{{.Property.Name}} {{.Property.Type}}
 {{end}}
 }
@@ -263,7 +265,9 @@ func (a *{{.InterfaceName}}) UnwatchProperties(ch chan *bluez.PropertyChanged) e
 {{end}}
 
 {{range .Methods}}
-//{{.Name}} {{.Docs}}
+/*
+{{.Name}} {{.Docs}}
+*/
 func (a *{{$InterfaceName}}) {{.Name}}({{.ArgsList}}) {{.Method.ReturnType}} {
 	{{if .SingleReturn}}
 	return a.client.Call("{{.Name}}", 0, {{.ParamsList}}).Store()

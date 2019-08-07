@@ -7,10 +7,13 @@ import (
 )
 
 const (
+	// DeviceRemoved a device has been removed from local cache
 	DeviceRemoved uint8 = 0
-	DeviceAdded         = iota
+	// DeviceAdded new device found, eg. via discovery
+	DeviceAdded = iota
 )
 
+// DeviceDiscovered event emitted when a device is added or removed from Object Manager
 type DeviceDiscovered struct {
 	Path dbus.ObjectPath
 	Type uint8

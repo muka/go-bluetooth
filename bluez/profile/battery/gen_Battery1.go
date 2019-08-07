@@ -56,7 +56,9 @@ type Battery1 struct {
 type Battery1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// Percentage The percentage of battery left as an unsigned 8-bit integer.
+	/*
+	Percentage The percentage of battery left as an unsigned 8-bit integer.
+	*/
 	Percentage byte
 
 }

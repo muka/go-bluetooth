@@ -256,23 +256,27 @@ func (a *Agent1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 
 
 
-//Release This method gets called when the service daemon
+/*
+Release This method gets called when the service daemon
 unregisters the agent. An agent can use it to do
 cleanup tasks. There is no need to unregister the
 agent, because when this method gets called it has
 already been unregistered.
+*/
 func (a *Agent1) Release() error {
 	
 	return a.client.Call("Release", 0, ).Store()
 	
 }
 
-//RequestPinCode This method gets called when the service daemon
+/*
+RequestPinCode This method gets called when the service daemon
 needs to get the passkey for an authentication.
 The return value should be a string of 1-16 characters
 length. The string can be alphanumeric.
 Possible errors: org.bluez.Error.Rejected
 org.bluez.Error.Canceled
+*/
 func (a *Agent1) RequestPinCode(device dbus.ObjectPath) (string, error) {
 	
 	var val0 string
@@ -280,7 +284,8 @@ func (a *Agent1) RequestPinCode(device dbus.ObjectPath) (string, error) {
 	return val0, err	
 }
 
-//DisplayPinCode This method gets called when the service daemon
+/*
+DisplayPinCode This method gets called when the service daemon
 needs to display a pincode for an authentication.
 An empty reply should be returned. When the pincode
 needs no longer to be displayed, the Cancel method
@@ -296,18 +301,21 @@ zero-padded to 6 digits. This is for harmony with
 the later specification.
 Possible errors: org.bluez.Error.Rejected
 org.bluez.Error.Canceled
+*/
 func (a *Agent1) DisplayPinCode(device dbus.ObjectPath, pincode string) error {
 	
 	return a.client.Call("DisplayPinCode", 0, device, pincode).Store()
 	
 }
 
-//RequestPasskey This method gets called when the service daemon
+/*
+RequestPasskey This method gets called when the service daemon
 needs to get the passkey for an authentication.
 The return value should be a numeric value
 between 0-999999.
 Possible errors: org.bluez.Error.Rejected
 org.bluez.Error.Canceled
+*/
 func (a *Agent1) RequestPasskey(device dbus.ObjectPath) (uint32, error) {
 	
 	var val0 uint32
@@ -315,7 +323,8 @@ func (a *Agent1) RequestPasskey(device dbus.ObjectPath) (uint32, error) {
 	return val0, err	
 }
 
-//DisplayPasskey This method gets called when the service daemon
+/*
+DisplayPasskey This method gets called when the service daemon
 needs to display a passkey for an authentication.
 The entered parameter indicates the number of already
 typed keys on the remote side.
@@ -327,13 +336,15 @@ called multiple times to update the entered value.
 Note that the passkey will always be a 6-digit number,
 so the display should be zero-padded at the start if
 the value contains less than 6 digits.
+*/
 func (a *Agent1) DisplayPasskey(device dbus.ObjectPath, passkey uint32, entered uint16) error {
 	
 	return a.client.Call("DisplayPasskey", 0, device, passkey, entered).Store()
 	
 }
 
-//RequestConfirmation This method gets called when the service daemon
+/*
+RequestConfirmation This method gets called when the service daemon
 needs to confirm a passkey for an authentication.
 To confirm the value it should return an empty reply
 or an error in case the passkey is invalid.
@@ -342,13 +353,15 @@ so the display should be zero-padded at the start if
 the value contains less than 6 digits.
 Possible errors: org.bluez.Error.Rejected
 org.bluez.Error.Canceled
+*/
 func (a *Agent1) RequestConfirmation(device dbus.ObjectPath, passkey uint32) error {
 	
 	return a.client.Call("RequestConfirmation", 0, device, passkey).Store()
 	
 }
 
-//RequestAuthorization This method gets called to request the user to
+/*
+RequestAuthorization This method gets called to request the user to
 authorize an incoming pairing attempt which
 would in other circumstances trigger the just-works
 model, or when the user plugged in a device that
@@ -357,24 +370,29 @@ device would not be connected to the adapter via
 Bluetooth yet.
 Possible errors: org.bluez.Error.Rejected
 org.bluez.Error.Canceled
+*/
 func (a *Agent1) RequestAuthorization(device dbus.ObjectPath) error {
 	
 	return a.client.Call("RequestAuthorization", 0, device).Store()
 	
 }
 
-//AuthorizeService This method gets called when the service daemon
+/*
+AuthorizeService This method gets called when the service daemon
 needs to authorize a connection/service request.
 Possible errors: org.bluez.Error.Rejected
 org.bluez.Error.Canceled
+*/
 func (a *Agent1) AuthorizeService(device dbus.ObjectPath, uuid string) error {
 	
 	return a.client.Call("AuthorizeService", 0, device, uuid).Store()
 	
 }
 
-//Cancel This method gets called to indicate that the agent
+/*
+Cancel This method gets called to indicate that the agent
 request failed before a reply was returned.
+*/
 func (a *Agent1) Cancel() error {
 	
 	return a.client.Call("Cancel", 0, ).Store()

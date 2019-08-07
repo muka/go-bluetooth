@@ -60,7 +60,9 @@ type GattProfile1 struct {
 type GattProfile1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// UUIDs 128-bit GATT service UUIDs to auto connect.
+	/*
+	UUIDs 128-bit GATT service UUIDs to auto connect.
+	*/
 	UUIDs []string
 
 }
@@ -276,11 +278,13 @@ func (a *GattProfile1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 
 
 
-//Release This method gets called when the service daemon
+/*
+Release This method gets called when the service daemon
 unregisters the profile. The profile can use it to
 do cleanup tasks. There is no need to unregister the
 profile, because when this method gets called it has
 already been unregistered.
+*/
 func (a *GattProfile1) Release() error {
 	
 	return a.client.Call("Release", 0, ).Store()

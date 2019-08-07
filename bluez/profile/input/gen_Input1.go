@@ -56,7 +56,8 @@ type Input1 struct {
 type Input1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// ReconnectMode Determines the Connectability mode of the HID device as
+	/*
+	ReconnectMode Determines the Connectability mode of the HID device as
   defined by the HID Profile specification, Section 5.4.2.
   This mode is based in the two properties
   HIDReconnectInitiate (see Section 5.3.4.6) and
@@ -71,6 +72,7 @@ type Input1Properties struct {
   restore the lost connection, but
   Bluetooth HID Host may also restore the
   connection.
+	*/
 	ReconnectMode string
 
 }

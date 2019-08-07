@@ -56,7 +56,9 @@ type SimAccess1 struct {
 type SimAccess1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// Connected Indicates if SAP client is connected to the server.
+	/*
+	Connected Indicates if SAP client is connected to the server.
+	*/
 	Connected bool
 
 }
@@ -272,8 +274,10 @@ func (a *SimAccess1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 
 
 
-//Disconnect Disconnects SAP client from the server.
+/*
+Disconnect Disconnects SAP client from the server.
 Possible errors: org.bluez.Error.Failed
+*/
 func (a *SimAccess1) Disconnect() error {
 	
 	return a.client.Call("Disconnect", 0, ).Store()

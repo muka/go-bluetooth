@@ -255,7 +255,8 @@ func (a *ProfileManager1) UnwatchProperties(ch chan *bluez.PropertyChanged) erro
 
 
 
-//RegisterProfile This registers a profile implementation.
+/*
+RegisterProfile This registers a profile implementation.
 If an application disconnects from the bus all
 its registered profiles will be removed.
 HFP HS UUID: 0000111e-0000-1000-8000-00805f9b34fb
@@ -265,16 +266,19 @@ Available options:
 string Name
 Human readable name for the profile
 string Service
+*/
 func (a *ProfileManager1) RegisterProfile(profile dbus.ObjectPath, uuid string, options map[string]interface{}) error {
 	
 	return a.client.Call("RegisterProfile", 0, profile, uuid, options).Store()
 	
 }
 
-//UnregisterProfile This unregisters the profile that has been previously
+/*
+UnregisterProfile This unregisters the profile that has been previously
 registered. The object path parameter must match the
 same value that has been used on registration.
 Possible errors: org.bluez.Error.DoesNotExist
+*/
 func (a *ProfileManager1) UnregisterProfile(profile dbus.ObjectPath) error {
 	
 	return a.client.Call("UnregisterProfile", 0, profile).Store()

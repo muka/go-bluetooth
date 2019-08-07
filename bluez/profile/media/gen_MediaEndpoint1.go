@@ -256,20 +256,24 @@ func (a *MediaEndpoint1) UnwatchProperties(ch chan *bluez.PropertyChanged) error
 
 
 
-//SetConfiguration Set configuration for the transport.
+/*
+SetConfiguration Set configuration for the transport.
+*/
 func (a *MediaEndpoint1) SetConfiguration(transport dbus.ObjectPath, properties map[string]interface{}) error {
 	
 	return a.client.Call("SetConfiguration", 0, transport, properties).Store()
 	
 }
 
-//SelectConfiguration Select preferable configuration from the supported
+/*
+SelectConfiguration Select preferable configuration from the supported
 capabilities.
 Returns a configuration which can be used to setup
 a transport.
 Note: There is no need to cache the selected
 configuration since on success the configuration is
 send back as parameter of SetConfiguration.
+*/
 func (a *MediaEndpoint1) SelectConfiguration(capabilities []byte) ([]byte, error) {
 	
 	var val0 []byte
@@ -277,18 +281,22 @@ func (a *MediaEndpoint1) SelectConfiguration(capabilities []byte) ([]byte, error
 	return val0, err	
 }
 
-//ClearConfiguration Clear transport configuration.
+/*
+ClearConfiguration Clear transport configuration.
+*/
 func (a *MediaEndpoint1) ClearConfiguration(transport dbus.ObjectPath) error {
 	
 	return a.client.Call("ClearConfiguration", 0, transport).Store()
 	
 }
 
-//Release This method gets called when the service daemon
+/*
+Release This method gets called when the service daemon
 unregisters the endpoint. An endpoint can use it to do
 cleanup tasks. There is no need to unregister the
 endpoint, because when this method gets called it has
 already been unregistered.
+*/
 func (a *MediaEndpoint1) Release() error {
 	
 	return a.client.Call("Release", 0, ).Store()

@@ -255,23 +255,27 @@ func (a *MessageAccess1) UnwatchProperties(ch chan *bluez.PropertyChanged) error
 
 
 
-//SetFolder Set working directory for current session, *name* may
+/*
+SetFolder Set working directory for current session, *name* may
 be the directory name or '..[/dir]'.
 Possible errors: org.bluez.obex.Error.InvalidArguments
 org.bluez.obex.Error.Failed
+*/
 func (a *MessageAccess1) SetFolder(name string) error {
 	
 	return a.client.Call("SetFolder", 0, name).Store()
 	
 }
 
-//ListFolders Returns a dictionary containing information about
+/*
+ListFolders Returns a dictionary containing information about
 the current folder content.
 The following keys are defined:
 string Name : Folder name
 Possible filters: Offset and MaxCount
 Possible errors: org.bluez.obex.Error.InvalidArguments
 org.bluez.obex.Error.Failed
+*/
 func (a *MessageAccess1) ListFolders(filter map[string]interface{}) ([]map[string]interface{}, error) {
 	
 	var val0 []map[string]interface{}
@@ -279,9 +283,11 @@ func (a *MessageAccess1) ListFolders(filter map[string]interface{}) ([]map[strin
 	return val0, err	
 }
 
-//ListFilterFields Return all available fields that can be used in Fields
+/*
+ListFilterFields Return all available fields that can be used in Fields
 filter.
 Possible errors: None
+*/
 func (a *MessageAccess1) ListFilterFields() ([]string, error) {
 	
 	var val0 []string
@@ -289,7 +295,8 @@ func (a *MessageAccess1) ListFilterFields() ([]string, error) {
 	return val0, err	
 }
 
-//ListMessages Returns an array containing the messages found in the
+/*
+ListMessages Returns an array containing the messages found in the
 given subfolder of the current folder, or in the
 current folder if folder is empty.
 Possible Filters: Offset, MaxCount, SubjectLength, Fields,
@@ -341,6 +348,7 @@ boolean Protected:
 Message protected flag
 Possible errors: org.bluez.obex.Error.InvalidArguments
 org.bluez.obex.Error.Failed
+*/
 func (a *MessageAccess1) ListMessages(folder string, filter map[string]interface{}) ([]dbus.ObjectPath, map[string]interface{}, error) {
 	
 	var val0 []dbus.ObjectPath
@@ -349,14 +357,17 @@ func (a *MessageAccess1) ListMessages(folder string, filter map[string]interface
 	return val0, val1, err	
 }
 
-//UpdateInbox 
+/*
+UpdateInbox 
+*/
 func (a *MessageAccess1) UpdateInbox() error {
 	
 	return a.client.Call("UpdateInbox", 0, ).Store()
 	
 }
 
-//PushMessage Transfer a message (in bMessage format) to the
+/*
+PushMessage Transfer a message (in bMessage format) to the
 remote device.
 The message is transferred either to the given
 subfolder of the current folder, or to the current
@@ -399,6 +410,7 @@ boolean Priority:
 Filter messages by priority flag.
 Possible values: True for high priority or False for
 non-high priority
+*/
 func (a *MessageAccess1) PushMessage(sourcefile string, folder string, args map[string]interface{}) error {
 	
 	return a.client.Call("PushMessage", 0, sourcefile, folder, args).Store()

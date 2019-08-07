@@ -56,18 +56,24 @@ type HealthChannel1 struct {
 type HealthChannel1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// Application Identifies the HealthApplication to which this channel
-  is related to (which indirectly defines its role and
-  data type).
-	Application dbus.ObjectPath
-
-	// Type The quality of service of the data channel. ("reliable"
+	/*
+	Type The quality of service of the data channel. ("reliable"
   or "streaming")
+	*/
 	Type string
 
-	// Device Identifies the Remote Device that is connected with.
+	/*
+	Device Identifies the Remote Device that is connected with.
   Maps with a HealthDevice object.
+	*/
 	Device dbus.ObjectPath
+
+	/*
+	Application Identifies the HealthApplication to which this channel
+  is related to (which indirectly defines its role and
+  data type).
+	*/
+	Application dbus.ObjectPath
 
 }
 
@@ -81,20 +87,6 @@ func (p *HealthChannel1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-// SetApplication set Application value
-func (a *HealthChannel1) SetApplication(v dbus.ObjectPath) error {
-	return a.SetProperty("Application", v)
-}
-
-// GetApplication get Application value
-func (a *HealthChannel1) GetApplication() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Application")
-	if err != nil {
-		return dbus.ObjectPath(""), err
-	}
-	return v.Value().(dbus.ObjectPath), nil
-}
 
 // SetType set Type value
 func (a *HealthChannel1) SetType(v string) error {
@@ -118,6 +110,20 @@ func (a *HealthChannel1) SetDevice(v dbus.ObjectPath) error {
 // GetDevice get Device value
 func (a *HealthChannel1) GetDevice() (dbus.ObjectPath, error) {
 	v, err := a.GetProperty("Device")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
+}
+
+// SetApplication set Application value
+func (a *HealthChannel1) SetApplication(v dbus.ObjectPath) error {
+	return a.SetProperty("Application", v)
+}
+
+// GetApplication get Application value
+func (a *HealthChannel1) GetApplication() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Application")
 	if err != nil {
 		return dbus.ObjectPath(""), err
 	}
@@ -310,11 +316,13 @@ func (a *HealthChannel1) UnwatchProperties(ch chan *bluez.PropertyChanged) error
 
 
 
-//Acquire Returns the file descriptor for this data channel. If
+/*
+Acquire Returns the file descriptor for this data channel. If
 the data channel is not connected it will also
 reconnect.
 Possible Errors: org.bluez.Error.NotConnected
 org.bluez.Error.NotAllowed
+*/
 func (a *HealthChannel1) Acquire() (dbus.UnixFD, error) {
 	
 	var val0 dbus.UnixFD
@@ -322,15 +330,19 @@ func (a *HealthChannel1) Acquire() (dbus.UnixFD, error) {
 	return val0, err	
 }
 
-//Release 
+/*
+Release 
+*/
 func (a *HealthChannel1) Release() error {
 	
 	return a.client.Call("Release", 0, ).Store()
 	
 }
 
-//close Possible Errors: org.bluez.Error.NotAcquired
+/*
+close Possible Errors: org.bluez.Error.NotAcquired
 org.bluez.Error.NotAllowed
+*/
 func (a *HealthChannel1) close() error {
 	
 	return a.client.Call("close", 0, ).Store()

@@ -82,7 +82,34 @@ type MediaFolder1 struct {
 type MediaFolder1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// Name Folder name:
+	/*
+	Start Offset of the first item.
+  Default value: 0
+	*/
+	Start uint32
+
+	/*
+	End Offset of the last item.
+  Default value: NumbeOfItems
+	*/
+	End uint32
+
+	/*
+	Attributes Item properties that should be included in the list.
+  Possible Values:
+  "title", "artist", "album", "genre",
+  "number-of-tracks", "number", "duration"
+  Default Value: All
+	*/
+	Attributes []string
+
+	/*
+	NumberOfItems Number of items in the folder
+	*/
+	NumberOfItems uint32
+
+	/*
+	Name Folder name:
   Possible values:
   "/Filesystem/...": Filesystem scope
   "/NowPlaying/...": NowPlaying scope
@@ -91,25 +118,8 @@ type MediaFolder1Properties struct {
   once another Search is perform or the folder is
   changed using ChangeFolder it will no longer be listed.
   Filters
+	*/
 	Name string
-
-	// Start Offset of the first item.
-  Default value: 0
-	Start uint32
-
-	// End Offset of the last item.
-  Default value: NumbeOfItems
-	End uint32
-
-	// Attributes Item properties that should be included in the list.
-  Possible Values:
-  "title", "artist", "album", "genre",
-  "number-of-tracks", "number", "duration"
-  Default Value: All
-	Attributes []string
-
-	// NumberOfItems Number of items in the folder
-	NumberOfItems uint32
 
 }
 
@@ -123,20 +133,6 @@ func (p *MediaFolder1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-// SetName set Name value
-func (a *MediaFolder1) SetName(v string) error {
-	return a.SetProperty("Name", v)
-}
-
-// GetName get Name value
-func (a *MediaFolder1) GetName() (string, error) {
-	v, err := a.GetProperty("Name")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
 
 // SetStart set Start value
 func (a *MediaFolder1) SetStart(v uint32) error {
@@ -192,6 +188,20 @@ func (a *MediaFolder1) GetNumberOfItems() (uint32, error) {
 		return uint32(0), err
 	}
 	return v.Value().(uint32), nil
+}
+
+// SetName set Name value
+func (a *MediaFolder1) SetName(v string) error {
+	return a.SetProperty("Name", v)
+}
+
+// GetName get Name value
+func (a *MediaFolder1) GetName() (string, error) {
+	v, err := a.GetProperty("Name")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 
@@ -380,11 +390,13 @@ func (a *MediaFolder1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 
 
 
-//Search Return a folder object containing the search result.
+/*
+Search Return a folder object containing the search result.
 To list the items found use the folder object returned
 and pass to ChangeFolder.
 Possible Errors: org.bluez.Error.NotSupported
 org.bluez.Error.Failed
+*/
 func (a *MediaFolder1) Search(value string, filter map[string]interface{}) (dbus.ObjectPath, error) {
 	
 	var val0 dbus.ObjectPath
@@ -392,7 +404,8 @@ func (a *MediaFolder1) Search(value string, filter map[string]interface{}) (dbus
 	return val0, err	
 }
 
-//ChangeFolder Change current folder.
+/*
+ChangeFolder Change current folder.
 Note: By changing folder the items of previous folder
 might be destroyed and have to be listed again, the
 exception is NowPlaying folder which should be always
@@ -400,6 +413,7 @@ present while the player is active.
 Possible Errors: org.bluez.Error.InvalidArguments
 org.bluez.Error.NotSupported
 org.bluez.Error.Failed
+*/
 func (a *MediaFolder1) ChangeFolder(folder dbus.ObjectPath) error {
 	
 	return a.client.Call("ChangeFolder", 0, folder).Store()

@@ -56,38 +56,52 @@ type MediaTransport1 struct {
 type MediaTransport1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// UUID UUID of the profile which the transport is for.
+	/*
+	Volume Optional. Indicates volume level of the transport,
+  this property is only writeable when the transport was
+  acquired by the sender.
+  Possible Values: 0-127
+	*/
+	Volume uint16
+
+	/*
+	Device Device object which the transport is connected to.
+	*/
+	Device dbus.ObjectPath
+
+	/*
+	UUID UUID of the profile which the transport is for.
+	*/
 	UUID string
 
-	// Codec Assigned number of codec that the transport support.
+	/*
+	Codec Assigned number of codec that the transport support.
   The values should match the profile specification which
   is indicated by the UUID.
+	*/
 	Codec byte
 
-	// Configuration Configuration blob, it is used as it is so the size and
+	/*
+	Configuration Configuration blob, it is used as it is so the size and
   byte order must match.
+	*/
 	Configuration []byte
 
-	// State Indicates the state of the transport. Possible
+	/*
+	State Indicates the state of the transport. Possible
   values are:
   "idle": not streaming
   "pending": streaming but not acquired
   "active": streaming and acquired
+	*/
 	State string
 
-	// Delay Optional. Transport delay in 1/10 of millisecond, this
+	/*
+	Delay Optional. Transport delay in 1/10 of millisecond, this
   property is only writeable when the transport was
   acquired by the sender.
+	*/
 	Delay uint16
-
-	// Volume Optional. Indicates volume level of the transport,
-  this property is only writeable when the transport was
-  acquired by the sender.
-  Possible Values: 0-127
-	Volume uint16
-
-	// Device Device object which the transport is connected to.
-	Device dbus.ObjectPath
 
 }
 
@@ -101,6 +115,34 @@ func (p *MediaTransport1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
+
+// SetVolume set Volume value
+func (a *MediaTransport1) SetVolume(v uint16) error {
+	return a.SetProperty("Volume", v)
+}
+
+// GetVolume get Volume value
+func (a *MediaTransport1) GetVolume() (uint16, error) {
+	v, err := a.GetProperty("Volume")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
+
+// SetDevice set Device value
+func (a *MediaTransport1) SetDevice(v dbus.ObjectPath) error {
+	return a.SetProperty("Device", v)
+}
+
+// GetDevice get Device value
+func (a *MediaTransport1) GetDevice() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Device")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
+}
 
 // SetUUID set UUID value
 func (a *MediaTransport1) SetUUID(v string) error {
@@ -170,34 +212,6 @@ func (a *MediaTransport1) GetDelay() (uint16, error) {
 		return uint16(0), err
 	}
 	return v.Value().(uint16), nil
-}
-
-// SetVolume set Volume value
-func (a *MediaTransport1) SetVolume(v uint16) error {
-	return a.SetProperty("Volume", v)
-}
-
-// GetVolume get Volume value
-func (a *MediaTransport1) GetVolume() (uint16, error) {
-	v, err := a.GetProperty("Volume")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
-}
-
-// SetDevice set Device value
-func (a *MediaTransport1) SetDevice(v dbus.ObjectPath) error {
-	return a.SetProperty("Device", v)
-}
-
-// GetDevice get Device value
-func (a *MediaTransport1) GetDevice() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Device")
-	if err != nil {
-		return dbus.ObjectPath(""), err
-	}
-	return v.Value().(dbus.ObjectPath), nil
 }
 
 
@@ -386,10 +400,12 @@ func (a *MediaTransport1) UnwatchProperties(ch chan *bluez.PropertyChanged) erro
 
 
 
-//Acquire Acquire transport file descriptor and the MTU for read
+/*
+Acquire Acquire transport file descriptor and the MTU for read
 and write respectively.
 Possible Errors: org.bluez.Error.NotAuthorized
 org.bluez.Error.Failed
+*/
 func (a *MediaTransport1) Acquire() (dbus.UnixFD, uint16, uint16, error) {
 	
 	var val0 dbus.UnixFD
@@ -399,7 +415,8 @@ func (a *MediaTransport1) Acquire() (dbus.UnixFD, uint16, uint16, error) {
 	return val0, val1, val2, err	
 }
 
-//TryAcquire Acquire transport file descriptor only if the transport
+/*
+TryAcquire Acquire transport file descriptor only if the transport
 is in "pending" state at the time the message is
 received by BlueZ. Otherwise no request will be sent
 to the remote device and the function will just fail
@@ -407,6 +424,7 @@ with org.bluez.Error.NotAvailable.
 Possible Errors: org.bluez.Error.NotAuthorized
 org.bluez.Error.Failed
 org.bluez.Error.NotAvailable
+*/
 func (a *MediaTransport1) TryAcquire() (dbus.UnixFD, uint16, uint16, error) {
 	
 	var val0 dbus.UnixFD
@@ -416,7 +434,9 @@ func (a *MediaTransport1) TryAcquire() (dbus.UnixFD, uint16, uint16, error) {
 	return val0, val1, val2, err	
 }
 
-//Release Releases file descriptor.
+/*
+Release Releases file descriptor.
+*/
 func (a *MediaTransport1) Release() error {
 	
 	return a.client.Call("Release", 0, ).Store()

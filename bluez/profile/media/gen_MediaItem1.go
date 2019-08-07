@@ -82,63 +82,89 @@ type MediaItem1 struct {
 type MediaItem1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// FolderType Folder type.
+	/*
+	FolderType Folder type.
   Possible values: "mixed", "titles", "albums", "artists"
   Available if property Type is "Folder"
+	*/
 	FolderType string
 
-	// Metadata Item metadata.
+	/*
+	Metadata Item metadata.
   Possible values:
+	*/
 	Metadata map[string]interface{}
 
-	// Title Item title name
+	/*
+	Duration Item duration in milliseconds
   Available if property Type is "audio"
   or "video"
-	Title string
+	*/
+	Duration uint32
 
-	// Artist Item artist name
-  Available if property Type is "audio"
-  or "video"
-	Artist string
-
-	// Album Item album name
-  Available if property Type is "audio"
-  or "video"
-	Album string
-
-	// Player Player object path the item belongs to
+	/*
+	Player Player object path the item belongs to
+	*/
 	Player dbus.ObjectPath
 
-	// Name Item displayable name
+	/*
+	Name Item displayable name
+	*/
 	Name string
 
-	// Type Item type
-  Possible values: "video", "audio", "folder"
-	Type string
-
-	// NumberOfTracks Item album number of tracks in total
+	/*
+	Title Item title name
   Available if property Type is "audio"
   or "video"
-	NumberOfTracks uint32
+	*/
+	Title string
 
-	// Number Item album number
+	/*
+	Artist Item artist name
   Available if property Type is "audio"
   or "video"
-	Number uint32
+	*/
+	Artist string
 
-	// Playable Indicates if the item can be played
-  Available if property Type is "folder"
-	Playable bool
-
-	// Genre Item genre name
+	/*
+	Album Item album name
   Available if property Type is "audio"
   or "video"
+	*/
+	Album string
+
+	/*
+	Genre Item genre name
+  Available if property Type is "audio"
+  or "video"
+	*/
 	Genre string
 
-	// Duration Item duration in milliseconds
+	/*
+	NumberOfTracks Item album number of tracks in total
   Available if property Type is "audio"
   or "video"
-	Duration uint32
+	*/
+	NumberOfTracks uint32
+
+	/*
+	Number Item album number
+  Available if property Type is "audio"
+  or "video"
+	*/
+	Number uint32
+
+	/*
+	Type Item type
+  Possible values: "video", "audio", "folder"
+	*/
+	Type string
+
+	/*
+	Playable Indicates if the item can be played
+  Available if property Type is "folder"
+	*/
+	Playable bool
 
 }
 
@@ -179,6 +205,48 @@ func (a *MediaItem1) GetMetadata() (map[string]interface{}, error) {
 		return map[string]interface{}{}, err
 	}
 	return v.Value().(map[string]interface{}), nil
+}
+
+// SetDuration set Duration value
+func (a *MediaItem1) SetDuration(v uint32) error {
+	return a.SetProperty("Duration", v)
+}
+
+// GetDuration get Duration value
+func (a *MediaItem1) GetDuration() (uint32, error) {
+	v, err := a.GetProperty("Duration")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
+
+// SetPlayer set Player value
+func (a *MediaItem1) SetPlayer(v dbus.ObjectPath) error {
+	return a.SetProperty("Player", v)
+}
+
+// GetPlayer get Player value
+func (a *MediaItem1) GetPlayer() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Player")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
+}
+
+// SetName set Name value
+func (a *MediaItem1) SetName(v string) error {
+	return a.SetProperty("Name", v)
+}
+
+// GetName get Name value
+func (a *MediaItem1) GetName() (string, error) {
+	v, err := a.GetProperty("Name")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 // SetTitle set Title value
@@ -223,42 +291,14 @@ func (a *MediaItem1) GetAlbum() (string, error) {
 	return v.Value().(string), nil
 }
 
-// SetPlayer set Player value
-func (a *MediaItem1) SetPlayer(v dbus.ObjectPath) error {
-	return a.SetProperty("Player", v)
+// SetGenre set Genre value
+func (a *MediaItem1) SetGenre(v string) error {
+	return a.SetProperty("Genre", v)
 }
 
-// GetPlayer get Player value
-func (a *MediaItem1) GetPlayer() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Player")
-	if err != nil {
-		return dbus.ObjectPath(""), err
-	}
-	return v.Value().(dbus.ObjectPath), nil
-}
-
-// SetName set Name value
-func (a *MediaItem1) SetName(v string) error {
-	return a.SetProperty("Name", v)
-}
-
-// GetName get Name value
-func (a *MediaItem1) GetName() (string, error) {
-	v, err := a.GetProperty("Name")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-// SetType set Type value
-func (a *MediaItem1) SetType(v string) error {
-	return a.SetProperty("Type", v)
-}
-
-// GetType get Type value
-func (a *MediaItem1) GetType() (string, error) {
-	v, err := a.GetProperty("Type")
+// GetGenre get Genre value
+func (a *MediaItem1) GetGenre() (string, error) {
+	v, err := a.GetProperty("Genre")
 	if err != nil {
 		return "", err
 	}
@@ -293,6 +333,20 @@ func (a *MediaItem1) GetNumber() (uint32, error) {
 	return v.Value().(uint32), nil
 }
 
+// SetType set Type value
+func (a *MediaItem1) SetType(v string) error {
+	return a.SetProperty("Type", v)
+}
+
+// GetType get Type value
+func (a *MediaItem1) GetType() (string, error) {
+	v, err := a.GetProperty("Type")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
 // SetPlayable set Playable value
 func (a *MediaItem1) SetPlayable(v bool) error {
 	return a.SetProperty("Playable", v)
@@ -305,34 +359,6 @@ func (a *MediaItem1) GetPlayable() (bool, error) {
 		return false, err
 	}
 	return v.Value().(bool), nil
-}
-
-// SetGenre set Genre value
-func (a *MediaItem1) SetGenre(v string) error {
-	return a.SetProperty("Genre", v)
-}
-
-// GetGenre get Genre value
-func (a *MediaItem1) GetGenre() (string, error) {
-	v, err := a.GetProperty("Genre")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-// SetDuration set Duration value
-func (a *MediaItem1) SetDuration(v uint32) error {
-	return a.SetProperty("Duration", v)
-}
-
-// GetDuration get Duration value
-func (a *MediaItem1) GetDuration() (uint32, error) {
-	v, err := a.GetProperty("Duration")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
 }
 
 
@@ -521,18 +547,22 @@ func (a *MediaItem1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 
 
 
-//Play Play item
+/*
+Play Play item
 Possible Errors: org.bluez.Error.NotSupported
 org.bluez.Error.Failed
+*/
 func (a *MediaItem1) Play() error {
 	
 	return a.client.Call("Play", 0, ).Store()
 	
 }
 
-//AddtoNowPlaying Add item to now playing list
+/*
+AddtoNowPlaying Add item to now playing list
 Possible Errors: org.bluez.Error.NotSupported
 org.bluez.Error.Failed
+*/
 func (a *MediaItem1) AddtoNowPlaying() error {
 	
 	return a.client.Call("AddtoNowPlaying", 0, ).Store()

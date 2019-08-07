@@ -255,7 +255,8 @@ func (a *NetworkServer1) UnwatchProperties(ch chan *bluez.PropertyChanged) error
 
 
 
-//Register Register server for the provided UUID. Every new
+/*
+Register Register server for the provided UUID. Every new
 connection to this server will be added the bridge
 interface.
 Valid UUIDs are "gn", "panu" or "nap".
@@ -263,15 +264,18 @@ Initially no network server SDP is provided. Only
 after this method a SDP record will be available
 and the BNEP server will be ready for incoming
 connections.
+*/
 func (a *NetworkServer1) Register(uuid string, bridge string) error {
 	
 	return a.client.Call("Register", 0, uuid, bridge).Store()
 	
 }
 
-//Unregister Unregister the server for provided UUID.
+/*
+Unregister Unregister the server for provided UUID.
 All servers will be automatically unregistered when
 the calling application terminates.
+*/
 func (a *NetworkServer1) Unregister(uuid string) error {
 	
 	return a.client.Call("Unregister", 0, uuid).Store()

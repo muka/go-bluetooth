@@ -255,25 +255,30 @@ func (a *FileTransfer) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 
 
 
-//ChangeFolder Change the current folder of the remote device.
+/*
+ChangeFolder Change the current folder of the remote device.
 Possible errors: org.bluez.obex.Error.InvalidArguments
 org.bluez.obex.Error.Failed
+*/
 func (a *FileTransfer) ChangeFolder(folder string) error {
 	
 	return a.client.Call("ChangeFolder", 0, folder).Store()
 	
 }
 
-//CreateFolder Create a new folder in the remote device.
+/*
+CreateFolder Create a new folder in the remote device.
 Possible errors: org.bluez.obex.Error.InvalidArguments
 org.bluez.obex.Error.Failed
+*/
 func (a *FileTransfer) CreateFolder(folder string) error {
 	
 	return a.client.Call("CreateFolder", 0, folder).Store()
 	
 }
 
-//ListFolder Returns a dictionary containing information about
+/*
+ListFolder Returns a dictionary containing information about
 the current folder content.
 The following keys are defined:
 string Name : Object name in UTF-8 format
@@ -286,6 +291,7 @@ uint64 Modified : Last change
 uint64 Accessed : Last access
 uint64 Created : Creation date
 Possible errors: org.bluez.obex.Error.Failed
+*/
 func (a *FileTransfer) ListFolder() ([]map[string]interface{}, error) {
 	
 	var val0 []map[string]interface{}
@@ -293,7 +299,8 @@ func (a *FileTransfer) ListFolder() ([]map[string]interface{}, error) {
 	return val0, err	
 }
 
-//GetFile Copy the source file (from remote device) to the
+/*
+GetFile Copy the source file (from remote device) to the
 target file (on local filesystem).
 If an empty target file is given, a name will be
 automatically calculated for the temporary file.
@@ -304,6 +311,7 @@ The properties of this transfer are also returned along
 with the object path, to avoid a call to GetProperties.
 Possible errors: org.bluez.obex.Error.InvalidArguments
 org.bluez.obex.Error.Failed
+*/
 func (a *FileTransfer) GetFile(targetfile string, sourcefile string) (dbus.ObjectPath, map[string]interface{}, error) {
 	
 	var val0 dbus.ObjectPath
@@ -312,7 +320,8 @@ func (a *FileTransfer) GetFile(targetfile string, sourcefile string) (dbus.Objec
 	return val0, val1, err	
 }
 
-//PutFile Copy the source file (from local filesystem) to the
+/*
+PutFile Copy the source file (from local filesystem) to the
 target file (on remote device).
 The returned path represents the newly created transfer,
 which should be used to find out if the content has been
@@ -321,6 +330,7 @@ The properties of this transfer are also returned along
 with the object path, to avoid a call to GetProperties.
 Possible errors: org.bluez.obex.Error.InvalidArguments
 org.bluez.obex.Error.Failed
+*/
 func (a *FileTransfer) PutFile(sourcefile string, targetfile string) (dbus.ObjectPath, map[string]interface{}, error) {
 	
 	var val0 dbus.ObjectPath
@@ -329,29 +339,35 @@ func (a *FileTransfer) PutFile(sourcefile string, targetfile string) (dbus.Objec
 	return val0, val1, err	
 }
 
-//CopyFile Copy a file within the remote device from source file
+/*
+CopyFile Copy a file within the remote device from source file
 to target file.
 Possible errors: org.bluez.obex.Error.InvalidArguments
 org.bluez.obex.Error.Failed
+*/
 func (a *FileTransfer) CopyFile(sourcefile string, targetfile string) error {
 	
 	return a.client.Call("CopyFile", 0, sourcefile, targetfile).Store()
 	
 }
 
-//MoveFile Move a file within the remote device from source file
+/*
+MoveFile Move a file within the remote device from source file
 to the target file.
 Possible errors: org.bluez.obex.Error.InvalidArguments
 org.bluez.obex.Error.Failed
+*/
 func (a *FileTransfer) MoveFile(sourcefile string, targetfile string) error {
 	
 	return a.client.Call("MoveFile", 0, sourcefile, targetfile).Store()
 	
 }
 
-//Delete Deletes the specified file/folder.
+/*
+Delete Deletes the specified file/folder.
 Possible errors: org.bluez.obex.Error.InvalidArguments
 org.bluez.obex.Error.Failed
+*/
 func (a *FileTransfer) Delete(file string) error {
 	
 	return a.client.Call("Delete", 0, file).Store()
