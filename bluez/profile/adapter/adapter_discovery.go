@@ -19,6 +19,7 @@ type DeviceDiscovered struct {
 	Type uint8
 }
 
+// DeviceDiscovered monitor for new devices and send updates via channel. Use cancel to close the monitoring process
 func (a *Adapter1) DeviceDiscovered() (chan *DeviceDiscovered, func(), error) {
 
 	signal, omSignalCancel, err := a.GetObjectManagerSignal()

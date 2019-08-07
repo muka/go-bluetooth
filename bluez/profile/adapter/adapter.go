@@ -9,16 +9,19 @@ import (
 	"github.com/muka/go-bluetooth/bluez/profile/device"
 )
 
+// GetAdapterID return the Id of the adapter
 func (a *Adapter1) GetAdapterID() (string, error) {
 	return ParseAdapterID(a.Path())
 }
 
 var defaultAdapterID = "hci0"
 
+// SetDefaultAdapterID set the default adapter
 func SetDefaultAdapterID(a string) {
 	defaultAdapterID = a
 }
 
+// GetDefaultAdapterID get the default adapter
 func GetDefaultAdapterID() string {
 	return defaultAdapterID
 }
@@ -78,6 +81,7 @@ func GetAdapter(adapterID string) (*Adapter1, error) {
 	return NewAdapter1FromAdapterID(adapterID)
 }
 
+// GetAdapterFromDevicePath Return an adapter based on a device path
 func GetAdapterFromDevicePath(path dbus.ObjectPath) (*Adapter1, error) {
 
 	d, err := device.NewDevice1(path)

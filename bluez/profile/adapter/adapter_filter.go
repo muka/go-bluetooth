@@ -8,6 +8,7 @@ const (
 	DiscoveryFilterTransportLE    = "le"
 )
 
+// Filter applied to discovery
 type DiscoveryFilter struct {
 
 	// Filter by service UUIDs, empty means match
@@ -74,6 +75,7 @@ func (a *DiscoveryFilter) uuidExists(uuid string) bool {
 	return false
 }
 
+// Add an UUID to filter if it does not exists
 func (a *DiscoveryFilter) AddUUIDs(uuids ...string) {
 	for _, uuid := range uuids {
 		if !a.uuidExists(uuid) {
@@ -82,7 +84,7 @@ func (a *DiscoveryFilter) AddUUIDs(uuids ...string) {
 	}
 }
 
-// ToMap convert to a format compatible with adapter SetDiscoveryFilter
+// ToMap convert to a format compatible with SetDiscoveryFilter method call
 func (a *DiscoveryFilter) ToMap() map[string]interface{} {
 
 	m := make(map[string]interface{})
@@ -98,6 +100,7 @@ func (a *DiscoveryFilter) ToMap() map[string]interface{} {
 	return m
 }
 
+// initialize a new DiscoveryFilter
 func NewDiscoveryFilter() DiscoveryFilter {
 	return DiscoveryFilter{
 		// defaults
