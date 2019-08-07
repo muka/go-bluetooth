@@ -1,8 +1,10 @@
 # go-bluetooth
 
-Go bluetooth API based on Bluez reference documentation https://git.kernel.org/cgit/bluetooth/bluez.git/tree/doc
+Go bluetooth API for Bluez DBus interface.
 
 [![GoDoc](https://godoc.org/github.com/muka/go-bluetooth?status.svg)](https://godoc.org/github.com/muka/go-bluetooth)
+
+<img align="center" width="240" src="./gopher.png">
 
 ## Usage
 
@@ -100,6 +102,7 @@ Feel free to open an issue and/or a PR to contribute. If you would like to help 
 - https://github.com/nettlep/gobbledegook
 - https://dbus.freedesktop.org/doc/dbus-specification.html#type-system
 - http://processors.wiki.ti.com/images/a/a8/BLE_SensorTag_GATT_Server.pdf
+- https://git.kernel.org/cgit/bluetooth/bluez.git/tree/doc
 
 ## License
 
