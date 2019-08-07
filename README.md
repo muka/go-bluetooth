@@ -2,6 +2,8 @@
 
 Go bluetooth API based on Bluez reference documentation https://git.kernel.org/cgit/bluetooth/bluez.git/tree/doc
 
+[![GoDoc](https://godoc.org/github.com/muka/go-bluetooth?status.svg)](https://godoc.org/github.com/muka/go-bluetooth)
+
 ## Usage
 
 1. Build the binary
