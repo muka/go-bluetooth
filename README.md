@@ -11,6 +11,7 @@ Go bluetooth API for Bluez DBus interface.
 1. Build the binary
 
   `cd $GOPATH/src/github.com/muka/go-bluetooth && make build`
+
 2. Run the examples eg.
 
   `go-bluetooth discovery`
