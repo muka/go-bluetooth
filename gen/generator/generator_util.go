@@ -54,7 +54,8 @@ func prepareDocs(src string, skipFirstComment bool, leftpad int) string {
 	lines := strings.Split(src, "\n")
 	result := []string{}
 
-	comment := "// "
+	// comment := "// "
+	comment := ""
 	prefixLen := leftpad + len(comment)
 	fmtt := fmt.Sprintf("%%%ds%%s", prefixLen)
 

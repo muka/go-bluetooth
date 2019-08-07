@@ -41,8 +41,10 @@ func NewMediaEndpoint1(servicePath string, objectPath dbus.ObjectPath) (*MediaEn
 }
 
 
-// MediaEndpoint1 MediaEndpoint1 hierarchy
+/*
+MediaEndpoint1 MediaEndpoint1 hierarchy
 
+*/
 type MediaEndpoint1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
@@ -57,10 +59,12 @@ type MediaEndpoint1Properties struct {
 
 }
 
+//Lock access to properties
 func (p *MediaEndpoint1Properties) Lock() {
 	p.lock.Lock()
 }
 
+//Unlock access to properties
 func (p *MediaEndpoint1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -260,12 +264,12 @@ func (a *MediaEndpoint1) SetConfiguration(transport dbus.ObjectPath, properties 
 }
 
 //SelectConfiguration Select preferable configuration from the supported
-// capabilities.
-// Returns a configuration which can be used to setup
-// a transport.
-// Note: There is no need to cache the selected
-// configuration since on success the configuration is
-// send back as parameter of SetConfiguration.
+capabilities.
+Returns a configuration which can be used to setup
+a transport.
+Note: There is no need to cache the selected
+configuration since on success the configuration is
+send back as parameter of SetConfiguration.
 func (a *MediaEndpoint1) SelectConfiguration(capabilities []byte) ([]byte, error) {
 	
 	var val0 []byte
@@ -281,10 +285,10 @@ func (a *MediaEndpoint1) ClearConfiguration(transport dbus.ObjectPath) error {
 }
 
 //Release This method gets called when the service daemon
-// unregisters the endpoint. An endpoint can use it to do
-// cleanup tasks. There is no need to unregister the
-// endpoint, because when this method gets called it has
-// already been unregistered.
+unregisters the endpoint. An endpoint can use it to do
+cleanup tasks. There is no need to unregister the
+endpoint, because when this method gets called it has
+already been unregistered.
 func (a *MediaEndpoint1) Release() error {
 	
 	return a.client.Call("Release", 0, ).Store()

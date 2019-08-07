@@ -41,8 +41,10 @@ func NewThermometerWatcher1(servicePath string, objectPath dbus.ObjectPath) (*Th
 }
 
 
-// ThermometerWatcher1 Health Thermometer Watcher hierarchy
+/*
+ThermometerWatcher1 Health Thermometer Watcher hierarchy
 
+*/
 type ThermometerWatcher1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
@@ -57,10 +59,12 @@ type ThermometerWatcher1Properties struct {
 
 }
 
+//Lock access to properties
 func (p *ThermometerWatcher1Properties) Lock() {
 	p.lock.Lock()
 }
 
+//Unlock access to properties
 func (p *ThermometerWatcher1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -253,13 +257,13 @@ func (a *ThermometerWatcher1) UnwatchProperties(ch chan *bluez.PropertyChanged) 
 
 
 //MeasurementReceived This callback gets called when a measurement has been
-// scanned in the thermometer.
-// Measurement:
-// int16 Exponent:
-// int32 Mantissa:
-// Exponent and Mantissa values as
-// extracted from float value defined by
-// IEEE-11073-20601.
+scanned in the thermometer.
+Measurement:
+int16 Exponent:
+int32 Mantissa:
+Exponent and Mantissa values as
+extracted from float value defined by
+IEEE-11073-20601.
 func (a *ThermometerWatcher1) MeasurementReceived(measurement map[string]interface{}) error {
 	
 	return a.client.Call("MeasurementReceived", 0, measurement).Store()

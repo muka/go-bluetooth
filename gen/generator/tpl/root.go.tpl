@@ -1,3 +1,5 @@
-// {{.Name}} [{{.FileName}}]
+/*
+{{.Name}} [{{.FileName}}]
 {{.Description}}
+*/
 package {{.Package}}

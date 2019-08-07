@@ -40,8 +40,10 @@ func NewProfileManager1() (*ProfileManager1, error) {
 }
 
 
-// ProfileManager1 Profile Manager hierarchy
+/*
+ProfileManager1 Profile Manager hierarchy
 
+*/
 type ProfileManager1 struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
@@ -56,10 +58,12 @@ type ProfileManager1Properties struct {
 
 }
 
+//Lock access to properties
 func (p *ProfileManager1Properties) Lock() {
 	p.lock.Lock()
 }
 
+//Unlock access to properties
 func (p *ProfileManager1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -252,15 +256,15 @@ func (a *ProfileManager1) UnwatchProperties(ch chan *bluez.PropertyChanged) erro
 
 
 //RegisterProfile This registers a profile implementation.
-// If an application disconnects from the bus all
-// its registered profiles will be removed.
-// HFP HS UUID: 0000111e-0000-1000-8000-00805f9b34fb
-// Default RFCOMM channel is 6. And this requires
-// authentication.
-// Available options:
-// string Name
-// Human readable name for the profile
-// string Service
+If an application disconnects from the bus all
+its registered profiles will be removed.
+HFP HS UUID: 0000111e-0000-1000-8000-00805f9b34fb
+Default RFCOMM channel is 6. And this requires
+authentication.
+Available options:
+string Name
+Human readable name for the profile
+string Service
 func (a *ProfileManager1) RegisterProfile(profile dbus.ObjectPath, uuid string, options map[string]interface{}) error {
 	
 	return a.client.Call("RegisterProfile", 0, profile, uuid, options).Store()
@@ -268,9 +272,9 @@ func (a *ProfileManager1) RegisterProfile(profile dbus.ObjectPath, uuid string, 
 }
 
 //UnregisterProfile This unregisters the profile that has been previously
-// registered. The object path parameter must match the
-// same value that has been used on registration.
-// Possible errors: org.bluez.Error.DoesNotExist
+registered. The object path parameter must match the
+same value that has been used on registration.
+Possible errors: org.bluez.Error.DoesNotExist
 func (a *ProfileManager1) UnregisterProfile(profile dbus.ObjectPath) error {
 	
 	return a.client.Call("UnregisterProfile", 0, profile).Store()

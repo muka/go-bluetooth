@@ -31,8 +31,10 @@ func New{{$InterfaceName}}{{.Role}}({{.Args}}) (*{{$InterfaceName}}, error) {
 }
 {{end}}
 
-// {{.InterfaceName}} {{.Api.Title}}
+/*
+{{.InterfaceName}} {{.Api.Title}}
 {{.Api.Description}}
+*/
 type {{.InterfaceName}} struct {
 	client     				*bluez.Client
 	propertiesSignal 	chan *dbus.Signal
@@ -50,10 +52,12 @@ type {{.InterfaceName}}Properties struct {
 {{end}}
 }
 
+//Lock access to properties
 func (p *{{.InterfaceName}}Properties) Lock() {
 	p.lock.Lock()
 }
 
+//Unlock access to properties
 func (p *{{.InterfaceName}}Properties) Unlock() {
 	p.lock.Unlock()
 }

@@ -1,3 +1,4 @@
+// package api wraps an high level API to simplify interaction
 package api
 
 import (

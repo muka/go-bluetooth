@@ -1,3 +1,5 @@
-// BlueZ D-Bus Media API description [media-api.txt]
+/*
+BlueZ D-Bus Media API description [media-api.txt]
 
+*/
 package media
