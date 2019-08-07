@@ -30,10 +30,16 @@ var discoveryCmd = &cobra.Command{
 			fail(err)
 		}
 
-		fail(discovery_example.Run(adapterID))
+		onlyBeacon, err := cmd.Flags().GetBool("beacon")
+		if err != nil {
+			fail(err)
+		}
+
+		fail(discovery_example.Run(adapterID, onlyBeacon))
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(discoveryCmd)
+	discoveryCmd.Flags().BoolP("beacon", "b", false, "Only report beacons")
 }

@@ -9,11 +9,6 @@ import (
 	"github.com/muka/go-bluetooth/bluez/profile/device"
 )
 
-// GetAdapterID return the Id of the adapter
-func (a *Adapter1) GetAdapterID() (string, error) {
-	return ParseAdapterID(a.Path())
-}
-
 var defaultAdapterID = "hci0"
 
 // SetDefaultAdapterID set the default adapter

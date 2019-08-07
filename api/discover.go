@@ -6,18 +6,28 @@ import (
 )
 
 // Discover start device discovery
-func Discover(adapterID string, filter *adapter.DiscoveryFilter) (chan *adapter.DeviceDiscovered, func(), error) {
+func Discover(a *adapter.Adapter1, filter *adapter.DiscoveryFilter) (chan *adapter.DeviceDiscovered, func(), error) {
 
-	a, err := adapter.NewAdapter1FromAdapterID(adapterID)
+	err := a.SetPairable(false)
+	if err != nil {
+		return nil, nil, err
+	}
+	err = a.SetDiscoverable(false)
+	if err != nil {
+		return nil, nil, err
+	}
+	err = a.SetPowered(true)
 	if err != nil {
 		return nil, nil, err
 	}
 
+	filterMap := make(map[string]interface{})
 	if filter != nil {
-		err = a.SetDiscoveryFilter(filter.ToMap())
-		if err != nil {
-			return nil, nil, err
-		}
+		filterMap = filter.ToMap()
+	}
+	err = a.SetDiscoveryFilter(filterMap)
+	if err != nil {
+		return nil, nil, err
 	}
 
 	err = a.StartDiscovery()
@@ -25,7 +35,7 @@ func Discover(adapterID string, filter *adapter.DiscoveryFilter) (chan *adapter.
 		return nil, nil, err
 	}
 
-	ch, discoveryCancel, err := a.DeviceDiscovered()
+	ch, discoveryCancel, err := a.OnDeviceDiscovered()
 
 	cancel := func() {
 		err := a.StopDiscovery()

@@ -4,6 +4,7 @@ import (
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile/device"
+	log "github.com/sirupsen/logrus"
 )
 
 const (
@@ -19,8 +20,8 @@ type DeviceDiscovered struct {
 	Type uint8
 }
 
-// DeviceDiscovered monitor for new devices and send updates via channel. Use cancel to close the monitoring process
-func (a *Adapter1) DeviceDiscovered() (chan *DeviceDiscovered, func(), error) {
+// OnDeviceDiscovered monitor for new devices and send updates via channel. Use cancel to close the monitoring process
+func (a *Adapter1) OnDeviceDiscovered() (chan *DeviceDiscovered, func(), error) {
 
 	signal, omSignalCancel, err := a.GetObjectManagerSignal()
 	if err != nil {
@@ -30,8 +31,6 @@ func (a *Adapter1) DeviceDiscovered() (chan *DeviceDiscovered, func(), error) {
 	ch := make(chan *DeviceDiscovered)
 	go (func() {
 		for v := range signal {
-
-			// log.Debugf("signal %v", v.Body)
 
 			if v == nil {
 				return
@@ -54,6 +53,7 @@ func (a *Adapter1) DeviceDiscovered() (chan *DeviceDiscovered, func(), error) {
 				ifaces := v.Body[1].([]string)
 				for _, iface := range ifaces {
 					if iface == device.Device1Interface {
+						log.Debugf("Removed device %s", path)
 						ch <- &DeviceDiscovered{path, op}
 					}
 				}
@@ -65,6 +65,7 @@ func (a *Adapter1) DeviceDiscovered() (chan *DeviceDiscovered, func(), error) {
 				if p == nil {
 					continue
 				}
+				log.Debugf("Added device %s", path)
 				ch <- &DeviceDiscovered{path, op}
 			}
 

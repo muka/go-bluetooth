@@ -2,7 +2,7 @@ package beacon_example
 
 import (
 	"github.com/godbus/dbus"
-	"github.com/muka/go-bluetooth/bluez/profile/adapter"
+	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez/profile/advertising"
 	"github.com/muka/go-bluetooth/service"
 	log "github.com/sirupsen/logrus"
@@ -13,15 +13,14 @@ const advertismentPath = "/org/bluez/example/advertisement0"
 func Run(beaconType, adapterID string) error {
 
 	log.Debugf("Retrieving adapter instance %s", adapterID)
-	adapter, err := adapter.NewAdapter1FromAdapterID(adapterID)
+	a, err := api.GetAdapter(adapterID)
 	if err != nil {
 		return err
 	}
 
 	props := advertising.LEAdvertisement1Properties{
-		Duration:            100,
-		Timeout:             1,
-		DiscoverableTimeout: 0,
+		Duration: 100,
+		Timeout:  100,
 	}
 
 	// Based on src/bluez/test/example-advertisement
@@ -63,15 +62,17 @@ func Run(beaconType, adapterID string) error {
 	}
 
 	log.Debug("Setup adapter")
-	err = adapter.SetProperty("Powered", true)
+	err = a.SetDiscoverable(true)
 	if err != nil {
 		return err
 	}
-	err = adapter.SetProperty("Discoverable", true)
+	//Bug? https://www.spinics.net/lists/linux-bluetooth/msg79915.html
+	// err = a.SetDiscoverableTimeout(0)
+	err = a.SetDiscoverableTimeout(100)
 	if err != nil {
 		return err
 	}
-	err = adapter.SetProperty("DiscoverableTimeout", uint32(0))
+	err = a.SetPowered(true)
 	if err != nil {
 		return err
 	}
@@ -89,7 +90,7 @@ func Run(beaconType, adapterID string) error {
 
 	defer func() {
 		advManager.UnregisterAdvertisement(adv.Path())
-		adapter.SetProperty("Discoverable", false)
+		a.SetProperty("Discoverable", false)
 	}()
 
 	log.Debugf("%s ready", beaconType)
@@ -101,8 +102,8 @@ func Run(beaconType, adapterID string) error {
 // https://scribles.net/creating-ibeacon-using-bluez-example-code-on-raspberry-pi/
 func iBeacon(props *advertising.LEAdvertisement1Properties) error {
 
-	// props.Type = advertising.AdvertisementTypeBroadcast
-	props.Type = advertising.AdvertisementTypePeripheral
+	props.Type = advertising.AdvertisementTypeBroadcast
+	// props.Type = advertising.AdvertisementTypePeripheral
 	props.LocalName = "go_ibeacon"
 
 	company_id := uint16(0x004C)
@@ -134,7 +135,8 @@ func iBeacon(props *advertising.LEAdvertisement1Properties) error {
 func eddystoneBeacon(props *advertising.LEAdvertisement1Properties) error {
 
 	props.LocalName = "goeddystone"
-	props.Type = advertising.AdvertisementTypePeripheral
+	props.Type = advertising.AdvertisementTypeBroadcast
+	// props.Type = advertising.AdvertisementTypePeripheral
 
 	props.AddServiceUUID("FEAA")
 	// props.AddServiceData("FEAA", f)

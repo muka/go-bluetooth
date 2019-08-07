@@ -2,8 +2,6 @@
 package discovery_example
 
 import (
-	"fmt"
-
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez/profile/adapter"
@@ -11,7 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func Run(adapterID string) error {
+func Run(adapterID string, onlyBeacon bool) error {
 
 	//clean up connection on exit
 	defer api.Exit()
@@ -21,13 +19,14 @@ func Run(adapterID string) error {
 		return err
 	}
 
+	log.Debug("Flush cached devices")
 	err = a.FlushDevices()
 	if err != nil {
 		return err
 	}
 
 	log.Debug("Start discovery")
-	discovery, cancel, err := api.Discover(adapterID, nil)
+	discovery, cancel, err := api.Discover(a, nil)
 	if err != nil {
 		return err
 	}
@@ -41,9 +40,22 @@ func Run(adapterID string) error {
 				continue
 			}
 
-			err = showDeviceInfo(ev.Path)
+			dev, err := device.NewDevice1(ev.Path)
 			if err != nil {
-				log.Errorf("Error: %s", err)
+				log.Errorf("%s: %s", ev.Path, err)
+				continue
+			}
+
+			if dev == nil {
+				log.Errorf("%s: not found", ev.Path)
+				continue
+			}
+
+			log.Infof("name=%s addr=%s rssi=%d", dev.Properties.Name, dev.Properties.Address, dev.Properties.RSSI)
+
+			err = handleBeacon(dev)
+			if err != nil {
+				log.Errorf("%s: %s", ev.Path, err)
 			}
 		}
 
@@ -52,21 +64,23 @@ func Run(adapterID string) error {
 	select {}
 }
 
-func showDeviceInfo(path dbus.ObjectPath) error {
+func showDeviceInfo(path dbus.ObjectPath, onlyBeacon bool) error {
 
-	dev, err := device.NewDevice1(path)
+	return nil
+}
+
+func handleBeacon(dev *device.Device1) error {
+
+	isBeacon, b, err := api.NewBeacon(dev)
 	if err != nil {
 		return err
 	}
 
-	if dev == nil {
-		return fmt.Errorf("Device not found %s", path)
-	}
-	props, err := dev.GetProperties()
-	if err != nil {
-		return fmt.Errorf("%s: Failed to get properties: %s", dev.Path(), err.Error())
+	if !isBeacon {
+		return nil
 	}
 
-	log.Infof("name=%s addr=%s rssi=%d", props.Name, props.Address, props.RSSI)
+	log.Debugf("Found beacon %s %s", b.Type, b.Device.Properties.Name)
+
 	return nil
 }

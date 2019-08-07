@@ -37,7 +37,7 @@ func createClient(adapterID, hwaddr, serviceID string) (err error) {
 		fail("showDeviceInfo", err)
 	}
 
-	discovery, cancel, err := api.Discover(adapterID, &filter)
+	discovery, cancel, err := api.Discover(a, &filter)
 	if err != nil {
 		return err
 	}
@@ -45,14 +45,14 @@ func createClient(adapterID, hwaddr, serviceID string) (err error) {
 	defer cancel()
 
 	for ev := range discovery {
-		dev, err := device.NewDevice1(ev.Path)
+		dev, err1 := device.NewDevice1(ev.Path)
 		if err != nil {
-			return err
+			return err1
 		}
 
-		err = showDeviceInfo(dev, hwaddr, serviceID)
-		if err != nil {
-			return err
+		err2 := showDeviceInfo(dev, hwaddr, serviceID)
+		if err2 != nil {
+			return err2
 		}
 
 	}

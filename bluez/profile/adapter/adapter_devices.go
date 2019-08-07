@@ -68,6 +68,7 @@ func (a *Adapter1) GetDevices() ([]*device.Device1, error) {
 		devices = append(devices, dev)
 	}
 
+	// log.Debugf("%d cached devices", len(devices))
 	return devices, nil
 }
 

@@ -1,9 +1,10 @@
 package adapter
 
 import (
-	"fmt"
 	"testing"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func TestDiscovery(t *testing.T) {
@@ -13,8 +14,9 @@ func TestDiscovery(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer a.StopDiscovery()
 
-	discovery, cancel, err := a.DeviceDiscovered()
+	discovery, cancel, err := a.OnDeviceDiscovered()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -32,9 +34,10 @@ func TestDiscovery(t *testing.T) {
 	}()
 
 	go func() {
-		sleep := 30
+		sleep := 5
 		time.Sleep(time.Duration(sleep) * time.Second)
-		wait <- fmt.Errorf("Discovery timeout exceeded (%ds)", sleep)
+		log.Debugf("Discovery timeout exceeded (%ds)", sleep)
+		wait <- nil
 	}()
 
 	err = <-wait

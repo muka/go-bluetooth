@@ -1,21 +1,20 @@
 package api
 
 import (
-	"fmt"
 	"testing"
 	"time"
+
+	log "github.com/sirupsen/logrus"
 )
 
 func TestDiscoverDevice(t *testing.T) {
 
-	adapterID := GetDefaultAdapterID()
+	a, err := GetDefaultAdapter()
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	// err := ResetController(adapterID)
-	// if err != nil {
-	// 	t.Fatal(err)
-	// }
-
-	discovery, cancel, err := Discover(adapterID, nil)
+	discovery, cancel, err := Discover(a, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -34,9 +33,10 @@ func TestDiscoverDevice(t *testing.T) {
 	}()
 
 	go func() {
-		sleep := 30
+		sleep := 5
 		time.Sleep(time.Duration(sleep) * time.Second)
-		wait <- fmt.Errorf("Discovery timeout exceeded (%ds)", sleep)
+		log.Debugf("Discovery timeout exceeded (%ds)", sleep)
+		wait <- nil
 	}()
 
 	err = <-wait

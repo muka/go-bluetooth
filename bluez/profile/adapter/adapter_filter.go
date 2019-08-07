@@ -90,6 +90,9 @@ func (a *DiscoveryFilter) ToMap() map[string]interface{} {
 	m := make(map[string]interface{})
 	util.StructToMap(a, m)
 
+	if len(a.UUIDs) == 0 {
+		delete(m, "UUIDs")
+	}
 	if a.RSSI == 0 {
 		delete(m, "RSSI")
 	}
