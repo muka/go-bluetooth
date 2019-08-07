@@ -55,14 +55,14 @@ type Network1 struct {
 type Network1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// Interface Indicates the network interface name when available.
-	Interface string
-
 	// UUID Indicates the connection role when available.
 	UUID string
 
 	// Connected Indicates if the device is connected.
 	Connected bool
+
+	// Interface Indicates the network interface name when available.
+	Interface string
 
 }
 
@@ -74,20 +74,6 @@ func (p *Network1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-// SetInterface set Interface value
-func (a *Network1) SetInterface(v string) error {
-	return a.SetProperty("Interface", v)
-}
-
-// GetInterface get Interface value
-func (a *Network1) GetInterface() (string, error) {
-	v, err := a.GetProperty("Interface")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
 
 // SetUUID set UUID value
 func (a *Network1) SetUUID(v string) error {
@@ -115,6 +101,20 @@ func (a *Network1) GetConnected() (bool, error) {
 		return false, err
 	}
 	return v.Value().(bool), nil
+}
+
+// SetInterface set Interface value
+func (a *Network1) SetInterface(v string) error {
+	return a.SetProperty("Interface", v)
+}
+
+// GetInterface get Interface value
+func (a *Network1) GetInterface() (string, error) {
+	v, err := a.GetProperty("Interface")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 

@@ -57,14 +57,6 @@ type GattCharacteristic1 struct {
 type GattCharacteristic1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// NotifyAcquired True, if this characteristic has been acquired by any
-  // client using AcquireNotify.
-  // For client this properties is ommited in case 'notify'
-  // flag is not set.
-  // For server the presence of this property indicates
-  // that AcquireNotify is supported.
-	NotifyAcquired bool
-
 	// Notifying True, if notifications or indications on this
   // characteristic are currently enabled.
 	Notifying bool
@@ -115,6 +107,14 @@ type GattCharacteristic1Properties struct {
   // that AcquireWrite is supported.
 	WriteAcquired bool
 
+	// NotifyAcquired True, if this characteristic has been acquired by any
+  // client using AcquireNotify.
+  // For client this properties is ommited in case 'notify'
+  // flag is not set.
+  // For server the presence of this property indicates
+  // that AcquireNotify is supported.
+	NotifyAcquired bool
+
 }
 
 func (p *GattCharacteristic1Properties) Lock() {
@@ -125,20 +125,6 @@ func (p *GattCharacteristic1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-// SetNotifyAcquired set NotifyAcquired value
-func (a *GattCharacteristic1) SetNotifyAcquired(v bool) error {
-	return a.SetProperty("NotifyAcquired", v)
-}
-
-// GetNotifyAcquired get NotifyAcquired value
-func (a *GattCharacteristic1) GetNotifyAcquired() (bool, error) {
-	v, err := a.GetProperty("NotifyAcquired")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
 
 // SetNotifying set Notifying value
 func (a *GattCharacteristic1) SetNotifying(v bool) error {
@@ -232,6 +218,20 @@ func (a *GattCharacteristic1) SetWriteAcquired(v bool) error {
 // GetWriteAcquired get WriteAcquired value
 func (a *GattCharacteristic1) GetWriteAcquired() (bool, error) {
 	v, err := a.GetProperty("WriteAcquired")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+// SetNotifyAcquired set NotifyAcquired value
+func (a *GattCharacteristic1) SetNotifyAcquired(v bool) error {
+	return a.SetProperty("NotifyAcquired", v)
+}
+
+// GetNotifyAcquired get NotifyAcquired value
+func (a *GattCharacteristic1) GetNotifyAcquired() (bool, error) {
+	v, err := a.GetProperty("NotifyAcquired")
 	if err != nil {
 		return false, err
 	}

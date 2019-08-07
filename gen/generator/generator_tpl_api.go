@@ -50,7 +50,8 @@ func getRawTypeInitializer(t string) string {
 	case "string":
 		return "\"\""
 	case "byte":
-		return "[]uint8{}"
+		return "byte(0)"
+		// return "[]uint8{}"
 	case "dbus.ObjectPath":
 		return "dbus.ObjectPath(\"\")"
 	default:

@@ -55,6 +55,14 @@ type Thermometer1 struct {
 type Thermometer1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
+	// Maximum (optional) Defines the maximum value allowed for the interval
+  // between periodic measurements.
+	Maximum uint16
+
+	// Minimum (optional) Defines the minimum value allowed for the interval
+  // between periodic measurements.
+	Minimum uint16
+
 	// Intermediate True if the thermometer supports intermediate
   // measurement notifications.
 	Intermediate bool
@@ -67,14 +75,6 @@ type Thermometer1Properties struct {
   // be taken.
 	Interval uint16
 
-	// Maximum (optional) Defines the maximum value allowed for the interval
-  // between periodic measurements.
-	Maximum uint16
-
-	// Minimum (optional) Defines the minimum value allowed for the interval
-  // between periodic measurements.
-	Minimum uint16
-
 }
 
 func (p *Thermometer1Properties) Lock() {
@@ -85,34 +85,6 @@ func (p *Thermometer1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-// SetIntermediate set Intermediate value
-func (a *Thermometer1) SetIntermediate(v bool) error {
-	return a.SetProperty("Intermediate", v)
-}
-
-// GetIntermediate get Intermediate value
-func (a *Thermometer1) GetIntermediate() (bool, error) {
-	v, err := a.GetProperty("Intermediate")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-// SetInterval set Interval value
-func (a *Thermometer1) SetInterval(v uint16) error {
-	return a.SetProperty("Interval", v)
-}
-
-// GetInterval get Interval value
-func (a *Thermometer1) GetInterval() (uint16, error) {
-	v, err := a.GetProperty("Interval")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
-}
 
 // SetMaximum set Maximum value
 func (a *Thermometer1) SetMaximum(v uint16) error {
@@ -136,6 +108,34 @@ func (a *Thermometer1) SetMinimum(v uint16) error {
 // GetMinimum get Minimum value
 func (a *Thermometer1) GetMinimum() (uint16, error) {
 	v, err := a.GetProperty("Minimum")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
+
+// SetIntermediate set Intermediate value
+func (a *Thermometer1) SetIntermediate(v bool) error {
+	return a.SetProperty("Intermediate", v)
+}
+
+// GetIntermediate get Intermediate value
+func (a *Thermometer1) GetIntermediate() (bool, error) {
+	v, err := a.GetProperty("Intermediate")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+// SetInterval set Interval value
+func (a *Thermometer1) SetInterval(v uint16) error {
+	return a.SetProperty("Interval", v)
+}
+
+// GetInterval get Interval value
+func (a *Thermometer1) GetInterval() (uint16, error) {
+	v, err := a.GetProperty("Interval")
 	if err != nil {
 		return uint16(0), err
 	}

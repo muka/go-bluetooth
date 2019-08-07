@@ -58,19 +58,6 @@ func (o *ObjectManager) Unregister(signal chan *dbus.Signal) error {
 	return o.client.Unregister(dbus.ObjectPath(path), iface, signal)
 }
 
-// SignalAdded notify of interfaces being added
-func (o *ObjectManager) SignalAdded(path dbus.ObjectPath, props map[string]map[string]dbus.Variant) error {
-	return o.client.Emit(path, InterfacesAdded, props)
-}
-
-// SignalRemoved notify of interfaces being removed
-func (o *ObjectManager) SignalRemoved(path dbus.ObjectPath, ifaces []string) error {
-	if ifaces == nil {
-		ifaces = make([]string, 0)
-	}
-	return o.client.Emit(path, InterfacesRemoved, ifaces)
-}
-
 // GetManagedObject return an up to date view of a single object state.
 // object is nil if the object path is not found
 func (o *ObjectManager) GetManagedObject(objpath dbus.ObjectPath) (map[string]map[string]dbus.Variant, error) {

@@ -78,7 +78,7 @@ func (a *Battery1) SetPercentage(v byte) error {
 func (a *Battery1) GetPercentage() (byte, error) {
 	v, err := a.GetProperty("Percentage")
 	if err != nil {
-		return []uint8{}, err
+		return byte(0), err
 	}
 	return v.Value().(byte), nil
 }
