@@ -97,6 +97,15 @@ func (p *Input1Properties) Unlock() {
 
 
 
+// GetReconnectMode get ReconnectMode value
+func (a *Input1) GetReconnectMode() (string, error) {
+	v, err := a.GetProperty("ReconnectMode")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
 
 
 // Close the connection
@@ -213,7 +222,8 @@ func (a *Input1) unregisterPropertiesSignal() {
 // WatchProperties updates on property changes
 func (a *Input1) WatchProperties() (chan *bluez.PropertyChanged, error) {
 
-	channel, err := a.client.Register(a.Path(), a.Interface())
+	// channel, err := a.client.Register(a.Path(), a.Interface())
+	channel, err := a.client.Register(a.Path(), bluez.PropertiesInterface)
 	if err != nil {
 		return nil, err
 	}

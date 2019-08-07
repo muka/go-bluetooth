@@ -43,7 +43,7 @@ func (d *Device1) GetCharacteristicsList() ([]dbus.ObjectPath, error) {
 			continue
 		}
 
-		if strings.Index(spath[charPos:], "desc") == -1 {
+		if strings.Index(spath[charPos:], "desc") > -1 {
 			continue
 		}
 
@@ -190,7 +190,6 @@ func (d *Device1) GetCharsByUUID(uuid string) ([]*gatt.GattCharacteristic1, erro
 		return nil, err
 	}
 
-	chars := map[dbus.ObjectPath]*gatt.GattCharacteristic1{}
 	charsFound := []*gatt.GattCharacteristic1{}
 
 	for _, path := range list {
@@ -199,13 +198,11 @@ func (d *Device1) GetCharsByUUID(uuid string) ([]*gatt.GattCharacteristic1, erro
 		if err != nil {
 			return nil, err
 		}
-		chars[path] = char
 
-		props := chars[path].Properties
-		cuuid := strings.ToUpper(props.UUID)
+		cuuid := strings.ToUpper(char.Properties.UUID)
 
 		if cuuid == uuid {
-			charsFound = append(charsFound, chars[path])
+			charsFound = append(charsFound, char)
 		}
 	}
 

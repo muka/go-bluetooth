@@ -184,7 +184,8 @@ func (a *FileTransfer) unregisterPropertiesSignal() {
 // WatchProperties updates on property changes
 func (a *FileTransfer) WatchProperties() (chan *bluez.PropertyChanged, error) {
 
-	channel, err := a.client.Register(a.Path(), a.Interface())
+	// channel, err := a.client.Register(a.Path(), a.Interface())
+	channel, err := a.client.Register(a.Path(), bluez.PropertiesInterface)
 	if err != nil {
 		return nil, err
 	}

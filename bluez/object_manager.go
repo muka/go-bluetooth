@@ -4,12 +4,21 @@ import (
 	"github.com/godbus/dbus"
 )
 
+var objectManager *ObjectManager
+
 // GetObjectManager return a client instance of the Bluez object manager
 func GetObjectManager() (*ObjectManager, error) {
+	if objectManager != nil {
+		return objectManager, nil
+	}
+
 	om, err := NewObjectManager(OrgBluezInterface, "/")
 	if err != nil {
 		return nil, err
 	}
+
+	objectManager = om
+
 	return om, nil
 }
 

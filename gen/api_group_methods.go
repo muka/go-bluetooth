@@ -2,7 +2,6 @@ package gen
 
 import (
 	"errors"
-	"fmt"
 	"regexp"
 	"strings"
 
@@ -96,7 +95,7 @@ func (g *ApiGroup) parseMethod(raw []byte) (method Method, err error) {
 
 		rtype = strings.Trim(rtype, " \t")
 		if len(rtype) > 20 {
-			return method, fmt.Errorf("Return type is too long: `%s`", rtype)
+			log.Warnf("Return type value is too long? `%s`", rtype)
 		}
 
 		method.ReturnType = rtype

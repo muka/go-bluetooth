@@ -57,12 +57,6 @@ type HealthChannel1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Type The quality of service of the data channel. ("reliable"
-			or "streaming")
-	*/
-	Type string
-
-	/*
 	Device Identifies the Remote Device that is connected with.
 			Maps with a HealthDevice object.
 	*/
@@ -74,6 +68,12 @@ type HealthChannel1Properties struct {
 			data type).
 	*/
 	Application dbus.ObjectPath
+
+	/*
+	Type The quality of service of the data channel. ("reliable"
+			or "streaming")
+	*/
+	Type string
 
 }
 
@@ -92,15 +92,42 @@ func (p *HealthChannel1Properties) Unlock() {
 
 
 
+// GetDevice get Device value
+func (a *HealthChannel1) GetDevice() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Device")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
+}
 
 
 
 
 
 
+// GetApplication get Application value
+func (a *HealthChannel1) GetApplication() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Application")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
+}
 
 
 
+
+
+
+// GetType get Type value
+func (a *HealthChannel1) GetType() (string, error) {
+	v, err := a.GetProperty("Type")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
 
 
 
@@ -218,7 +245,8 @@ func (a *HealthChannel1) unregisterPropertiesSignal() {
 // WatchProperties updates on property changes
 func (a *HealthChannel1) WatchProperties() (chan *bluez.PropertyChanged, error) {
 
-	channel, err := a.client.Register(a.Path(), a.Interface())
+	// channel, err := a.client.Register(a.Path(), a.Interface())
+	channel, err := a.client.Register(a.Path(), bluez.PropertiesInterface)
 	if err != nil {
 		return nil, err
 	}

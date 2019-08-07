@@ -103,7 +103,7 @@ func (c *Client) GetProperties(props interface{}) error {
 	result := make(map[string]dbus.Variant)
 	err := c.dbusObject.Call("org.freedesktop.DBus.Properties.GetAll", 0, c.Config.Iface).Store(&result)
 	if err != nil {
-		return err
+		return fmt.Errorf("Properties.GetAll %s: %s", c.Config.Iface, err)
 	}
 
 	err = util.MapToStruct(props, result)

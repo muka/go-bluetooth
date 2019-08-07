@@ -107,10 +107,28 @@ func (p *MediaControl1Properties) Unlock() {
 
 
 
+// GetConnected get Connected value
+func (a *MediaControl1) GetConnected() (bool, error) {
+	v, err := a.GetProperty("Connected")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
 
 
 
 
+
+
+// GetPlayer get Player value
+func (a *MediaControl1) GetPlayer() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Player")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
+}
 
 
 
@@ -228,7 +246,8 @@ func (a *MediaControl1) unregisterPropertiesSignal() {
 // WatchProperties updates on property changes
 func (a *MediaControl1) WatchProperties() (chan *bluez.PropertyChanged, error) {
 
-	channel, err := a.client.Register(a.Path(), a.Interface())
+	// channel, err := a.client.Register(a.Path(), a.Interface())
+	channel, err := a.client.Register(a.Path(), bluez.PropertiesInterface)
 	if err != nil {
 		return nil, err
 	}

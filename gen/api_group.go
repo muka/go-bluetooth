@@ -32,9 +32,9 @@ type Flag int
 
 const (
 	FlagReadOnly     Flag = 1
-	FlagWriteOnly    Flag = iota
-	FlagReadWrite    Flag = iota
-	FlagExperimental Flag = iota
+	FlagWriteOnly    Flag = 2
+	FlagReadWrite    Flag = 3
+	FlagExperimental Flag = 4
 )
 
 type Arg struct {

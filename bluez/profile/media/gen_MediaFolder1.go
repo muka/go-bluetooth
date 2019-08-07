@@ -83,25 +83,6 @@ type MediaFolder1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	End Offset of the last item.
-
-			Default value: NumbeOfItems
-	*/
-	End uint32
-
-	/*
-	Attributes Item properties that should be included in the list.
-
-			Possible Values:
-
-				"title", "artist", "album", "genre",
-				"number-of-tracks", "number", "duration"
-
-			Default Value: All
-	*/
-	Attributes []string
-
-	/*
 	NumberOfItems Number of items in the folder
 	*/
 	NumberOfItems uint32
@@ -129,6 +110,25 @@ Filters
 	*/
 	Start uint32
 
+	/*
+	End Offset of the last item.
+
+			Default value: NumbeOfItems
+	*/
+	End uint32
+
+	/*
+	Attributes Item properties that should be included in the list.
+
+			Possible Values:
+
+				"title", "artist", "album", "genre",
+				"number-of-tracks", "number", "duration"
+
+			Default Value: All
+	*/
+	Attributes []string
+
 }
 
 //Lock access to properties
@@ -139,6 +139,53 @@ func (p *MediaFolder1Properties) Lock() {
 //Unlock access to properties
 func (p *MediaFolder1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+
+
+// GetNumberOfItems get NumberOfItems value
+func (a *MediaFolder1) GetNumberOfItems() (uint32, error) {
+	v, err := a.GetProperty("NumberOfItems")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
+
+
+
+
+
+
+// GetName get Name value
+func (a *MediaFolder1) GetName() (string, error) {
+	v, err := a.GetProperty("Name")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+// SetStart set Start value
+func (a *MediaFolder1) SetStart(v uint32) error {
+	return a.SetProperty("Start", v)
+}
+
+
+
+// GetStart get Start value
+func (a *MediaFolder1) GetStart() (uint32, error) {
+	v, err := a.GetProperty("Start")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
 }
 
 
@@ -177,35 +224,6 @@ func (a *MediaFolder1) GetAttributes() ([]string, error) {
 		return []string{}, err
 	}
 	return v.Value().([]string), nil
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// SetStart set Start value
-func (a *MediaFolder1) SetStart(v uint32) error {
-	return a.SetProperty("Start", v)
-}
-
-
-
-// GetStart get Start value
-func (a *MediaFolder1) GetStart() (uint32, error) {
-	v, err := a.GetProperty("Start")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
 }
 
 
@@ -324,7 +342,8 @@ func (a *MediaFolder1) unregisterPropertiesSignal() {
 // WatchProperties updates on property changes
 func (a *MediaFolder1) WatchProperties() (chan *bluez.PropertyChanged, error) {
 
-	channel, err := a.client.Register(a.Path(), a.Interface())
+	// channel, err := a.client.Register(a.Path(), a.Interface())
+	channel, err := a.client.Register(a.Path(), bluez.PropertiesInterface)
 	if err != nil {
 		return nil, err
 	}
@@ -412,6 +431,24 @@ func (a *MediaFolder1) Search(value string, filter map[string]interface{}) (dbus
 	var val0 dbus.ObjectPath
 	err := a.client.Call("Search", 0, value, filter).Store(&val0)
 	return val0, err	
+}
+
+/*
+ListItems 
+			Return a list of items found
+
+			Possible Errors: org.bluez.Error.InvalidArguments
+					 org.bluez.Error.NotSupported
+					 org.bluez.Error.Failed
+
+
+*/
+func (a *MediaFolder1) ListItems(filter map[string]interface{}) ([]dbus.ObjectPath, string, error) {
+	
+	var val0 []dbus.ObjectPath
+  var val1 string
+	err := a.client.Call("ListItems", 0, filter).Store(&val0, &val1)
+	return val0, val1, err	
 }
 
 /*

@@ -100,9 +100,29 @@ func castType(rawtype string) string {
 	re := regexp.MustCompile(`array\{([a-zA-Z0-9, ]+)\}`)
 	matches := re.FindSubmatch([]byte(rawtype))
 	if len(matches) > 0 {
+
 		subtype := string(matches[1])
 		subtype = listCastType(subtype)
+
+		//special case 1 (obex): `array{string vcard, string name}`
+		pts := strings.Split(subtype, ", ")
+		pts2 := []string{}
+		for _, pt := range pts {
+			pts1 := strings.Split(pt, " ")
+			// log.Debug("pts1 ", pts1[0])
+			if len(pts1) == 2 {
+				pts2 = append(pts2, pts1[0])
+			}
+		}
+		if len(pts2) > 0 {
+			subtype = strings.Join(pts2, ", ")
+		}
+
+		// TODO this is incomplete as it is not handling the case
+		// array{ string, string } ==> []string, string
 		typedef = "[]" + toType(subtype)
+
+		// log.Debugf("type casting %s -> %s\n", rawtype, typedef)
 	}
 
 	typedef = toType(typedef)

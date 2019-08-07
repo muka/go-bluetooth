@@ -99,6 +99,7 @@ Feel free to open an issue and/or a PR to contribute. If you would like to help 
 - http://events.linuxfoundation.org/sites/events/files/slides/Bluetooth%20on%20Modern%20Linux_0.pdf
 - https://github.com/nettlep/gobbledegook
 - https://dbus.freedesktop.org/doc/dbus-specification.html#type-system
+- http://processors.wiki.ti.com/images/a/a8/BLE_SensorTag_GATT_Server.pdf
 
 ## License
 

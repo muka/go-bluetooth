@@ -14,6 +14,7 @@ import (
 	"fmt"
 
 	"github.com/muka/go-bluetooth/api"
+	"github.com/muka/go-bluetooth/bluez/profile/battery"
 	"github.com/muka/go-bluetooth/devices/sensortag"
 	log "github.com/sirupsen/logrus"
 )
@@ -32,15 +33,6 @@ func Run(address, adapterID string) error {
 
 	if dev == nil {
 		return fmt.Errorf("device %s not found", address)
-	}
-	log.Debugf("device (dev): %v", dev)
-
-	if !dev.Properties.Connected {
-		log.Debug("not connected")
-		err = dev.Connect()
-		if err != nil {
-			return err
-		}
 	}
 
 	sensorTag, err := sensortag.NewSensorTag(dev)
@@ -73,6 +65,13 @@ func Run(address, adapterID string) error {
 	log.Debug("Manufacturer: ", devInfo.Manufacturer)
 	log.Debug("Model: ", devInfo.Model)
 
+	batt, err := battery.NewBattery1(sensorTag.Device1.Path())
+	if err != nil {
+		log.Errorf("Cannot load battery profile: %s", err)
+	} else {
+		batt.GetPercentage()
+	}
+
 	err = sensorTag.Temperature.StartNotify()
 	if err != nil {
 		return err
@@ -98,10 +97,14 @@ func Run(address, adapterID string) error {
 		return err
 	}
 
-	// sensortag.SensorTagDataEvent
-	for data := range sensorTag.Data() {
-		log.Debugf("data received: %++v", data)
-	}
+	go func() {
+		// sensortag.SensorTagDataEvent
+		for data := range sensorTag.Data() {
+			log.Debugf("data received: %++v", data)
+		}
+	}()
 
-	return err
+	log.Debug("Waiting for data")
+
+	select {}
 }

@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/muka/go-bluetooth/bluez/profile/gatt"
+	log "github.com/sirupsen/logrus"
 )
 
 //Luxometer Sensor..
@@ -80,7 +81,7 @@ func (s *LuxometerSensor) Enable() error {
 	if enabled {
 		return nil
 	}
-	options := make(map[string]interface{})
+	options := getOptions()
 	err = s.cfg.WriteValue([]byte{1}, options)
 	if err != nil {
 		return err
@@ -107,8 +108,8 @@ func (s *LuxometerSensor) Disable() error {
 
 //IsEnabled check if LuxometerSensor measurements are enabled
 func (s *LuxometerSensor) IsEnabled() (bool, error) {
-	options := make(map[string]interface{})
 
+	options := getOptions()
 	val, err := s.cfg.ReadValue(options)
 	if err != nil {
 		return false, err
@@ -160,7 +161,6 @@ func (s *LuxometerSensor) StartNotify(macAddress string) error {
 	if err != nil {
 		return err
 	}
-
 	dataChannel, err := s.data.WatchProperties()
 	if err != nil {
 		return err
@@ -197,9 +197,12 @@ func (s *LuxometerSensor) StartNotify(macAddress string) error {
 	if err != nil {
 		return err
 	}
+
+	log.Debug("why this hang?")
 	if !n {
 		return s.data.StartNotify()
 	}
+
 	return nil
 }
 

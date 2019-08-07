@@ -81,6 +81,15 @@ func (p *HealthDevice1Properties) Unlock() {
 
 
 
+// GetMainChannel get MainChannel value
+func (a *HealthDevice1) GetMainChannel() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("MainChannel")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
+}
+
 
 
 // Close the connection
@@ -197,7 +206,8 @@ func (a *HealthDevice1) unregisterPropertiesSignal() {
 // WatchProperties updates on property changes
 func (a *HealthDevice1) WatchProperties() (chan *bluez.PropertyChanged, error) {
 
-	channel, err := a.client.Register(a.Path(), a.Interface())
+	// channel, err := a.client.Register(a.Path(), a.Interface())
+	channel, err := a.client.Register(a.Path(), bluez.PropertiesInterface)
 	if err != nil {
 		return nil, err
 	}

@@ -78,6 +78,15 @@ func (p *SimAccess1Properties) Unlock() {
 
 
 
+// GetConnected get Connected value
+func (a *SimAccess1) GetConnected() (bool, error) {
+	v, err := a.GetProperty("Connected")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
 
 
 // Close the connection
@@ -194,7 +203,8 @@ func (a *SimAccess1) unregisterPropertiesSignal() {
 // WatchProperties updates on property changes
 func (a *SimAccess1) WatchProperties() (chan *bluez.PropertyChanged, error) {
 
-	channel, err := a.client.Register(a.Path(), a.Interface())
+	// channel, err := a.client.Register(a.Path(), a.Interface())
+	channel, err := a.client.Register(a.Path(), bluez.PropertiesInterface)
 	if err != nil {
 		return nil, err
 	}

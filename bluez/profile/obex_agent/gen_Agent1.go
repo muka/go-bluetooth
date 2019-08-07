@@ -185,7 +185,8 @@ func (a *Agent1) unregisterPropertiesSignal() {
 // WatchProperties updates on property changes
 func (a *Agent1) WatchProperties() (chan *bluez.PropertyChanged, error) {
 
-	channel, err := a.client.Register(a.Path(), a.Interface())
+	// channel, err := a.client.Register(a.Path(), a.Interface())
+	channel, err := a.client.Register(a.Path(), bluez.PropertiesInterface)
 	if err != nil {
 		return nil, err
 	}

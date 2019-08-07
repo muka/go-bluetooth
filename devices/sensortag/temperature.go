@@ -52,7 +52,11 @@ func newTemperatureSensor(tag *SensorTag) (*TemperatureSensor, error) {
 		return &TemperatureSensor{tag, cfg, data, period}, err
 	})
 
-	return i.(*TemperatureSensor), err
+	if err != nil {
+		return nil, err
+	}
+
+	return i.(*TemperatureSensor), nil
 }
 
 //TemperatureSensor the temperature sensor structure
@@ -79,12 +83,7 @@ func (s *TemperatureSensor) Enable() error {
 	}
 	options := getOptions()
 	err = s.cfg.WriteValue([]byte{1}, options)
-
-	if err != nil {
-
-		return err
-	}
-	return nil
+	return err
 }
 
 //Disable measurements
@@ -106,8 +105,8 @@ func (s *TemperatureSensor) Disable() error {
 
 //IsEnabled check if measurements are enabled
 func (s *TemperatureSensor) IsEnabled() (bool, error) {
-	options := getOptions()
 
+	options := make(map[string]interface{})
 	val, err := s.cfg.ReadValue(options)
 	if err != nil {
 		return false, err
@@ -116,7 +115,8 @@ func (s *TemperatureSensor) IsEnabled() (bool, error) {
 	buf := bytes.NewBuffer(val)
 	enabled, err := binary.ReadVarint(buf)
 	if err != nil {
-		return false, err
+		// TODO investigate why it report EOF only on that
+		return false, nil
 	}
 
 	return (enabled == 1), nil
@@ -124,11 +124,11 @@ func (s *TemperatureSensor) IsEnabled() (bool, error) {
 
 //IsNotifying check if notyfing
 func (s *TemperatureSensor) IsNotifying() (bool, error) {
-	n, err := s.data.GetProperty("Notifying")
+	n, err := s.data.GetNotifying()
 	if err != nil {
 		return false, err
 	}
-	return n.Value().(bool), nil
+	return n, nil
 }
 
 //Read value from the sensor
@@ -167,6 +167,7 @@ func (s *TemperatureSensor) StartNotify() error {
 
 	go func() {
 		for prop := range dataChannel {
+
 			if prop == nil {
 				return
 			}

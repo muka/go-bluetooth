@@ -78,6 +78,15 @@ func (p *Battery1Properties) Unlock() {
 
 
 
+// GetPercentage get Percentage value
+func (a *Battery1) GetPercentage() (byte, error) {
+	v, err := a.GetProperty("Percentage")
+	if err != nil {
+		return byte(0), err
+	}
+	return v.Value().(byte), nil
+}
+
 
 
 // Close the connection
@@ -194,7 +203,8 @@ func (a *Battery1) unregisterPropertiesSignal() {
 // WatchProperties updates on property changes
 func (a *Battery1) WatchProperties() (chan *bluez.PropertyChanged, error) {
 
-	channel, err := a.client.Register(a.Path(), a.Interface())
+	// channel, err := a.client.Register(a.Path(), a.Interface())
+	channel, err := a.client.Register(a.Path(), bluez.PropertiesInterface)
 	if err != nil {
 		return nil, err
 	}

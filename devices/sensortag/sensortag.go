@@ -153,52 +153,43 @@ func retryCall(times int, sleep int64, fn func() (interface{}, error)) (intf int
 //NewSensorTag creates a new sensortag instance
 func NewSensorTag(d *device.Device1) (*SensorTag, error) {
 
+	if !d.Properties.Connected {
+		log.Debug("Connecting")
+		err := d.Connect()
+		if err != nil {
+			return nil, err
+		}
+		log.Debug("Connected")
+	}
+
 	s := new(SensorTag)
 
 	s.dataChannel = make(chan *SensorTagDataEvent)
 
-	var connect = func(dev *device.Device1) error {
-		if !dev.Properties.Connected {
-			err := dev.Connect()
-			if err != nil {
-				return err
-			}
-		}
-		return nil
-	}
+	// ch , err := d.WatchProperties()
+	// if err != nil {
+	// 	return nil, err
+	// }
 
-	propsChannel, err := d.WatchProperties()
-	if err != nil {
-		return nil, err
-	}
+	// go func() {
+	// 	for prop := range propsChannel {
+	// 		if prop.Name == "Connected" {
+	// 			val := prop.Value.(bool)
+	// 			if val == true {
+	// 				if dataChannel != nil {
+	// 					close(dataChannel)
+	// 					break
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }()
 
-	go func() {
-		for prop := range propsChannel {
-			if prop.Name == "Connected" {
-				val := prop.Value.(bool)
-				if val == true {
-					if dataChannel != nil {
-						close(dataChannel)
-						break
-					}
-				}
-			}
-		}
-	}()
-
-	if err != nil {
-		return nil, err
-	}
-
-	err = connect(d)
-	if err != nil {
-		log.Warningf("SensorTag connection failed: %s", err)
-		return nil, err
-	}
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	s.Device1 = d
-
-	//initiating things for temperature sensor...(getting config,data,period characteristics...).....
 
 	temp, err := newTemperatureSensor(s)
 	if err != nil {
@@ -206,15 +197,11 @@ func NewSensorTag(d *device.Device1) (*SensorTag, error) {
 	}
 	s.Temperature = *temp
 
-	//initiating things for humidity sensor...(getting config,data,period characteristics...).....
-
 	humid, err := newHumiditySensor(s)
 	if err != nil {
 		return nil, err
 	}
 	s.Humidity = *humid
-
-	//initiating things for AC,MG,GY sensor...(getting config,data,period characteristics...).....
 
 	mpu, err := newMpuSensor(s)
 	if err != nil {
@@ -222,23 +209,17 @@ func NewSensorTag(d *device.Device1) (*SensorTag, error) {
 	}
 	s.Mpu = *mpu
 
-	//initiating things barometric sensor...(getting config,data,period characteristics...).....
-
 	barometric, err := newBarometricSensor(s)
 	if err != nil {
 		return nil, err
 	}
 	s.Barometric = *barometric
 
-	//initiating things luxometer sensor...(getting config,data,period characteristics...).....
-
 	luxometer, err := newLuxometerSensor(s)
 	if err != nil {
 		return nil, err
 	}
 	s.Luxometer = *luxometer
-
-	//initiating things for reading device info of  sensorTag...(getting firmware,hardware,manufacturer,model char...).....
 
 	devInformation, err := newDeviceInfo(s)
 	if err != nil {
@@ -247,7 +228,6 @@ func NewSensorTag(d *device.Device1) (*SensorTag, error) {
 	s.DeviceInfo = devInformation
 
 	return s, nil
-
 }
 
 //SensorTag a SensorTag object representation

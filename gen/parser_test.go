@@ -8,7 +8,7 @@ import (
 )
 
 func TestParse(t *testing.T) {
-	api, err := Parse("../src/bluez/doc")
+	api, err := Parse("../src/bluez/doc", []string{})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -18,7 +18,7 @@ func TestParse(t *testing.T) {
 
 func TestSerialization(t *testing.T) {
 
-	api, err := Parse("../src/bluez/doc")
+	api, err := Parse("../src/bluez/doc", []string{})
 	if err != nil {
 		t.Fatal(err)
 	}

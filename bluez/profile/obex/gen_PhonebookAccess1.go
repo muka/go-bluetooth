@@ -57,6 +57,19 @@ type PhonebookAccess1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	Folder Current folder.
+	*/
+	Folder string
+
+	/*
+	DatabaseIdentifier 128 bits persistent database identifier.
+
+			Possible values: 32-character hexadecimal such
+			as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
+	*/
+	DatabaseIdentifier string
+
+	/*
 	PrimaryCounter 128 bits primary version counter.
 
 			Possible values: 32-character hexadecimal such
@@ -80,19 +93,6 @@ type PhonebookAccess1Properties struct {
 	*/
 	FixedImageSize bool
 
-	/*
-	Folder Current folder.
-	*/
-	Folder string
-
-	/*
-	DatabaseIdentifier 128 bits persistent database identifier.
-
-			Possible values: 32-character hexadecimal such
-			as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
-	*/
-	DatabaseIdentifier string
-
 }
 
 //Lock access to properties
@@ -110,25 +110,70 @@ func (p *PhonebookAccess1Properties) Unlock() {
 
 
 
+// GetFolder get Folder value
+func (a *PhonebookAccess1) GetFolder() (string, error) {
+	v, err := a.GetProperty("Folder")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
 
 
 
 
 
 
+// GetDatabaseIdentifier get DatabaseIdentifier value
+func (a *PhonebookAccess1) GetDatabaseIdentifier() (string, error) {
+	v, err := a.GetProperty("DatabaseIdentifier")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
 
 
 
 
 
 
+// GetPrimaryCounter get PrimaryCounter value
+func (a *PhonebookAccess1) GetPrimaryCounter() (string, error) {
+	v, err := a.GetProperty("PrimaryCounter")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
 
 
 
 
 
 
+// GetSecondaryCounter get SecondaryCounter value
+func (a *PhonebookAccess1) GetSecondaryCounter() (string, error) {
+	v, err := a.GetProperty("SecondaryCounter")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
 
+
+
+
+
+
+// GetFixedImageSize get FixedImageSize value
+func (a *PhonebookAccess1) GetFixedImageSize() (bool, error) {
+	v, err := a.GetProperty("FixedImageSize")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
 
 
 
@@ -246,7 +291,8 @@ func (a *PhonebookAccess1) unregisterPropertiesSignal() {
 // WatchProperties updates on property changes
 func (a *PhonebookAccess1) WatchProperties() (chan *bluez.PropertyChanged, error) {
 
-	channel, err := a.client.Register(a.Path(), a.Interface())
+	// channel, err := a.client.Register(a.Path(), a.Interface())
+	channel, err := a.client.Register(a.Path(), bluez.PropertiesInterface)
 	if err != nil {
 		return nil, err
 	}
@@ -378,6 +424,28 @@ func (a *PhonebookAccess1) PullAll(targetfile string, filters map[string]interfa
 	var val0 dbus.ObjectPath
   var val1 map[string]interface{}
 	err := a.client.Call("PullAll", 0, targetfile, filters).Store(&val0, &val1)
+	return val0, val1, err	
+}
+
+/*
+List 
+			Return an array of vcard-listing data where every entry
+			consists of a pair of strings containing the vcard
+			handle and the contact name. For example:
+				"1.vcf" : "John"
+
+			Possible filters: Order, Offset and MaxCount
+
+			Possible errors: org.bluez.obex.Error.InvalidArguments
+					 org.bluez.obex.Forbidden
+
+
+*/
+func (a *PhonebookAccess1) List(filters map[string]interface{}) ([]string, string, error) {
+	
+	var val0 []string
+  var val1 string
+	err := a.client.Call("List", 0, filters).Store(&val0, &val1)
 	return val0, val1, err	
 }
 

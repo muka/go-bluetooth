@@ -85,15 +85,6 @@ type LEAdvertisingManager1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	SupportedIncludes List of supported system includes.
-
-			Possible values: "tx-power"
-					 "appearance"
-					 "local-name"
-	*/
-	SupportedIncludes []string
-
-	/*
 	ActiveInstances Number of active advertising instances.
 	*/
 	ActiveInstances byte
@@ -102,6 +93,15 @@ type LEAdvertisingManager1Properties struct {
 	SupportedInstances Number of available advertising instances.
 	*/
 	SupportedInstances byte
+
+	/*
+	SupportedIncludes List of supported system includes.
+
+			Possible values: "tx-power"
+					 "appearance"
+					 "local-name"
+	*/
+	SupportedIncludes []string
 
 }
 
@@ -113,25 +113,6 @@ func (p *LEAdvertisingManager1Properties) Lock() {
 //Unlock access to properties
 func (p *LEAdvertisingManager1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-// SetSupportedIncludes set SupportedIncludes value
-func (a *LEAdvertisingManager1) SetSupportedIncludes(v []string) error {
-	return a.SetProperty("SupportedIncludes", v)
-}
-
-
-
-// GetSupportedIncludes get SupportedIncludes value
-func (a *LEAdvertisingManager1) GetSupportedIncludes() ([]string, error) {
-	v, err := a.GetProperty("SupportedIncludes")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
 }
 
 
@@ -170,6 +151,25 @@ func (a *LEAdvertisingManager1) GetSupportedInstances() (byte, error) {
 		return byte(0), err
 	}
 	return v.Value().(byte), nil
+}
+
+
+
+
+// SetSupportedIncludes set SupportedIncludes value
+func (a *LEAdvertisingManager1) SetSupportedIncludes(v []string) error {
+	return a.SetProperty("SupportedIncludes", v)
+}
+
+
+
+// GetSupportedIncludes get SupportedIncludes value
+func (a *LEAdvertisingManager1) GetSupportedIncludes() ([]string, error) {
+	v, err := a.GetProperty("SupportedIncludes")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
 }
 
 
@@ -288,7 +288,8 @@ func (a *LEAdvertisingManager1) unregisterPropertiesSignal() {
 // WatchProperties updates on property changes
 func (a *LEAdvertisingManager1) WatchProperties() (chan *bluez.PropertyChanged, error) {
 
-	channel, err := a.client.Register(a.Path(), a.Interface())
+	// channel, err := a.client.Register(a.Path(), a.Interface())
+	channel, err := a.client.Register(a.Path(), bluez.PropertiesInterface)
 	if err != nil {
 		return nil, err
 	}

@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"os"
+	"strings"
 
 	"github.com/muka/go-bluetooth/gen"
 	"github.com/muka/go-bluetooth/gen/generator"
@@ -14,7 +16,9 @@ func main() {
 
 	log.Info("Generating src")
 
-	api, err := gen.Parse("./src/bluez/doc")
+	filters := strings.Split(os.Getenv("FILTER"), ",")
+
+	api, err := gen.Parse("./src/bluez/doc", filters)
 	if err != nil {
 		log.Fatalf("Parse failed: %s", err)
 	}

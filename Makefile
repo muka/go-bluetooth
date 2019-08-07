@@ -1,7 +1,7 @@
 
 .PHONY: gen
 
-DEBUG ?= 0
+FILTER ?= 
 
 all: gen/clean gen/run
 
@@ -20,7 +20,7 @@ gen/clean:
 
 gen:
 	git submodule update
-	DEBUG=${DEBUG} go run gen/srcgen/main.go
+	FILTER=${FILTER} go run gen/srcgen/main.go
 
 test/api:
 	sudo go test github.com/muka/go-bluetooth/api

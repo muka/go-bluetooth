@@ -88,15 +88,42 @@ func (p *Network1Properties) Unlock() {
 
 
 
+// GetConnected get Connected value
+func (a *Network1) GetConnected() (bool, error) {
+	v, err := a.GetProperty("Connected")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
 
 
 
 
 
 
+// GetInterface get Interface value
+func (a *Network1) GetInterface() (string, error) {
+	v, err := a.GetProperty("Interface")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
 
 
 
+
+
+
+// GetUUID get UUID value
+func (a *Network1) GetUUID() (string, error) {
+	v, err := a.GetProperty("UUID")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
 
 
 
@@ -214,7 +241,8 @@ func (a *Network1) unregisterPropertiesSignal() {
 // WatchProperties updates on property changes
 func (a *Network1) WatchProperties() (chan *bluez.PropertyChanged, error) {
 
-	channel, err := a.client.Register(a.Path(), a.Interface())
+	// channel, err := a.client.Register(a.Path(), a.Interface())
+	channel, err := a.client.Register(a.Path(), bluez.PropertiesInterface)
 	if err != nil {
 		return nil, err
 	}
@@ -302,6 +330,21 @@ func (a *Network1) Connect(uuid string) (string, error) {
 	
 	var val0 string
 	err := a.client.Call("Connect", 0, uuid).Store(&val0)
+	return val0, err	
+}
+
+/*
+Disconnect 			the client disappears from the message bus.
+
+			Possible errors: org.bluez.Error.AlreadyConnected
+					 org.bluez.Error.ConnectionAttemptFailed
+
+
+*/
+func (a *Network1) Disconnect() (released either upon calling, error) {
+	
+	var val0 released either upon calling
+	err := a.client.Call("Disconnect", 0, ).Store(&val0)
 	return val0, err	
 }
 

@@ -101,6 +101,15 @@ func (p *Thermometer1Properties) Unlock() {
 
 
 
+// GetIntermediate get Intermediate value
+func (a *Thermometer1) GetIntermediate() (bool, error) {
+	v, err := a.GetProperty("Intermediate")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
 
 
 
@@ -125,10 +134,28 @@ func (a *Thermometer1) GetInterval() (uint16, error) {
 
 
 
+// GetMaximum get Maximum value
+func (a *Thermometer1) GetMaximum() (uint16, error) {
+	v, err := a.GetProperty("Maximum")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
 
 
 
 
+
+
+// GetMinimum get Minimum value
+func (a *Thermometer1) GetMinimum() (uint16, error) {
+	v, err := a.GetProperty("Minimum")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
 
 
 
@@ -246,7 +273,8 @@ func (a *Thermometer1) unregisterPropertiesSignal() {
 // WatchProperties updates on property changes
 func (a *Thermometer1) WatchProperties() (chan *bluez.PropertyChanged, error) {
 
-	channel, err := a.client.Register(a.Path(), a.Interface())
+	// channel, err := a.client.Register(a.Path(), a.Interface())
+	channel, err := a.client.Register(a.Path(), bluez.PropertiesInterface)
 	if err != nil {
 		return nil, err
 	}
