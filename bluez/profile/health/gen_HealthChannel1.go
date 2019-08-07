@@ -58,20 +58,20 @@ type HealthChannel1Properties struct {
 
 	/*
 	Type The quality of service of the data channel. ("reliable"
-  or "streaming")
+			or "streaming")
 	*/
 	Type string
 
 	/*
 	Device Identifies the Remote Device that is connected with.
-  Maps with a HealthDevice object.
+			Maps with a HealthDevice object.
 	*/
 	Device dbus.ObjectPath
 
 	/*
 	Application Identifies the HealthApplication to which this channel
-  is related to (which indirectly defines its role and
-  data type).
+			is related to (which indirectly defines its role and
+			data type).
 	*/
 	Application dbus.ObjectPath
 
@@ -317,11 +317,15 @@ func (a *HealthChannel1) UnwatchProperties(ch chan *bluez.PropertyChanged) error
 
 
 /*
-Acquire Returns the file descriptor for this data channel. If
-the data channel is not connected it will also
-reconnect.
-Possible Errors: org.bluez.Error.NotConnected
-org.bluez.Error.NotAllowed
+Acquire 
+			Returns the file descriptor for this data channel. If
+			the data channel is not connected it will also
+			reconnect.
+
+			Possible Errors: org.bluez.Error.NotConnected
+					 org.bluez.Error.NotAllowed
+
+
 */
 func (a *HealthChannel1) Acquire() (dbus.UnixFD, error) {
 	
@@ -332,6 +336,7 @@ func (a *HealthChannel1) Acquire() (dbus.UnixFD, error) {
 
 /*
 Release 
+
 */
 func (a *HealthChannel1) Release() error {
 	
@@ -340,8 +345,11 @@ func (a *HealthChannel1) Release() error {
 }
 
 /*
-close Possible Errors: org.bluez.Error.NotAcquired
-org.bluez.Error.NotAllowed
+close 
+			Possible Errors: org.bluez.Error.NotAcquired
+					 org.bluez.Error.NotAllowed
+
+
 */
 func (a *HealthChannel1) close() error {
 	

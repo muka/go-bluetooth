@@ -50,27 +50,26 @@ func toType(t string) string {
 }
 
 func prepareDocs(src string, skipFirstComment bool, leftpad int) string {
-
-	lines := strings.Split(src, "\n")
-	result := []string{}
-
-	// comment := "// "
-	comment := ""
-	prefixLen := leftpad + len(comment)
-	fmtt := fmt.Sprintf("%%%ds%%s", prefixLen)
-
-	for _, line := range lines {
-		line = strings.Trim(line, " \t\r")
-		if len(line) == 0 {
-			continue
-		}
-
-		result = append(result, fmt.Sprintf(fmtt, comment, line))
-	}
-	if skipFirstComment && len(result) > 0 && len(result[0]) > 3 {
-		result[0] = result[0][prefixLen:]
-	}
-	return strings.Join(result, "\n")
+	return src
+	// lines := strings.Split(src, "\n")
+	// result := []string{}
+	// // comment := "// "
+	// comment := ""
+	// prefixLen := leftpad + len(comment)
+	// fmtt := fmt.Sprintf("%%%ds%%s", prefixLen)
+	//
+	// for _, line := range lines {
+	// 	line = strings.Trim(line, " \t\r")
+	// 	if len(line) == 0 {
+	// 		continue
+	// 	}
+	//
+	// 	result = append(result, fmt.Sprintf(fmtt, comment, line))
+	// }
+	// if skipFirstComment && len(result) > 0 && len(result[0]) > 3 {
+	// 	result[0] = result[0][prefixLen:]
+	// }
+	// return strings.Join(result, "\n")
 }
 
 func listCastType(typedef string) string {

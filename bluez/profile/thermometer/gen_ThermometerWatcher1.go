@@ -257,14 +257,20 @@ func (a *ThermometerWatcher1) UnwatchProperties(ch chan *bluez.PropertyChanged) 
 
 
 /*
-MeasurementReceived This callback gets called when a measurement has been
-scanned in the thermometer.
-Measurement:
-int16 Exponent:
-int32 Mantissa:
-Exponent and Mantissa values as
-extracted from float value defined by
-IEEE-11073-20601.
+MeasurementReceived 
+			This callback gets called when a measurement has been
+			scanned in the thermometer.
+
+			Measurement:
+
+				int16 Exponent:
+				int32 Mantissa:
+
+					Exponent and Mantissa values as
+					extracted from float value defined by
+					IEEE-11073-20601.
+
+
 */
 func (a *ThermometerWatcher1) MeasurementReceived(measurement map[string]interface{}) error {
 	

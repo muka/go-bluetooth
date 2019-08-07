@@ -66,10 +66,13 @@ func NewGattManager1FromAdapterID(adapterID string) (*GattManager1, error) {
 
 /*
 GattManager1 GATT Manager hierarchy
+
 GATT Manager allows external applications to register GATT services and
 profiles.
+
 Registering a profile allows applications to subscribe to *remote* services.
 These must implement the GattProfile1 interface defined above.
+
 Registering a service allows applications to publish a *local* GATT service,
 which then becomes available to remote devices. A GATT service is represented by
 a D-Bus object hierarchy where the root node corresponds to a service and the
@@ -79,37 +82,40 @@ or GattDescriptor1 interfaces described above, based on the attribute it
 represents. Each node must also implement the standard D-Bus Properties
 interface to expose their properties. These objects collectively represent a
 GATT service definition.
+
 To make service registration simple, BlueZ requires that all objects that belong
 to a GATT service be grouped under a D-Bus Object Manager that solely manages
 the objects of that service. Hence, the standard DBus.ObjectManager interface
 must be available on the root service path. An example application hierarchy
 containing two separate GATT services may look like this:
+
 -> /com/example
-|   - org.freedesktop.DBus.ObjectManager
-|
--> /com/example/service0
-| |   - org.freedesktop.DBus.Properties
-| |   - org.bluez.GattService1
-| |
-| -> /com/example/service0/char0
-| |     - org.freedesktop.DBus.Properties
-| |     - org.bluez.GattCharacteristic1
-| |
-| -> /com/example/service0/char1
-|   |   - org.freedesktop.DBus.Properties
-|   |   - org.bluez.GattCharacteristic1
-|   |
-|   -> /com/example/service0/char1/desc0
-|       - org.freedesktop.DBus.Properties
-|       - org.bluez.GattDescriptor1
-|
--> /com/example/service1
-|   - org.freedesktop.DBus.Properties
-|   - org.bluez.GattService1
-|
--> /com/example/service1/char0
-- org.freedesktop.DBus.Properties
-- org.bluez.GattCharacteristic1
+  |   - org.freedesktop.DBus.ObjectManager
+  |
+  -> /com/example/service0
+  | |   - org.freedesktop.DBus.Properties
+  | |   - org.bluez.GattService1
+  | |
+  | -> /com/example/service0/char0
+  | |     - org.freedesktop.DBus.Properties
+  | |     - org.bluez.GattCharacteristic1
+  | |
+  | -> /com/example/service0/char1
+  |   |   - org.freedesktop.DBus.Properties
+  |   |   - org.bluez.GattCharacteristic1
+  |   |
+  |   -> /com/example/service0/char1/desc0
+  |       - org.freedesktop.DBus.Properties
+  |       - org.bluez.GattDescriptor1
+  |
+  -> /com/example/service1
+    |   - org.freedesktop.DBus.Properties
+    |   - org.bluez.GattService1
+    |
+    -> /com/example/service1/char0
+        - org.freedesktop.DBus.Properties
+        - org.bluez.GattCharacteristic1
+
 When a service is registered, BlueZ will automatically obtain information about
 all objects using the service's Object Manager. Once a service has been
 registered, the objects of a service should not be removed. If BlueZ receives an
@@ -117,13 +123,16 @@ InterfacesRemoved signal from a service's Object Manager, it will immediately
 unregister the service. Similarly, if the application disconnects from the bus,
 all of its registered services will be automatically unregistered.
 InterfacesAdded signals will be ignored.
+
 Examples:
-- Client
-test/example-gatt-client
-client/bluetoothctl
-- Server
-test/example-gatt-server
-tools/gatt-service
+	- Client
+		test/example-gatt-client
+		client/bluetoothctl
+	- Server
+		test/example-gatt-server
+		tools/gatt-service
+
+
 */
 type GattManager1 struct {
 	client     				*bluez.Client
@@ -337,14 +346,19 @@ func (a *GattManager1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 
 
 /*
-RegisterApplication Registers a local GATT services hierarchy as described
-above (GATT Server) and/or GATT profiles (GATT Client).
-The application object path together with the D-Bus
-system bus connection ID define the identification of
-the application registering a GATT based
-service or profile.
-Possible errors: org.bluez.Error.InvalidArguments
-org.bluez.Error.AlreadyExists
+RegisterApplication 
+			Registers a local GATT services hierarchy as described
+			above (GATT Server) and/or GATT profiles (GATT Client).
+
+			The application object path together with the D-Bus
+			system bus connection ID define the identification of
+			the application registering a GATT based
+			service or profile.
+
+			Possible errors: org.bluez.Error.InvalidArguments
+					 org.bluez.Error.AlreadyExists
+
+
 */
 func (a *GattManager1) RegisterApplication(application dbus.ObjectPath, options map[string]interface{}) error {
 	
@@ -353,12 +367,15 @@ func (a *GattManager1) RegisterApplication(application dbus.ObjectPath, options 
 }
 
 /*
-UnregisterApplication This unregisters the services that has been
-previously registered. The object path parameter
-must match the same value that has been used
-on registration.
-Possible errors: org.bluez.Error.InvalidArguments
-org.bluez.Error.DoesNotExist
+UnregisterApplication 
+			This unregisters the services that has been
+			previously registered. The object path parameter
+			must match the same value that has been used
+			on registration.
+
+			Possible errors: org.bluez.Error.InvalidArguments
+					 org.bluez.Error.DoesNotExist
+
 */
 func (a *GattManager1) UnregisterApplication(application dbus.ObjectPath) error {
 	

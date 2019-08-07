@@ -275,8 +275,12 @@ func (a *SimAccess1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 
 
 /*
-Disconnect Disconnects SAP client from the server.
-Possible errors: org.bluez.Error.Failed
+Disconnect 
+			Disconnects SAP client from the server.
+
+			Possible errors: org.bluez.Error.Failed
+
+
 */
 func (a *SimAccess1) Disconnect() error {
 	

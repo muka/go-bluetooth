@@ -256,16 +256,26 @@ func (a *ProfileManager1) UnwatchProperties(ch chan *bluez.PropertyChanged) erro
 
 
 /*
-RegisterProfile This registers a profile implementation.
-If an application disconnects from the bus all
-its registered profiles will be removed.
-HFP HS UUID: 0000111e-0000-1000-8000-00805f9b34fb
-Default RFCOMM channel is 6. And this requires
-authentication.
-Available options:
-string Name
-Human readable name for the profile
-string Service
+RegisterProfile 
+			This registers a profile implementation.
+
+			If an application disconnects from the bus all
+			its registered profiles will be removed.
+
+			HFP HS UUID: 0000111e-0000-1000-8000-00805f9b34fb
+
+				Default RFCOMM channel is 6. And this requires
+				authentication.
+
+			Available options:
+
+				string Name
+
+					Human readable name for the profile
+
+				string Service
+
+
 */
 func (a *ProfileManager1) RegisterProfile(profile dbus.ObjectPath, uuid string, options map[string]interface{}) error {
 	
@@ -274,10 +284,15 @@ func (a *ProfileManager1) RegisterProfile(profile dbus.ObjectPath, uuid string, 
 }
 
 /*
-UnregisterProfile This unregisters the profile that has been previously
-registered. The object path parameter must match the
-same value that has been used on registration.
-Possible errors: org.bluez.Error.DoesNotExist
+UnregisterProfile 
+			This unregisters the profile that has been previously
+			registered. The object path parameter must match the
+			same value that has been used on registration.
+
+			Possible errors: org.bluez.Error.DoesNotExist
+
+
+
 */
 func (a *ProfileManager1) UnregisterProfile(profile dbus.ObjectPath) error {
 	

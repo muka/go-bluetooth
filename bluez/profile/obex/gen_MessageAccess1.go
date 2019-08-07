@@ -256,10 +256,14 @@ func (a *MessageAccess1) UnwatchProperties(ch chan *bluez.PropertyChanged) error
 
 
 /*
-SetFolder Set working directory for current session, *name* may
-be the directory name or '..[/dir]'.
-Possible errors: org.bluez.obex.Error.InvalidArguments
-org.bluez.obex.Error.Failed
+SetFolder 
+			Set working directory for current session, *name* may
+			be the directory name or '..[/dir]'.
+
+			Possible errors: org.bluez.obex.Error.InvalidArguments
+					 org.bluez.obex.Error.Failed
+
+
 */
 func (a *MessageAccess1) SetFolder(name string) error {
 	
@@ -268,13 +272,20 @@ func (a *MessageAccess1) SetFolder(name string) error {
 }
 
 /*
-ListFolders Returns a dictionary containing information about
-the current folder content.
-The following keys are defined:
-string Name : Folder name
-Possible filters: Offset and MaxCount
-Possible errors: org.bluez.obex.Error.InvalidArguments
-org.bluez.obex.Error.Failed
+ListFolders 
+			Returns a dictionary containing information about
+			the current folder content.
+
+			The following keys are defined:
+
+				string Name : Folder name
+
+			Possible filters: Offset and MaxCount
+
+			Possible errors: org.bluez.obex.Error.InvalidArguments
+					 org.bluez.obex.Error.Failed
+
+
 */
 func (a *MessageAccess1) ListFolders(filter map[string]interface{}) ([]map[string]interface{}, error) {
 	
@@ -284,9 +295,13 @@ func (a *MessageAccess1) ListFolders(filter map[string]interface{}) ([]map[strin
 }
 
 /*
-ListFilterFields Return all available fields that can be used in Fields
-filter.
-Possible errors: None
+ListFilterFields 
+			Return all available fields that can be used in Fields
+			filter.
+
+			Possible errors: None
+
+
 */
 func (a *MessageAccess1) ListFilterFields() ([]string, error) {
 	
@@ -296,58 +311,101 @@ func (a *MessageAccess1) ListFilterFields() ([]string, error) {
 }
 
 /*
-ListMessages Returns an array containing the messages found in the
-given subfolder of the current folder, or in the
-current folder if folder is empty.
-Possible Filters: Offset, MaxCount, SubjectLength, Fields,
-Type, PeriodStart, PeriodEnd, Status, Recipient, Sender,
-Priority
-Each message is represented by an object path followed
-by a dictionary of the properties.
-Properties:
-string Subject:
-Message subject
-string Timestamp:
-Message timestamp
-string Sender:
-Message sender name
-string SenderAddress:
-Message sender address
-string ReplyTo:
-Message Reply-To address
-string Recipient:
-Message recipient name
-string RecipientAddress:
-Message recipient address
-string Type:
-Message type
-Possible values: "email", "sms-gsm",
-"sms-cdma" and "mms"
-uint64 Size:
-Message size in bytes
-boolean Text:
-Message text flag
-Specifies whether message has textual
-content or is binary only
-string Status:
-Message status
-Possible values for received messages:
-"complete", "fractioned", "notification"
-Possible values for sent messages:
-"delivery-success", "sending-success",
-"delivery-failure", "sending-failure"
-uint64 AttachmentSize:
-Message overall attachment size in bytes
-boolean Priority:
-Message priority flag
-boolean Read:
-Message read flag
-boolean Sent:
-Message sent flag
-boolean Protected:
-Message protected flag
-Possible errors: org.bluez.obex.Error.InvalidArguments
-org.bluez.obex.Error.Failed
+ListMessages 
+			Returns an array containing the messages found in the
+			given subfolder of the current folder, or in the
+			current folder if folder is empty.
+
+			Possible Filters: Offset, MaxCount, SubjectLength, Fields,
+			Type, PeriodStart, PeriodEnd, Status, Recipient, Sender,
+			Priority
+
+			Each message is represented by an object path followed
+			by a dictionary of the properties.
+
+			Properties:
+
+				string Subject:
+
+					Message subject
+
+				string Timestamp:
+
+					Message timestamp
+
+				string Sender:
+
+					Message sender name
+
+				string SenderAddress:
+
+					Message sender address
+
+				string ReplyTo:
+
+					Message Reply-To address
+
+				string Recipient:
+
+					Message recipient name
+
+				string RecipientAddress:
+
+					Message recipient address
+
+				string Type:
+
+					Message type
+
+					Possible values: "email", "sms-gsm",
+					"sms-cdma" and "mms"
+
+				uint64 Size:
+
+					Message size in bytes
+
+				boolean Text:
+
+					Message text flag
+
+					Specifies whether message has textual
+					content or is binary only
+
+				string Status:
+
+					Message status
+
+					Possible values for received messages:
+					"complete", "fractioned", "notification"
+
+					Possible values for sent messages:
+					"delivery-success", "sending-success",
+					"delivery-failure", "sending-failure"
+
+				uint64 AttachmentSize:
+
+					Message overall attachment size in bytes
+
+				boolean Priority:
+
+					Message priority flag
+
+				boolean Read:
+
+					Message read flag
+
+				boolean Sent:
+
+					Message sent flag
+
+				boolean Protected:
+
+					Message protected flag
+
+			Possible errors: org.bluez.obex.Error.InvalidArguments
+					 org.bluez.obex.Error.Failed
+
+
 */
 func (a *MessageAccess1) ListMessages(folder string, filter map[string]interface{}) ([]dbus.ObjectPath, map[string]interface{}, error) {
 	
@@ -367,49 +425,86 @@ func (a *MessageAccess1) UpdateInbox() error {
 }
 
 /*
-PushMessage Transfer a message (in bMessage format) to the
-remote device.
-The message is transferred either to the given
-subfolder of the current folder, or to the current
-folder if folder is empty.
-Possible args: Transparent, Retry, Charset
-The returned path represents the newly created transfer,
-which should be used to find out if the content has been
-successfully transferred or if the operation fails.
-The properties of this transfer are also returned along
-with the object path, to avoid a call to GetAll.
-Possible errors: org.bluez.obex.Error.InvalidArguments
-org.bluez.obex.Error.Failed
+PushMessage 
+			Transfer a message (in bMessage format) to the
+			remote device.
+
+			The message is transferred either to the given
+			subfolder of the current folder, or to the current
+			folder if folder is empty.
+
+			Possible args: Transparent, Retry, Charset
+
+			The returned path represents the newly created transfer,
+			which should be used to find out if the content has been
+			successfully transferred or if the operation fails.
+
+			The properties of this transfer are also returned along
+			with the object path, to avoid a call to GetAll.
+
+			Possible errors: org.bluez.obex.Error.InvalidArguments
+					 org.bluez.obex.Error.Failed
+
+
 Filter:		uint16 Offset:
-Offset of the first item, default is 0
-uint16 MaxCount:
-Maximum number of items, default is 1024
-byte SubjectLength:
-Maximum length of the Subject property in the
-message, default is 256
-array{string} Fields:
-Message fields, default is all values.
-Possible values can be query with ListFilterFields.
-array{string} Types:
-Filter messages by type.
-Possible values: "sms", "email", "mms".
-string PeriodBegin:
-Filter messages by starting period.
-Possible values: Date in "YYYYMMDDTHHMMSS" format.
-string PeriodEnd:
-Filter messages by ending period.
-Possible values: Date in "YYYYMMDDTHHMMSS" format.
-boolean Read:
-Filter messages by read flag.
-Possible values: True for read or False for unread
-string Recipient:
-Filter messages by recipient address.
-string Sender:
-Filter messages by sender address.
-boolean Priority:
-Filter messages by priority flag.
-Possible values: True for high priority or False for
-non-high priority
+
+			Offset of the first item, default is 0
+
+		uint16 MaxCount:
+
+			Maximum number of items, default is 1024
+
+		byte SubjectLength:
+
+			Maximum length of the Subject property in the
+			message, default is 256
+
+		array{string} Fields:
+
+			Message fields, default is all values.
+
+			Possible values can be query with ListFilterFields.
+
+		array{string} Types:
+
+			Filter messages by type.
+
+			Possible values: "sms", "email", "mms".
+
+		string PeriodBegin:
+
+			Filter messages by starting period.
+
+			Possible values: Date in "YYYYMMDDTHHMMSS" format.
+
+		string PeriodEnd:
+
+			Filter messages by ending period.
+
+			Possible values: Date in "YYYYMMDDTHHMMSS" format.
+
+		boolean Read:
+
+			Filter messages by read flag.
+
+			Possible values: True for read or False for unread
+
+		string Recipient:
+
+			Filter messages by recipient address.
+
+		string Sender:
+
+			Filter messages by sender address.
+
+		boolean Priority:
+
+			Filter messages by priority flag.
+
+			Possible values: True for high priority or False for
+			non-high priority
+
+
 */
 func (a *MessageAccess1) PushMessage(sourcefile string, folder string, args map[string]interface{}) error {
 	

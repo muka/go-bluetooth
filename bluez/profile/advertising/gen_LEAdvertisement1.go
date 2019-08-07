@@ -42,11 +42,13 @@ func NewLEAdvertisement1(objectPath dbus.ObjectPath) (*LEAdvertisement1, error) 
 
 /*
 LEAdvertisement1 LE Advertisement Data hierarchy
+
 Specifies the Advertisement Data to be broadcast and some advertising
 parameters.  Properties which are not present will not be included in the
 data.  Required advertisement data types will always be included.
 All UUIDs are 128-bit versions in the API, and 16 or 32-bit
 versions of the same UUID will be used in the advertising data as appropriate.
+
 */
 type LEAdvertisement1 struct {
 	client     				*bluez.Client
@@ -61,103 +63,112 @@ type LEAdvertisement1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	ServiceData Service Data elements to include. The keys are the
-  UUID to associate with the data.
+	ServiceUUIDs List of UUIDs to include in the "Service UUID" field of
+			the Advertising Data.
 	*/
-	ServiceData map[string]interface{}
+	ServiceUUIDs []string
 
 	/*
-	LocalName Local name to be used in the advertising report. If the
-  string is too big to fit into the packet it will be
-  truncated.
-  If this property is available 'local-name' cannot be
-  present in the Includes.
+	SolicitUUIDs Array of UUIDs to include in "Service Solicitation"
+			Advertisement Data.
 	*/
-	LocalName string
-
-	/*
-	Duration Duration of the advertisement in seconds. If there are
-  other applications advertising no duration is set the
-  default is 2 seconds.
-	*/
-	Duration uint16
-
-	/*
-	Timeout Timeout of the advertisement in seconds. This defines
-  the lifetime of the advertisement.
-	*/
-	Timeout uint16
+	SolicitUUIDs []string
 
 	/*
 	Data Advertising Type to include in the Advertising
-  Data. Key is the advertising type and value is the
-  data as byte array.
-  Note: Types already handled by other properties shall
-  not be used.
-  Possible values:
-  <type> <byte array>
-  ...
-  Example:
-  <Transport Discovery> <Organization Flags...>
-  0x26                   0x01         0x01...
+			Data. Key is the advertising type and value is the
+			data as byte array.
+
+			Note: Types already handled by other properties shall
+			not be used.
+
+			Possible values:
+				<type> <byte array>
+				...
+
+			Example:
+				<Transport Discovery> <Organization Flags...>
+				0x26                   0x01         0x01...
 	*/
 	Data map[byte]interface{}
 
 	/*
 	Discoverable Advertise as general discoverable. When present this
-  will override adapter Discoverable property.
-  Note: This property shall not be set when Type is set
-  to broadcast.
+			will override adapter Discoverable property.
+
+			Note: This property shall not be set when Type is set
+			to broadcast.
 	*/
 	Discoverable bool
 
 	/*
-	DiscoverableTimeout The discoverable timeout in seconds. A value of zero
-  means that the timeout is disabled and it will stay in
-  discoverable/limited mode forever.
-  Note: This property shall not be set when Type is set
-  to broadcast.
-	*/
-	DiscoverableTimeout uint16
-
-	/*
 	Includes List of features to be included in the advertising
-  packet.
-  Possible values: as found on
-  LEAdvertisingManager.SupportedIncludes
+			packet.
+
+			Possible values: as found on
+					LEAdvertisingManager.SupportedIncludes
 	*/
 	Includes []string
 
 	/*
+	Duration Duration of the advertisement in seconds. If there are
+			other applications advertising no duration is set the
+			default is 2 seconds.
+	*/
+	Duration uint16
+
+	/*
 	Type Determines the type of advertising packet requested.
-  Possible values: "broadcast" or "peripheral"
+
+			Possible values: "broadcast" or "peripheral"
 	*/
 	Type string
 
 	/*
-	ServiceUUIDs List of UUIDs to include in the "Service UUID" field of
-  the Advertising Data.
-	*/
-	ServiceUUIDs []string
-
-	/*
 	ManufacturerData Manufactuer Data fields to include in
-  the Advertising Data.  Keys are the Manufacturer ID
-  to associate with the data.
+			the Advertising Data.  Keys are the Manufacturer ID
+			to associate with the data.
 	*/
 	ManufacturerData map[uint16]interface{}
 
 	/*
-	SolicitUUIDs Array of UUIDs to include in "Service Solicitation"
-  Advertisement Data.
+	ServiceData Service Data elements to include. The keys are the
+			UUID to associate with the data.
 	*/
-	SolicitUUIDs []string
+	ServiceData map[string]interface{}
+
+	/*
+	DiscoverableTimeout The discoverable timeout in seconds. A value of zero
+			means that the timeout is disabled and it will stay in
+			discoverable/limited mode forever.
+
+			Note: This property shall not be set when Type is set
+			to broadcast.
+	*/
+	DiscoverableTimeout uint16
+
+	/*
+	LocalName Local name to be used in the advertising report. If the
+			string is too big to fit into the packet it will be
+			truncated.
+
+			If this property is available 'local-name' cannot be
+			present in the Includes.
+	*/
+	LocalName string
 
 	/*
 	Appearance Appearance to be used in the advertising report.
-  Possible values: as found on GAP Service.
+
+			Possible values: as found on GAP Service.
 	*/
 	Appearance uint16
+
+	/*
+	Timeout Timeout of the advertisement in seconds. This defines
+			the lifetime of the advertisement.
+	*/
+	Timeout uint16
 
 }
 
@@ -172,60 +183,32 @@ func (p *LEAdvertisement1Properties) Unlock() {
 }
 
 
-// SetServiceData set ServiceData value
-func (a *LEAdvertisement1) SetServiceData(v map[string]interface{}) error {
-	return a.SetProperty("ServiceData", v)
+// SetServiceUUIDs set ServiceUUIDs value
+func (a *LEAdvertisement1) SetServiceUUIDs(v []string) error {
+	return a.SetProperty("ServiceUUIDs", v)
 }
 
-// GetServiceData get ServiceData value
-func (a *LEAdvertisement1) GetServiceData() (map[string]interface{}, error) {
-	v, err := a.GetProperty("ServiceData")
+// GetServiceUUIDs get ServiceUUIDs value
+func (a *LEAdvertisement1) GetServiceUUIDs() ([]string, error) {
+	v, err := a.GetProperty("ServiceUUIDs")
 	if err != nil {
-		return map[string]interface{}{}, err
+		return []string{}, err
 	}
-	return v.Value().(map[string]interface{}), nil
+	return v.Value().([]string), nil
 }
 
-// SetLocalName set LocalName value
-func (a *LEAdvertisement1) SetLocalName(v string) error {
-	return a.SetProperty("LocalName", v)
+// SetSolicitUUIDs set SolicitUUIDs value
+func (a *LEAdvertisement1) SetSolicitUUIDs(v []string) error {
+	return a.SetProperty("SolicitUUIDs", v)
 }
 
-// GetLocalName get LocalName value
-func (a *LEAdvertisement1) GetLocalName() (string, error) {
-	v, err := a.GetProperty("LocalName")
+// GetSolicitUUIDs get SolicitUUIDs value
+func (a *LEAdvertisement1) GetSolicitUUIDs() ([]string, error) {
+	v, err := a.GetProperty("SolicitUUIDs")
 	if err != nil {
-		return "", err
+		return []string{}, err
 	}
-	return v.Value().(string), nil
-}
-
-// SetDuration set Duration value
-func (a *LEAdvertisement1) SetDuration(v uint16) error {
-	return a.SetProperty("Duration", v)
-}
-
-// GetDuration get Duration value
-func (a *LEAdvertisement1) GetDuration() (uint16, error) {
-	v, err := a.GetProperty("Duration")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
-}
-
-// SetTimeout set Timeout value
-func (a *LEAdvertisement1) SetTimeout(v uint16) error {
-	return a.SetProperty("Timeout", v)
-}
-
-// GetTimeout get Timeout value
-func (a *LEAdvertisement1) GetTimeout() (uint16, error) {
-	v, err := a.GetProperty("Timeout")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
+	return v.Value().([]string), nil
 }
 
 // SetData set Data value
@@ -256,20 +239,6 @@ func (a *LEAdvertisement1) GetDiscoverable() (bool, error) {
 	return v.Value().(bool), nil
 }
 
-// SetDiscoverableTimeout set DiscoverableTimeout value
-func (a *LEAdvertisement1) SetDiscoverableTimeout(v uint16) error {
-	return a.SetProperty("DiscoverableTimeout", v)
-}
-
-// GetDiscoverableTimeout get DiscoverableTimeout value
-func (a *LEAdvertisement1) GetDiscoverableTimeout() (uint16, error) {
-	v, err := a.GetProperty("DiscoverableTimeout")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
-}
-
 // SetIncludes set Includes value
 func (a *LEAdvertisement1) SetIncludes(v []string) error {
 	return a.SetProperty("Includes", v)
@@ -282,6 +251,20 @@ func (a *LEAdvertisement1) GetIncludes() ([]string, error) {
 		return []string{}, err
 	}
 	return v.Value().([]string), nil
+}
+
+// SetDuration set Duration value
+func (a *LEAdvertisement1) SetDuration(v uint16) error {
+	return a.SetProperty("Duration", v)
+}
+
+// GetDuration get Duration value
+func (a *LEAdvertisement1) GetDuration() (uint16, error) {
+	v, err := a.GetProperty("Duration")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
 }
 
 // SetType set Type value
@@ -298,20 +281,6 @@ func (a *LEAdvertisement1) GetType() (string, error) {
 	return v.Value().(string), nil
 }
 
-// SetServiceUUIDs set ServiceUUIDs value
-func (a *LEAdvertisement1) SetServiceUUIDs(v []string) error {
-	return a.SetProperty("ServiceUUIDs", v)
-}
-
-// GetServiceUUIDs get ServiceUUIDs value
-func (a *LEAdvertisement1) GetServiceUUIDs() ([]string, error) {
-	v, err := a.GetProperty("ServiceUUIDs")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
-}
-
 // SetManufacturerData set ManufacturerData value
 func (a *LEAdvertisement1) SetManufacturerData(v map[string]interface{}) error {
 	return a.SetProperty("ManufacturerData", v)
@@ -326,18 +295,46 @@ func (a *LEAdvertisement1) GetManufacturerData() (map[string]interface{}, error)
 	return v.Value().(map[string]interface{}), nil
 }
 
-// SetSolicitUUIDs set SolicitUUIDs value
-func (a *LEAdvertisement1) SetSolicitUUIDs(v []string) error {
-	return a.SetProperty("SolicitUUIDs", v)
+// SetServiceData set ServiceData value
+func (a *LEAdvertisement1) SetServiceData(v map[string]interface{}) error {
+	return a.SetProperty("ServiceData", v)
 }
 
-// GetSolicitUUIDs get SolicitUUIDs value
-func (a *LEAdvertisement1) GetSolicitUUIDs() ([]string, error) {
-	v, err := a.GetProperty("SolicitUUIDs")
+// GetServiceData get ServiceData value
+func (a *LEAdvertisement1) GetServiceData() (map[string]interface{}, error) {
+	v, err := a.GetProperty("ServiceData")
 	if err != nil {
-		return []string{}, err
+		return map[string]interface{}{}, err
 	}
-	return v.Value().([]string), nil
+	return v.Value().(map[string]interface{}), nil
+}
+
+// SetDiscoverableTimeout set DiscoverableTimeout value
+func (a *LEAdvertisement1) SetDiscoverableTimeout(v uint16) error {
+	return a.SetProperty("DiscoverableTimeout", v)
+}
+
+// GetDiscoverableTimeout get DiscoverableTimeout value
+func (a *LEAdvertisement1) GetDiscoverableTimeout() (uint16, error) {
+	v, err := a.GetProperty("DiscoverableTimeout")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
+
+// SetLocalName set LocalName value
+func (a *LEAdvertisement1) SetLocalName(v string) error {
+	return a.SetProperty("LocalName", v)
+}
+
+// GetLocalName get LocalName value
+func (a *LEAdvertisement1) GetLocalName() (string, error) {
+	v, err := a.GetProperty("LocalName")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 // SetAppearance set Appearance value
@@ -348,6 +345,20 @@ func (a *LEAdvertisement1) SetAppearance(v uint16) error {
 // GetAppearance get Appearance value
 func (a *LEAdvertisement1) GetAppearance() (uint16, error) {
 	v, err := a.GetProperty("Appearance")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
+
+// SetTimeout set Timeout value
+func (a *LEAdvertisement1) SetTimeout(v uint16) error {
+	return a.SetProperty("Timeout", v)
+}
+
+// GetTimeout get Timeout value
+func (a *LEAdvertisement1) GetTimeout() (uint16, error) {
+	v, err := a.GetProperty("Timeout")
 	if err != nil {
 		return uint16(0), err
 	}
@@ -541,11 +552,14 @@ func (a *LEAdvertisement1) UnwatchProperties(ch chan *bluez.PropertyChanged) err
 
 
 /*
-Release This method gets called when the service daemon
-removes the Advertisement. A client can use it to do
-cleanup tasks. There is no need to call
-UnregisterAdvertisement because when this method gets
-called it has already been unregistered.
+Release 
+			This method gets called when the service daemon
+			removes the Advertisement. A client can use it to do
+			cleanup tasks. There is no need to call
+			UnregisterAdvertisement because when this method gets
+			called it has already been unregistered.
+
+
 */
 func (a *LEAdvertisement1) Release() error {
 	

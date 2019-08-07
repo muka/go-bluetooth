@@ -256,26 +256,38 @@ func (a *Media1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 
 
 /*
-RegisterEndpoint Register a local end point to sender, the sender can
-register as many end points as it likes.
-Note: If the sender disconnects the end points are
-automatically unregistered.
-possible properties:
-string UUID:
-UUID of the profile which the endpoint
-is for.
-byte Codec:
-Assigned number of codec that the
-endpoint implements. The values should
-match the profile specification which
-is indicated by the UUID.
-array{byte} Capabilities:
-Capabilities blob, it is used as it is
-so the size and byte order must match.
-Possible Errors: org.bluez.Error.InvalidArguments
-org.bluez.Error.NotSupported - emitted
-when interface for the end-point is
-disabled.
+RegisterEndpoint 
+			Register a local end point to sender, the sender can
+			register as many end points as it likes.
+
+			Note: If the sender disconnects the end points are
+			automatically unregistered.
+
+			possible properties:
+
+				string UUID:
+
+					UUID of the profile which the endpoint
+					is for.
+
+				byte Codec:
+
+					Assigned number of codec that the
+					endpoint implements. The values should
+					match the profile specification which
+					is indicated by the UUID.
+
+				array{byte} Capabilities:
+
+					Capabilities blob, it is used as it is
+					so the size and byte order must match.
+
+			Possible Errors: org.bluez.Error.InvalidArguments
+					 org.bluez.Error.NotSupported - emitted
+					 when interface for the end-point is
+					 disabled.
+
+
 */
 func (a *Media1) RegisterEndpoint(endpoint dbus.ObjectPath, properties map[string]interface{}) error {
 	
@@ -284,7 +296,10 @@ func (a *Media1) RegisterEndpoint(endpoint dbus.ObjectPath, properties map[strin
 }
 
 /*
-UnregisterEndpoint Unregister sender end point.
+UnregisterEndpoint 
+			Unregister sender end point.
+
+
 */
 func (a *Media1) UnregisterEndpoint(endpoint dbus.ObjectPath) error {
 	
@@ -293,16 +308,23 @@ func (a *Media1) UnregisterEndpoint(endpoint dbus.ObjectPath) error {
 }
 
 /*
-RegisterPlayer Register a media player object to sender, the sender
-can register as many objects as it likes.
-Object must implement at least
-org.mpris.MediaPlayer2.Player as defined in MPRIS 2.2
-spec:
-http://specifications.freedesktop.org/mpris-spec/latest/
-Note: If the sender disconnects its objects are
-automatically unregistered.
-Possible Errors: org.bluez.Error.InvalidArguments
-org.bluez.Error.NotSupported
+RegisterPlayer 
+			Register a media player object to sender, the sender
+			can register as many objects as it likes.
+
+			Object must implement at least
+			org.mpris.MediaPlayer2.Player as defined in MPRIS 2.2
+			spec:
+
+			http://specifications.freedesktop.org/mpris-spec/latest/
+
+			Note: If the sender disconnects its objects are
+			automatically unregistered.
+
+			Possible Errors: org.bluez.Error.InvalidArguments
+					 org.bluez.Error.NotSupported
+
+
 */
 func (a *Media1) RegisterPlayer(player dbus.ObjectPath, properties map[string]interface{}) error {
 	
@@ -311,7 +333,11 @@ func (a *Media1) RegisterPlayer(player dbus.ObjectPath, properties map[string]in
 }
 
 /*
-UnregisterPlayer Unregister sender media player.
+UnregisterPlayer 
+			Unregister sender media player.
+
+
+
 */
 func (a *Media1) UnregisterPlayer(player dbus.ObjectPath) error {
 	
