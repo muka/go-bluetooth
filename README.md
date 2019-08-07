@@ -2,9 +2,37 @@
 
 Golang bluetooth client based on bluez DBus interfaces based on Bluez reference documentation https://git.kernel.org/cgit/bluetooth/bluez.git/tree/doc
 
+## Usage
+
+1. Build the binary
+
+  `cd $GOPATH/src/github.com/muka/go-bluetooth && make build`
+2. Run the examples eg.
+
+  `go-bluetooth discovery`
+
+The `examples/` folder offer an API overview.
+
+## Features
+
+The library offers a wrapper to Bluez DBus API and some high level API to ease the interaction.
+
+High level features supported:
+
+- [x] Client code generation from bluez documentation
+- [x] Shell wrappers for `rfkill`, `btmgmt`, `hciconfig`, `hcitool`
+- [x] An `hci` basic API (from a fork of [go-ble/ble](https://github.com/muka/ble))
+- [x] Expose bluetooth service from go code
+- [x] Pairing and authentication support (via agent)
+- [x] Basic beaconing (iBeacon and Eddystone)
+
 ## Setup
 
-The go Bluez API is generated from the documentation, run `make gen` to generate go sources.
+The go Bluez API is generated from the documentation, run `make gen` to re-generate go sources. There is also a commodity bluez JSON file available in the root folder for reference.
+
+Code generation will not overwrite existing files, run `make gen/clean` to remove generated content.
+
+Generated code has `gen_` prefix. If an API file exists with the same filename but without the prefix, generation will be skipped for that API.
 
 **Note** Ensure to install proper dbus rules on the system. For a dev setup, you can use the library configuration as follow
 
@@ -17,28 +45,7 @@ The go Bluez API is generated from the documentation, run `make gen` to generate
   # dbus-send --system --type=method_call --dest=org.freedesktop.DBus / org.freedesktop.DBus.ReloadConfig
   # via systemctl
   systemctl reload dbus
-
 ```
-
-## Features
-
-The features implemented are
-
-- [x] Discovery
-- [x] Adapter support
-- [x] Client device support
-- [x] GATT Service and characteristics interface
-- [x] Shell wrapper to `rfkill`, `btmgmt`, `hciconfig`, `hcitool`
-- [x] Handle systemd `bluetooth.service` unit
-- [x] An `hci` basic API (based on a fork of [go-ble/ble](https://github.com/muka/ble))
-- [x] Bluetooth services via bluez GATT API (requires 2 bluetooth adapters)
-- [x] Pairing support
-- [x] Authentication support
-- [x] API generation from bluez documentation
-
-## Examples
-
-The `examples/` folder offer an API overview. Use `go run main.go` to list the available examples.
 
 ## Requirements
 
@@ -93,4 +100,16 @@ Feel free to open an issue and/or a PR to contribute. If you would like to help 
 
 ## License
 
-Apache2 License
+Copyright 2019 luca capra
+
+Licensed under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
