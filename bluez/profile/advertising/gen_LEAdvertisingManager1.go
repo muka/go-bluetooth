@@ -1,18 +1,3 @@
-// WARNING: generated code, do not edit!
-// Copyright © 2019 luca capra
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 // The Advertising Manager allows external applications to register Advertisement
 // Data which should be broadcast to devices.  Advertisement Data elements must
 // follow the API for LE Advertisement Data described above.
@@ -98,9 +83,6 @@ type LEAdvertisingManager1 struct {
 type LEAdvertisingManager1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// ActiveInstances Number of active advertising instances.
-	ActiveInstances byte
-
 	// SupportedInstances Number of available advertising instances.
 	SupportedInstances byte
 
@@ -109,6 +91,9 @@ type LEAdvertisingManager1Properties struct {
   // "appearance"
   // "local-name"
 	SupportedIncludes []string
+
+	// ActiveInstances Number of active advertising instances.
+	ActiveInstances byte
 
 }
 
@@ -120,20 +105,6 @@ func (p *LEAdvertisingManager1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-// SetActiveInstances set ActiveInstances value
-func (a *LEAdvertisingManager1) SetActiveInstances(v byte) error {
-	return a.SetProperty("ActiveInstances", v)
-}
-
-// GetActiveInstances get ActiveInstances value
-func (a *LEAdvertisingManager1) GetActiveInstances() (byte, error) {
-	v, err := a.GetProperty("ActiveInstances")
-	if err != nil {
-		return []uint8{}, err
-	}
-	return v.Value().(byte), nil
-}
 
 // SetSupportedInstances set SupportedInstances value
 func (a *LEAdvertisingManager1) SetSupportedInstances(v byte) error {
@@ -161,6 +132,20 @@ func (a *LEAdvertisingManager1) GetSupportedIncludes() ([]string, error) {
 		return []string{}, err
 	}
 	return v.Value().([]string), nil
+}
+
+// SetActiveInstances set ActiveInstances value
+func (a *LEAdvertisingManager1) SetActiveInstances(v byte) error {
+	return a.SetProperty("ActiveInstances", v)
+}
+
+// GetActiveInstances get ActiveInstances value
+func (a *LEAdvertisingManager1) GetActiveInstances() (byte, error) {
+	v, err := a.GetProperty("ActiveInstances")
+	if err != nil {
+		return []uint8{}, err
+	}
+	return v.Value().(byte), nil
 }
 
 

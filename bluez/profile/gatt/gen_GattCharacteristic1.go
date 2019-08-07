@@ -1,18 +1,3 @@
-// WARNING: generated code, do not edit!
-// Copyright © 2019 luca capra
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 // For local GATT defined services, the object paths need to follow the service
 // path hierarchy and are freely definable.
 package gatt
@@ -72,20 +57,6 @@ type GattCharacteristic1 struct {
 type GattCharacteristic1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// Value The cached value of the characteristic. This property
-  // gets updated only after a successful read request and
-  // when a notification or indication is received, upon
-  // which a PropertiesChanged signal will be emitted.
-	Value []byte `dbus:"emit"`
-
-	// WriteAcquired True, if this characteristic has been acquired by any
-  // client using AcquireWrite.
-  // For client properties is ommited in case
-  // 'write-without-response' flag is not set.
-  // For server the presence of this property indicates
-  // that AcquireWrite is supported.
-	WriteAcquired bool
-
 	// NotifyAcquired True, if this characteristic has been acquired by any
   // client using AcquireNotify.
   // For client this properties is ommited in case 'notify'
@@ -130,6 +101,20 @@ type GattCharacteristic1Properties struct {
   // belongs to.
 	Service dbus.ObjectPath
 
+	// Value The cached value of the characteristic. This property
+  // gets updated only after a successful read request and
+  // when a notification or indication is received, upon
+  // which a PropertiesChanged signal will be emitted.
+	Value []byte `dbus:"emit"`
+
+	// WriteAcquired True, if this characteristic has been acquired by any
+  // client using AcquireWrite.
+  // For client properties is ommited in case
+  // 'write-without-response' flag is not set.
+  // For server the presence of this property indicates
+  // that AcquireWrite is supported.
+	WriteAcquired bool
+
 }
 
 func (p *GattCharacteristic1Properties) Lock() {
@@ -140,34 +125,6 @@ func (p *GattCharacteristic1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-// SetValue set Value value
-func (a *GattCharacteristic1) SetValue(v []byte) error {
-	return a.SetProperty("Value", v)
-}
-
-// GetValue get Value value
-func (a *GattCharacteristic1) GetValue() ([]byte, error) {
-	v, err := a.GetProperty("Value")
-	if err != nil {
-		return []byte{}, err
-	}
-	return v.Value().([]byte), nil
-}
-
-// SetWriteAcquired set WriteAcquired value
-func (a *GattCharacteristic1) SetWriteAcquired(v bool) error {
-	return a.SetProperty("WriteAcquired", v)
-}
-
-// GetWriteAcquired get WriteAcquired value
-func (a *GattCharacteristic1) GetWriteAcquired() (bool, error) {
-	v, err := a.GetProperty("WriteAcquired")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
 
 // SetNotifyAcquired set NotifyAcquired value
 func (a *GattCharacteristic1) SetNotifyAcquired(v bool) error {
@@ -251,6 +208,34 @@ func (a *GattCharacteristic1) GetService() (dbus.ObjectPath, error) {
 		return dbus.ObjectPath(""), err
 	}
 	return v.Value().(dbus.ObjectPath), nil
+}
+
+// SetValue set Value value
+func (a *GattCharacteristic1) SetValue(v []byte) error {
+	return a.SetProperty("Value", v)
+}
+
+// GetValue get Value value
+func (a *GattCharacteristic1) GetValue() ([]byte, error) {
+	v, err := a.GetProperty("Value")
+	if err != nil {
+		return []byte{}, err
+	}
+	return v.Value().([]byte), nil
+}
+
+// SetWriteAcquired set WriteAcquired value
+func (a *GattCharacteristic1) SetWriteAcquired(v bool) error {
+	return a.SetProperty("WriteAcquired", v)
+}
+
+// GetWriteAcquired get WriteAcquired value
+func (a *GattCharacteristic1) GetWriteAcquired() (bool, error) {
+	v, err := a.GetProperty("WriteAcquired")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
 }
 
 

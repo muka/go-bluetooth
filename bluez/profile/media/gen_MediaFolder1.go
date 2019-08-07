@@ -1,18 +1,3 @@
-// WARNING: generated code, do not edit!
-// Copyright © 2019 luca capra
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 
 package media
 
@@ -96,20 +81,6 @@ type MediaFolder1 struct {
 type MediaFolder1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// End Offset of the last item.
-  // Default value: NumbeOfItems
-	End uint32
-
-	// Attributes Item properties that should be included in the list.
-  // Possible Values:
-  // "title", "artist", "album", "genre",
-  // "number-of-tracks", "number", "duration"
-  // Default Value: All
-	Attributes []string
-
-	// NumberOfItems Number of items in the folder
-	NumberOfItems uint32
-
 	// Name Folder name:
   // Possible values:
   // "/Filesystem/...": Filesystem scope
@@ -125,6 +96,20 @@ type MediaFolder1Properties struct {
   // Default value: 0
 	Start uint32
 
+	// End Offset of the last item.
+  // Default value: NumbeOfItems
+	End uint32
+
+	// Attributes Item properties that should be included in the list.
+  // Possible Values:
+  // "title", "artist", "album", "genre",
+  // "number-of-tracks", "number", "duration"
+  // Default Value: All
+	Attributes []string
+
+	// NumberOfItems Number of items in the folder
+	NumberOfItems uint32
+
 }
 
 func (p *MediaFolder1Properties) Lock() {
@@ -135,6 +120,34 @@ func (p *MediaFolder1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
+
+// SetName set Name value
+func (a *MediaFolder1) SetName(v string) error {
+	return a.SetProperty("Name", v)
+}
+
+// GetName get Name value
+func (a *MediaFolder1) GetName() (string, error) {
+	v, err := a.GetProperty("Name")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+// SetStart set Start value
+func (a *MediaFolder1) SetStart(v uint32) error {
+	return a.SetProperty("Start", v)
+}
+
+// GetStart get Start value
+func (a *MediaFolder1) GetStart() (uint32, error) {
+	v, err := a.GetProperty("Start")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
 
 // SetEnd set End value
 func (a *MediaFolder1) SetEnd(v uint32) error {
@@ -172,34 +185,6 @@ func (a *MediaFolder1) SetNumberOfItems(v uint32) error {
 // GetNumberOfItems get NumberOfItems value
 func (a *MediaFolder1) GetNumberOfItems() (uint32, error) {
 	v, err := a.GetProperty("NumberOfItems")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
-}
-
-// SetName set Name value
-func (a *MediaFolder1) SetName(v string) error {
-	return a.SetProperty("Name", v)
-}
-
-// GetName get Name value
-func (a *MediaFolder1) GetName() (string, error) {
-	v, err := a.GetProperty("Name")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-// SetStart set Start value
-func (a *MediaFolder1) SetStart(v uint32) error {
-	return a.SetProperty("Start", v)
-}
-
-// GetStart get Start value
-func (a *MediaFolder1) GetStart() (uint32, error) {
-	v, err := a.GetProperty("Start")
 	if err != nil {
 		return uint32(0), err
 	}

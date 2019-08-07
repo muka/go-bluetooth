@@ -1,18 +1,3 @@
-// WARNING: generated code, do not edit!
-// Copyright © 2019 luca capra
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 // GATT remote and local service representation. Object path for local services
 // is freely definable.
 // External applications implementing local services must register the services
@@ -78,15 +63,6 @@ type GattService1 struct {
 type GattService1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// Device Object path of the Bluetooth device the service
-  // belongs to. Only present on services from remote
-  // devices.
-	Device []dbus.ObjectPath `dbus:"ignore=isService"`
-
-	// Includes Array of object paths representing the included
-  // services of this service.
-	Includes []dbus.ObjectPath
-
 	// IsService 
 	IsService bool `dbus:"ignore"`
 
@@ -100,6 +76,15 @@ type GattService1Properties struct {
   // primary service. If false, the service is secondary.
 	Primary bool
 
+	// Device Object path of the Bluetooth device the service
+  // belongs to. Only present on services from remote
+  // devices.
+	Device []dbus.ObjectPath `dbus:"ignore=isService"`
+
+	// Includes Array of object paths representing the included
+  // services of this service.
+	Includes []dbus.ObjectPath
+
 }
 
 func (p *GattService1Properties) Lock() {
@@ -110,34 +95,6 @@ func (p *GattService1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-// SetDevice set Device value
-func (a *GattService1) SetDevice(v dbus.ObjectPath) error {
-	return a.SetProperty("Device", v)
-}
-
-// GetDevice get Device value
-func (a *GattService1) GetDevice() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Device")
-	if err != nil {
-		return dbus.ObjectPath(""), err
-	}
-	return v.Value().(dbus.ObjectPath), nil
-}
-
-// SetIncludes set Includes value
-func (a *GattService1) SetIncludes(v []dbus.ObjectPath) error {
-	return a.SetProperty("Includes", v)
-}
-
-// GetIncludes get Includes value
-func (a *GattService1) GetIncludes() ([]dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Includes")
-	if err != nil {
-		return []dbus.ObjectPath{}, err
-	}
-	return v.Value().([]dbus.ObjectPath), nil
-}
 
 // SetIsService set IsService value
 func (a *GattService1) SetIsService(v bool) error {
@@ -193,6 +150,34 @@ func (a *GattService1) GetPrimary() (bool, error) {
 		return false, err
 	}
 	return v.Value().(bool), nil
+}
+
+// SetDevice set Device value
+func (a *GattService1) SetDevice(v dbus.ObjectPath) error {
+	return a.SetProperty("Device", v)
+}
+
+// GetDevice get Device value
+func (a *GattService1) GetDevice() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Device")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
+}
+
+// SetIncludes set Includes value
+func (a *GattService1) SetIncludes(v []dbus.ObjectPath) error {
+	return a.SetProperty("Includes", v)
+}
+
+// GetIncludes get Includes value
+func (a *GattService1) GetIncludes() ([]dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Includes")
+	if err != nil {
+		return []dbus.ObjectPath{}, err
+	}
+	return v.Value().([]dbus.ObjectPath), nil
 }
 
 

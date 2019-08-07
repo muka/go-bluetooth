@@ -1,18 +1,3 @@
-// WARNING: generated code, do not edit!
-// Copyright © 2019 luca capra
-//
-// Licensed under the Apache License, Version 2.0 (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-//     http://www.apache.org/licenses/LICENSE-2.0
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-
 
 package media
 
@@ -70,18 +55,6 @@ type MediaTransport1 struct {
 type MediaTransport1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	// State Indicates the state of the transport. Possible
-  // values are:
-  // "idle": not streaming
-  // "pending": streaming but not acquired
-  // "active": streaming and acquired
-	State string
-
-	// Delay Optional. Transport delay in 1/10 of millisecond, this
-  // property is only writeable when the transport was
-  // acquired by the sender.
-	Delay uint16
-
 	// Volume Optional. Indicates volume level of the transport,
   // this property is only writeable when the transport was
   // acquired by the sender.
@@ -103,6 +76,18 @@ type MediaTransport1Properties struct {
   // byte order must match.
 	Configuration []byte
 
+	// State Indicates the state of the transport. Possible
+  // values are:
+  // "idle": not streaming
+  // "pending": streaming but not acquired
+  // "active": streaming and acquired
+	State string
+
+	// Delay Optional. Transport delay in 1/10 of millisecond, this
+  // property is only writeable when the transport was
+  // acquired by the sender.
+	Delay uint16
+
 }
 
 func (p *MediaTransport1Properties) Lock() {
@@ -113,34 +98,6 @@ func (p *MediaTransport1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-// SetState set State value
-func (a *MediaTransport1) SetState(v string) error {
-	return a.SetProperty("State", v)
-}
-
-// GetState get State value
-func (a *MediaTransport1) GetState() (string, error) {
-	v, err := a.GetProperty("State")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-// SetDelay set Delay value
-func (a *MediaTransport1) SetDelay(v uint16) error {
-	return a.SetProperty("Delay", v)
-}
-
-// GetDelay get Delay value
-func (a *MediaTransport1) GetDelay() (uint16, error) {
-	v, err := a.GetProperty("Delay")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
-}
 
 // SetVolume set Volume value
 func (a *MediaTransport1) SetVolume(v uint16) error {
@@ -210,6 +167,34 @@ func (a *MediaTransport1) GetConfiguration() ([]byte, error) {
 		return []byte{}, err
 	}
 	return v.Value().([]byte), nil
+}
+
+// SetState set State value
+func (a *MediaTransport1) SetState(v string) error {
+	return a.SetProperty("State", v)
+}
+
+// GetState get State value
+func (a *MediaTransport1) GetState() (string, error) {
+	v, err := a.GetProperty("State")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+// SetDelay set Delay value
+func (a *MediaTransport1) SetDelay(v uint16) error {
+	return a.SetProperty("Delay", v)
+}
+
+// GetDelay get Delay value
+func (a *MediaTransport1) GetDelay() (uint16, error) {
+	v, err := a.GetProperty("Delay")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
 }
 
 
