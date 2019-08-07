@@ -6,7 +6,6 @@ import (
 	"errors"
 
 	"github.com/muka/go-bluetooth/bluez/profile/gatt"
-	log "github.com/sirupsen/logrus"
 )
 
 //Luxometer Sensor..
@@ -198,7 +197,6 @@ func (s *LuxometerSensor) StartNotify(macAddress string) error {
 		return err
 	}
 
-	log.Debug("why this hang?")
 	if !n {
 		return s.data.StartNotify()
 	}

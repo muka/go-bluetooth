@@ -69,7 +69,12 @@ func Run(address, adapterID string) error {
 	if err != nil {
 		log.Errorf("Cannot load battery profile: %s", err)
 	} else {
-		batt.GetPercentage()
+		perc, err1 := batt.GetPercentage()
+		if err1 != nil {
+			log.Errorf("Cannot load battery percentage: %s", err)
+		} else {
+			log.Debugf("Battery: %d%%", perc)
+		}
 	}
 
 	err = sensorTag.Temperature.StartNotify()
