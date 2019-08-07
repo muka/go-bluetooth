@@ -1,6 +1,6 @@
 # go-bluetooth
 
-Golang bluetooth client based on bluez DBus interfaces based on Bluez reference documentation https://git.kernel.org/cgit/bluetooth/bluez.git/tree/doc
+Go bluetooth API based on Bluez reference documentation https://git.kernel.org/cgit/bluetooth/bluez.git/tree/doc
 
 ## Usage
 
