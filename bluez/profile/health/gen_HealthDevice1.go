@@ -77,19 +77,10 @@ func (p *HealthDevice1Properties) Unlock() {
 }
 
 
-// SetMainChannel set MainChannel value
-func (a *HealthDevice1) SetMainChannel(v dbus.ObjectPath) error {
-	return a.SetProperty("MainChannel", v)
-}
 
-// GetMainChannel get MainChannel value
-func (a *HealthDevice1) GetMainChannel() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("MainChannel")
-	if err != nil {
-		return dbus.ObjectPath(""), err
-	}
-	return v.Value().(dbus.ObjectPath), nil
-}
+
+
+
 
 
 // Close the connection

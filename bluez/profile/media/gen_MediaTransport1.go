@@ -117,80 +117,39 @@ func (p *MediaTransport1Properties) Unlock() {
 }
 
 
-// SetDevice set Device value
-func (a *MediaTransport1) SetDevice(v dbus.ObjectPath) error {
-	return a.SetProperty("Device", v)
-}
 
-// GetDevice get Device value
-func (a *MediaTransport1) GetDevice() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Device")
-	if err != nil {
-		return dbus.ObjectPath(""), err
-	}
-	return v.Value().(dbus.ObjectPath), nil
-}
 
-// SetUUID set UUID value
-func (a *MediaTransport1) SetUUID(v string) error {
-	return a.SetProperty("UUID", v)
-}
 
-// GetUUID get UUID value
-func (a *MediaTransport1) GetUUID() (string, error) {
-	v, err := a.GetProperty("UUID")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
 
-// SetCodec set Codec value
-func (a *MediaTransport1) SetCodec(v byte) error {
-	return a.SetProperty("Codec", v)
-}
 
-// GetCodec get Codec value
-func (a *MediaTransport1) GetCodec() (byte, error) {
-	v, err := a.GetProperty("Codec")
-	if err != nil {
-		return byte(0), err
-	}
-	return v.Value().(byte), nil
-}
 
-// SetConfiguration set Configuration value
-func (a *MediaTransport1) SetConfiguration(v []byte) error {
-	return a.SetProperty("Configuration", v)
-}
 
-// GetConfiguration get Configuration value
-func (a *MediaTransport1) GetConfiguration() ([]byte, error) {
-	v, err := a.GetProperty("Configuration")
-	if err != nil {
-		return []byte{}, err
-	}
-	return v.Value().([]byte), nil
-}
 
-// SetState set State value
-func (a *MediaTransport1) SetState(v string) error {
-	return a.SetProperty("State", v)
-}
 
-// GetState get State value
-func (a *MediaTransport1) GetState() (string, error) {
-	v, err := a.GetProperty("State")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // SetDelay set Delay value
 func (a *MediaTransport1) SetDelay(v uint16) error {
 	return a.SetProperty("Delay", v)
 }
+
+
 
 // GetDelay get Delay value
 func (a *MediaTransport1) GetDelay() (uint16, error) {
@@ -201,10 +160,15 @@ func (a *MediaTransport1) GetDelay() (uint16, error) {
 	return v.Value().(uint16), nil
 }
 
+
+
+
 // SetVolume set Volume value
 func (a *MediaTransport1) SetVolume(v uint16) error {
 	return a.SetProperty("Volume", v)
 }
+
+
 
 // GetVolume get Volume value
 func (a *MediaTransport1) GetVolume() (uint16, error) {
@@ -214,6 +178,7 @@ func (a *MediaTransport1) GetVolume() (uint16, error) {
 	}
 	return v.Value().(uint16), nil
 }
+
 
 
 // Close the connection

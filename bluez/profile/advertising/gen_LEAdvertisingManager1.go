@@ -85,6 +85,15 @@ type LEAdvertisingManager1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	SupportedIncludes List of supported system includes.
+
+			Possible values: "tx-power"
+					 "appearance"
+					 "local-name"
+	*/
+	SupportedIncludes []string
+
+	/*
 	ActiveInstances Number of active advertising instances.
 	*/
 	ActiveInstances byte
@@ -93,15 +102,6 @@ type LEAdvertisingManager1Properties struct {
 	SupportedInstances Number of available advertising instances.
 	*/
 	SupportedInstances byte
-
-	/*
-	SupportedIncludes List of supported system includes.
-
-			Possible values: "tx-power"
-					 "appearance"
-					 "local-name"
-	*/
-	SupportedIncludes []string
 
 }
 
@@ -116,10 +116,33 @@ func (p *LEAdvertisingManager1Properties) Unlock() {
 }
 
 
+
+
+// SetSupportedIncludes set SupportedIncludes value
+func (a *LEAdvertisingManager1) SetSupportedIncludes(v []string) error {
+	return a.SetProperty("SupportedIncludes", v)
+}
+
+
+
+// GetSupportedIncludes get SupportedIncludes value
+func (a *LEAdvertisingManager1) GetSupportedIncludes() ([]string, error) {
+	v, err := a.GetProperty("SupportedIncludes")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
+}
+
+
+
+
 // SetActiveInstances set ActiveInstances value
 func (a *LEAdvertisingManager1) SetActiveInstances(v byte) error {
 	return a.SetProperty("ActiveInstances", v)
 }
+
+
 
 // GetActiveInstances get ActiveInstances value
 func (a *LEAdvertisingManager1) GetActiveInstances() (byte, error) {
@@ -130,10 +153,15 @@ func (a *LEAdvertisingManager1) GetActiveInstances() (byte, error) {
 	return v.Value().(byte), nil
 }
 
+
+
+
 // SetSupportedInstances set SupportedInstances value
 func (a *LEAdvertisingManager1) SetSupportedInstances(v byte) error {
 	return a.SetProperty("SupportedInstances", v)
 }
+
+
 
 // GetSupportedInstances get SupportedInstances value
 func (a *LEAdvertisingManager1) GetSupportedInstances() (byte, error) {
@@ -144,19 +172,6 @@ func (a *LEAdvertisingManager1) GetSupportedInstances() (byte, error) {
 	return v.Value().(byte), nil
 }
 
-// SetSupportedIncludes set SupportedIncludes value
-func (a *LEAdvertisingManager1) SetSupportedIncludes(v []string) error {
-	return a.SetProperty("SupportedIncludes", v)
-}
-
-// GetSupportedIncludes get SupportedIncludes value
-func (a *LEAdvertisingManager1) GetSupportedIncludes() ([]string, error) {
-	v, err := a.GetProperty("SupportedIncludes")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
-}
 
 
 // Close the connection

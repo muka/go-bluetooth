@@ -57,6 +57,14 @@ type PhonebookAccess1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	PrimaryCounter 128 bits primary version counter.
+
+			Possible values: 32-character hexadecimal such
+			as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
+	*/
+	PrimaryCounter string
+
+	/*
 	SecondaryCounter 128 bits secondary version counter.
 
 			Possible values: 32-character hexadecimal such
@@ -85,14 +93,6 @@ type PhonebookAccess1Properties struct {
 	*/
 	DatabaseIdentifier string
 
-	/*
-	PrimaryCounter 128 bits primary version counter.
-
-			Possible values: 32-character hexadecimal such
-			as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
-	*/
-	PrimaryCounter string
-
 }
 
 //Lock access to properties
@@ -106,75 +106,30 @@ func (p *PhonebookAccess1Properties) Unlock() {
 }
 
 
-// SetSecondaryCounter set SecondaryCounter value
-func (a *PhonebookAccess1) SetSecondaryCounter(v string) error {
-	return a.SetProperty("SecondaryCounter", v)
-}
 
-// GetSecondaryCounter get SecondaryCounter value
-func (a *PhonebookAccess1) GetSecondaryCounter() (string, error) {
-	v, err := a.GetProperty("SecondaryCounter")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
 
-// SetFixedImageSize set FixedImageSize value
-func (a *PhonebookAccess1) SetFixedImageSize(v bool) error {
-	return a.SetProperty("FixedImageSize", v)
-}
 
-// GetFixedImageSize get FixedImageSize value
-func (a *PhonebookAccess1) GetFixedImageSize() (bool, error) {
-	v, err := a.GetProperty("FixedImageSize")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
 
-// SetFolder set Folder value
-func (a *PhonebookAccess1) SetFolder(v string) error {
-	return a.SetProperty("Folder", v)
-}
 
-// GetFolder get Folder value
-func (a *PhonebookAccess1) GetFolder() (string, error) {
-	v, err := a.GetProperty("Folder")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
 
-// SetDatabaseIdentifier set DatabaseIdentifier value
-func (a *PhonebookAccess1) SetDatabaseIdentifier(v string) error {
-	return a.SetProperty("DatabaseIdentifier", v)
-}
 
-// GetDatabaseIdentifier get DatabaseIdentifier value
-func (a *PhonebookAccess1) GetDatabaseIdentifier() (string, error) {
-	v, err := a.GetProperty("DatabaseIdentifier")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
 
-// SetPrimaryCounter set PrimaryCounter value
-func (a *PhonebookAccess1) SetPrimaryCounter(v string) error {
-	return a.SetProperty("PrimaryCounter", v)
-}
 
-// GetPrimaryCounter get PrimaryCounter value
-func (a *PhonebookAccess1) GetPrimaryCounter() (string, error) {
-	v, err := a.GetProperty("PrimaryCounter")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // Close the connection

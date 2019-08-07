@@ -93,19 +93,10 @@ func (p *Input1Properties) Unlock() {
 }
 
 
-// SetReconnectMode set ReconnectMode value
-func (a *Input1) SetReconnectMode(v string) error {
-	return a.SetProperty("ReconnectMode", v)
-}
 
-// GetReconnectMode get ReconnectMode value
-func (a *Input1) GetReconnectMode() (string, error) {
-	v, err := a.GetProperty("ReconnectMode")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
+
+
+
 
 
 // Close the connection

@@ -80,10 +80,14 @@ func (p *GattProfile1Properties) Unlock() {
 }
 
 
+
+
 // SetUUIDs set UUIDs value
 func (a *GattProfile1) SetUUIDs(v []string) error {
 	return a.SetProperty("UUIDs", v)
 }
+
+
 
 // GetUUIDs get UUIDs value
 func (a *GattProfile1) GetUUIDs() ([]string, error) {
@@ -93,6 +97,7 @@ func (a *GattProfile1) GetUUIDs() ([]string, error) {
 	}
 	return v.Value().([]string), nil
 }
+
 
 
 // Close the connection

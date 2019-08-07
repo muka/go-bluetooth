@@ -97,24 +97,19 @@ func (p *Thermometer1Properties) Unlock() {
 }
 
 
-// SetIntermediate set Intermediate value
-func (a *Thermometer1) SetIntermediate(v bool) error {
-	return a.SetProperty("Intermediate", v)
-}
 
-// GetIntermediate get Intermediate value
-func (a *Thermometer1) GetIntermediate() (bool, error) {
-	v, err := a.GetProperty("Intermediate")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
+
+
+
+
+
 
 // SetInterval set Interval value
 func (a *Thermometer1) SetInterval(v uint16) error {
 	return a.SetProperty("Interval", v)
 }
+
+
 
 // GetInterval get Interval value
 func (a *Thermometer1) GetInterval() (uint16, error) {
@@ -125,33 +120,16 @@ func (a *Thermometer1) GetInterval() (uint16, error) {
 	return v.Value().(uint16), nil
 }
 
-// SetMaximum set Maximum value
-func (a *Thermometer1) SetMaximum(v uint16) error {
-	return a.SetProperty("Maximum", v)
-}
 
-// GetMaximum get Maximum value
-func (a *Thermometer1) GetMaximum() (uint16, error) {
-	v, err := a.GetProperty("Maximum")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
-}
 
-// SetMinimum set Minimum value
-func (a *Thermometer1) SetMinimum(v uint16) error {
-	return a.SetProperty("Minimum", v)
-}
 
-// GetMinimum get Minimum value
-func (a *Thermometer1) GetMinimum() (uint16, error) {
-	v, err := a.GetProperty("Minimum")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
-}
+
+
+
+
+
+
+
 
 
 // Close the connection

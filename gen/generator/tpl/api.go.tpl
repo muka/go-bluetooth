@@ -65,11 +65,15 @@ func (p *{{.InterfaceName}}Properties) Unlock() {
 }
 
 {{ range .Properties }}
+
+{{ if not .ReadOnly }}
 // Set{{.Property.Name}} set {{.Property.Name}} value
 func (a *{{$InterfaceName}}) Set{{.Property.Name}}(v {{.RawType}}) error {
 	return a.SetProperty("{{.Property.Name}}", v)
 }
+{{end}}
 
+{{if not .WriteOnly }}
 // Get{{.Property.Name}} get {{.Property.Name}} value
 func (a *{{$InterfaceName}}) Get{{.Property.Name}}() ({{.RawType}}, error) {
 	v, err := a.GetProperty("{{.Property.Name}}")
@@ -78,6 +82,7 @@ func (a *{{$InterfaceName}}) Get{{.Property.Name}}() ({{.RawType}}, error) {
 	}
 	return v.Value().({{.RawType}}), nil
 }
+{{end}}
 {{end}}
 
 // Close the connection

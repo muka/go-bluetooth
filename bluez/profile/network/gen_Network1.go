@@ -84,47 +84,20 @@ func (p *Network1Properties) Unlock() {
 }
 
 
-// SetConnected set Connected value
-func (a *Network1) SetConnected(v bool) error {
-	return a.SetProperty("Connected", v)
-}
 
-// GetConnected get Connected value
-func (a *Network1) GetConnected() (bool, error) {
-	v, err := a.GetProperty("Connected")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
 
-// SetInterface set Interface value
-func (a *Network1) SetInterface(v string) error {
-	return a.SetProperty("Interface", v)
-}
 
-// GetInterface get Interface value
-func (a *Network1) GetInterface() (string, error) {
-	v, err := a.GetProperty("Interface")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
 
-// SetUUID set UUID value
-func (a *Network1) SetUUID(v string) error {
-	return a.SetProperty("UUID", v)
-}
 
-// GetUUID get UUID value
-func (a *Network1) GetUUID() (string, error) {
-	v, err := a.GetProperty("UUID")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
+
+
+
+
+
+
+
+
+
 
 
 // Close the connection

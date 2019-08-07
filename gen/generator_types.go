@@ -33,6 +33,9 @@ type PropertyDoc struct {
 	Property
 	RawType            string
 	RawTypeInitializer string
+	ReadOnly           bool
+	WriteOnly          bool
+	ReadWrite          bool
 }
 
 type ApiGroupDoc struct {

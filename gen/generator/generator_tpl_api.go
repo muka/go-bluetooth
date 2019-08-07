@@ -90,6 +90,20 @@ func ApiTemplate(filename string, api gen.Api, apiGroup gen.ApiGroup) error {
 
 	props := []gen.PropertyDoc{}
 	for _, prop := range propsList {
+
+		// add propery flags
+		for _, flag := range prop.Flags {
+			if flag == gen.FlagReadOnly {
+				prop.ReadOnly = true
+			}
+			if flag == gen.FlagWriteOnly {
+				prop.WriteOnly = true
+			}
+			if flag == gen.FlagReadWrite {
+				prop.ReadWrite = true
+			}
+		}
+
 		props = append(props, *prop)
 	}
 

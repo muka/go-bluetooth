@@ -88,47 +88,20 @@ func (p *HealthChannel1Properties) Unlock() {
 }
 
 
-// SetType set Type value
-func (a *HealthChannel1) SetType(v string) error {
-	return a.SetProperty("Type", v)
-}
 
-// GetType get Type value
-func (a *HealthChannel1) GetType() (string, error) {
-	v, err := a.GetProperty("Type")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
 
-// SetDevice set Device value
-func (a *HealthChannel1) SetDevice(v dbus.ObjectPath) error {
-	return a.SetProperty("Device", v)
-}
 
-// GetDevice get Device value
-func (a *HealthChannel1) GetDevice() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Device")
-	if err != nil {
-		return dbus.ObjectPath(""), err
-	}
-	return v.Value().(dbus.ObjectPath), nil
-}
 
-// SetApplication set Application value
-func (a *HealthChannel1) SetApplication(v dbus.ObjectPath) error {
-	return a.SetProperty("Application", v)
-}
 
-// GetApplication get Application value
-func (a *HealthChannel1) GetApplication() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Application")
-	if err != nil {
-		return dbus.ObjectPath(""), err
-	}
-	return v.Value().(dbus.ObjectPath), nil
-}
+
+
+
+
+
+
+
+
+
 
 
 // Close the connection

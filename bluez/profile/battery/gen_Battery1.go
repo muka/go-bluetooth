@@ -74,19 +74,10 @@ func (p *Battery1Properties) Unlock() {
 }
 
 
-// SetPercentage set Percentage value
-func (a *Battery1) SetPercentage(v byte) error {
-	return a.SetProperty("Percentage", v)
-}
 
-// GetPercentage get Percentage value
-func (a *Battery1) GetPercentage() (byte, error) {
-	v, err := a.GetProperty("Percentage")
-	if err != nil {
-		return byte(0), err
-	}
-	return v.Value().(byte), nil
-}
+
+
+
 
 
 // Close the connection

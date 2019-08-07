@@ -57,32 +57,9 @@ type Message1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Sent Message sent flag
+	Sender Message sender name
 	*/
-	Sent bool
-
-	/*
-	SenderAddress Message sender address
-	*/
-	SenderAddress string
-
-	/*
-	Priority Message priority flag
-	*/
-	Priority bool
-
-	/*
-	Status Message reception status
-
-			Possible values: "complete",
-			"fractioned" and "notification"
-	*/
-	Status string
-
-	/*
-	ReplyTo Message Reply-To address
-	*/
-	ReplyTo string
+	Sender string
 
 	/*
 	Type Message type
@@ -97,19 +74,47 @@ type Message1Properties struct {
 	Type string
 
 	/*
-	Sender Message sender name
-	*/
-	Sender string
-
-	/*
 	Protected Message protected flag
 	*/
 	Protected bool
 
 	/*
-	Timestamp Message timestamp
+	Folder Folder which the message belongs to
 	*/
-	Timestamp string
+	Folder string
+
+	/*
+	SenderAddress Message sender address
+	*/
+	SenderAddress string
+
+	/*
+	ReplyTo Message Reply-To address
+	*/
+	ReplyTo string
+
+	/*
+	Status Message reception status
+
+			Possible values: "complete",
+			"fractioned" and "notification"
+	*/
+	Status string
+
+	/*
+	Read Message read flag
+	*/
+	Read bool
+
+	/*
+	Sent Message sent flag
+	*/
+	Sent bool
+
+	/*
+	Subject Message subject
+	*/
+	Subject string
 
 	/*
 	Recipient Message recipient name
@@ -122,9 +127,9 @@ type Message1Properties struct {
 	RecipientAddress string
 
 	/*
-	Read Message read flag
+	Priority Message priority flag
 	*/
-	Read bool
+	Priority bool
 
 	/*
 	Deleted Message deleted flag
@@ -132,14 +137,9 @@ type Message1Properties struct {
 	Deleted bool
 
 	/*
-	Folder Folder which the message belongs to
+	Timestamp Message timestamp
 	*/
-	Folder string
-
-	/*
-	Subject Message subject
-	*/
-	Subject string
+	Timestamp string
 
 }
 
@@ -154,164 +154,49 @@ func (p *Message1Properties) Unlock() {
 }
 
 
-// SetSent set Sent value
-func (a *Message1) SetSent(v bool) error {
-	return a.SetProperty("Sent", v)
-}
 
-// GetSent get Sent value
-func (a *Message1) GetSent() (bool, error) {
-	v, err := a.GetProperty("Sent")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
 
-// SetSenderAddress set SenderAddress value
-func (a *Message1) SetSenderAddress(v string) error {
-	return a.SetProperty("SenderAddress", v)
-}
 
-// GetSenderAddress get SenderAddress value
-func (a *Message1) GetSenderAddress() (string, error) {
-	v, err := a.GetProperty("SenderAddress")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
 
-// SetPriority set Priority value
-func (a *Message1) SetPriority(v bool) error {
-	return a.SetProperty("Priority", v)
-}
 
-// GetPriority get Priority value
-func (a *Message1) GetPriority() (bool, error) {
-	v, err := a.GetProperty("Priority")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
 
-// SetStatus set Status value
-func (a *Message1) SetStatus(v string) error {
-	return a.SetProperty("Status", v)
-}
 
-// GetStatus get Status value
-func (a *Message1) GetStatus() (string, error) {
-	v, err := a.GetProperty("Status")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
 
-// SetReplyTo set ReplyTo value
-func (a *Message1) SetReplyTo(v string) error {
-	return a.SetProperty("ReplyTo", v)
-}
 
-// GetReplyTo get ReplyTo value
-func (a *Message1) GetReplyTo() (string, error) {
-	v, err := a.GetProperty("ReplyTo")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
 
-// SetType set Type value
-func (a *Message1) SetType(v string) error {
-	return a.SetProperty("Type", v)
-}
 
-// GetType get Type value
-func (a *Message1) GetType() (string, error) {
-	v, err := a.GetProperty("Type")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
 
-// SetSender set Sender value
-func (a *Message1) SetSender(v string) error {
-	return a.SetProperty("Sender", v)
-}
 
-// GetSender get Sender value
-func (a *Message1) GetSender() (string, error) {
-	v, err := a.GetProperty("Sender")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
 
-// SetProtected set Protected value
-func (a *Message1) SetProtected(v bool) error {
-	return a.SetProperty("Protected", v)
-}
 
-// GetProtected get Protected value
-func (a *Message1) GetProtected() (bool, error) {
-	v, err := a.GetProperty("Protected")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
 
-// SetTimestamp set Timestamp value
-func (a *Message1) SetTimestamp(v string) error {
-	return a.SetProperty("Timestamp", v)
-}
 
-// GetTimestamp get Timestamp value
-func (a *Message1) GetTimestamp() (string, error) {
-	v, err := a.GetProperty("Timestamp")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
 
-// SetRecipient set Recipient value
-func (a *Message1) SetRecipient(v string) error {
-	return a.SetProperty("Recipient", v)
-}
 
-// GetRecipient get Recipient value
-func (a *Message1) GetRecipient() (string, error) {
-	v, err := a.GetProperty("Recipient")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
 
-// SetRecipientAddress set RecipientAddress value
-func (a *Message1) SetRecipientAddress(v string) error {
-	return a.SetProperty("RecipientAddress", v)
-}
 
-// GetRecipientAddress get RecipientAddress value
-func (a *Message1) GetRecipientAddress() (string, error) {
-	v, err := a.GetProperty("RecipientAddress")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // SetRead set Read value
 func (a *Message1) SetRead(v bool) error {
 	return a.SetProperty("Read", v)
 }
+
+
 
 // GetRead get Read value
 func (a *Message1) GetRead() (bool, error) {
@@ -322,10 +207,40 @@ func (a *Message1) GetRead() (bool, error) {
 	return v.Value().(bool), nil
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // SetDeleted set Deleted value
 func (a *Message1) SetDeleted(v bool) error {
 	return a.SetProperty("Deleted", v)
 }
+
+
 
 // GetDeleted get Deleted value
 func (a *Message1) GetDeleted() (bool, error) {
@@ -336,33 +251,11 @@ func (a *Message1) GetDeleted() (bool, error) {
 	return v.Value().(bool), nil
 }
 
-// SetFolder set Folder value
-func (a *Message1) SetFolder(v string) error {
-	return a.SetProperty("Folder", v)
-}
 
-// GetFolder get Folder value
-func (a *Message1) GetFolder() (string, error) {
-	v, err := a.GetProperty("Folder")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
 
-// SetSubject set Subject value
-func (a *Message1) SetSubject(v string) error {
-	return a.SetProperty("Subject", v)
-}
 
-// GetSubject get Subject value
-func (a *Message1) GetSubject() (string, error) {
-	v, err := a.GetProperty("Subject")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
+
+
 
 
 // Close the connection
