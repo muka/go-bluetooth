@@ -1,7 +1,7 @@
 package main
 
 import (
-	"os"
+	"fmt"
 
 	"github.com/muka/go-bluetooth/gen"
 	"github.com/muka/go-bluetooth/gen/generator"
@@ -14,13 +14,19 @@ func main() {
 
 	log.Info("Generating src")
 
-	var api []gen.ApiGroup
-	if os.Getenv("DEBUG") == "1" {
-		api = gen.Parse("./test")
-		generator.Generate(api, "./src/gen")
-	} else {
-		api = gen.Parse("./src/bluez")
-		generator.Generate(api, "./bluez")
+	api, err := gen.Parse("./src/bluez/doc")
+	if err != nil {
+		log.Fatalf("Parse failed: %s", err)
+	}
+
+	err = api.Serialize(fmt.Sprintf("./bluez-%s.json", api.Version))
+	if err != nil {
+		log.Fatalf("Failed to serialize JSON: %s", err)
+	}
+
+	err = generator.Generate(api, "./bluez")
+	if err != nil {
+		log.Fatalf("Generation failed: %s", err)
 	}
 
 }

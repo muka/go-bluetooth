@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -9,6 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Mkdir Create a dir if not exists
 func Mkdir(dirpath string) error {
 	err := os.Mkdir(dirpath, 0755)
 	if err != nil && !os.IsExist(err) {
@@ -17,9 +19,14 @@ func Mkdir(dirpath string) error {
 	return nil
 }
 
-func ListFiles(dir string) []string {
+// ListFiles return a list of bluez api txt
+func ListFiles(dir string) ([]string, error) {
 
 	list := make([]string, 0)
+
+	if !Exists(dir) {
+		return list, fmt.Errorf("Doc dir not found %s", dir)
+	}
 
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
 
@@ -41,11 +48,13 @@ func ListFiles(dir string) []string {
 
 	if err != nil {
 		log.Errorf("Failed to list files: %s", err)
+		return list, nil
 	}
 
-	return list
+	return list, nil
 }
 
+// ReadFile read a file content
 func ReadFile(srcFile string) ([]byte, error) {
 	file, err := os.Open(srcFile)
 	if err != nil {

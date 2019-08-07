@@ -10,7 +10,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func Generate(apiGroups []gen.ApiGroup, outDir string) error {
+// Generate go code from the API definition
+func Generate(bluezApi gen.BluezAPI, outDir string) error {
+
+	apiGroups := bluezApi.Api
 
 	err := gen.Mkdir(outDir)
 	if err != nil {
