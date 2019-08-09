@@ -2,7 +2,6 @@
 package discovery_example
 
 import (
-	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez/profile/adapter"
 	"github.com/muka/go-bluetooth/bluez/profile/device"
@@ -62,11 +61,6 @@ func Run(adapterID string, onlyBeacon bool) error {
 	}()
 
 	select {}
-}
-
-func showDeviceInfo(path dbus.ObjectPath, onlyBeacon bool) error {
-
-	return nil
 }
 
 func handleBeacon(dev *device.Device1) error {

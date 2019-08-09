@@ -18,7 +18,6 @@ func GetObjectManager() (*ObjectManager, error) {
 	}
 
 	objectManager = om
-
 	return om, nil
 }
 

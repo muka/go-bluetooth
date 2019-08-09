@@ -1,19 +1,17 @@
 package gatt
 
-
-
 import (
-  "sync"
-  "github.com/muka/go-bluetooth/bluez"
-  "reflect"
-  "github.com/fatih/structs"
-  "github.com/muka/go-bluetooth/util"
-  "github.com/godbus/dbus"
-  "fmt"
+	"fmt"
+	"reflect"
+	"sync"
+
+	"github.com/fatih/structs"
+	"github.com/godbus/dbus"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var GattManager1Interface = "org.bluez.GattManager1"
-
 
 // NewGattManager1 create a new instance of GattManager1
 //
@@ -29,14 +27,14 @@ func NewGattManager1(objectPath dbus.ObjectPath) (*GattManager1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
+
 	a.Properties = new(GattManager1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return a, nil
 }
 
@@ -52,17 +50,16 @@ func NewGattManager1FromAdapterID(adapterID string) (*GattManager1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
+
 	a.Properties = new(GattManager1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return a, nil
 }
-
 
 /*
 GattManager1 GATT Manager hierarchy
@@ -135,17 +132,16 @@ Examples:
 
 */
 type GattManager1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
+	client              *bluez.Client
+	propertiesSignal    chan *dbus.Signal
 	objectManagerSignal chan *dbus.Signal
 	objectManager       *bluez.ObjectManager
-	Properties 				*GattManager1Properties
+	Properties          *GattManager1Properties
 }
 
 // GattManager1Properties contains the exposed properties of an interface
 type GattManager1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
 }
 
 //Lock access to properties
@@ -158,13 +154,11 @@ func (p *GattManager1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
 // Close the connection
 func (a *GattManager1) Close() {
-	
+
 	a.unregisterPropertiesSignal()
-	
+
 	a.client.Disconnect()
 }
 
@@ -208,7 +202,6 @@ func (a *GattManager1) GetObjectManagerSignal() (chan *dbus.Signal, func(), erro
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a GattManager1Properties to map
 func (a *GattManager1Properties) ToMap() (map[string]interface{}, error) {
@@ -343,11 +336,8 @@ func (a *GattManager1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	return nil
 }
 
-
-
-
 /*
-RegisterApplication 
+RegisterApplication
 			Registers a local GATT services hierarchy as described
 			above (GATT Server) and/or GATT profiles (GATT Client).
 
@@ -362,13 +352,13 @@ RegisterApplication
 
 */
 func (a *GattManager1) RegisterApplication(application dbus.ObjectPath, options map[string]interface{}) error {
-	
+
 	return a.client.Call("RegisterApplication", 0, application, options).Store()
-	
+
 }
 
 /*
-UnregisterApplication 
+UnregisterApplication
 			This unregisters the services that has been
 			previously registered. The object path parameter
 			must match the same value that has been used
@@ -379,8 +369,7 @@ UnregisterApplication
 
 */
 func (a *GattManager1) UnregisterApplication(application dbus.ObjectPath) error {
-	
-	return a.client.Call("UnregisterApplication", 0, application).Store()
-	
-}
 
+	return a.client.Call("UnregisterApplication", 0, application).Store()
+
+}

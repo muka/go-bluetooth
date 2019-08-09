@@ -1,6 +1,9 @@
 package beacon_example
 
 import (
+	"os"
+	"time"
+
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez/profile/advertising"
@@ -18,9 +21,10 @@ func Run(beaconType, adapterID string) error {
 		return err
 	}
 
+	timeout := uint16(100)
 	props := advertising.LEAdvertisement1Properties{
-		Duration: 100,
-		Timeout:  100,
+		Duration: timeout,
+		Timeout:  timeout,
 	}
 
 	// Based on src/bluez/test/example-advertisement
@@ -68,7 +72,7 @@ func Run(beaconType, adapterID string) error {
 	}
 	//Bug? https://www.spinics.net/lists/linux-bluetooth/msg79915.html
 	// err = a.SetDiscoverableTimeout(0)
-	err = a.SetDiscoverableTimeout(100)
+	err = a.SetDiscoverableTimeout(uint32(timeout))
 	if err != nil {
 		return err
 	}
@@ -94,6 +98,11 @@ func Run(beaconType, adapterID string) error {
 	}()
 
 	log.Debugf("%s ready", beaconType)
+
+	go func() {
+		time.Sleep(time.Duration(timeout) * time.Second)
+		os.Exit(0)
+	}()
 
 	select {}
 }
