@@ -1,4 +1,4 @@
-package api
+package beacon
 
 import (
 	"github.com/muka/go-bluetooth/bluez/profile/device"

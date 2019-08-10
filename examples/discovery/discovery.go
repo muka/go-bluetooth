@@ -3,6 +3,7 @@ package discovery_example
 
 import (
 	"github.com/muka/go-bluetooth/api"
+	"github.com/muka/go-bluetooth/api/beacon"
 	"github.com/muka/go-bluetooth/bluez/profile/adapter"
 	"github.com/muka/go-bluetooth/bluez/profile/device"
 	log "github.com/sirupsen/logrus"
@@ -65,7 +66,7 @@ func Run(adapterID string, onlyBeacon bool) error {
 
 func handleBeacon(dev *device.Device1) error {
 
-	isBeacon, b, err := api.NewBeacon(dev)
+	isBeacon, b, err := beacon.NewBeacon(dev)
 	if err != nil {
 		return err
 	}
@@ -74,7 +75,54 @@ func handleBeacon(dev *device.Device1) error {
 		return nil
 	}
 
-	log.Debugf("Found beacon %s %s", b.Type, b.Device.Properties.Name)
+	name := b.Device.Properties.Alias
+	if name == "" {
+		name = b.Device.Properties.Name
+	}
+
+	log.Debugf("Found beacon %s %s", b.Type, name)
+
+	if b.IsEddystone() {
+		eddystone := b.GetEddystone()
+		switch eddystone.Frame {
+		case beacon.EddystoneFrameUID:
+			log.Debugf(
+				"Eddystone UID %s instance %s (%ddbi)",
+				eddystone.UID,
+				eddystone.InstanceUID,
+				eddystone.CalibratedTxPower,
+			)
+			break
+		case beacon.EddystoneFrameTLM:
+			log.Debugf(
+				"Eddystone TLM temp:%.0f batt:%d last reboot:%d advertising pdu:%d (%ddbi)",
+				eddystone.TLMTemperature,
+				eddystone.TLMBatteryVoltage,
+				eddystone.TLMLastRebootedTime,
+				eddystone.TLMAdvertisingPDU,
+				eddystone.CalibratedTxPower,
+			)
+			break
+		case beacon.EddystoneFrameURL:
+			log.Debugf(
+				"Eddystone URL %s (%ddbi)",
+				eddystone.URL,
+				eddystone.CalibratedTxPower,
+			)
+			break
+		}
+
+	}
+	if b.IsIBeacon() {
+		ibeacon := b.GetIBeacon()
+		log.Debugf(
+			"IBeacon %s (%ddbi) (major=%d minor=%d)",
+			ibeacon.ProximityUUID,
+			ibeacon.MeasuredPower,
+			ibeacon.Major,
+			ibeacon.Minor,
+		)
+	}
 
 	return nil
 }

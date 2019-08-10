@@ -1,4 +1,4 @@
-package api
+package beacon
 
 import (
 	"encoding/binary"
@@ -135,5 +135,48 @@ func parseEddystoneTLM(info *BeaconEddystone, frames []byte) {
 
 }
 
-func parseEddystoneURL(info *BeaconEddystone, frames []byte) {
+// Byte offset	Field	Description
+// 0	          Frame Type	Value = 0x10
+// 1	          TX Power	Calibrated Tx power at 0 m
+// 2	          URL Scheme	Encoded Scheme Prefix
+// 3+	          Encoded URL	Length 1-17
+//
+// URL Scheme Prefix
+// Decimal	 Hex   Expansion
+// 0	       0x00	 http://www.
+// 1	       0x01	 https://www.
+// 2	       0x02	 http://
+// 3	       0x03	 https://
+//
+// Eddystone-URL HTTP URL encoding
+// Decimal	 Hex           Expansion
+// 0	       0x00	         .com/
+// 1	       0x01	         .org/
+// 2	       0x02	         .edu/
+// 3	       0x03	         .net/
+// 4	       0x04	         .info/
+// 5	       0x05	         .biz/
+// 6	       0x06	         .gov/
+// 7	       0x07	         .com
+// 8	       0x08	         .org
+// 9	       0x09	         .edu
+// 10	       0x0a	         .net
+// 11	       0x0b	         .info
+// 12	       0x0c	         .biz
+// 13	       0x0d	         .gov
+// 14..32	   0x0e..0x20    Reserved for Future Use
+// 127..255	 0x7F..0xFF    Reserved for Future Use
+func parseEddystoneURL(info *BeaconEddystone, frames []byte) error {
+
+	txPower := byteToInt(frames[1])
+	info.CalibratedTxPower = txPower
+
+	url, err := decodeURL(frames[2], frames[3:])
+	if err != nil {
+		return err
+	}
+
+	info.URL = url
+
+	return nil
 }

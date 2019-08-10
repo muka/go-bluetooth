@@ -1,4 +1,4 @@
-package api
+package beacon
 
 import (
 	"testing"

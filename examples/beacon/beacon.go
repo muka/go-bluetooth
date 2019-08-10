@@ -9,6 +9,7 @@ import (
 	"github.com/muka/go-bluetooth/bluez/profile/advertising"
 	"github.com/muka/go-bluetooth/service"
 	log "github.com/sirupsen/logrus"
+	eddystone "github.com/suapapa/go_eddystone"
 )
 
 const advertismentPath = "/org/bluez/example/advertisement0"
@@ -147,19 +148,24 @@ func eddystoneBeacon(props *advertising.LEAdvertisement1Properties) error {
 	props.Type = advertising.AdvertisementTypeBroadcast
 	// props.Type = advertising.AdvertisementTypePeripheral
 
+	f, err := eddystone.MakeURLFrame("https://bit.ly/2OCrFK2", 99)
+	if err != nil {
+		return err
+	}
+
 	props.AddServiceUUID("FEAA")
-	// props.AddServiceData("FEAA", f)
-	props.AddServiceData("FEAA", []uint8{
-		0x10, /* frame type Eddystone-URL */
-		0x00, /* Tx power at 0m */
-		0x00, /* URL Scheme Prefix http://www. */
-		'b',
-		'l',
-		'u',
-		'e',
-		'z',
-		0x01, /* .org/ */
-	})
+	props.AddServiceData("FEAA", f)
+	// props.AddServiceData("FEAA", []uint8{
+	// 	0x10, /* frame type Eddystone-URL */
+	// 	0x00, /* Tx power at 0m */
+	// 	0x00, /* URL Scheme Prefix http://www. */
+	// 	'b',
+	// 	'l',
+	// 	'u',
+	// 	'e',
+	// 	'z',
+	// 	0x01, /* .org/ */
+	// })
 
 	return nil
 }

@@ -1,4 +1,4 @@
-package api
+package beacon
 
 import (
 	"strings"
@@ -80,5 +80,24 @@ func TestParseEddystoneTLM(t *testing.T) {
 	assert.Equal(t, secCnt, e.TLMLastRebootedTime)
 
 	// log.Debugf("%+v", e)
+
+}
+
+func TestParseEddystoneURL(t *testing.T) {
+
+	log.SetLevel(log.DebugLevel)
+
+	url := "https://bit.ly/2OCrFK2"
+	txPwr := 89
+	frame, err := eddystone.MakeURLFrame(url, txPwr)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	beacon := testNewBeacon(t, frame)
+	e := beacon.GetEddystone()
+
+	assert.Equal(t, url, e.URL)
+	assert.Equal(t, txPwr, e.CalibratedTxPower)
 
 }
