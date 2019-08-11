@@ -12,7 +12,7 @@ func Run(beaconType, adapterID string) error {
 
 	var b *beacon.Beacon
 	if beaconType == "ibeacon" {
-		b1, err := beacon.CreateIBeacon("AAAABBBBCCCCDDDDAAAABBBBCCCCDDDD", 111, 999, 89)
+		b1, err := beacon.CreateIBeacon("AAAABBBBCCCCDDDDAAAABBBBCCCCDD", 111, 999, 89)
 		if err != nil {
 			return err
 		}

@@ -12,22 +12,23 @@ func TestParseIBeacon(t *testing.T) {
 
 	log.SetLevel(log.DebugLevel)
 
+	uuid := "010203040506070809101112131415"
+	major := uint16(999)
+	minor := uint16(111)
+	measuredPower := uint16(80)
+
+	b1, err := CreateIBeacon(uuid, major, minor, measuredPower)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	frames := b1.GetFrames()
+
 	dev := &device.Device1{
 		Properties: &device.Device1Properties{
 			Name: "test_ibeacon",
 			ManufacturerData: map[uint16]interface{}{
-				0x76: []uint8{
-					// type
-					0x2, 0x15,
-					// uuid
-					0xb9, 0x40, 0x7f, 0x30, 0xf5, 0xf8, 0x46, 0x6e, 0xaf, 0xf9, 0x25, 0x55, 0x6b, 0x57, 0xfe, 0x6d,
-					// mayor
-					0x8d, 0x80,
-					// minor
-					0xe8, 0x48,
-					// power
-					0xb4,
-				},
+				appleBit: frames,
 			},
 		},
 	}

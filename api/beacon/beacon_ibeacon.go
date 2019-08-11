@@ -11,7 +11,7 @@ type BeaconIBeacon struct {
 	ProximityUUID string
 	Major         uint16
 	Minor         uint16
-	MeasuredPower uint8
+	MeasuredPower uint16
 }
 
 // From Apple specifications
@@ -44,7 +44,11 @@ func (b *Beacon) ParseIBeacon(frames []uint8) BeaconIBeacon {
 	info.Major = binary.BigEndian.Uint16(frames[25-7 : 27-7])
 	info.Minor = binary.BigEndian.Uint16(frames[27-7 : 29-7])
 
-	info.MeasuredPower = uint8(frames[29-7])
+	if len(frames) < 23 {
+		frames = append(frames, 0xb3)
+	}
+
+	info.MeasuredPower = uint16(frames[29-7])
 
 	return info
 }

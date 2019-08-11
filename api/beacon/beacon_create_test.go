@@ -9,9 +9,9 @@ import (
 func TestCreateIBeacon(t *testing.T) {
 
 	uuid := "AAAABBBBCCCCDDDDAAAABBBBCCCCDDDD"
-	maj := uint16(999)
-	min := uint16(111)
-	txPwr := uint8(99)
+	maj := uint16(32000)
+	min := uint16(11000)
+	txPwr := uint16(0xB3)
 
 	b, err := CreateIBeacon(uuid, maj, min, txPwr)
 	if err != nil {

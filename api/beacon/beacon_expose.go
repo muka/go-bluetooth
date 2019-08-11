@@ -35,9 +35,14 @@ func (b *Beacon) Expose(adapterID string, timeout uint16) (func(), error) {
 		return nil, err
 	}
 
+	advtype := advertising.AdvertisementTypeBroadcast
+	if b.IsIBeacon() {
+		advtype = advertising.AdvertisementTypePeripheral
+	}
+
 	props := advertising.LEAdvertisement1Properties{
 		LocalName: "gobluetooth",
-		Type:      advertising.AdvertisementTypeBroadcast,
+		Type:      advtype,
 		// Duration is set to 2sec by default
 		// Not sure if duration can be mapped to interval.
 		// Duration: 1,
@@ -94,6 +99,7 @@ func (b *Beacon) Expose(adapterID string, timeout uint16) (func(), error) {
 	}
 
 	cancel := func() {
+		clearAdvertismentPath()
 		advManager.UnregisterAdvertisement(adv.Path())
 		a.SetProperty("Discoverable", false)
 	}

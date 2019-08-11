@@ -20,7 +20,7 @@ func initBeacon() *Beacon {
 }
 
 // CreateIBeacon Create a beacon in the IBeacon format
-func CreateIBeacon(uuid string, major uint16, minor uint16, measuredPower uint8) (*Beacon, error) {
+func CreateIBeacon(uuid string, major uint16, minor uint16, measuredPower uint16) (*Beacon, error) {
 
 	frames := []byte{
 		0x02, 0x15,
@@ -37,12 +37,16 @@ func CreateIBeacon(uuid string, major uint16, minor uint16, measuredPower uint8)
 	mayorb := make([]byte, 2)
 	binary.BigEndian.PutUint16(mayorb, major)
 	frames = append(frames, mayorb...)
+
 	// minor 20,21
 	minorb := make([]byte, 2)
 	binary.BigEndian.PutUint16(minorb, minor)
 	frames = append(frames, minorb...)
+
 	// pwr 22
-	frames = append(frames, measuredPower)
+	mpwr := make([]byte, 2)
+	binary.BigEndian.PutUint16(mpwr, measuredPower)
+	frames = append(frames, mpwr[1])
 
 	b := initBeacon()
 

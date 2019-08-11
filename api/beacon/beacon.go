@@ -4,7 +4,7 @@ import (
 	"github.com/muka/go-bluetooth/bluez/profile/device"
 )
 
-const appleBit = 0x76
+const appleBit = 0x004C
 
 type BeaconType string
 
@@ -47,6 +47,14 @@ func (b *Beacon) GetIBeacon() BeaconIBeacon {
 	return b.iBeacon
 }
 
+// GetFrames return the bytes content
+func (b *Beacon) GetFrames() []byte {
+	if b.IsIBeacon() {
+		return b.Device.Properties.ManufacturerData[appleBit].([]byte)
+	}
+	return b.Device.Properties.ServiceData[eddystoneSrvcUid].([]byte)
+}
+
 // Load beacon inforamtion if available
 func (b *Beacon) Parse() bool {
 
@@ -71,8 +79,8 @@ func (b *Beacon) Parse() bool {
 				b.Type = BeaconTypeEddystone
 				// log.Debugf("Eddystone data: %d", data)
 				b.eddystone = b.ParseEddystone(data.([]byte))
+				return true
 			}
-			return true
 		}
 	}
 
