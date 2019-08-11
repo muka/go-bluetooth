@@ -19,7 +19,7 @@ func getAdvertismentPath() dbus.ObjectPath {
 	return dbus.ObjectPath(fmt.Sprintf(baseAdvertismentPath, advertisingCount))
 }
 
-func clearAdvertismentPath() {
+func decreaseAdvertismentCounter() {
 	advertisingCount--
 	if advertisingCount < -1 {
 		advertisingCount = -1
@@ -35,19 +35,16 @@ func (b *Beacon) Expose(adapterID string, timeout uint16) (func(), error) {
 		return nil, err
 	}
 
-	advtype := advertising.AdvertisementTypeBroadcast
-	if b.IsIBeacon() {
-		advtype = advertising.AdvertisementTypePeripheral
-	}
+	props := b.props
+	props.Type = advertising.AdvertisementTypeBroadcast
 
-	props := advertising.LEAdvertisement1Properties{
-		LocalName: "gobluetooth",
-		Type:      advtype,
-		// Duration is set to 2sec by default
-		// Not sure if duration can be mapped to interval.
-		// Duration: 1,
-		Timeout: timeout,
+	if b.Name != "" {
+		props.LocalName = b.Name
 	}
+	// Duration is set to 2sec by default
+	// Not sure if duration can be mapped to interval.
+	// Duration: 1,
+	props.Timeout = timeout
 
 	log.Debug("Connecting to DBus")
 	conn, err := dbus.SystemBus()
@@ -61,7 +58,7 @@ func (b *Beacon) Expose(adapterID string, timeout uint16) (func(), error) {
 		return nil, err
 	}
 
-	adv, err := service.NewLEAdvertisement1(config, &props)
+	adv, err := service.NewLEAdvertisement1(config, props)
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +96,7 @@ func (b *Beacon) Expose(adapterID string, timeout uint16) (func(), error) {
 	}
 
 	cancel := func() {
-		clearAdvertismentPath()
+		decreaseAdvertismentCounter()
 		advManager.UnregisterAdvertisement(adv.Path())
 		a.SetProperty("Discoverable", false)
 	}

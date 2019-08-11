@@ -3,6 +3,7 @@ package beacon
 import (
 	"testing"
 
+	"github.com/muka/go-bluetooth/bluez/profile/device"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -17,6 +18,12 @@ func TestCreateIBeacon(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	b.Device = &device.Device1{
+		Properties: &device.Device1Properties{},
+	}
+
+	b.Device.Properties.ServiceData = b.props.ServiceData
 
 	isBeacon := b.Parse()
 	assert.True(t, isBeacon)
@@ -37,6 +44,13 @@ func TestCreateEddystoneURL(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	b.Device = &device.Device1{
+		Properties: &device.Device1Properties{},
+	}
+
+	b.Device.Properties.ManufacturerData = b.props.ManufacturerData
+	b.Device.Properties.UUIDs = b.props.ServiceUUIDs
+
 	isBeacon := b.Parse()
 
 	assert.True(t, isBeacon)
@@ -55,6 +69,13 @@ func TestCreateEddystoneTLM(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	b.Device = &device.Device1{
+		Properties: &device.Device1Properties{},
+	}
+
+	b.Device.Properties.ManufacturerData = b.props.ManufacturerData
+	b.Device.Properties.UUIDs = b.props.ServiceUUIDs
+
 	isBeacon := b.Parse()
 
 	assert.True(t, isBeacon)
@@ -72,6 +93,13 @@ func TestCreateEddystoneUID(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	b.Device = &device.Device1{
+		Properties: &device.Device1Properties{},
+	}
+
+	b.Device.Properties.ManufacturerData = b.props.ManufacturerData
+	b.Device.Properties.UUIDs = b.props.ServiceUUIDs
 
 	isBeacon := b.Parse()
 

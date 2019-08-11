@@ -5,18 +5,14 @@ import (
 	"encoding/hex"
 	"strings"
 
-	"github.com/muka/go-bluetooth/bluez/profile/device"
+	"github.com/muka/go-bluetooth/bluez/profile/advertising"
 	eddystone "github.com/suapapa/go_eddystone"
 )
 
-func initBeacon() *Beacon {
+func initBeacon() (*Beacon, error) {
 	b := new(Beacon)
-	b.Device = new(device.Device1)
-	b.Device.Properties = new(device.Device1Properties)
-	b.Device.Properties.UUIDs = make([]string, 0)
-	b.Device.Properties.ServiceData = make(map[string]interface{})
-	b.Device.Properties.ManufacturerData = make(map[uint16]interface{})
-	return b
+	b.props = new(advertising.LEAdvertisement1Properties)
+	return b, nil
 }
 
 // CreateIBeacon Create a beacon in the IBeacon format
@@ -48,7 +44,10 @@ func CreateIBeacon(uuid string, major uint16, minor uint16, measuredPower uint16
 	binary.BigEndian.PutUint16(mpwr, measuredPower)
 	frames = append(frames, mpwr[1])
 
-	b := initBeacon()
+	b, err := initBeacon()
+	if err != nil {
+		return nil, err
+	}
 
 	b.Type = BeaconTypeIBeacon
 	b.iBeacon = BeaconIBeacon{
@@ -59,7 +58,7 @@ func CreateIBeacon(uuid string, major uint16, minor uint16, measuredPower uint16
 		Type:          "proximity",
 	}
 
-	b.Device.Properties.ManufacturerData[appleBit] = frames
+	b.props.AddManifacturerData(appleBit, frames)
 
 	return b, nil
 }
@@ -85,10 +84,13 @@ func CreateEddystoneURL(url string, txPower int) (*Beacon, error) {
 		return nil, err
 	}
 
-	b := initBeacon()
+	b, err := initBeacon()
+	if err != nil {
+		return nil, err
+	}
 
-	b.Device.Properties.UUIDs = appendEddystoneService(b.Device.Properties.UUIDs)
-	b.Device.Properties.ServiceData[eddystoneSrvcUid] = []byte(frames)
+	b.props.AddServiceUUID(eddystoneSrvcUid)
+	b.props.AddServiceData(eddystoneSrvcUid, []byte(frames))
 	b.Type = BeaconTypeEddystone
 	b.eddystone = BeaconEddystone{
 		URL:               url,
@@ -106,10 +108,14 @@ func CreateEddystoneTLM(batt uint16, temp float32, advCnt, secCnt uint32) (*Beac
 		return nil, err
 	}
 
-	b := initBeacon()
+	b, err := initBeacon()
+	if err != nil {
+		return nil, err
+	}
 
-	b.Device.Properties.UUIDs = appendEddystoneService(b.Device.Properties.UUIDs)
-	b.Device.Properties.ServiceData[eddystoneSrvcUid] = []byte(frames)
+	b.props.AddServiceUUID(eddystoneSrvcUid)
+	b.props.AddServiceData(eddystoneSrvcUid, []byte(frames))
+
 	b.Type = BeaconTypeEddystone
 	b.eddystone = BeaconEddystone{
 		TLMVersion:          0,
@@ -130,10 +136,14 @@ func CreateEddystoneUID(namespace, instance string, txPwr int) (*Beacon, error) 
 		return nil, err
 	}
 
-	b := initBeacon()
+	b, err := initBeacon()
+	if err != nil {
+		return nil, err
+	}
 
-	b.Device.Properties.UUIDs = appendEddystoneService(b.Device.Properties.UUIDs)
-	b.Device.Properties.ServiceData[eddystoneSrvcUid] = []byte(frames)
+	b.props.AddServiceUUID(eddystoneSrvcUid)
+	b.props.AddServiceData(eddystoneSrvcUid, []byte(frames))
+
 	b.Type = BeaconTypeEddystone
 	b.eddystone = BeaconEddystone{
 		UID:               namespace,
