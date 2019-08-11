@@ -15,17 +15,23 @@ func testNewBeacon(t *testing.T, frame eddystone.Frame) Beacon {
 	dev := &device.Device1{
 		Properties: &device.Device1Properties{
 			Name:  "test_eddystone",
-			UUIDs: []string{"FEAA"},
+			UUIDs: []string{eddystoneSrvcUid},
 			ServiceData: map[string]interface{}{
-				"FEAA": []byte(frame),
+				eddystoneSrvcUid: []byte(frame),
 			},
 		},
 	}
 
-	isBeacon, beacon, err := NewBeacon(dev)
+	beacon, err := NewBeacon(dev)
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	if frame == nil {
+		return beacon
+	}
+
+	isBeacon := beacon.Parse()
 
 	assert.True(t, isBeacon)
 	assert.True(t, beacon.IsEddystone())
@@ -39,8 +45,8 @@ func TestParseEddystoneUID(t *testing.T) {
 
 	log.SetLevel(log.DebugLevel)
 
-	uid := "EDD1-EBEA-C04E-5DEF-A017"
-	instanceUid := "0BDB-8753-9B67"
+	uid := "EDD1EBEAC04E5DEFA017"
+	instanceUid := "0BDB87539B67"
 	txpower := 120
 	frame, err := eddystone.MakeUIDFrame(
 		strings.Replace(uid, "-", "", -1),

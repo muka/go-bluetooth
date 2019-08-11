@@ -32,10 +32,12 @@ func TestParseIBeacon(t *testing.T) {
 		},
 	}
 
-	isBeacon, beacon, err := NewBeacon(dev)
+	beacon, err := NewBeacon(dev)
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	isBeacon := beacon.Parse()
 
 	assert.True(t, isBeacon)
 	assert.True(t, beacon.IsIBeacon())

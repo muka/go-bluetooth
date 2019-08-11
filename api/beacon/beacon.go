@@ -4,6 +4,8 @@ import (
 	"github.com/muka/go-bluetooth/bluez/profile/device"
 )
 
+const appleBit = 0x76
+
 type BeaconType string
 
 const (
@@ -18,11 +20,11 @@ type Beacon struct {
 	Device    *device.Device1
 }
 
-func NewBeacon(dev *device.Device1) (bool, Beacon, error) {
+func NewBeacon(dev *device.Device1) (Beacon, error) {
 	b := Beacon{
 		Device: dev,
 	}
-	return b.Load(), b, nil
+	return b, nil
 }
 
 // IsEddystone return if the type of beacon is eddystone
@@ -46,14 +48,14 @@ func (b *Beacon) GetIBeacon() BeaconIBeacon {
 }
 
 // Load beacon inforamtion if available
-func (b *Beacon) Load() bool {
+func (b *Beacon) Parse() bool {
 
 	props := b.Device.Properties
 
 	// log.Debugf("beacon props %++v", props)
 
 	if len(props.ManufacturerData) > 0 {
-		if frames, ok := props.ManufacturerData[0x76]; ok {
+		if frames, ok := props.ManufacturerData[appleBit]; ok {
 			// log.Debug("Found iBeacon")
 			// log.Debugf("iBeacon data: %d", frames)
 			b.Type = BeaconTypeIBeacon
@@ -63,8 +65,8 @@ func (b *Beacon) Load() bool {
 	}
 
 	for _, uuid := range props.UUIDs {
-		if uuid == "FEAA" {
-			if data, ok := props.ServiceData["FEAA"]; ok {
+		if uuid == eddystoneSrvcUid {
+			if data, ok := props.ServiceData[eddystoneSrvcUid]; ok {
 				// log.Debug("Found Eddystone")
 				b.Type = BeaconTypeEddystone
 				// log.Debugf("Eddystone data: %d", data)

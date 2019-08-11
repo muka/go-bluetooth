@@ -4,99 +4,38 @@ import (
 	"os"
 	"time"
 
-	"github.com/godbus/dbus"
-	"github.com/muka/go-bluetooth/api"
-	"github.com/muka/go-bluetooth/bluez/profile/advertising"
-	"github.com/muka/go-bluetooth/service"
+	"github.com/muka/go-bluetooth/api/beacon"
 	log "github.com/sirupsen/logrus"
-	eddystone "github.com/suapapa/go_eddystone"
 )
-
-const advertismentPath = "/org/bluez/example/advertisement0"
 
 func Run(beaconType, adapterID string) error {
 
-	log.Debugf("Retrieving adapter instance %s", adapterID)
-	a, err := api.GetAdapter(adapterID)
-	if err != nil {
-		return err
-	}
-
-	timeout := uint16(100)
-	props := advertising.LEAdvertisement1Properties{
-		Duration: timeout,
-		Timeout:  timeout,
-	}
-
-	// Based on src/bluez/test/example-advertisement
-	// props.AddServiceUUID("180D", "180F")
-	// props.AddData(0x26, []byte{0x01, 0x01, 0x00})
-	// props.AddManifacturerData(0xfff, []byte{0x00, 0x01, 0x02, 0x03, 0x04})
-	// props.AddServiceData("9999", []byte{0x00, 0x01, 0x02, 0x03, 0x04})
-
+	var b *beacon.Beacon
 	if beaconType == "ibeacon" {
-		err = iBeacon(&props)
+		b1, err := beacon.CreateIBeacon("AAAABBBBCCCCDDDDAAAABBBBCCCCDDDD", 111, 999, 89)
+		if err != nil {
+			return err
+		}
+		b = b1
 	} else {
-		err = eddystoneBeacon(&props)
+		b1, err := beacon.CreateEddystoneURL("https://bit.ly/2OCrFK2", 99)
+		if err != nil {
+			return err
+		}
+		b = b1
 	}
+
+	// A timeout of 0 cause an immediate timeout and advertisement deregistration
+	// see https://www.spinics.net/lists/linux-bluetooth/msg79915.html
+	// In seconds
+	timeout := uint16(60 * 60 * 18)
+
+	cancel, err := b.Expose(adapterID, timeout)
 	if err != nil {
 		return err
 	}
 
-	log.Debug("Connecting to DBus")
-	conn, err := dbus.SystemBus()
-	if err != nil {
-		return err
-	}
-
-	log.Debug("Creating LEAdvertisement1 instance")
-	config, err := service.NewLEAdvertisement1Config(advertismentPath, conn)
-	if err != nil {
-		return err
-	}
-
-	adv, err := service.NewLEAdvertisement1(config, &props)
-	if err != nil {
-		return err
-	}
-
-	log.Debug("Exposing LEAdvertisement1 instance")
-	err = adv.Expose()
-	if err != nil {
-		return err
-	}
-
-	log.Debug("Setup adapter")
-	err = a.SetDiscoverable(true)
-	if err != nil {
-		return err
-	}
-	//Bug? https://www.spinics.net/lists/linux-bluetooth/msg79915.html
-	// err = a.SetDiscoverableTimeout(0)
-	err = a.SetDiscoverableTimeout(uint32(timeout))
-	if err != nil {
-		return err
-	}
-	err = a.SetPowered(true)
-	if err != nil {
-		return err
-	}
-
-	log.Debug("Registering LEAdvertisement1 instance")
-	advManager, err := advertising.NewLEAdvertisingManager1FromAdapterID(adapterID)
-	if err != nil {
-		return err
-	}
-
-	err = advManager.RegisterAdvertisement(adv.Path(), map[string]interface{}{})
-	if err != nil {
-		return err
-	}
-
-	defer func() {
-		advManager.UnregisterAdvertisement(adv.Path())
-		a.SetProperty("Discoverable", false)
-	}()
+	defer cancel()
 
 	log.Debugf("%s ready", beaconType)
 
@@ -106,66 +45,4 @@ func Run(beaconType, adapterID string) error {
 	}()
 
 	select {}
-}
-
-// Credits
-// https://scribles.net/creating-ibeacon-using-bluez-example-code-on-raspberry-pi/
-func iBeacon(props *advertising.LEAdvertisement1Properties) error {
-
-	props.Type = advertising.AdvertisementTypeBroadcast
-	// props.Type = advertising.AdvertisementTypePeripheral
-	props.LocalName = "go_ibeacon"
-
-	company_id := uint16(0x004C)
-	payload := []uint8{
-		// beacon_type
-		0x2, 0x15,
-		// uuid
-		0x1, 0x2, 0x3, 0x4, 0x5, 0x6, 0x7, 0x8, 0x9,
-		0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16,
-
-		// major
-		// 0x11,
-		// 0x22,
-
-		// minor
-		// 0x33,
-		// 0x44,
-
-		// tx_power at 1m
-		// 0x50,
-	}
-
-	props.AddManifacturerData(company_id, payload)
-	return nil
-}
-
-// Based on
-// https://github.com/google/eddystone/tree/master/eddystone-url
-func eddystoneBeacon(props *advertising.LEAdvertisement1Properties) error {
-
-	props.LocalName = "goeddystone"
-	props.Type = advertising.AdvertisementTypeBroadcast
-	// props.Type = advertising.AdvertisementTypePeripheral
-
-	f, err := eddystone.MakeURLFrame("https://bit.ly/2OCrFK2", 99)
-	if err != nil {
-		return err
-	}
-
-	props.AddServiceUUID("FEAA")
-	props.AddServiceData("FEAA", f)
-	// props.AddServiceData("FEAA", []uint8{
-	// 	0x10, /* frame type Eddystone-URL */
-	// 	0x00, /* Tx power at 0m */
-	// 	0x00, /* URL Scheme Prefix http://www. */
-	// 	'b',
-	// 	'l',
-	// 	'u',
-	// 	'e',
-	// 	'z',
-	// 	0x01, /* .org/ */
-	// })
-
-	return nil
 }

@@ -3,16 +3,15 @@ package beacon
 import (
 	"encoding/binary"
 	"encoding/hex"
-	"fmt"
 	"strings"
 )
 
 type BeaconIBeacon struct {
 	Type          string
 	ProximityUUID string
-	Major         int
-	Minor         int
-	MeasuredPower int
+	Major         uint16
+	Minor         uint16
+	MeasuredPower uint8
 }
 
 // From Apple specifications
@@ -35,17 +34,17 @@ func (b *Beacon) ParseIBeacon(frames []uint8) BeaconIBeacon {
 
 	info := BeaconIBeacon{}
 
-	if frames[0] == 0x02 && frames[1] == 0x15 {
+	if frames[7-7] == 0x02 && frames[8-7] == 0x15 {
 		info.Type = "proximity"
 	}
 
-	uuid := strings.ToUpper(hex.EncodeToString(frames[2:18]))
-	info.ProximityUUID = fmt.Sprintf("%s-%s-%s-%s", uuid[:4], uuid[4:8], uuid[8:12], uuid[12:16])
+	uuid := strings.ToUpper(hex.EncodeToString(frames[9-7 : 25-7]))
+	info.ProximityUUID = strings.ToUpper(uuid)
 
-	info.Major = int(binary.BigEndian.Uint16(frames[18:20]))
-	info.Minor = int(binary.BigEndian.Uint16(frames[20:22]))
+	info.Major = binary.BigEndian.Uint16(frames[25-7 : 27-7])
+	info.Minor = binary.BigEndian.Uint16(frames[27-7 : 29-7])
 
-	info.MeasuredPower = int(frames[22] << 1)
+	info.MeasuredPower = uint8(frames[29-7])
 
 	return info
 }

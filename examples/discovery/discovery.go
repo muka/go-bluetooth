@@ -66,11 +66,12 @@ func Run(adapterID string, onlyBeacon bool) error {
 
 func handleBeacon(dev *device.Device1) error {
 
-	isBeacon, b, err := beacon.NewBeacon(dev)
+	b, err := beacon.NewBeacon(dev)
 	if err != nil {
 		return err
 	}
 
+	isBeacon := b.Parse()
 	if !isBeacon {
 		return nil
 	}

@@ -3,9 +3,10 @@ package beacon
 import (
 	"encoding/binary"
 	"encoding/hex"
-	"fmt"
 	"strings"
 )
+
+const eddystoneSrvcUid = "FEAA"
 
 const (
 	frameTypeUID byte = 0x00
@@ -94,11 +95,11 @@ func parseEddystoneUID(info *BeaconEddystone, frames []byte) {
 
 	// 10 bytes length
 	uid := hex.EncodeToString(frames[2:12])
-	uid = strings.ToUpper(fmt.Sprintf("%s-%s-%s-%s-%s", uid[0:4], uid[4:8], uid[8:12], uid[12:16], uid[16:20]))
+	uid = strings.ToUpper(uid)
 
 	// 6 bytes length
 	iuid := hex.EncodeToString(frames[12:18])
-	iuid = strings.ToUpper(fmt.Sprintf("%s-%s-%s", iuid[0:4], iuid[4:8], iuid[8:12]))
+	iuid = strings.ToUpper(iuid)
 
 	// log.Debugf("%s - %s", uid, iuid)
 
