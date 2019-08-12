@@ -243,7 +243,16 @@ func (a *{{.InterfaceName}}) WatchProperties() (chan *bluez.PropertyChanged, err
 					if f.CanSet() {
 						x := reflect.ValueOf(val.Value())
 						a.Properties.Lock()
-						f.Set(x)
+						// map[*]variant -> map[*]interface{}
+						ok, err := util.AssignMapVariantToInterface(f, x)
+						if err != nil {
+							log.Errorf("Failed to set %s: %s", f.String(), err)
+							continue
+						}
+						// direct assignment
+						if !ok {
+							f.Set(x)
+						}
 						a.Properties.Unlock()
 					}
 				}

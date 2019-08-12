@@ -1,6 +1,9 @@
 package beacon
 
 import (
+	"context"
+	"strings"
+
 	"github.com/muka/go-bluetooth/bluez/profile/advertising"
 	"github.com/muka/go-bluetooth/bluez/profile/device"
 )
@@ -41,6 +44,42 @@ func (b *Beacon) IsIBeacon() bool {
 	return b.Type == BeaconTypeIBeacon
 }
 
+// WatchDeviceChanges watch for properties changes
+func (b *Beacon) WatchDeviceChanges(ctx context.Context) (chan bool, error) {
+
+	propchanged, err := b.Device.WatchProperties()
+	if err != nil {
+		return nil, err
+	}
+
+	ch := make(chan bool)
+
+	go func() {
+		for {
+			select {
+			case changed := <-propchanged:
+
+				if changed == nil {
+					ctx.Done()
+					return
+				}
+
+				if changed.Name == "ManufacturerData" || changed.Name == "ServiceData" {
+					ch <- b.Parse()
+				}
+
+				break
+			case <-ctx.Done():
+				propchanged <- nil
+				close(ch)
+				break
+			}
+		}
+	}()
+
+	return ch, nil
+}
+
 // GetEddystone return eddystone beacon information
 func (b *Beacon) GetEddystone() BeaconEddystone {
 	return b.eddystone
@@ -63,6 +102,7 @@ func (b *Beacon) GetFrames() []byte {
 func (b *Beacon) Parse() bool {
 
 	if b.Device != nil {
+
 		props := b.Device.Properties
 		if b.parserEddystone(props.UUIDs, props.ServiceData) {
 			return true
@@ -70,6 +110,7 @@ func (b *Beacon) Parse() bool {
 		if b.parserIBeacon(props.ManufacturerData) {
 			return true
 		}
+
 	}
 
 	if b.props != nil {
@@ -101,8 +142,14 @@ func (b *Beacon) parserIBeacon(manufacturerData map[uint16]interface{}) bool {
 
 func (b *Beacon) parserEddystone(UUIDs []string, serviceData map[string]interface{}) bool {
 	for _, uuid := range UUIDs {
-		if uuid == eddystoneSrvcUid {
-			if data, ok := serviceData[eddystoneSrvcUid]; ok {
+		// 0000feaa-
+		srcUUID := uuid
+		if len(uuid) > 8 {
+			uuid = uuid[4:8]
+		}
+
+		if strings.ToUpper(uuid) == eddystoneSrvcUid {
+			if data, ok := serviceData[srcUUID]; ok {
 				// log.Debug("Found Eddystone")
 				b.Type = BeaconTypeEddystone
 				// log.Debugf("Eddystone data: %d", data)

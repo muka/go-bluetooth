@@ -2,6 +2,8 @@
 package discovery_example
 
 import (
+	"context"
+
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/api/beacon"
 	"github.com/muka/go-bluetooth/bluez/profile/adapter"
@@ -71,7 +73,12 @@ func handleBeacon(dev *device.Device1) error {
 		return err
 	}
 
-	isBeacon := b.Parse()
+	beaconUpdated, err := b.WatchDeviceChanges(context.Background())
+	if err != nil {
+		return err
+	}
+
+	isBeacon := <-beaconUpdated
 	if !isBeacon {
 		return nil
 	}

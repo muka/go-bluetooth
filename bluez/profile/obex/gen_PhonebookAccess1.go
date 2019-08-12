@@ -3,12 +3,13 @@ package obex
 
 
 import (
-  "sync"
-  "github.com/muka/go-bluetooth/bluez"
-  "reflect"
-  "github.com/fatih/structs"
-  "github.com/muka/go-bluetooth/util"
-  "github.com/godbus/dbus"
+   "sync"
+   "github.com/muka/go-bluetooth/bluez"
+  log "github.com/sirupsen/logrus"
+   "reflect"
+   "github.com/fatih/structs"
+   "github.com/muka/go-bluetooth/util"
+   "github.com/godbus/dbus"
 )
 
 var PhonebookAccess1Interface = "org.bluez.obex.PhonebookAccess1"
@@ -57,6 +58,22 @@ type PhonebookAccess1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	SecondaryCounter 128 bits secondary version counter.
+
+			Possible values: 32-character hexadecimal such
+			as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
+	*/
+	SecondaryCounter string
+
+	/*
+	FixedImageSize Indicate support for fixed image size.
+
+			Possible values: True if image is JPEG 300x300 pixels
+			otherwise False.
+	*/
+	FixedImageSize bool
+
+	/*
 	Folder Current folder.
 	*/
 	Folder string
@@ -77,22 +94,6 @@ type PhonebookAccess1Properties struct {
 	*/
 	PrimaryCounter string
 
-	/*
-	SecondaryCounter 128 bits secondary version counter.
-
-			Possible values: 32-character hexadecimal such
-			as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
-	*/
-	SecondaryCounter string
-
-	/*
-	FixedImageSize Indicate support for fixed image size.
-
-			Possible values: True if image is JPEG 300x300 pixels
-			otherwise False.
-	*/
-	FixedImageSize bool
-
 }
 
 //Lock access to properties
@@ -103,6 +104,34 @@ func (p *PhonebookAccess1Properties) Lock() {
 //Unlock access to properties
 func (p *PhonebookAccess1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+
+
+// GetSecondaryCounter get SecondaryCounter value
+func (a *PhonebookAccess1) GetSecondaryCounter() (string, error) {
+	v, err := a.GetProperty("SecondaryCounter")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+
+
+// GetFixedImageSize get FixedImageSize value
+func (a *PhonebookAccess1) GetFixedImageSize() (bool, error) {
+	v, err := a.GetProperty("FixedImageSize")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
 }
 
 
@@ -145,34 +174,6 @@ func (a *PhonebookAccess1) GetPrimaryCounter() (string, error) {
 		return "", err
 	}
 	return v.Value().(string), nil
-}
-
-
-
-
-
-
-// GetSecondaryCounter get SecondaryCounter value
-func (a *PhonebookAccess1) GetSecondaryCounter() (string, error) {
-	v, err := a.GetProperty("SecondaryCounter")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-
-
-// GetFixedImageSize get FixedImageSize value
-func (a *PhonebookAccess1) GetFixedImageSize() (bool, error) {
-	v, err := a.GetProperty("FixedImageSize")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
 }
 
 
@@ -335,7 +336,16 @@ func (a *PhonebookAccess1) WatchProperties() (chan *bluez.PropertyChanged, error
 					if f.CanSet() {
 						x := reflect.ValueOf(val.Value())
 						a.Properties.Lock()
-						f.Set(x)
+						// map[*]variant -> map[*]interface{}
+						ok, err := util.AssignMapVariantToInterface(f, x)
+						if err != nil {
+							log.Errorf("Failed to set %s: %s", f.String(), err)
+							continue
+						}
+						// direct assignment
+						if !ok {
+							f.Set(x)
+						}
 						a.Properties.Unlock()
 					}
 				}

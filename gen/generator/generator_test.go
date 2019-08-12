@@ -11,7 +11,7 @@ func TestGenerate(t *testing.T) {
 
 	TplPath = "../../gen/generator/tpl/%s.go.tpl"
 
-	bluezApi, err := gen.Parse("../../src/bluez/doc")
+	bluezApi, err := gen.Parse("../../src/bluez/doc", []string{})
 	if err != nil {
 		t.Fatal(err)
 	}

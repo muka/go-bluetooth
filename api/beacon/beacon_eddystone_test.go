@@ -14,10 +14,11 @@ func testNewBeacon(t *testing.T, frame eddystone.Frame) Beacon {
 
 	dev := &device.Device1{
 		Properties: &device.Device1Properties{
-			Name:  "test_eddystone",
-			UUIDs: []string{eddystoneSrvcUid},
+			Name: "test_eddystone",
+			// FEAA, full UUID
+			UUIDs: []string{"0000feaa-0000-1000-8000-00805f9b34fb"},
 			ServiceData: map[string]interface{}{
-				eddystoneSrvcUid: []byte(frame),
+				"0000feaa-0000-1000-8000-00805f9b34fb": []byte(frame),
 			},
 		},
 	}

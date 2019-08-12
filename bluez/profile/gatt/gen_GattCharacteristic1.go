@@ -1,16 +1,19 @@
 package gatt
 
-import (
-	"reflect"
-	"sync"
 
-	"github.com/fatih/structs"
-	"github.com/godbus/dbus"
-	"github.com/muka/go-bluetooth/bluez"
-	"github.com/muka/go-bluetooth/util"
+
+import (
+   "sync"
+   "github.com/muka/go-bluetooth/bluez"
+  log "github.com/sirupsen/logrus"
+   "reflect"
+   "github.com/fatih/structs"
+   "github.com/muka/go-bluetooth/util"
+   "github.com/godbus/dbus"
 )
 
 var GattCharacteristic1Interface = "org.bluez.GattCharacteristic1"
+
 
 // NewGattCharacteristic1 create a new instance of GattCharacteristic1
 //
@@ -26,16 +29,17 @@ func NewGattCharacteristic1(objectPath dbus.ObjectPath) (*GattCharacteristic1, e
 			Bus:   bluez.SystemBus,
 		},
 	)
-
+	
 	a.Properties = new(GattCharacteristic1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-
+	
 	return a, nil
 }
+
 
 /*
 GattCharacteristic1 Characteristic hierarchy
@@ -45,11 +49,11 @@ path hierarchy and are freely definable.
 
 */
 type GattCharacteristic1 struct {
-	client              *bluez.Client
-	propertiesSignal    chan *dbus.Signal
+	client     				*bluez.Client
+	propertiesSignal 	chan *dbus.Signal
 	objectManagerSignal chan *dbus.Signal
 	objectManager       *bluez.ObjectManager
-	Properties          *GattCharacteristic1Properties
+	Properties 				*GattCharacteristic1Properties
 }
 
 // GattCharacteristic1Properties contains the exposed properties of an interface
@@ -57,83 +61,84 @@ type GattCharacteristic1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-		WriteAcquired True, if this characteristic has been acquired by any
-				client using AcquireWrite.
-
-				For client properties is ommited in case
-				'write-without-response' flag is not set.
-
-				For server the presence of this property indicates
-				that AcquireWrite is supported.
-	*/
-	WriteAcquired bool
-
-	/*
-		NotifyAcquired True, if this characteristic has been acquired by any
-				client using AcquireNotify.
-
-				For client this properties is ommited in case 'notify'
-				flag is not set.
-
-				For server the presence of this property indicates
-				that AcquireNotify is supported.
-	*/
-	NotifyAcquired bool
-
-	/*
-		Notifying True, if notifications or indications on this
-				characteristic are currently enabled.
-	*/
-	Notifying bool
-
-	/*
-		Flags Defines how the characteristic value can be used. See
-				Core spec "Table 3.5: Characteristic Properties bit
-				field", and "Table 3.8: Characteristic Extended
-				Properties bit field". Allowed values:
-
-					"broadcast"
-					"read"
-					"write-without-response"
-					"write"
-					"notify"
-					"indicate"
-					"authenticated-signed-writes"
-					"reliable-write"
-					"writable-auxiliaries"
-					"encrypt-read"
-					"encrypt-write"
-					"encrypt-authenticated-read"
-					"encrypt-authenticated-write"
-					"secure-read" (Server only)
-					"secure-write" (Server only)
-					"authorize"
-	*/
-	Flags []string
-
-	/*
-		Descriptors
+	Descriptors 
 	*/
 	Descriptors []dbus.ObjectPath
 
 	/*
-		UUID 128-bit characteristic UUID.
+	UUID 128-bit characteristic UUID.
 	*/
 	UUID string
 
 	/*
-		Service Object path of the GATT service the characteristic
-				belongs to.
+	Service Object path of the GATT service the characteristic
+			belongs to.
 	*/
 	Service dbus.ObjectPath
 
 	/*
-		Value The cached value of the characteristic. This property
-				gets updated only after a successful read request and
-				when a notification or indication is received, upon
-				which a PropertiesChanged signal will be emitted.
+	Value The cached value of the characteristic. This property
+			gets updated only after a successful read request and
+			when a notification or indication is received, upon
+			which a PropertiesChanged signal will be emitted.
 	*/
 	Value []byte `dbus:"emit"`
+
+	/*
+	WriteAcquired True, if this characteristic has been acquired by any
+			client using AcquireWrite.
+
+			For client properties is ommited in case
+			'write-without-response' flag is not set.
+
+			For server the presence of this property indicates
+			that AcquireWrite is supported.
+	*/
+	WriteAcquired bool
+
+	/*
+	NotifyAcquired True, if this characteristic has been acquired by any
+			client using AcquireNotify.
+
+			For client this properties is ommited in case 'notify'
+			flag is not set.
+
+			For server the presence of this property indicates
+			that AcquireNotify is supported.
+	*/
+	NotifyAcquired bool
+
+	/*
+	Notifying True, if notifications or indications on this
+			characteristic are currently enabled.
+	*/
+	Notifying bool
+
+	/*
+	Flags Defines how the characteristic value can be used. See
+			Core spec "Table 3.5: Characteristic Properties bit
+			field", and "Table 3.8: Characteristic Extended
+			Properties bit field". Allowed values:
+
+				"broadcast"
+				"read"
+				"write-without-response"
+				"write"
+				"notify"
+				"indicate"
+				"authenticated-signed-writes"
+				"reliable-write"
+				"writable-auxiliaries"
+				"encrypt-read"
+				"encrypt-write"
+				"encrypt-authenticated-read"
+				"encrypt-authenticated-write"
+				"secure-read" (Server only)
+				"secure-write" (Server only)
+				"authorize"
+	*/
+	Flags []string
+
 }
 
 //Lock access to properties
@@ -146,66 +151,15 @@ func (p *GattCharacteristic1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-// SetWriteAcquired set WriteAcquired value
-func (a *GattCharacteristic1) SetWriteAcquired(v bool) error {
-	return a.SetProperty("WriteAcquired", v)
-}
 
-// GetWriteAcquired get WriteAcquired value
-func (a *GattCharacteristic1) GetWriteAcquired() (bool, error) {
-	v, err := a.GetProperty("WriteAcquired")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
 
-// SetNotifyAcquired set NotifyAcquired value
-func (a *GattCharacteristic1) SetNotifyAcquired(v bool) error {
-	return a.SetProperty("NotifyAcquired", v)
-}
-
-// GetNotifyAcquired get NotifyAcquired value
-func (a *GattCharacteristic1) GetNotifyAcquired() (bool, error) {
-	v, err := a.GetProperty("NotifyAcquired")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-// SetNotifying set Notifying value
-func (a *GattCharacteristic1) SetNotifying(v bool) error {
-	return a.SetProperty("Notifying", v)
-}
-
-// GetNotifying get Notifying value
-func (a *GattCharacteristic1) GetNotifying() (bool, error) {
-	v, err := a.GetProperty("Notifying")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-// SetFlags set Flags value
-func (a *GattCharacteristic1) SetFlags(v []string) error {
-	return a.SetProperty("Flags", v)
-}
-
-// GetFlags get Flags value
-func (a *GattCharacteristic1) GetFlags() ([]string, error) {
-	v, err := a.GetProperty("Flags")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
-}
 
 // SetDescriptors set Descriptors value
 func (a *GattCharacteristic1) SetDescriptors(v []dbus.ObjectPath) error {
 	return a.SetProperty("Descriptors", v)
 }
+
+
 
 // GetDescriptors get Descriptors value
 func (a *GattCharacteristic1) GetDescriptors() ([]dbus.ObjectPath, error) {
@@ -216,10 +170,15 @@ func (a *GattCharacteristic1) GetDescriptors() ([]dbus.ObjectPath, error) {
 	return v.Value().([]dbus.ObjectPath), nil
 }
 
+
+
+
 // SetUUID set UUID value
 func (a *GattCharacteristic1) SetUUID(v string) error {
 	return a.SetProperty("UUID", v)
 }
+
+
 
 // GetUUID get UUID value
 func (a *GattCharacteristic1) GetUUID() (string, error) {
@@ -230,10 +189,15 @@ func (a *GattCharacteristic1) GetUUID() (string, error) {
 	return v.Value().(string), nil
 }
 
+
+
+
 // SetService set Service value
 func (a *GattCharacteristic1) SetService(v dbus.ObjectPath) error {
 	return a.SetProperty("Service", v)
 }
+
+
 
 // GetService get Service value
 func (a *GattCharacteristic1) GetService() (dbus.ObjectPath, error) {
@@ -244,10 +208,15 @@ func (a *GattCharacteristic1) GetService() (dbus.ObjectPath, error) {
 	return v.Value().(dbus.ObjectPath), nil
 }
 
+
+
+
 // SetValue set Value value
 func (a *GattCharacteristic1) SetValue(v []byte) error {
 	return a.SetProperty("Value", v)
 }
+
+
 
 // GetValue get Value value
 func (a *GattCharacteristic1) GetValue() ([]byte, error) {
@@ -258,11 +227,89 @@ func (a *GattCharacteristic1) GetValue() ([]byte, error) {
 	return v.Value().([]byte), nil
 }
 
+
+
+
+// SetWriteAcquired set WriteAcquired value
+func (a *GattCharacteristic1) SetWriteAcquired(v bool) error {
+	return a.SetProperty("WriteAcquired", v)
+}
+
+
+
+// GetWriteAcquired get WriteAcquired value
+func (a *GattCharacteristic1) GetWriteAcquired() (bool, error) {
+	v, err := a.GetProperty("WriteAcquired")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+// SetNotifyAcquired set NotifyAcquired value
+func (a *GattCharacteristic1) SetNotifyAcquired(v bool) error {
+	return a.SetProperty("NotifyAcquired", v)
+}
+
+
+
+// GetNotifyAcquired get NotifyAcquired value
+func (a *GattCharacteristic1) GetNotifyAcquired() (bool, error) {
+	v, err := a.GetProperty("NotifyAcquired")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+// SetNotifying set Notifying value
+func (a *GattCharacteristic1) SetNotifying(v bool) error {
+	return a.SetProperty("Notifying", v)
+}
+
+
+
+// GetNotifying get Notifying value
+func (a *GattCharacteristic1) GetNotifying() (bool, error) {
+	v, err := a.GetProperty("Notifying")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+// SetFlags set Flags value
+func (a *GattCharacteristic1) SetFlags(v []string) error {
+	return a.SetProperty("Flags", v)
+}
+
+
+
+// GetFlags get Flags value
+func (a *GattCharacteristic1) GetFlags() ([]string, error) {
+	v, err := a.GetProperty("Flags")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
+}
+
+
+
 // Close the connection
 func (a *GattCharacteristic1) Close() {
-
+	
 	a.unregisterPropertiesSignal()
-
+	
 	a.client.Disconnect()
 }
 
@@ -306,6 +353,7 @@ func (a *GattCharacteristic1) GetObjectManagerSignal() (chan *dbus.Signal, func(
 
 	return a.objectManagerSignal, cancel, nil
 }
+
 
 // ToMap convert a GattCharacteristic1Properties to map
 func (a *GattCharacteristic1Properties) ToMap() (map[string]interface{}, error) {
@@ -415,7 +463,16 @@ func (a *GattCharacteristic1) WatchProperties() (chan *bluez.PropertyChanged, er
 					if f.CanSet() {
 						x := reflect.ValueOf(val.Value())
 						a.Properties.Lock()
-						f.Set(x)
+						// map[*]variant -> map[*]interface{}
+						ok, err := util.AssignMapVariantToInterface(f, x)
+						if err != nil {
+							log.Errorf("Failed to set %s: %s", f.String(), err)
+							continue
+						}
+						// direct assignment
+						if !ok {
+							f.Set(x)
+						}
 						a.Properties.Unlock()
 					}
 				}
@@ -440,8 +497,11 @@ func (a *GattCharacteristic1) UnwatchProperties(ch chan *bluez.PropertyChanged) 
 	return nil
 }
 
+
+
+
 /*
-ReadValue
+ReadValue 
 			Issues a request to read the value of the
 			characteristic and returns the value if the
 			operation was successful.
@@ -459,14 +519,14 @@ ReadValue
 
 */
 func (a *GattCharacteristic1) ReadValue(options map[string]interface{}) ([]byte, error) {
-
+	
 	var val0 []byte
 	err := a.client.Call("ReadValue", 0, options).Store(&val0)
-	return val0, err
+	return val0, err	
 }
 
 /*
-WriteValue
+WriteValue 
 			Issues a request to write the value of the
 			characteristic.
 
@@ -487,13 +547,13 @@ WriteValue
 
 */
 func (a *GattCharacteristic1) WriteValue(value []byte, options map[string]interface{}) error {
-
+	
 	return a.client.Call("WriteValue", 0, value, options).Store()
-
+	
 }
 
 /*
-AcquireWrite
+AcquireWrite 
 			Acquire file descriptor and MTU for writing. Usage of
 			WriteValue will be locked causing it to return
 			NotPermitted error.
@@ -525,15 +585,15 @@ AcquireWrite
 
 */
 func (a *GattCharacteristic1) AcquireWrite(options map[string]interface{}) (dbus.UnixFD, uint16, error) {
-
+	
 	var val0 dbus.UnixFD
-	var val1 uint16
+  var val1 uint16
 	err := a.client.Call("AcquireWrite", 0, options).Store(&val0, &val1)
-	return val0, val1, err
+	return val0, val1, err	
 }
 
 /*
-AcquireNotify
+AcquireNotify 
 			Acquire file descriptor and MTU for notify. Usage of
 			StartNotify will be locked causing it to return
 			NotPermitted error.
@@ -571,15 +631,15 @@ AcquireNotify
 
 */
 func (a *GattCharacteristic1) AcquireNotify(options map[string]interface{}) (dbus.UnixFD, uint16, error) {
-
+	
 	var val0 dbus.UnixFD
-	var val1 uint16
+  var val1 uint16
 	err := a.client.Call("AcquireNotify", 0, options).Store(&val0, &val1)
-	return val0, val1, err
+	return val0, val1, err	
 }
 
 /*
-StartNotify
+StartNotify 
 			Starts a notification session from this characteristic
 			if it supports value notifications or indications.
 
@@ -591,13 +651,13 @@ StartNotify
 
 */
 func (a *GattCharacteristic1) StartNotify() error {
-
-	return a.client.Call("StartNotify", 0).Store()
-
+	
+	return a.client.Call("StartNotify", 0, ).Store()
+	
 }
 
 /*
-StopNotify
+StopNotify 
 			This method will cancel any previous StartNotify
 			transaction. Note that notifications from a
 			characteristic are shared between sessions thus
@@ -608,13 +668,13 @@ StopNotify
 
 */
 func (a *GattCharacteristic1) StopNotify() error {
-
-	return a.client.Call("StopNotify", 0).Store()
-
+	
+	return a.client.Call("StopNotify", 0, ).Store()
+	
 }
 
 /*
-Confirm
+Confirm 
 			This method doesn't expect a reply so it is just a
 			confirmation that value was received.
 
@@ -623,7 +683,8 @@ Confirm
 
 */
 func (a *GattCharacteristic1) Confirm() error {
-
-	return a.client.Call("Confirm", 0).Store()
-
+	
+	return a.client.Call("Confirm", 0, ).Store()
+	
 }
+

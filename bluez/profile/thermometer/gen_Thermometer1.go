@@ -3,12 +3,13 @@ package thermometer
 
 
 import (
-  "sync"
-  "github.com/muka/go-bluetooth/bluez"
-  "reflect"
-  "github.com/fatih/structs"
-  "github.com/muka/go-bluetooth/util"
-  "github.com/godbus/dbus"
+   "sync"
+   "github.com/muka/go-bluetooth/bluez"
+  log "github.com/sirupsen/logrus"
+   "reflect"
+   "github.com/fatih/structs"
+   "github.com/muka/go-bluetooth/util"
+   "github.com/godbus/dbus"
 )
 
 var Thermometer1Interface = "org.bluez.Thermometer1"
@@ -57,6 +58,18 @@ type Thermometer1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	Maximum (optional) Defines the maximum value allowed for the interval
+			between periodic measurements.
+	*/
+	Maximum uint16
+
+	/*
+	Minimum (optional) Defines the minimum value allowed for the interval
+			between periodic measurements.
+	*/
+	Minimum uint16
+
+	/*
 	Intermediate True if the thermometer supports intermediate
 			measurement notifications.
 	*/
@@ -72,18 +85,6 @@ type Thermometer1Properties struct {
 	*/
 	Interval uint16
 
-	/*
-	Maximum (optional) Defines the maximum value allowed for the interval
-			between periodic measurements.
-	*/
-	Maximum uint16
-
-	/*
-	Minimum (optional) Defines the minimum value allowed for the interval
-			between periodic measurements.
-	*/
-	Minimum uint16
-
 }
 
 //Lock access to properties
@@ -94,6 +95,34 @@ func (p *Thermometer1Properties) Lock() {
 //Unlock access to properties
 func (p *Thermometer1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+
+
+// GetMaximum get Maximum value
+func (a *Thermometer1) GetMaximum() (uint16, error) {
+	v, err := a.GetProperty("Maximum")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
+
+
+
+
+
+
+// GetMinimum get Minimum value
+func (a *Thermometer1) GetMinimum() (uint16, error) {
+	v, err := a.GetProperty("Minimum")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
 }
 
 
@@ -123,34 +152,6 @@ func (a *Thermometer1) SetInterval(v uint16) error {
 // GetInterval get Interval value
 func (a *Thermometer1) GetInterval() (uint16, error) {
 	v, err := a.GetProperty("Interval")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
-}
-
-
-
-
-
-
-// GetMaximum get Maximum value
-func (a *Thermometer1) GetMaximum() (uint16, error) {
-	v, err := a.GetProperty("Maximum")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
-}
-
-
-
-
-
-
-// GetMinimum get Minimum value
-func (a *Thermometer1) GetMinimum() (uint16, error) {
-	v, err := a.GetProperty("Minimum")
 	if err != nil {
 		return uint16(0), err
 	}
@@ -317,7 +318,16 @@ func (a *Thermometer1) WatchProperties() (chan *bluez.PropertyChanged, error) {
 					if f.CanSet() {
 						x := reflect.ValueOf(val.Value())
 						a.Properties.Lock()
-						f.Set(x)
+						// map[*]variant -> map[*]interface{}
+						ok, err := util.AssignMapVariantToInterface(f, x)
+						if err != nil {
+							log.Errorf("Failed to set %s: %s", f.String(), err)
+							continue
+						}
+						// direct assignment
+						if !ok {
+							f.Set(x)
+						}
 						a.Properties.Unlock()
 					}
 				}

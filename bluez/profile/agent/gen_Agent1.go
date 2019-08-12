@@ -3,12 +3,13 @@ package agent
 
 
 import (
-  "sync"
-  "github.com/muka/go-bluetooth/bluez"
-  "reflect"
-  "github.com/fatih/structs"
-  "github.com/muka/go-bluetooth/util"
-  "github.com/godbus/dbus"
+   "sync"
+   "github.com/muka/go-bluetooth/bluez"
+  log "github.com/sirupsen/logrus"
+   "reflect"
+   "github.com/fatih/structs"
+   "github.com/muka/go-bluetooth/util"
+   "github.com/godbus/dbus"
 )
 
 var Agent1Interface = "org.bluez.Agent1"
@@ -229,7 +230,16 @@ func (a *Agent1) WatchProperties() (chan *bluez.PropertyChanged, error) {
 					if f.CanSet() {
 						x := reflect.ValueOf(val.Value())
 						a.Properties.Lock()
-						f.Set(x)
+						// map[*]variant -> map[*]interface{}
+						ok, err := util.AssignMapVariantToInterface(f, x)
+						if err != nil {
+							log.Errorf("Failed to set %s: %s", f.String(), err)
+							continue
+						}
+						// direct assignment
+						if !ok {
+							f.Set(x)
+						}
 						a.Properties.Unlock()
 					}
 				}

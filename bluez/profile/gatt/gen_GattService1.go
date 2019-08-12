@@ -3,12 +3,13 @@ package gatt
 
 
 import (
-  "sync"
-  "github.com/muka/go-bluetooth/bluez"
-  "reflect"
-  "github.com/fatih/structs"
-  "github.com/muka/go-bluetooth/util"
-  "github.com/godbus/dbus"
+   "sync"
+   "github.com/muka/go-bluetooth/bluez"
+  log "github.com/sirupsen/logrus"
+   "reflect"
+   "github.com/fatih/structs"
+   "github.com/muka/go-bluetooth/util"
+   "github.com/godbus/dbus"
 )
 
 var GattService1Interface = "org.bluez.GattService1"
@@ -64,6 +65,11 @@ type GattService1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	UUID 128-bit service UUID.
+	*/
+	UUID string
+
+	/*
 	Primary Indicates whether or not this GATT service is a
 			primary service. If false, the service is secondary.
 	*/
@@ -83,19 +89,14 @@ type GattService1Properties struct {
 	Includes []dbus.ObjectPath
 
 	/*
-	Characteristics 
-	*/
-	Characteristics []dbus.ObjectPath `dbus:"emit"`
-
-	/*
 	IsService 
 	*/
 	IsService bool `dbus:"ignore"`
 
 	/*
-	UUID 128-bit service UUID.
+	Characteristics 
 	*/
-	UUID string
+	Characteristics []dbus.ObjectPath `dbus:"emit"`
 
 }
 
@@ -107,6 +108,25 @@ func (p *GattService1Properties) Lock() {
 //Unlock access to properties
 func (p *GattService1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+// SetUUID set UUID value
+func (a *GattService1) SetUUID(v string) error {
+	return a.SetProperty("UUID", v)
+}
+
+
+
+// GetUUID get UUID value
+func (a *GattService1) GetUUID() (string, error) {
+	v, err := a.GetProperty("UUID")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 
@@ -169,25 +189,6 @@ func (a *GattService1) GetIncludes() ([]dbus.ObjectPath, error) {
 
 
 
-// SetCharacteristics set Characteristics value
-func (a *GattService1) SetCharacteristics(v []dbus.ObjectPath) error {
-	return a.SetProperty("Characteristics", v)
-}
-
-
-
-// GetCharacteristics get Characteristics value
-func (a *GattService1) GetCharacteristics() ([]dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Characteristics")
-	if err != nil {
-		return []dbus.ObjectPath{}, err
-	}
-	return v.Value().([]dbus.ObjectPath), nil
-}
-
-
-
-
 // SetIsService set IsService value
 func (a *GattService1) SetIsService(v bool) error {
 	return a.SetProperty("IsService", v)
@@ -207,20 +208,20 @@ func (a *GattService1) GetIsService() (bool, error) {
 
 
 
-// SetUUID set UUID value
-func (a *GattService1) SetUUID(v string) error {
-	return a.SetProperty("UUID", v)
+// SetCharacteristics set Characteristics value
+func (a *GattService1) SetCharacteristics(v []dbus.ObjectPath) error {
+	return a.SetProperty("Characteristics", v)
 }
 
 
 
-// GetUUID get UUID value
-func (a *GattService1) GetUUID() (string, error) {
-	v, err := a.GetProperty("UUID")
+// GetCharacteristics get Characteristics value
+func (a *GattService1) GetCharacteristics() ([]dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Characteristics")
 	if err != nil {
-		return "", err
+		return []dbus.ObjectPath{}, err
 	}
-	return v.Value().(string), nil
+	return v.Value().([]dbus.ObjectPath), nil
 }
 
 
@@ -383,7 +384,16 @@ func (a *GattService1) WatchProperties() (chan *bluez.PropertyChanged, error) {
 					if f.CanSet() {
 						x := reflect.ValueOf(val.Value())
 						a.Properties.Lock()
-						f.Set(x)
+						// map[*]variant -> map[*]interface{}
+						ok, err := util.AssignMapVariantToInterface(f, x)
+						if err != nil {
+							log.Errorf("Failed to set %s: %s", f.String(), err)
+							continue
+						}
+						// direct assignment
+						if !ok {
+							f.Set(x)
+						}
 						a.Properties.Unlock()
 					}
 				}

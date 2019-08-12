@@ -3,12 +3,13 @@ package health
 
 
 import (
-  "sync"
-  "github.com/muka/go-bluetooth/bluez"
-  "reflect"
-  "github.com/fatih/structs"
-  "github.com/muka/go-bluetooth/util"
-  "github.com/godbus/dbus"
+   "sync"
+   "github.com/muka/go-bluetooth/bluez"
+  log "github.com/sirupsen/logrus"
+   "reflect"
+   "github.com/fatih/structs"
+   "github.com/muka/go-bluetooth/util"
+   "github.com/godbus/dbus"
 )
 
 var HealthChannel1Interface = "org.bluez.HealthChannel1"
@@ -57,6 +58,12 @@ type HealthChannel1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	Type The quality of service of the data channel. ("reliable"
+			or "streaming")
+	*/
+	Type string
+
+	/*
 	Device Identifies the Remote Device that is connected with.
 			Maps with a HealthDevice object.
 	*/
@@ -69,12 +76,6 @@ type HealthChannel1Properties struct {
 	*/
 	Application dbus.ObjectPath
 
-	/*
-	Type The quality of service of the data channel. ("reliable"
-			or "streaming")
-	*/
-	Type string
-
 }
 
 //Lock access to properties
@@ -85,6 +86,20 @@ func (p *HealthChannel1Properties) Lock() {
 //Unlock access to properties
 func (p *HealthChannel1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+
+
+// GetType get Type value
+func (a *HealthChannel1) GetType() (string, error) {
+	v, err := a.GetProperty("Type")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 
@@ -113,20 +128,6 @@ func (a *HealthChannel1) GetApplication() (dbus.ObjectPath, error) {
 		return dbus.ObjectPath(""), err
 	}
 	return v.Value().(dbus.ObjectPath), nil
-}
-
-
-
-
-
-
-// GetType get Type value
-func (a *HealthChannel1) GetType() (string, error) {
-	v, err := a.GetProperty("Type")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
 }
 
 
@@ -289,7 +290,16 @@ func (a *HealthChannel1) WatchProperties() (chan *bluez.PropertyChanged, error) 
 					if f.CanSet() {
 						x := reflect.ValueOf(val.Value())
 						a.Properties.Lock()
-						f.Set(x)
+						// map[*]variant -> map[*]interface{}
+						ok, err := util.AssignMapVariantToInterface(f, x)
+						if err != nil {
+							log.Errorf("Failed to set %s: %s", f.String(), err)
+							continue
+						}
+						// direct assignment
+						if !ok {
+							f.Set(x)
+						}
 						a.Properties.Unlock()
 					}
 				}

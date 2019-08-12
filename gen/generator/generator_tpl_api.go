@@ -28,9 +28,13 @@ func ApiTemplate(filename string, api gen.Api, apiGroup gen.ApiGroup) error {
 	exposeProps := override.ExposeProperties(api.Interface)
 
 	if exposeProps {
-		imports = append(imports, "reflect")
-		imports = append(imports, "github.com/fatih/structs")
-		imports = append(imports, "github.com/muka/go-bluetooth/util")
+		propsImports := []string{
+			"log github.com/sirupsen/logrus",
+			"reflect",
+			"github.com/fatih/structs",
+			"github.com/muka/go-bluetooth/util",
+		}
+		imports = append(imports, propsImports...)
 	}
 
 	// flag to import dbus
@@ -208,7 +212,12 @@ func ApiTemplate(filename string, api gen.Api, apiGroup gen.ApiGroup) error {
 	importsTpl := ""
 	if len(imports) > 0 {
 		for i := range imports {
-			imports[i] = fmt.Sprintf(`"%s"`, imports[i])
+			pts := strings.Split(imports[i], " ")
+			if len(pts) == 1 {
+				pts = append(pts, pts[0])
+				pts[0] = ""
+			}
+			imports[i] = fmt.Sprintf(`%s "%s"`, pts[0], pts[1])
 		}
 		importsTpl = fmt.Sprintf("import (\n  %s\n)", strings.Join(imports, "\n  "))
 	}

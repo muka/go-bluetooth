@@ -3,13 +3,14 @@ package adapter
 
 
 import (
-  "sync"
-  "github.com/muka/go-bluetooth/bluez"
-  "reflect"
-  "github.com/fatih/structs"
-  "github.com/muka/go-bluetooth/util"
-  "github.com/godbus/dbus"
-  "fmt"
+   "sync"
+   "github.com/muka/go-bluetooth/bluez"
+  log "github.com/sirupsen/logrus"
+   "reflect"
+   "github.com/fatih/structs"
+   "github.com/muka/go-bluetooth/util"
+   "github.com/godbus/dbus"
+   "fmt"
 )
 
 var Adapter1Interface = "org.bluez.Adapter1"
@@ -81,6 +82,19 @@ type Adapter1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	AddressType The Bluetooth  Address Type. For dual-mode and BR/EDR
+			only adapter this defaults to "public". Single mode LE
+			adapters may have either value. With privacy enabled
+			this contains type of Identity Address and not type of
+			address used for connection.
+
+			Possible values:
+				"public" - Public address
+				"random" - Random address
+	*/
+	AddressType string
+
+	/*
 	Alias The Bluetooth friendly name. This value can be
 			changed.
 
@@ -110,6 +124,16 @@ type Adapter1Properties struct {
 	Class uint32
 
 	/*
+	Powered Switch an adapter on or off. This will also set the
+			appropriate connectable state of the controller.
+
+			The value of this property is not persistent. After
+			restart or unplugging of the adapter it will reset
+			back to false.
+	*/
+	Powered bool
+
+	/*
 	Discoverable Switch an adapter to discoverable or non-discoverable
 			to either make it visible or hide it. This is a global
 			setting and should only be used by the settings
@@ -131,26 +155,9 @@ type Adapter1Properties struct {
 	Discoverable bool
 
 	/*
-	Pairable Switch an adapter to pairable or non-pairable. This is
-			a global setting and should only be used by the
-			settings application.
-
-			Note that this property only affects incoming pairing
-			requests.
-
-			For any new adapter this settings defaults to true.
+	Discovering Indicates that a device discovery procedure is active.
 	*/
-	Pairable bool
-
-	/*
-	DiscoverableTimeout The discoverable timeout in seconds. A value of zero
-			means that the timeout is disabled and it will stay in
-			discoverable/limited mode forever.
-
-			The default value for the discoverable timeout should
-			be 180 seconds (3 minutes).
-	*/
-	DiscoverableTimeout uint32
+	Discovering bool
 
 	/*
 	Modalias Local Device ID information in modalias format
@@ -164,19 +171,6 @@ type Adapter1Properties struct {
 	Address string
 
 	/*
-	AddressType The Bluetooth  Address Type. For dual-mode and BR/EDR
-			only adapter this defaults to "public". Single mode LE
-			adapters may have either value. With privacy enabled
-			this contains type of Identity Address and not type of
-			address used for connection.
-
-			Possible values:
-				"public" - Public address
-				"random" - Random address
-	*/
-	AddressType string
-
-	/*
 	Name The Bluetooth system name (pretty hostname).
 
 			This property is either a static system default
@@ -186,14 +180,16 @@ type Adapter1Properties struct {
 	Name string
 
 	/*
-	Powered Switch an adapter on or off. This will also set the
-			appropriate connectable state of the controller.
+	Pairable Switch an adapter to pairable or non-pairable. This is
+			a global setting and should only be used by the
+			settings application.
 
-			The value of this property is not persistent. After
-			restart or unplugging of the adapter it will reset
-			back to false.
+			Note that this property only affects incoming pairing
+			requests.
+
+			For any new adapter this settings defaults to true.
 	*/
-	Powered bool
+	Pairable bool
 
 	/*
 	PairableTimeout The pairable timeout in seconds. A value of zero
@@ -206,9 +202,14 @@ type Adapter1Properties struct {
 	PairableTimeout uint32
 
 	/*
-	Discovering Indicates that a device discovery procedure is active.
+	DiscoverableTimeout The discoverable timeout in seconds. A value of zero
+			means that the timeout is disabled and it will stay in
+			discoverable/limited mode forever.
+
+			The default value for the discoverable timeout should
+			be 180 seconds (3 minutes).
 	*/
-	Discovering bool
+	DiscoverableTimeout uint32
 
 	/*
 	UUIDs List of 128-bit UUIDs that represents the available
@@ -226,6 +227,20 @@ func (p *Adapter1Properties) Lock() {
 //Unlock access to properties
 func (p *Adapter1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+
+
+// GetAddressType get AddressType value
+func (a *Adapter1) GetAddressType() (string, error) {
+	v, err := a.GetProperty("AddressType")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 
@@ -264,6 +279,25 @@ func (a *Adapter1) GetClass() (uint32, error) {
 
 
 
+// SetPowered set Powered value
+func (a *Adapter1) SetPowered(v bool) error {
+	return a.SetProperty("Powered", v)
+}
+
+
+
+// GetPowered get Powered value
+func (a *Adapter1) GetPowered() (bool, error) {
+	v, err := a.GetProperty("Powered")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
 // SetDiscoverable set Discoverable value
 func (a *Adapter1) SetDiscoverable(v bool) error {
 	return a.SetProperty("Discoverable", v)
@@ -283,39 +317,15 @@ func (a *Adapter1) GetDiscoverable() (bool, error) {
 
 
 
-// SetPairable set Pairable value
-func (a *Adapter1) SetPairable(v bool) error {
-	return a.SetProperty("Pairable", v)
-}
 
 
-
-// GetPairable get Pairable value
-func (a *Adapter1) GetPairable() (bool, error) {
-	v, err := a.GetProperty("Pairable")
+// GetDiscovering get Discovering value
+func (a *Adapter1) GetDiscovering() (bool, error) {
+	v, err := a.GetProperty("Discovering")
 	if err != nil {
 		return false, err
 	}
 	return v.Value().(bool), nil
-}
-
-
-
-
-// SetDiscoverableTimeout set DiscoverableTimeout value
-func (a *Adapter1) SetDiscoverableTimeout(v uint32) error {
-	return a.SetProperty("DiscoverableTimeout", v)
-}
-
-
-
-// GetDiscoverableTimeout get DiscoverableTimeout value
-func (a *Adapter1) GetDiscoverableTimeout() (uint32, error) {
-	v, err := a.GetProperty("DiscoverableTimeout")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
 }
 
 
@@ -351,20 +361,6 @@ func (a *Adapter1) GetAddress() (string, error) {
 
 
 
-// GetAddressType get AddressType value
-func (a *Adapter1) GetAddressType() (string, error) {
-	v, err := a.GetProperty("AddressType")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-
-
 // GetName get Name value
 func (a *Adapter1) GetName() (string, error) {
 	v, err := a.GetProperty("Name")
@@ -377,16 +373,16 @@ func (a *Adapter1) GetName() (string, error) {
 
 
 
-// SetPowered set Powered value
-func (a *Adapter1) SetPowered(v bool) error {
-	return a.SetProperty("Powered", v)
+// SetPairable set Pairable value
+func (a *Adapter1) SetPairable(v bool) error {
+	return a.SetProperty("Pairable", v)
 }
 
 
 
-// GetPowered get Powered value
-func (a *Adapter1) GetPowered() (bool, error) {
-	v, err := a.GetProperty("Powered")
+// GetPairable get Pairable value
+func (a *Adapter1) GetPairable() (bool, error) {
+	v, err := a.GetProperty("Pairable")
 	if err != nil {
 		return false, err
 	}
@@ -415,15 +411,20 @@ func (a *Adapter1) GetPairableTimeout() (uint32, error) {
 
 
 
+// SetDiscoverableTimeout set DiscoverableTimeout value
+func (a *Adapter1) SetDiscoverableTimeout(v uint32) error {
+	return a.SetProperty("DiscoverableTimeout", v)
+}
 
 
-// GetDiscovering get Discovering value
-func (a *Adapter1) GetDiscovering() (bool, error) {
-	v, err := a.GetProperty("Discovering")
+
+// GetDiscoverableTimeout get DiscoverableTimeout value
+func (a *Adapter1) GetDiscoverableTimeout() (uint32, error) {
+	v, err := a.GetProperty("DiscoverableTimeout")
 	if err != nil {
-		return false, err
+		return uint32(0), err
 	}
-	return v.Value().(bool), nil
+	return v.Value().(uint32), nil
 }
 
 
@@ -600,7 +601,16 @@ func (a *Adapter1) WatchProperties() (chan *bluez.PropertyChanged, error) {
 					if f.CanSet() {
 						x := reflect.ValueOf(val.Value())
 						a.Properties.Lock()
-						f.Set(x)
+						// map[*]variant -> map[*]interface{}
+						ok, err := util.AssignMapVariantToInterface(f, x)
+						if err != nil {
+							log.Errorf("Failed to set %s: %s", f.String(), err)
+							continue
+						}
+						// direct assignment
+						if !ok {
+							f.Set(x)
+						}
 						a.Properties.Unlock()
 					}
 				}
