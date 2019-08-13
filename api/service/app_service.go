@@ -9,10 +9,15 @@ import (
 )
 
 type Service struct {
-	app   *App
-	path  dbus.ObjectPath
-	props *gatt.GattService1Properties
-	chars map[dbus.ObjectPath]*Char
+	app    *App
+	path   dbus.ObjectPath
+	props  *gatt.GattService1Properties
+	chars  map[dbus.ObjectPath]*Char
+	iprops *DBusProperties
+}
+
+func (s *Service) DBusProperties() *DBusProperties {
+	return s.iprops
 }
 
 func (s *Service) Path() dbus.ObjectPath {
@@ -33,12 +38,12 @@ func (s *Service) App() *App {
 
 // Expose service to dbus
 func (s *Service) Expose() error {
-	return ExposeService(s)
+	return ExposeDBusService(s)
 }
 
 // Remove service from dbus
 func (s *Service) Remove() error {
-	return RemoveService(s)
+	return RemoveDBusService(s)
 }
 
 func (s *Service) GetChars() map[dbus.ObjectPath]*Char {
@@ -46,7 +51,7 @@ func (s *Service) GetChars() map[dbus.ObjectPath]*Char {
 }
 
 // Create a new characteristic
-func (s *Service) NewChar(uuid string) *Char {
+func (s *Service) NewChar(uuid string) (*Char, error) {
 
 	char := new(Char)
 	char.path = dbus.ObjectPath(
@@ -56,20 +61,20 @@ func (s *Service) NewChar(uuid string) *Char {
 	char.descr = make(map[dbus.ObjectPath]*Descr)
 	char.props = NewGattCharacteristic1Properties(uuid)
 
-	return char
+	iprops, err := NewDBusProperties()
+	if err != nil {
+		return nil, err
+	}
+	char.iprops = iprops
+
+	return char, nil
 }
 
 func (s *Service) AddChar(char *Char) error {
 
 	s.chars[char.Path()] = char
 
-	iprops, err := NewDBusProperties()
-	if err != nil {
-		return err
-	}
-	char.iprops = iprops
-
-	err = ExposeService(char)
+	err := ExposeDBusService(char)
 	if err != nil {
 		return err
 	}

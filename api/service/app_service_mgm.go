@@ -13,7 +13,7 @@ func (app *App) GetServices() map[dbus.ObjectPath]*Service {
 	return app.services
 }
 
-func (app *App) NewService(uuid string) *Service {
+func (app *App) NewService(uuid string) (*Service, error) {
 
 	if len(uuid) == 4 {
 		uuid = fmt.Sprintf(DefaultUUID, uuid)
@@ -25,7 +25,13 @@ func (app *App) NewService(uuid string) *Service {
 	s.path = dbus.ObjectPath(fmt.Sprintf("%s/service_%s", app.Path(), strings.Replace(uuid, "-", "_", -1)))
 	s.props = NewGattService1Properties(uuid)
 
-	return s
+	iprops, err := NewDBusProperties()
+	if err != nil {
+		return nil, err
+	}
+	s.iprops = iprops
+
+	return s, nil
 }
 
 func (app *App) AddService(s *Service) error {
@@ -65,7 +71,7 @@ func (app *App) RemoveService(service *Service) error {
 		}
 	}
 
-	err := RemoveService(service)
+	err := RemoveDBusService(service)
 	if err != nil {
 		return err
 	}

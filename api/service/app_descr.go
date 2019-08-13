@@ -7,9 +7,14 @@ import (
 )
 
 type Descr struct {
-	app   *App
-	path  dbus.ObjectPath
-	props *gatt.GattDescriptor1Properties
+	app    *App
+	path   dbus.ObjectPath
+	props  *gatt.GattDescriptor1Properties
+	iprops *DBusProperties
+}
+
+func (s *Descr) DBusProperties() *DBusProperties {
+	return s.iprops
 }
 
 func (s *Descr) Path() dbus.ObjectPath {
@@ -30,10 +35,10 @@ func (s *Descr) App() *App {
 
 // Expose descr to dbus
 func (s *Descr) Expose() error {
-	return ExposeService(s)
+	return ExposeDBusService(s)
 }
 
 // Remove descr from dbus
 func (s *Descr) Remove() error {
-	return RemoveService(s)
+	return RemoveDBusService(s)
 }

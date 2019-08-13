@@ -17,9 +17,16 @@ func TestApp(t *testing.T) {
 	}
 	defer a.Close()
 
-	s1 := a.NewService("ABCD")
+	s1, err := a.NewService("ABCD")
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	c1 := s1.NewChar("1234")
+	c1, err := s1.NewChar("1234")
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	err = s1.AddChar(c1)
 	if err != nil {
 		t.Fatal(err)
@@ -33,7 +40,11 @@ func TestApp(t *testing.T) {
 			return nil, nil
 		}))
 
-	d1 := c1.NewDescr("0000")
+	d1, err := c1.NewDescr("0000")
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	err = c1.AddDescr(d1)
 	if err != nil {
 		t.Fatal(err)

@@ -7,11 +7,12 @@ import (
 	"github.com/muka/go-bluetooth/bluez"
 )
 
-type ExposedService interface {
+type ExposedDBusService interface {
 	Path() dbus.ObjectPath
 	Interface() string
 	Properties() bluez.Properties
 	App() *App
+	DBusProperties() *DBusProperties
 }
 
 type AppService interface {
@@ -19,7 +20,7 @@ type AppService interface {
 	Path() dbus.ObjectPath
 }
 
-func RemoveService(s ExposedService) error {
+func RemoveDBusService(s ExposedDBusService) error {
 
 	err := s.App().ObjectManager().RemoveObject(s.Path())
 	if err != nil {
@@ -34,7 +35,7 @@ func RemoveService(s ExposedService) error {
 	return nil
 }
 
-func ExposeService(s ExposedService) error {
+func ExposeDBusService(s ExposedDBusService) error {
 
 	conn, err := dbus.SystemBus()
 	if err != nil {
@@ -46,17 +47,12 @@ func ExposeService(s ExposedService) error {
 		return err
 	}
 
-	propInterface, err := NewDBusProperties()
+	err = s.DBusProperties().AddProperties(s.Interface(), s.Properties())
 	if err != nil {
 		return err
 	}
 
-	err = propInterface.AddProperties(s.Interface(), s.Properties())
-	if err != nil {
-		return err
-	}
-
-	propInterface.Expose(s.Path())
+	s.DBusProperties().Expose(s.Path())
 
 	node := &introspect.Node{
 		Interfaces: []introspect.Interface{
@@ -67,7 +63,7 @@ func ExposeService(s ExposedService) error {
 			{
 				Name:       s.Interface(),
 				Methods:    introspect.Methods(s),
-				Properties: propInterface.Introspection(s.Interface()),
+				Properties: s.DBusProperties().Introspection(s.Interface()),
 			},
 		},
 	}

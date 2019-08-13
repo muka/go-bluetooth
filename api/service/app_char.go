@@ -27,6 +27,10 @@ func (s *Char) Path() dbus.ObjectPath {
 	return s.path
 }
 
+func (s *Char) DBusProperties() *DBusProperties {
+	return s.iprops
+}
+
 func (s *Char) Interface() string {
 	return gatt.GattCharacteristic1Interface
 }
@@ -61,16 +65,16 @@ func (s *Char) RemoveDescr(descr *Descr) error {
 
 // Expose char to dbus
 func (s *Char) Expose() error {
-	return ExposeService(s)
+	return ExposeDBusService(s)
 }
 
 // Remove char from dbus
 func (s *Char) Remove() error {
-	return RemoveService(s)
+	return RemoveDBusService(s)
 }
 
 // Init new descr
-func (s *Char) NewDescr(uuid string) *Descr {
+func (s *Char) NewDescr(uuid string) (*Descr, error) {
 
 	descr := new(Descr)
 	descr.app = s.App()
@@ -78,14 +82,19 @@ func (s *Char) NewDescr(uuid string) *Descr {
 	descr.path = dbus.ObjectPath(
 		fmt.Sprintf("%s/descr%d", s.Path(), len(s.GetDescr())),
 	)
+	iprops, err := NewDBusProperties()
+	if err != nil {
+		return nil, err
+	}
+	descr.iprops = iprops
 
-	return descr
+	return descr, nil
 }
 
 // Add descr to dbus
 func (s *Char) AddDescr(descr *Descr) error {
 
-	err := ExposeService(descr)
+	err := ExposeDBusService(descr)
 	if err != nil {
 		return err
 	}
