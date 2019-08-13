@@ -53,10 +53,10 @@ func SetTrusted(adapterID string, devicePath dbus.ObjectPath) error {
 	path := string(devicePath)
 	for _, dev := range devices {
 		if strings.Contains(string(dev.Path()), path) {
-			log.Debugf("Trust device at %s", path)
+			log.Debugf("SetTrusted: Trust device at %s", path)
 			err := dev.SetProperty("Trusted", true)
 			if err != nil {
-				return err
+				return fmt.Errorf("SetTrusted: %s", err)
 			}
 			return nil
 		}

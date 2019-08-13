@@ -2,8 +2,8 @@ package service_example
 
 import (
 	"os"
-	"time"
 
+	"github.com/muka/go-bluetooth/api/service"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -23,39 +23,55 @@ func fail(where string, err error) {
 	}
 }
 
-func Run() error {
+func Run(mode string, adapterID string) error {
 
-	log.Warn("***\nThis example assume two controller are available: hci0 and hci1\n***")
+	if mode == "client" {
+		log.Error("client mode todo")
+	} else {
 
-	var err error
+		a, err := service.NewApp(adapterID)
 
-	log.Info("Register agent")
-	agent, err := createAgent()
-	fail("createAgent", err)
+		cancel, err := a.Run()
+		if err != nil {
+			return err
+		}
 
-	defer agent.Release()
+		defer cancel()
 
-	log.Info("Register app")
-	app, err := registerApplication(serviceAdapterID)
-	fail("registerApplication", err)
-
-	defer app.StopAdvertising()
-
-	adapterProps, err := app.GetAdapter().GetProperties()
-	fail("GetProperties", err)
-
-	hwaddr := adapterProps.Address
-
-	var serviceID string
-	for _, service := range app.GetServices() {
-		serviceID = service.GetProperties().UUID
-		break
+		return nil
 	}
 
-	time.Sleep(time.Millisecond * 500)
+	// log.Warn("***\nThis example assume two controller are available: hci0 and hci1\n***")
+	//
+	// var err error
+	//
+	// log.Info("Register agent")
+	// agent, err := createAgent()
+	// fail("createAgent", err)
+	//
+	// defer agent.Release()
+	//
+	// log.Info("Register app")
+	// app, err := registerApplication(serviceAdapterID)
+	// fail("registerApplication", err)
+	//
+	// defer app.StopAdvertising()
 
-	err = createClient(clientAdapterID, hwaddr, serviceID)
-	fail("createClient", err)
+	// adapterProps, err := app.GetAdapter().GetProperties()
+	// fail("GetProperties", err)
+
+	// hwaddr := adapterProps.Address
+	//
+	// var serviceID string
+	// for _, service := range app.GetServices() {
+	// 	serviceID = service.GetProperties().UUID
+	// 	break
+	// }
+	//
+	// time.Sleep(time.Millisecond * 2500)
+
+	// err = createClient(clientAdapterID, hwaddr, serviceID)
+	// fail("createClient", err)
 
 	select {}
 }
