@@ -53,7 +53,7 @@ func (a *Adapter1) OnDeviceDiscovered() (chan *DeviceDiscovered, func(), error) 
 				ifaces := v.Body[1].([]string)
 				for _, iface := range ifaces {
 					if iface == device.Device1Interface {
-						log.Debugf("Removed device %s", path)
+						log.Tracef("Removed device %s", path)
 						ch <- &DeviceDiscovered{path, op}
 					}
 				}
@@ -65,7 +65,7 @@ func (a *Adapter1) OnDeviceDiscovered() (chan *DeviceDiscovered, func(), error) 
 				if p == nil {
 					continue
 				}
-				log.Debugf("Added device %s", path)
+				log.Tracef("Added device %s", path)
 				ch <- &DeviceDiscovered{path, op}
 			}
 

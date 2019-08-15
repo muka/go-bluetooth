@@ -6,14 +6,16 @@ import (
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile/gatt"
+	log "github.com/sirupsen/logrus"
 )
 
 type Service struct {
-	app    *App
-	path   dbus.ObjectPath
-	props  *gatt.GattService1Properties
-	chars  map[dbus.ObjectPath]*Char
-	iprops *DBusProperties
+	ID         int
+	app        *App
+	path       dbus.ObjectPath
+	Properties *gatt.GattService1Properties
+	chars      map[dbus.ObjectPath]*Char
+	iprops     *DBusProperties
 }
 
 func (s *Service) DBusProperties() *DBusProperties {
@@ -28,8 +30,8 @@ func (s *Service) Interface() string {
 	return gatt.GattService1Interface
 }
 
-func (s *Service) Properties() bluez.Properties {
-	return s.props
+func (s *Service) GetProperties() bluez.Properties {
+	return s.Properties
 }
 
 func (s *Service) App() *App {
@@ -51,17 +53,23 @@ func (s *Service) GetChars() map[dbus.ObjectPath]*Char {
 }
 
 // Create a new characteristic
-func (s *Service) NewChar(uuid string) (*Char, error) {
+func (s *Service) NewChar() (*Char, error) {
 
 	char := new(Char)
+	char.ID = s.ID + len(s.chars) + 100
+
+	serviceUUID := "%08x" + s.Properties.UUID[8:]
+	uuid := fmt.Sprintf(serviceUUID, char.ID)
+
 	char.path = dbus.ObjectPath(
 		fmt.Sprintf("%s/char%d", s.Path(), len(s.GetChars())),
 	)
 	char.app = s.App()
+	char.service = s
 	char.descr = make(map[dbus.ObjectPath]*Descr)
-	char.props = NewGattCharacteristic1Properties(uuid)
+	char.Properties = NewGattCharacteristic1Properties(uuid)
 
-	iprops, err := NewDBusProperties()
+	iprops, err := NewDBusProperties(s.App().DBusConn())
 	if err != nil {
 		return nil, err
 	}
@@ -78,6 +86,8 @@ func (s *Service) AddChar(char *Char) error {
 	if err != nil {
 		return err
 	}
+
+	log.Tracef("Added GATT Characteristic ID=%d %s", char.ID, char.Properties.UUID)
 
 	return nil
 }

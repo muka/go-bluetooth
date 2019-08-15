@@ -14,12 +14,7 @@ import (
 )
 
 // NewDBusProperties create a new instance
-func NewDBusProperties() (*DBusProperties, error) {
-
-	conn, err := dbus.SystemBus()
-	if err != nil {
-		return nil, err
-	}
+func NewDBusProperties(conn *dbus.Conn) (*DBusProperties, error) {
 
 	o := &DBusProperties{
 		conn:        conn,
@@ -27,7 +22,7 @@ func NewDBusProperties() (*DBusProperties, error) {
 		propsConfig: make(map[string]map[string]*prop.Prop),
 	}
 
-	err = o.parseProperties()
+	err := o.parseProperties()
 	return o, err
 }
 

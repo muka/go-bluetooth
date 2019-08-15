@@ -8,7 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const SimpleAgentPath = "/go_bluetooth/agent"
+const SimpleAgentPath = "/go_bluetooth/simple_agent"
 const SimpleAgentPinCode = "0000"
 const SimpleAgentPassKey uint32 = 1024
 
@@ -117,6 +117,7 @@ func (self *SimpleAgent) RequestConfirmation(path dbus.ObjectPath, passkey uint3
 
 	err = SetTrusted(adapterID, path)
 	if err != nil {
+		log.Warnf("Faile to set trust for %s: %s", path, err)
 		return dbus.MakeFailedError(err)
 	}
 

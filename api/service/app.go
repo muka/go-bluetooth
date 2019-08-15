@@ -2,26 +2,39 @@ package service
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/godbus/dbus"
 	"github.com/godbus/dbus/introspect"
+	"github.com/google/uuid"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile/adapter"
+	"github.com/muka/go-bluetooth/bluez/profile/advertising"
 	"github.com/muka/go-bluetooth/bluez/profile/agent"
 	log "github.com/sirupsen/logrus"
 )
 
-var DefaultUUID = "AAAA%s-0000-1000-8000-00805F9B34FB"
+var UseRandomUUID = false
+
+var baseUUID = "00000000-000%d-1000-8000-00805F9B34FB"
 
 var appCounter = 0
+
+func RandomUUID() (string, error) {
+	bUUID := fmt.Sprintf(baseUUID, appCounter)
+	UUID, err := uuid.Parse(bUUID)
+	if UseRandomUUID {
+		UUID, err = uuid.NewRandom()
+	}
+	return strings.ToUpper(UUID.String()), err
+}
 
 // Initialize a new bluetooth service (app)
 func NewApp(adapterID string) (*App, error) {
 
 	app := new(App)
-
 	app.adapterID = adapterID
-
+	app.services = make(map[dbus.ObjectPath]*Service)
 	app.path = dbus.ObjectPath(
 		fmt.Sprintf(
 			"/org/bluez/%s/app%d",
@@ -29,6 +42,9 @@ func NewApp(adapterID string) (*App, error) {
 			appCounter,
 		),
 	)
+	app.advertisement = &advertising.LEAdvertisement1Properties{
+		Type: advertising.AdvertisementTypePeripheral,
+	}
 
 	appCounter++
 
@@ -38,12 +54,14 @@ func NewApp(adapterID string) (*App, error) {
 // Wrap a bluetooth application exposing services
 type App struct {
 	path          dbus.ObjectPath
+	baseUUID      string
 	adapterID     string
 	conn          *dbus.Conn
 	agent         agent.Agent1Client
 	objectManager *ObjectManager
 	adapter       *adapter.Adapter1
 	services      map[dbus.ObjectPath]*Service
+	advertisement *advertising.LEAdvertisement1Properties
 }
 
 // return the app dbus path
@@ -51,8 +69,17 @@ func (app *App) Path() dbus.ObjectPath {
 	return app.path
 }
 
+// return the dbus connection
+func (app *App) DBusConn() *dbus.Conn {
+	return app.conn
+}
+
 func (app *App) ObjectManager() *ObjectManager {
 	return app.objectManager
+}
+
+func (app *App) SetName(name string) {
+	app.advertisement.LocalName = name
 }
 
 // Start the app
@@ -72,18 +99,19 @@ func (app *App) init() error {
 	}
 	app.agent = agent1
 
-	log.Trace("Register object manager")
-	om, err := NewObjectManager()
-	if err != nil {
-		return err
-	}
-	app.objectManager = om
-
+	log.Trace("Connecting to DBus")
 	conn, err := dbus.SystemBus()
 	if err != nil {
 		return err
 	}
 	app.conn = conn
+
+	log.Trace("Register object manager")
+	om, err := NewObjectManager(app.DBusConn())
+	if err != nil {
+		return err
+	}
+	app.objectManager = om
 
 	_, err = conn.RequestName(
 		"org.bluez",
@@ -146,6 +174,8 @@ func (app *App) exportTree() error {
 		},
 		Children: childrenNode,
 	}
+
+	// log.Tracef("Exposing XML Tree on %s: \n\n%s", app.Path(), *node)
 
 	err := app.conn.ExportSubtree(
 		introspect.NewIntrospectable(node),

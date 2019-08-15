@@ -3,7 +3,6 @@ package service_example
 import (
 	"errors"
 	"fmt"
-	"strings"
 
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez/profile/adapter"
@@ -11,121 +10,108 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func createClient(adapterID, hwaddr, serviceID string) (err error) {
+func client(adapterID, hwaddr string) (err error) {
 
-	log.Infof("Discovering devices from %s, looking for %s (serviceID:%s)", adapterID, hwaddr, serviceID)
+	log.Infof("Discovering %s on %s", hwaddr, adapterID)
 
 	a, err := adapter.NewAdapter1FromAdapterID(adapterID)
 	if err != nil {
 		return err
 	}
 
-	log.Info("Set discovery filter")
-	filter := adapter.NewDiscoveryFilter()
-	filter.AddUUIDs(serviceID)
-
-	err = a.SetDiscoveryFilter(filter.ToMap())
-	if err != nil {
-		return fmt.Errorf("SetDiscoveryFilter: %s", err)
-	}
-
-	log.Debug("List devices")
-	devices, err := a.GetDevices()
-	fail("GetDevices", err)
-	for _, dev := range devices {
-		err = showDeviceInfo(dev, hwaddr, serviceID)
-		fail("showDeviceInfo", err)
-	}
-
-	discovery, cancel, err := api.Discover(a, &filter)
+	dev, err := discover(a, hwaddr)
 	if err != nil {
 		return err
+	}
+
+	if dev == nil {
+		return errors.New("Device not found, is it advertising?")
+	}
+
+	err = connect(dev)
+	if err != nil {
+		return err
+	}
+
+	watchProps, err := dev.WatchProperties()
+	if err != nil {
+		return err
+	}
+
+	for propUpdate := range watchProps {
+		log.Debugf("propUpdate %++v", propUpdate)
+	}
+
+	return nil
+}
+
+func discover(a *adapter.Adapter1, hwaddr string) (*device.Device1, error) {
+
+	err := a.FlushDevices()
+	if err != nil {
+		return nil, err
+	}
+
+	discovery, cancel, err := api.Discover(a, nil)
+	if err != nil {
+		return nil, err
 	}
 
 	defer cancel()
 
 	for ev := range discovery {
+
 		dev, err1 := device.NewDevice1(ev.Path)
 		if err != nil {
-			return err1
+			return nil, err1
 		}
 
-		err2 := showDeviceInfo(dev, hwaddr, serviceID)
-		if err2 != nil {
-			return err2
+		if dev == nil || dev.Properties == nil {
+			continue
 		}
 
+		p := dev.Properties
+
+		n := p.Alias
+		if p.Name != "" {
+			n = p.Name
+		}
+		log.Debugf("Discovered (%s) %s", n, p.Address)
+
+		if p.Address != hwaddr {
+			continue
+		}
+
+		log.Infof("Found device %s", p.Address)
+		return dev, nil
 	}
 
-	return err
+	return nil, nil
 }
 
-func showDeviceInfo(dev *device.Device1, hwaddr, serviceID string) error {
+func connect(dev *device.Device1) error {
 
-	if dev == nil {
-		return errors.New("Device is nil")
-	}
-
-	props, err := dev.GetProperties()
-	if err != nil {
-		return fmt.Errorf("%s: Failed to get properties: %s", dev.Path(), err.Error())
-	}
-
-	// device1, err := dev.GetClient()
-	// if err != nil {
-	// 	return fmt.Errorf("GetClient: %s", err)
-	// }
-
-	if strings.ToLower(hwaddr) != strings.ToLower(props.Address) {
-		// log.Debugf("Skip device name=%s addr=%s rssi=%d", props.Name, props.Address, props.RSSI)
-		return nil
-	}
-
-	serviceID = strings.ToLower(serviceID)
-
+	props := dev.Properties
 	log.Infof("Found device name=%s addr=%s rssi=%d", props.Name, props.Address, props.RSSI)
 
-	var found bool
-	for _, uuid := range props.UUIDs {
-		if strings.ToLower(uuid) == serviceID {
-			found = true
-			break
-		}
-	}
-
-	if !found {
-		log.Error(fmt.Errorf("Service UUID %s not found on %s", serviceID, hwaddr))
+	if props.Connected {
 		return nil
 	}
 
 	if !props.Paired {
-		log.Debugf("Pairing to %s...", props.Name)
-		err = dev.Pair()
+		log.Trace("Pairing device")
+		err := dev.Pair()
 		if err != nil {
-			return fmt.Errorf("Pair: %s", err)
+			return fmt.Errorf("Pair failed: %s", err)
 		}
 	}
 
-	log.Debugf("Connecting to %s...", props.Name)
-	err = dev.Connect()
+	log.Trace("Connecting device")
+	err := dev.Connect()
 	if err != nil {
-		return fmt.Errorf("Connect: %s", err)
+		return fmt.Errorf("Connect failed: %s", err)
 	}
 
-	log.Infof("Found UUID %s", serviceID)
-
-	chars, err := dev.GetCharacteristicsList()
-	if err != nil {
-		return fmt.Errorf("Failed to list chars: %s", err)
-	}
-
-	descr, err := dev.GetDescriptorList()
-	if err != nil {
-		return fmt.Errorf("Failed to list descr: %s", err)
-	}
-
-	log.Infof("CHARS %++v", chars)
-	log.Infof("DESCR %++v", descr)
-
+	log.Debug("Device connected")
 	return nil
 }

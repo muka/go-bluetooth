@@ -6,9 +6,10 @@ import (
 )
 
 //ReadValue read a value
-func (s *Char) ReadValue(options map[string]interface{}) ([]byte, *dbus.Error) {
+func (s *Descr) ReadValue(options map[string]interface{}) ([]byte, *dbus.Error) {
 
-	log.Debug("Characteristic.ReadValue")
+	log.Trace("Descr.ReadValue")
+
 	if s.readCallback != nil {
 		b, err := s.readCallback(s, options)
 		if err != nil {
@@ -21,9 +22,9 @@ func (s *Char) ReadValue(options map[string]interface{}) ([]byte, *dbus.Error) {
 }
 
 //WriteValue write a value
-func (s *Char) WriteValue(value []byte, options map[string]interface{}) *dbus.Error {
+func (s *Descr) WriteValue(value []byte, options map[string]interface{}) *dbus.Error {
 
-	log.Trace("Characteristic.WriteValue")
+	log.Trace("Descr.WriteValue")
 
 	val := value
 	if s.writeCallback != nil {

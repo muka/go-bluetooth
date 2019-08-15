@@ -6,11 +6,21 @@ import (
 	"github.com/muka/go-bluetooth/bluez/profile/gatt"
 )
 
+type DescrReadCallback func(c *Descr, options map[string]interface{}) ([]byte, error)
+type DescrWriteCallback func(c *Descr, value []byte) ([]byte, error)
+
 type Descr struct {
-	app    *App
-	path   dbus.ObjectPath
-	props  *gatt.GattDescriptor1Properties
-	iprops *DBusProperties
+	ID   int
+	app  *App
+	char *Char
+
+	path dbus.ObjectPath
+
+	Properties *gatt.GattDescriptor1Properties
+	iprops     *DBusProperties
+
+	readCallback  DescrReadCallback
+	writeCallback DescrWriteCallback
 }
 
 func (s *Descr) DBusProperties() *DBusProperties {
@@ -21,12 +31,17 @@ func (s *Descr) Path() dbus.ObjectPath {
 	return s.path
 }
 
+func (s *Descr) Char() *Char {
+	return s.char
+}
+
 func (s *Descr) Interface() string {
 	return gatt.GattDescriptor1Interface
 }
 
-func (s *Descr) Properties() bluez.Properties {
-	return s.props
+func (s *Descr) GetProperties() bluez.Properties {
+	s.Properties.Characteristic = s.char.Path()
+	return s.Properties
 }
 
 func (s *Descr) App() *App {

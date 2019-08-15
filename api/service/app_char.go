@@ -6,18 +6,22 @@ import (
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile/gatt"
+	log "github.com/sirupsen/logrus"
 )
 
 type CharReadCallback func(c *Char, options map[string]interface{}) ([]byte, error)
 type CharWriteCallback func(c *Char, value []byte) ([]byte, error)
 
 type Char struct {
-	app   *App
+	ID      int
+	app     *App
+	service *Service
+
 	path  dbus.ObjectPath
 	descr map[dbus.ObjectPath]*Descr
 
-	props  *gatt.GattCharacteristic1Properties
-	iprops *DBusProperties
+	Properties *gatt.GattCharacteristic1Properties
+	iprops     *DBusProperties
 
 	readCallback  CharReadCallback
 	writeCallback CharWriteCallback
@@ -35,8 +39,13 @@ func (s *Char) Interface() string {
 	return gatt.GattCharacteristic1Interface
 }
 
-func (s *Char) Properties() bluez.Properties {
-	return s.props
+func (s *Char) GetProperties() bluez.Properties {
+	pdescr := []dbus.ObjectPath{}
+	for p := range s.descr {
+		pdescr = append(pdescr, p)
+	}
+	s.Properties.Descriptors = pdescr
+	return s.Properties
 }
 
 func (c *Char) GetDescr() map[dbus.ObjectPath]*Descr {
@@ -45,6 +54,10 @@ func (c *Char) GetDescr() map[dbus.ObjectPath]*Descr {
 
 func (c *Char) App() *App {
 	return c.app
+}
+
+func (c *Char) Service() *Service {
+	return c.service
 }
 
 func (s *Char) RemoveDescr(descr *Descr) error {
@@ -74,15 +87,21 @@ func (s *Char) Remove() error {
 }
 
 // Init new descr
-func (s *Char) NewDescr(uuid string) (*Descr, error) {
+func (s *Char) NewDescr() (*Descr, error) {
 
 	descr := new(Descr)
+	descr.ID = s.ID + len(s.descr) + 10
+
+	baseUUID := "%08x" + s.Properties.UUID[8:]
+	uuid := fmt.Sprintf(baseUUID, descr.ID)
+
 	descr.app = s.App()
-	descr.props = NewGattDescriptor1Properties(uuid)
+	descr.char = s
+	descr.Properties = NewGattDescriptor1Properties(uuid)
 	descr.path = dbus.ObjectPath(
 		fmt.Sprintf("%s/descr%d", s.Path(), len(s.GetDescr())),
 	)
-	iprops, err := NewDBusProperties()
+	iprops, err := NewDBusProperties(s.App().DBusConn())
 	if err != nil {
 		return nil, err
 	}
@@ -101,6 +120,8 @@ func (s *Char) AddDescr(descr *Descr) error {
 
 	s.descr[descr.Path()] = descr
 
+	log.Tracef("Added GATT Descriptor ID=%d %s", descr.ID, descr.Properties.UUID)
+
 	return nil
 }
 
@@ -114,4 +135,16 @@ func (s *Char) OnRead(fx CharReadCallback) *Char {
 func (s *Char) OnWrite(fx CharWriteCallback) *Char {
 	s.writeCallback = fx
 	return s
+}
+
+// start notification session
+func (s *Char) StartNotify() *dbus.Error {
+	log.Debug("Char.StartNotify")
+	return nil
+}
+
+// stop notification session
+func (s *Char) StopNotify() *dbus.Error {
+	log.Debug("Char.StopNotify")
+	return nil
 }

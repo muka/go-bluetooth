@@ -24,7 +24,27 @@ var serviceCmd = &cobra.Command{
 	Short: "A service / client example",
 	Long:  ``,
 	Run: func(cmd *cobra.Command, args []string) {
-		fail(service_example.Run())
+
+		adapterID, err := cmd.Flags().GetString("adapterID")
+		if err != nil {
+			fail(err)
+		}
+
+		if len(args) < 1 {
+			failArgs([]string{"mode [server|client]"})
+		}
+
+		if args[0] == "client" {
+			if len(args) < 2 {
+				failArgs([]string{
+					"please specify the adapter HW address that expose the service (eg. using hciconfig)",
+				})
+			}
+		} else {
+			args = append(args, "")
+		}
+
+		fail(service_example.Run(adapterID, args[0], args[1]))
 	},
 }
 

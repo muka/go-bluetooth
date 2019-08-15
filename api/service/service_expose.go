@@ -10,7 +10,7 @@ import (
 type ExposedDBusService interface {
 	Path() dbus.ObjectPath
 	Interface() string
-	Properties() bluez.Properties
+	GetProperties() bluez.Properties
 	App() *App
 	DBusProperties() *DBusProperties
 }
@@ -47,7 +47,7 @@ func ExposeDBusService(s ExposedDBusService) error {
 		return err
 	}
 
-	err = s.DBusProperties().AddProperties(s.Interface(), s.Properties())
+	err = s.DBusProperties().AddProperties(s.Interface(), s.GetProperties())
 	if err != nil {
 		return err
 	}

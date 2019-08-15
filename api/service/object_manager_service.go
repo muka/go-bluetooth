@@ -10,12 +10,7 @@ import (
 )
 
 // NewObjectManager create a new instance
-func NewObjectManager() (*ObjectManager, error) {
-
-	conn, err := dbus.SystemBus()
-	if err != nil {
-		return nil, err
-	}
+func NewObjectManager(conn *dbus.Conn) (*ObjectManager, error) {
 
 	o := &ObjectManager{
 		conn:    conn,

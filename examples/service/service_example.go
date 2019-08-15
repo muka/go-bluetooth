@@ -2,18 +2,10 @@ package service_example
 
 import (
 	"os"
+	"time"
 
 	"github.com/muka/go-bluetooth/api/service"
 	log "github.com/sirupsen/logrus"
-)
-
-const (
-	serviceAdapterID = "hci0"
-	clientAdapterID  = "hci1"
-
-	objectName      = "org.bluez"
-	objectPath      = "/go_bluetooth/service"
-	agentObjectPath = "/go_bluetooth/agent"
 )
 
 func fail(where string, err error) {
@@ -23,55 +15,74 @@ func fail(where string, err error) {
 	}
 }
 
-func Run(mode string, adapterID string) error {
+func Run(adapterID string, mode string, hwaddr string) error {
+
+	log.SetLevel(log.TraceLevel)
 
 	if mode == "client" {
-		log.Error("client mode todo")
+		return client(adapterID, hwaddr)
 	} else {
+		return serve(adapterID)
+	}
+}
 
-		a, err := service.NewApp(adapterID)
+func serve(adapterID string) error {
 
-		cancel, err := a.Run()
-		if err != nil {
-			return err
-		}
+	a, err := service.NewApp(adapterID)
+	if err != nil {
+		return err
+	}
+	defer a.Close()
 
-		defer cancel()
+	a.SetName("go_bluetooth")
 
-		return nil
+	service1, err := a.NewService()
+	if err != nil {
+		return err
 	}
 
-	// log.Warn("***\nThis example assume two controller are available: hci0 and hci1\n***")
-	//
-	// var err error
-	//
-	// log.Info("Register agent")
-	// agent, err := createAgent()
-	// fail("createAgent", err)
-	//
-	// defer agent.Release()
-	//
-	// log.Info("Register app")
-	// app, err := registerApplication(serviceAdapterID)
-	// fail("registerApplication", err)
-	//
-	// defer app.StopAdvertising()
+	char1, err := service1.NewChar()
+	if err != nil {
+		return err
+	}
 
-	// adapterProps, err := app.GetAdapter().GetProperties()
-	// fail("GetProperties", err)
+	char1.OnRead(service.CharReadCallback(func(c *service.Char, options map[string]interface{}) ([]byte, error) {
+		log.Warnf("GOT READ REQUEST")
+		return []byte{42}, nil
+	}))
+	char1.OnWrite(service.CharWriteCallback(func(c *service.Char, value []byte) ([]byte, error) {
+		log.Warnf("GOT WRITE REQUEST")
+		return value, nil
+	}))
 
-	// hwaddr := adapterProps.Address
-	//
-	// var serviceID string
-	// for _, service := range app.GetServices() {
-	// 	serviceID = service.GetProperties().UUID
-	// 	break
-	// }
-	//
-	// time.Sleep(time.Millisecond * 2500)
+	err = service1.AddChar(char1)
+	if err != nil {
+		return err
+	}
 
-	// err = createClient(clientAdapterID, hwaddr, serviceID)
-	// fail("createClient", err)
+	err = a.AddService(service1)
+	if err != nil {
+		return err
+	}
 
-	select {}
+	log.Infof("Exposed service %s", service1.Properties.UUID)
+
+	timeout := uint32(6 * 3600) // 6h
+	log.Infof("Advertising for %ds...", timeout)
+	cancel, err := a.Advertise(timeout)
+	if err != nil {
+		return err
+	}
+
+	defer cancel()
+
+	wait := make(chan bool)
+	go func() {
+		time.Sleep(time.Duration(timeout) * time.Second)
+		wait <- true
+	}()
+
+	<-wait
+
+	return nil
 }

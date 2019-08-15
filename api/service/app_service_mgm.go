@@ -13,19 +13,28 @@ func (app *App) GetServices() map[dbus.ObjectPath]*Service {
 	return app.services
 }
 
-func (app *App) NewService(uuid string) (*Service, error) {
-
-	if len(uuid) == 4 {
-		uuid = fmt.Sprintf(DefaultUUID, uuid)
-		log.Warnf("Using default UUID as base: %s", uuid)
-	}
+func (app *App) NewService() (*Service, error) {
 
 	s := new(Service)
-	s.chars = make(map[dbus.ObjectPath]*Char)
-	s.path = dbus.ObjectPath(fmt.Sprintf("%s/service_%s", app.Path(), strings.Replace(uuid, "-", "_", -1)))
-	s.props = NewGattService1Properties(uuid)
+	s.ID = len(app.services) + 1000
 
-	iprops, err := NewDBusProperties()
+	if app.baseUUID == "" {
+		rndUUID, err := RandomUUID()
+		if err != nil {
+			return nil, err
+		}
+		app.baseUUID = "%08x" + rndUUID[8:]
+		log.Warnf("Base UUID: %s", rndUUID)
+	}
+
+	uuid := fmt.Sprintf(app.baseUUID, s.ID)
+
+	s.app = app
+	s.chars = make(map[dbus.ObjectPath]*Char)
+	s.path = dbus.ObjectPath(fmt.Sprintf("%s/service_%s", app.Path(), strings.Replace(uuid, "-", "_", -1)[:8]))
+	s.Properties = NewGattService1Properties(uuid)
+
+	iprops, err := NewDBusProperties(s.App().DBusConn())
 	if err != nil {
 		return nil, err
 	}
@@ -48,12 +57,14 @@ func (app *App) AddService(s *Service) error {
 		return err
 	}
 
-	err = app.objectManager.AddObject(s.Path(), map[string]bluez.Properties{
-		s.Interface(): s.Properties(),
+	err = app.ObjectManager().AddObject(s.Path(), map[string]bluez.Properties{
+		s.Interface(): s.GetProperties(),
 	})
 	if err != nil {
 		return err
 	}
+
+	log.Tracef("Added GATT Service ID=%d %s", s.ID, s.Properties.UUID)
 
 	return nil
 }
