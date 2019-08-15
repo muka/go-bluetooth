@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/godbus/dbus"
+	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez"
 	log "github.com/sirupsen/logrus"
 )
@@ -34,7 +35,7 @@ func (app *App) NewService() (*Service, error) {
 	s.path = dbus.ObjectPath(fmt.Sprintf("%s/service_%s", app.Path(), strings.Replace(uuid, "-", "_", -1)[:8]))
 	s.Properties = NewGattService1Properties(uuid)
 
-	iprops, err := NewDBusProperties(s.App().DBusConn())
+	iprops, err := api.NewDBusProperties(s.App().DBusConn())
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +83,7 @@ func (app *App) RemoveService(service *Service) error {
 		}
 	}
 
-	err := RemoveDBusService(service)
+	err := api.RemoveDBusService(service)
 	if err != nil {
 		return err
 	}

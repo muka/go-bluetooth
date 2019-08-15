@@ -1,4 +1,4 @@
-package service
+package api
 
 import (
 	"github.com/godbus/dbus"
@@ -18,11 +18,6 @@ type ExposedDBusService interface {
 	// ExportTree() error
 }
 
-type AppService interface {
-	App() *App
-	Path() dbus.ObjectPath
-}
-
 func RemoveDBusService(s ExposedDBusService) error {
 
 	err := s.DBusObjectManager().RemoveObject(s.Path())
@@ -38,11 +33,18 @@ func RemoveDBusService(s ExposedDBusService) error {
 	return nil
 }
 
-func ExposeDBusService(s ExposedDBusService) error {
+func ExposeDBusService(s ExposedDBusService) (err error) {
 
 	conn := s.Conn()
 
-	err := conn.Export(s, s.Path(), s.Interface())
+	if conn == nil {
+		conn, err = dbus.SystemBus()
+		if err != nil {
+			return err
+		}
+	}
+
+	err = conn.Export(s, s.Path(), s.Interface())
 	if err != nil {
 		return err
 	}

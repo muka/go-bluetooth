@@ -2,6 +2,7 @@ package service
 
 import (
 	"github.com/godbus/dbus"
+	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile/gatt"
 )
@@ -17,17 +18,17 @@ type Descr struct {
 	path dbus.ObjectPath
 
 	Properties *gatt.GattDescriptor1Properties
-	iprops     *DBusProperties
+	iprops     *api.DBusProperties
 
 	readCallback  DescrReadCallback
 	writeCallback DescrWriteCallback
 }
 
-func (s *Descr) DBusProperties() *DBusProperties {
+func (s *Descr) DBusProperties() *api.DBusProperties {
 	return s.iprops
 }
 
-func (s *Descr) DBusObjectManager() *DBusObjectManager {
+func (s *Descr) DBusObjectManager() *api.DBusObjectManager {
 	return s.App().DBusObjectManager()
 }
 
@@ -58,10 +59,10 @@ func (s *Descr) App() *App {
 
 // Expose descr to dbus
 func (s *Descr) Expose() error {
-	return ExposeDBusService(s)
+	return api.ExposeDBusService(s)
 }
 
 // Remove descr from dbus
 func (s *Descr) Remove() error {
-	return RemoveDBusService(s)
+	return api.RemoveDBusService(s)
 }

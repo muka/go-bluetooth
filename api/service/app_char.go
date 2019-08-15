@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/godbus/dbus"
+	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile/gatt"
 	log "github.com/sirupsen/logrus"
@@ -21,7 +22,7 @@ type Char struct {
 	descr map[dbus.ObjectPath]*Descr
 
 	Properties *gatt.GattCharacteristic1Properties
-	iprops     *DBusProperties
+	iprops     *api.DBusProperties
 
 	readCallback  CharReadCallback
 	writeCallback CharWriteCallback
@@ -31,7 +32,7 @@ func (s *Char) Path() dbus.ObjectPath {
 	return s.path
 }
 
-func (s *Char) DBusProperties() *DBusProperties {
+func (s *Char) DBusProperties() *api.DBusProperties {
 	return s.iprops
 }
 
@@ -61,7 +62,7 @@ func (c *Char) Service() *Service {
 	return c.service
 }
 
-func (s *Char) DBusObjectManager() *DBusObjectManager {
+func (s *Char) DBusObjectManager() *api.DBusObjectManager {
 	return s.App().DBusObjectManager()
 }
 
@@ -87,12 +88,12 @@ func (s *Char) RemoveDescr(descr *Descr) error {
 
 // Expose char to dbus
 func (s *Char) Expose() error {
-	return ExposeDBusService(s)
+	return api.ExposeDBusService(s)
 }
 
 // Remove char from dbus
 func (s *Char) Remove() error {
-	return RemoveDBusService(s)
+	return api.RemoveDBusService(s)
 }
 
 // Init new descr
@@ -110,7 +111,7 @@ func (s *Char) NewDescr() (*Descr, error) {
 	descr.path = dbus.ObjectPath(
 		fmt.Sprintf("%s/descr%d", s.Path(), len(s.GetDescr())),
 	)
-	iprops, err := NewDBusProperties(s.App().DBusConn())
+	iprops, err := api.NewDBusProperties(s.App().DBusConn())
 	if err != nil {
 		return nil, err
 	}
@@ -122,7 +123,7 @@ func (s *Char) NewDescr() (*Descr, error) {
 // Add descr to dbus
 func (s *Char) AddDescr(descr *Descr) error {
 
-	err := ExposeDBusService(descr)
+	err := api.ExposeDBusService(descr)
 	if err != nil {
 		return err
 	}

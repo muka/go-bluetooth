@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/godbus/dbus"
+	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile/gatt"
 	log "github.com/sirupsen/logrus"
@@ -15,10 +16,10 @@ type Service struct {
 	path       dbus.ObjectPath
 	Properties *gatt.GattService1Properties
 	chars      map[dbus.ObjectPath]*Char
-	iprops     *DBusProperties
+	iprops     *api.DBusProperties
 }
 
-func (s *Service) DBusProperties() *DBusProperties {
+func (s *Service) DBusProperties() *api.DBusProperties {
 	return s.iprops
 }
 
@@ -47,7 +48,7 @@ func (s *Service) App() *App {
 	return s.app
 }
 
-func (s *Service) DBusObjectManager() *DBusObjectManager {
+func (s *Service) DBusObjectManager() *api.DBusObjectManager {
 	return s.App().DBusObjectManager()
 }
 
@@ -57,12 +58,12 @@ func (s *Service) Conn() *dbus.Conn {
 
 // Expose service to dbus
 func (s *Service) Expose() error {
-	return ExposeDBusService(s)
+	return api.ExposeDBusService(s)
 }
 
 // Remove service from dbus
 func (s *Service) Remove() error {
-	return RemoveDBusService(s)
+	return api.RemoveDBusService(s)
 }
 
 func (s *Service) GetChars() map[dbus.ObjectPath]*Char {
@@ -86,7 +87,7 @@ func (s *Service) NewChar() (*Char, error) {
 	char.descr = make(map[dbus.ObjectPath]*Descr)
 	char.Properties = NewGattCharacteristic1Properties(uuid)
 
-	iprops, err := NewDBusProperties(s.App().DBusConn())
+	iprops, err := api.NewDBusProperties(s.App().DBusConn())
 	if err != nil {
 		return nil, err
 	}
@@ -99,7 +100,7 @@ func (s *Service) AddChar(char *Char) error {
 
 	s.chars[char.Path()] = char
 
-	err := ExposeDBusService(char)
+	err := api.ExposeDBusService(char)
 	if err != nil {
 		return err
 	}

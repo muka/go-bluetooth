@@ -7,6 +7,7 @@ import (
 	"github.com/godbus/dbus"
 	"github.com/godbus/dbus/introspect"
 	"github.com/google/uuid"
+	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile/adapter"
 	"github.com/muka/go-bluetooth/bluez/profile/advertising"
@@ -61,7 +62,7 @@ type App struct {
 	adapterID     string
 	conn          *dbus.Conn
 	agent         agent.Agent1Client
-	objectManager *DBusObjectManager
+	objectManager *api.DBusObjectManager
 	adapter       *adapter.Adapter1
 	services      map[dbus.ObjectPath]*Service
 	advertisement *advertising.LEAdvertisement1Properties
@@ -78,7 +79,7 @@ func (app *App) DBusConn() *dbus.Conn {
 	return app.conn
 }
 
-func (app *App) DBusObjectManager() *DBusObjectManager {
+func (app *App) DBusObjectManager() *api.DBusObjectManager {
 	return app.objectManager
 }
 
@@ -112,7 +113,7 @@ func (app *App) init() error {
 	app.conn = conn
 
 	log.Trace("Create object manager")
-	om, err := NewDBusObjectManager(app.DBusConn())
+	om, err := api.NewDBusObjectManager(app.DBusConn())
 	if err != nil {
 		return err
 	}
