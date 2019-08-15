@@ -11,8 +11,11 @@ import (
 	"github.com/muka/go-bluetooth/bluez/profile/adapter"
 	"github.com/muka/go-bluetooth/bluez/profile/advertising"
 	"github.com/muka/go-bluetooth/bluez/profile/agent"
+	"github.com/muka/go-bluetooth/bluez/profile/gatt"
 	log "github.com/sirupsen/logrus"
 )
+
+var AppPath = "/org/bluez/%s/app%d"
 
 var UseRandomUUID = false
 
@@ -37,7 +40,7 @@ func NewApp(adapterID string) (*App, error) {
 	app.services = make(map[dbus.ObjectPath]*Service)
 	app.path = dbus.ObjectPath(
 		fmt.Sprintf(
-			"/org/bluez/%s/app%d",
+			AppPath,
 			app.adapterID,
 			appCounter,
 		),
@@ -58,10 +61,11 @@ type App struct {
 	adapterID     string
 	conn          *dbus.Conn
 	agent         agent.Agent1Client
-	objectManager *ObjectManager
+	objectManager *DBusObjectManager
 	adapter       *adapter.Adapter1
 	services      map[dbus.ObjectPath]*Service
 	advertisement *advertising.LEAdvertisement1Properties
+	gm            *gatt.GattManager1
 }
 
 // return the app dbus path
@@ -74,7 +78,7 @@ func (app *App) DBusConn() *dbus.Conn {
 	return app.conn
 }
 
-func (app *App) ObjectManager() *ObjectManager {
+func (app *App) DBusObjectManager() *DBusObjectManager {
 	return app.objectManager
 }
 
@@ -82,8 +86,9 @@ func (app *App) SetName(name string) {
 	app.advertisement.LocalName = name
 }
 
-// Start the app
 func (app *App) init() error {
+
+	log.Tracef("Exposing %s", app.Path())
 
 	log.Trace("Load adapter")
 	a, err := adapter.NewAdapter1FromAdapterID(app.adapterID)
@@ -106,12 +111,19 @@ func (app *App) init() error {
 	}
 	app.conn = conn
 
-	log.Trace("Register object manager")
-	om, err := NewObjectManager(app.DBusConn())
+	log.Trace("Create object manager")
+	om, err := NewDBusObjectManager(app.DBusConn())
 	if err != nil {
 		return err
 	}
 	app.objectManager = om
+
+	return nil
+}
+
+func (app *App) Run() (err error) {
+
+	conn := app.DBusConn()
 
 	_, err = conn.RequestName(
 		"org.bluez",
@@ -121,15 +133,26 @@ func (app *App) init() error {
 		return err
 	}
 
-	log.Tracef("Exposing %s", app.Path())
-
-	// / path
+	log.Trace("Exposing Object Manager")
 	err = conn.Export(app.objectManager, app.Path(), bluez.ObjectManagerInterface)
 	if err != nil {
 		return err
 	}
 
-	err = app.exportTree()
+	log.Trace("Exposing tree")
+	err = app.ExportTree()
+	if err != nil {
+		return err
+	}
+
+	gm, err := gatt.NewGattManager1FromAdapterID(app.adapterID)
+	if err != nil {
+		return err
+	}
+	app.gm = gm
+
+	options := map[string]interface{}{}
+	err = gm.RegisterApplication(app.Path(), options)
 	if err != nil {
 		return err
 	}
@@ -138,13 +161,21 @@ func (app *App) init() error {
 }
 
 func (app *App) Close() {
-	err := app.agent.Release()
-	if err != nil {
-		log.Warnf("agent1.Release: %s", err)
+	if app.agent != nil {
+		err := app.agent.Release()
+		if err != nil {
+			log.Warnf("Agent1.Release: %s", err)
+		}
+	}
+	if app.gm != nil {
+		err1 := app.gm.UnregisterApplication(app.Path())
+		if err1 != nil {
+			log.Warnf("GattManager1.UnregisterApplication: %s", err1)
+		}
 	}
 }
 
-func (app *App) exportTree() error {
+func (app *App) ExportTree() error {
 
 	childrenNode := make([]introspect.Node, 0)
 
@@ -175,9 +206,7 @@ func (app *App) exportTree() error {
 		Children: childrenNode,
 	}
 
-	// log.Tracef("Exposing XML Tree on %s: \n\n%s", app.Path(), *node)
-
-	err := app.conn.ExportSubtree(
+	err := app.conn.Export(
 		introspect.NewIntrospectable(node),
 		app.Path(),
 		"org.freedesktop.DBus.Introspectable")

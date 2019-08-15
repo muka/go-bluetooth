@@ -40,11 +40,12 @@ func (s *Char) Interface() string {
 }
 
 func (s *Char) GetProperties() bluez.Properties {
-	pdescr := []dbus.ObjectPath{}
-	for p := range s.descr {
-		pdescr = append(pdescr, p)
+	descr := []dbus.ObjectPath{}
+	for dpath := range s.descr {
+		descr = append(descr, dpath)
 	}
-	s.Properties.Descriptors = pdescr
+	s.Properties.Descriptors = descr
+	s.Properties.Service = s.Service().Path()
 	return s.Properties
 }
 
@@ -58,6 +59,14 @@ func (c *Char) App() *App {
 
 func (c *Char) Service() *Service {
 	return c.service
+}
+
+func (s *Char) DBusObjectManager() *DBusObjectManager {
+	return s.App().DBusObjectManager()
+}
+
+func (s *Char) Conn() *dbus.Conn {
+	return s.App().DBusConn()
 }
 
 func (s *Char) RemoveDescr(descr *Descr) error {
@@ -120,7 +129,7 @@ func (s *Char) AddDescr(descr *Descr) error {
 
 	s.descr[descr.Path()] = descr
 
-	log.Tracef("Added GATT Descriptor ID=%d %s", descr.ID, descr.Properties.UUID)
+	log.Tracef("Added GATT Descriptor ID=%d %s", descr.ID, descr.Path())
 
 	return nil
 }

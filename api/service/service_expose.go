@@ -11,8 +11,11 @@ type ExposedDBusService interface {
 	Path() dbus.ObjectPath
 	Interface() string
 	GetProperties() bluez.Properties
-	App() *App
+	// App() *App
 	DBusProperties() *DBusProperties
+	DBusObjectManager() *DBusObjectManager
+	Conn() *dbus.Conn
+	// ExportTree() error
 }
 
 type AppService interface {
@@ -22,27 +25,24 @@ type AppService interface {
 
 func RemoveDBusService(s ExposedDBusService) error {
 
-	err := s.App().ObjectManager().RemoveObject(s.Path())
+	err := s.DBusObjectManager().RemoveObject(s.Path())
 	if err != nil {
 		return err
 	}
 
-	err = s.App().exportTree()
-	if err != nil {
-		return err
-	}
+	// err = s.ExportTree()
+	// if err != nil {
+	// 	return err
+	// }
 
 	return nil
 }
 
 func ExposeDBusService(s ExposedDBusService) error {
 
-	conn, err := dbus.SystemBus()
-	if err != nil {
-		return err
-	}
+	conn := s.Conn()
 
-	err = conn.Export(s, s.Path(), s.Interface())
+	err := conn.Export(s, s.Path(), s.Interface())
 	if err != nil {
 		return err
 	}
@@ -68,12 +68,11 @@ func ExposeDBusService(s ExposedDBusService) error {
 		},
 	}
 
-	// fmt.Printf("ExposeService\n\n%++v\n\n", propInterface.Introspection(s.Interface()))
-
 	err = conn.Export(
 		introspect.NewIntrospectable(node),
 		s.Path(),
-		"org.freedesktop.DBus.Introspectable")
+		"org.freedesktop.DBus.Introspectable",
+	)
 	if err != nil {
 		return err
 	}

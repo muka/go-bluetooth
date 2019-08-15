@@ -55,4 +55,9 @@ func TestApp(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	err = a.Run()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 }

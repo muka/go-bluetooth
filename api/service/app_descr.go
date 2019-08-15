@@ -27,6 +27,14 @@ func (s *Descr) DBusProperties() *DBusProperties {
 	return s.iprops
 }
 
+func (s *Descr) DBusObjectManager() *DBusObjectManager {
+	return s.App().DBusObjectManager()
+}
+
+func (s *Descr) Conn() *dbus.Conn {
+	return s.App().DBusConn()
+}
+
 func (s *Descr) Path() dbus.ObjectPath {
 	return s.path
 }

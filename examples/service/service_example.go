@@ -65,6 +65,11 @@ func serve(adapterID string) error {
 		return err
 	}
 
+	err = a.Run()
+	if err != nil {
+		return err
+	}
+
 	log.Infof("Exposed service %s", service1.Properties.UUID)
 
 	timeout := uint32(6 * 3600) // 6h

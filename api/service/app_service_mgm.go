@@ -52,19 +52,19 @@ func (app *App) AddService(s *Service) error {
 		return err
 	}
 
-	err = app.exportTree()
-	if err != nil {
-		return err
-	}
+	// err = app.ExportTree()
+	// if err != nil {
+	// 	return err
+	// }
 
-	err = app.ObjectManager().AddObject(s.Path(), map[string]bluez.Properties{
+	err = app.DBusObjectManager().AddObject(s.Path(), map[string]bluez.Properties{
 		s.Interface(): s.GetProperties(),
 	})
 	if err != nil {
 		return err
 	}
 
-	log.Tracef("Added GATT Service ID=%d %s", s.ID, s.Properties.UUID)
+	log.Tracef("Added GATT Service ID=%d %s", s.ID, s.Path())
 
 	return nil
 }

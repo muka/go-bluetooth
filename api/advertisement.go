@@ -5,7 +5,6 @@ import (
 
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez/profile/advertising"
-	"github.com/muka/go-bluetooth/service"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -40,19 +39,7 @@ func ExposeAdvertisement(adapterID string, props *advertising.LEAdvertisement1Pr
 		return nil, err
 	}
 
-	log.Trace("Creating LEAdvertisement1 instance")
-	config, err := service.NewLEAdvertisement1Config(nextAdvertismentPath(), conn)
-	if err != nil {
-		return nil, err
-	}
-
-	adv, err := service.NewLEAdvertisement1(config, props)
-	if err != nil {
-		return nil, err
-	}
-
-	log.Trace("Exposing LEAdvertisement1 instance")
-	err = adv.Expose()
+	adv, err := advertising.NewLEAdvertisement1(nextAdvertismentPath())
 	if err != nil {
 		return nil, err
 	}

@@ -9,10 +9,10 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// NewObjectManager create a new instance
-func NewObjectManager(conn *dbus.Conn) (*ObjectManager, error) {
+// NewDBusObjectManager create a new instance
+func NewDBusObjectManager(conn *dbus.Conn) (*DBusObjectManager, error) {
 
-	o := &ObjectManager{
+	o := &DBusObjectManager{
 		conn:    conn,
 		objects: make(map[dbus.ObjectPath]map[string]bluez.Properties),
 	}
@@ -20,14 +20,14 @@ func NewObjectManager(conn *dbus.Conn) (*ObjectManager, error) {
 	return o, nil
 }
 
-// ObjectManager interface implementation
-type ObjectManager struct {
+// DBusObjectManager interface implementation
+type DBusObjectManager struct {
 	conn    *dbus.Conn
 	objects map[dbus.ObjectPath]map[string]bluez.Properties
 }
 
 // SignalAdded notify of interfaces being added
-func (o *ObjectManager) SignalAdded(path dbus.ObjectPath) error {
+func (o *DBusObjectManager) SignalAdded(path dbus.ObjectPath) error {
 
 	props, err := o.GetManagedObject(path)
 	if err != nil {
@@ -38,7 +38,7 @@ func (o *ObjectManager) SignalAdded(path dbus.ObjectPath) error {
 }
 
 // SignalRemoved notify of interfaces being removed
-func (o *ObjectManager) SignalRemoved(path dbus.ObjectPath, ifaces []string) error {
+func (o *DBusObjectManager) SignalRemoved(path dbus.ObjectPath, ifaces []string) error {
 	if ifaces == nil {
 		ifaces = make([]string, 0)
 	}
@@ -46,7 +46,7 @@ func (o *ObjectManager) SignalRemoved(path dbus.ObjectPath, ifaces []string) err
 }
 
 // GetManagedObject return an up to date view of a single object state
-func (o *ObjectManager) GetManagedObject(objpath dbus.ObjectPath) (map[string]map[string]dbus.Variant, error) {
+func (o *DBusObjectManager) GetManagedObject(objpath dbus.ObjectPath) (map[string]map[string]dbus.Variant, error) {
 	props, err := o.GetManagedObjects()
 	if err != nil {
 		return nil, err
@@ -58,7 +58,7 @@ func (o *ObjectManager) GetManagedObject(objpath dbus.ObjectPath) (map[string]ma
 }
 
 // GetManagedObjects return an up to date view of the object state
-func (o *ObjectManager) GetManagedObjects() (map[dbus.ObjectPath]map[string]map[string]dbus.Variant, *dbus.Error) {
+func (o *DBusObjectManager) GetManagedObjects() (map[dbus.ObjectPath]map[string]map[string]dbus.Variant, *dbus.Error) {
 
 	props := make(map[dbus.ObjectPath]map[string]map[string]dbus.Variant)
 	for path, ifs := range o.objects {
@@ -85,13 +85,13 @@ func (o *ObjectManager) GetManagedObjects() (map[dbus.ObjectPath]map[string]map[
 }
 
 //AddObject add an object to the list
-func (o *ObjectManager) AddObject(path dbus.ObjectPath, val map[string]bluez.Properties) error {
+func (o *DBusObjectManager) AddObject(path dbus.ObjectPath, val map[string]bluez.Properties) error {
 	o.objects[path] = val
 	return o.SignalAdded(path)
 }
 
 //RemoveObject remove an object from the list
-func (o *ObjectManager) RemoveObject(path dbus.ObjectPath) error {
+func (o *DBusObjectManager) RemoveObject(path dbus.ObjectPath) error {
 	if s, ok := o.objects[path]; ok {
 		delete(o.objects, path)
 		ifaces := make([]string, len(s))

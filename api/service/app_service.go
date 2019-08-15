@@ -31,11 +31,28 @@ func (s *Service) Interface() string {
 }
 
 func (s *Service) GetProperties() bluez.Properties {
+
+	chars := []dbus.ObjectPath{}
+	for cpath := range s.chars {
+		chars = append(chars, cpath)
+	}
+	s.Properties.Characteristics = chars
+
+	// s.Properties.Includes = append(s.Properties.Includes, "")
+
 	return s.Properties
 }
 
 func (s *Service) App() *App {
 	return s.app
+}
+
+func (s *Service) DBusObjectManager() *DBusObjectManager {
+	return s.App().DBusObjectManager()
+}
+
+func (s *Service) Conn() *dbus.Conn {
+	return s.App().DBusConn()
 }
 
 // Expose service to dbus
@@ -87,7 +104,7 @@ func (s *Service) AddChar(char *Char) error {
 		return err
 	}
 
-	log.Tracef("Added GATT Characteristic ID=%d %s", char.ID, char.Properties.UUID)
+	log.Tracef("Added GATT Characteristic ID=%d %s", char.ID, char.Path())
 
 	return nil
 }
@@ -105,15 +122,15 @@ func (s *Service) RemoveChar(char *Char) error {
 	}
 
 	// remove the char from the three
-	err := s.app.objectManager.RemoveObject(s.Path())
+	err := s.DBusObjectManager().RemoveObject(s.Path())
 	if err != nil {
 		return err
 	}
 
-	err = s.app.exportTree()
-	if err != nil {
-		return err
-	}
+	// err = s.ExportTree()
+	// if err != nil {
+	// 	return err
+	// }
 
 	delete(s.chars, char.Path())
 
