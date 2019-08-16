@@ -34,10 +34,55 @@ type DBusProperties struct {
 	instance    *prop.Properties
 }
 
-func (p *DBusProperties) parseTag(conf *prop.Prop, tag string) {
+func (p *DBusProperties) parseTag(t *structs.Struct, field *structs.Field, conf *prop.Prop, tag string) bool {
+
 	parts := strings.Split(tag, ",")
 	for i := 0; i < len(parts); i++ {
-		switch parts[i] {
+
+		tagKey := parts[i]
+		tagValue := ""
+		if strings.Contains(parts[i], "=") {
+			subpts := strings.Split(parts[i], "=")
+			tagKey = subpts[0]
+			tagValue = strings.Join(subpts[1:], "=")
+		}
+
+		if tagKey == "ignore" {
+			if tagValue == "" {
+				return true
+			} else {
+
+				checkField, ok := t.FieldOk(tagValue)
+				if !ok {
+					log.Warnf("%s: field not found,  is it avaialable?", tagValue)
+					return false
+				}
+				if !checkField.IsExported() {
+					log.Warnf("%s: field must be exported. (add a tag `ignore` to avoid exposing it as property)", tagValue)
+					return false
+				}
+
+				varKind := checkField.Kind()
+				if varKind != reflect.Bool {
+					log.Warnf("%s: ignore tag expect a bool property to check, %s given", tagValue, varKind)
+					return false
+				}
+
+				if checkField.Value().(bool) {
+					return true
+				}
+			}
+		}
+
+		// check if empty
+		if tagKey == "omitEmpty" {
+			v := reflect.ValueOf(conf.Value)
+			if !v.IsValid() || isEmptyValue(v) {
+				return true
+			}
+		}
+
+		switch tagKey {
 		case "emit":
 			conf.Emit = prop.EmitTrue
 			conf.Writable = true
@@ -51,13 +96,15 @@ func (p *DBusProperties) parseTag(conf *prop.Prop, tag string) {
 			break
 		default:
 			t := reflect.TypeOf(p)
-			m, ok := t.MethodByName(parts[i])
+			m, ok := t.MethodByName(tagKey)
 			if ok {
 				conf.Writable = true
 				conf.Callback = m.Func.Interface().(func(*prop.Change) *dbus.Error)
 			}
 		}
 	}
+
+	return false
 }
 
 func (p *DBusProperties) parseProperties() error {
@@ -88,7 +135,11 @@ func (p *DBusProperties) parseProperties() error {
 
 			tag := field.Tag("dbus")
 			if tag != "" {
-				p.parseTag(propConf, tag)
+				skip := p.parseTag(t, field, propConf, tag)
+				// log.Printf("%t %s", skip, tag)
+				if skip {
+					continue
+				}
 			}
 
 			// log.Debugf("parseProperties: %s: `%s` %v", field.Name(), tag, propConf)
@@ -145,4 +196,24 @@ func (p *DBusProperties) RemoveProperties(iface string) {
 	if _, ok := p.propsConfig[iface]; ok {
 		delete(p.propsConfig, iface)
 	}
+}
+
+// check for empy value, from go encoding/json
+// https://github.com/golang/go/blob/master/src/encoding/json/encode.go#L318
+func isEmptyValue(v reflect.Value) bool {
+	switch v.Kind() {
+	case reflect.Array, reflect.Map, reflect.Slice, reflect.String:
+		return v.Len() == 0
+	case reflect.Bool:
+		return !v.Bool()
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return v.Int() == 0
+	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
+		return v.Uint() == 0
+	case reflect.Float32, reflect.Float64:
+		return v.Float() == 0
+	case reflect.Interface, reflect.Ptr:
+		return v.IsNil()
+	}
+	return false
 }
