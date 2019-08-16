@@ -58,34 +58,23 @@ type Device1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Class The Bluetooth class of device of the remote device.
+	Name The Bluetooth remote name. This value can not be
+			changed. Use the Alias property instead.
+
+			This value is only present for completeness. It is
+			better to always use the Alias property when
+			displaying the devices name.
+
+			If the Alias property is unset, it will reflect
+			this value which makes it more convenient.
 	*/
-	Class uint32
+	Name string
 
 	/*
-	Connected Indicates if the remote device is currently connected.
-			A PropertiesChanged signal indicate changes to this
-			status.
+	UUIDs List of 128-bit UUIDs that represents the available
+			remote services.
 	*/
-	Connected bool
-
-	/*
-	LegacyPairing Set to true if the device only supports the pre-2.1
-			pairing mechanism. This property is useful during
-			device discovery to anticipate whether legacy or
-			simple pairing will occur if pairing is initiated.
-
-			Note that this property can exhibit false-positives
-			in the case of Bluetooth 2.1 (or newer) devices that
-			have disabled Extended Inquiry Response support.
-	*/
-	LegacyPairing bool
-
-	/*
-	RSSI Received Signal Strength Indicator of the remote
-			device (inquiry or advertising).
-	*/
-	RSSI int16
+	UUIDs []string
 
 	/*
 	TxPower Advertised transmitted power level (inquiry or
@@ -100,27 +89,37 @@ type Device1Properties struct {
 	ServicesResolved bool
 
 	/*
-	AdvertisingFlags The Advertising Data Flags of the remote device.
-	*/
-	AdvertisingFlags []byte
+	AdvertisingData The Advertising Data of the remote device. Keys are
+			are 8 bits AD Type followed by data as byte array.
 
-	/*
-	Address The Bluetooth device address of the remote device.
-	*/
-	Address string
+			Note: Only types considered safe to be handled by
+			application are exposed.
 
-	/*
-	Blocked If set to true any incoming connections from the
-			device will be immediately rejected. Any device
-			drivers will also be removed and no new ones will
-			be probed as long as the device is blocked.
+			Possible values:
+				<type> <byte array>
+				...
+
+			Example:
+				<Transport Discovery> <Organization Flags...>
+				0x26                   0x01         0x01...
 	*/
-	Blocked bool
+	AdvertisingData map[string]interface{}
 
 	/*
 	Adapter The object path of the adapter the device belongs to.
 	*/
 	Adapter dbus.ObjectPath
+
+	/*
+	ServiceData Service advertisement data. Keys are the UUIDs in
+			string format followed by its byte array value.
+	*/
+	ServiceData map[string]interface{}
+
+	/*
+	Address The Bluetooth device address of the remote device.
+	*/
+	Address string
 
 	/*
 	AddressType The Bluetooth device Address Type. For dual-mode and
@@ -143,46 +142,29 @@ type Device1Properties struct {
 	Icon string
 
 	/*
-	Appearance External appearance of device, as found on GAP service.
-	*/
-	Appearance uint16
-
-	/*
 	Paired Indicates if the remote device is paired.
 	*/
 	Paired bool
 
 	/*
-	ManufacturerData Manufacturer specific advertisement data. Keys are
-			16 bits Manufacturer ID followed by its byte array
-			value.
+	Blocked If set to true any incoming connections from the
+			device will be immediately rejected. Any device
+			drivers will also be removed and no new ones will
+			be probed as long as the device is blocked.
 	*/
-	ManufacturerData map[uint16]interface{}
+	Blocked bool
 
 	/*
-	Name The Bluetooth remote name. This value can not be
-			changed. Use the Alias property instead.
-
-			This value is only present for completeness. It is
-			better to always use the Alias property when
-			displaying the devices name.
-
-			If the Alias property is unset, it will reflect
-			this value which makes it more convenient.
+	Appearance External appearance of device, as found on GAP service.
 	*/
-	Name string
+	Appearance uint16
 
 	/*
-	UUIDs List of 128-bit UUIDs that represents the available
-			remote services.
+	Connected Indicates if the remote device is currently connected.
+			A PropertiesChanged signal indicate changes to this
+			status.
 	*/
-	UUIDs []string
-
-	/*
-	Trusted Indicates if the remote is seen as trusted. This
-			setting can be changed by the application.
-	*/
-	Trusted bool
+	Connected bool
 
 	/*
 	Alias The name alias for the remote device. The alias can
@@ -199,33 +181,51 @@ type Device1Properties struct {
 	Alias string
 
 	/*
+	RSSI Received Signal Strength Indicator of the remote
+			device (inquiry or advertising).
+	*/
+	RSSI int16
+
+	/*
+	AdvertisingFlags The Advertising Data Flags of the remote device.
+	*/
+	AdvertisingFlags []byte
+
+	/*
+	Class The Bluetooth class of device of the remote device.
+	*/
+	Class uint32
+
+	/*
+	Trusted Indicates if the remote is seen as trusted. This
+			setting can be changed by the application.
+	*/
+	Trusted bool
+
+	/*
+	LegacyPairing Set to true if the device only supports the pre-2.1
+			pairing mechanism. This property is useful during
+			device discovery to anticipate whether legacy or
+			simple pairing will occur if pairing is initiated.
+
+			Note that this property can exhibit false-positives
+			in the case of Bluetooth 2.1 (or newer) devices that
+			have disabled Extended Inquiry Response support.
+	*/
+	LegacyPairing bool
+
+	/*
 	Modalias Remote Device ID information in modalias format
 			used by the kernel and udev.
 	*/
 	Modalias string
 
 	/*
-	ServiceData Service advertisement data. Keys are the UUIDs in
-			string format followed by its byte array value.
+	ManufacturerData Manufacturer specific advertisement data. Keys are
+			16 bits Manufacturer ID followed by its byte array
+			value.
 	*/
-	ServiceData map[string]interface{}
-
-	/*
-	AdvertisingData The Advertising Data of the remote device. Keys are
-			are 8 bits AD Type followed by data as byte array.
-
-			Note: Only types considered safe to be handled by
-			application are exposed.
-
-			Possible values:
-				<type> <byte array>
-				...
-
-			Example:
-				<Transport Discovery> <Organization Flags...>
-				0x26                   0x01         0x01...
-	*/
-	AdvertisingData map[string]interface{}
+	ManufacturerData map[uint16]interface{}
 
 }
 
@@ -244,13 +244,13 @@ func (p *Device1Properties) Unlock() {
 
 
 
-// GetClass get Class value
-func (a *Device1) GetClass() (uint32, error) {
-	v, err := a.GetProperty("Class")
+// GetName get Name value
+func (a *Device1) GetName() (string, error) {
+	v, err := a.GetProperty("Name")
 	if err != nil {
-		return uint32(0), err
+		return "", err
 	}
-	return v.Value().(uint32), nil
+	return v.Value().(string), nil
 }
 
 
@@ -258,41 +258,13 @@ func (a *Device1) GetClass() (uint32, error) {
 
 
 
-// GetConnected get Connected value
-func (a *Device1) GetConnected() (bool, error) {
-	v, err := a.GetProperty("Connected")
+// GetUUIDs get UUIDs value
+func (a *Device1) GetUUIDs() ([]string, error) {
+	v, err := a.GetProperty("UUIDs")
 	if err != nil {
-		return false, err
+		return []string{}, err
 	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-
-
-// GetLegacyPairing get LegacyPairing value
-func (a *Device1) GetLegacyPairing() (bool, error) {
-	v, err := a.GetProperty("LegacyPairing")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-
-
-// GetRSSI get RSSI value
-func (a *Device1) GetRSSI() (int16, error) {
-	v, err := a.GetProperty("RSSI")
-	if err != nil {
-		return int16(0), err
-	}
-	return v.Value().(int16), nil
+	return v.Value().([]string), nil
 }
 
 
@@ -328,46 +300,13 @@ func (a *Device1) GetServicesResolved() (bool, error) {
 
 
 
-// GetAdvertisingFlags get AdvertisingFlags value
-func (a *Device1) GetAdvertisingFlags() ([]byte, error) {
-	v, err := a.GetProperty("AdvertisingFlags")
+// GetAdvertisingData get AdvertisingData value
+func (a *Device1) GetAdvertisingData() (map[string]interface{}, error) {
+	v, err := a.GetProperty("AdvertisingData")
 	if err != nil {
-		return []byte{}, err
+		return map[string]interface{}{}, err
 	}
-	return v.Value().([]byte), nil
-}
-
-
-
-
-
-
-// GetAddress get Address value
-func (a *Device1) GetAddress() (string, error) {
-	v, err := a.GetProperty("Address")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-// SetBlocked set Blocked value
-func (a *Device1) SetBlocked(v bool) error {
-	return a.SetProperty("Blocked", v)
-}
-
-
-
-// GetBlocked get Blocked value
-func (a *Device1) GetBlocked() (bool, error) {
-	v, err := a.GetProperty("Blocked")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
+	return v.Value().(map[string]interface{}), nil
 }
 
 
@@ -382,6 +321,34 @@ func (a *Device1) GetAdapter() (dbus.ObjectPath, error) {
 		return dbus.ObjectPath(""), err
 	}
 	return v.Value().(dbus.ObjectPath), nil
+}
+
+
+
+
+
+
+// GetServiceData get ServiceData value
+func (a *Device1) GetServiceData() (map[string]interface{}, error) {
+	v, err := a.GetProperty("ServiceData")
+	if err != nil {
+		return map[string]interface{}{}, err
+	}
+	return v.Value().(map[string]interface{}), nil
+}
+
+
+
+
+
+
+// GetAddress get Address value
+func (a *Device1) GetAddress() (string, error) {
+	v, err := a.GetProperty("Address")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 
@@ -417,6 +384,39 @@ func (a *Device1) GetIcon() (string, error) {
 
 
 
+// GetPaired get Paired value
+func (a *Device1) GetPaired() (bool, error) {
+	v, err := a.GetProperty("Paired")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+// SetBlocked set Blocked value
+func (a *Device1) SetBlocked(v bool) error {
+	return a.SetProperty("Blocked", v)
+}
+
+
+
+// GetBlocked get Blocked value
+func (a *Device1) GetBlocked() (bool, error) {
+	v, err := a.GetProperty("Blocked")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+
+
 // GetAppearance get Appearance value
 func (a *Device1) GetAppearance() (uint16, error) {
 	v, err := a.GetProperty("Appearance")
@@ -431,70 +431,9 @@ func (a *Device1) GetAppearance() (uint16, error) {
 
 
 
-// GetPaired get Paired value
-func (a *Device1) GetPaired() (bool, error) {
-	v, err := a.GetProperty("Paired")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-
-
-// GetManufacturerData get ManufacturerData value
-func (a *Device1) GetManufacturerData() (map[string]interface{}, error) {
-	v, err := a.GetProperty("ManufacturerData")
-	if err != nil {
-		return map[string]interface{}{}, err
-	}
-	return v.Value().(map[string]interface{}), nil
-}
-
-
-
-
-
-
-// GetName get Name value
-func (a *Device1) GetName() (string, error) {
-	v, err := a.GetProperty("Name")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-
-
-// GetUUIDs get UUIDs value
-func (a *Device1) GetUUIDs() ([]string, error) {
-	v, err := a.GetProperty("UUIDs")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
-}
-
-
-
-
-// SetTrusted set Trusted value
-func (a *Device1) SetTrusted(v bool) error {
-	return a.SetProperty("Trusted", v)
-}
-
-
-
-// GetTrusted get Trusted value
-func (a *Device1) GetTrusted() (bool, error) {
-	v, err := a.GetProperty("Trusted")
+// GetConnected get Connected value
+func (a *Device1) GetConnected() (bool, error) {
+	v, err := a.GetProperty("Connected")
 	if err != nil {
 		return false, err
 	}
@@ -525,6 +464,81 @@ func (a *Device1) GetAlias() (string, error) {
 
 
 
+// GetRSSI get RSSI value
+func (a *Device1) GetRSSI() (int16, error) {
+	v, err := a.GetProperty("RSSI")
+	if err != nil {
+		return int16(0), err
+	}
+	return v.Value().(int16), nil
+}
+
+
+
+
+
+
+// GetAdvertisingFlags get AdvertisingFlags value
+func (a *Device1) GetAdvertisingFlags() ([]byte, error) {
+	v, err := a.GetProperty("AdvertisingFlags")
+	if err != nil {
+		return []byte{}, err
+	}
+	return v.Value().([]byte), nil
+}
+
+
+
+
+
+
+// GetClass get Class value
+func (a *Device1) GetClass() (uint32, error) {
+	v, err := a.GetProperty("Class")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
+
+
+
+
+// SetTrusted set Trusted value
+func (a *Device1) SetTrusted(v bool) error {
+	return a.SetProperty("Trusted", v)
+}
+
+
+
+// GetTrusted get Trusted value
+func (a *Device1) GetTrusted() (bool, error) {
+	v, err := a.GetProperty("Trusted")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+
+
+// GetLegacyPairing get LegacyPairing value
+func (a *Device1) GetLegacyPairing() (bool, error) {
+	v, err := a.GetProperty("LegacyPairing")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+
+
 // GetModalias get Modalias value
 func (a *Device1) GetModalias() (string, error) {
 	v, err := a.GetProperty("Modalias")
@@ -539,23 +553,9 @@ func (a *Device1) GetModalias() (string, error) {
 
 
 
-// GetServiceData get ServiceData value
-func (a *Device1) GetServiceData() (map[string]interface{}, error) {
-	v, err := a.GetProperty("ServiceData")
-	if err != nil {
-		return map[string]interface{}{}, err
-	}
-	return v.Value().(map[string]interface{}), nil
-}
-
-
-
-
-
-
-// GetAdvertisingData get AdvertisingData value
-func (a *Device1) GetAdvertisingData() (map[string]interface{}, error) {
-	v, err := a.GetProperty("AdvertisingData")
+// GetManufacturerData get ManufacturerData value
+func (a *Device1) GetManufacturerData() (map[string]interface{}, error) {
+	v, err := a.GetProperty("ManufacturerData")
 	if err != nil {
 		return map[string]interface{}{}, err
 	}

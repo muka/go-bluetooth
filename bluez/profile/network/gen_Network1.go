@@ -58,11 +58,6 @@ type Network1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Connected Indicates if the device is connected.
-	*/
-	Connected bool
-
-	/*
 	Interface Indicates the network interface name when available.
 	*/
 	Interface string
@@ -71,6 +66,11 @@ type Network1Properties struct {
 	UUID Indicates the connection role when available.
 	*/
 	UUID string
+
+	/*
+	Connected Indicates if the device is connected.
+	*/
+	Connected bool
 
 }
 
@@ -82,20 +82,6 @@ func (p *Network1Properties) Lock() {
 //Unlock access to properties
 func (p *Network1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-
-
-// GetConnected get Connected value
-func (a *Network1) GetConnected() (bool, error) {
-	v, err := a.GetProperty("Connected")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
 }
 
 
@@ -124,6 +110,20 @@ func (a *Network1) GetUUID() (string, error) {
 		return "", err
 	}
 	return v.Value().(string), nil
+}
+
+
+
+
+
+
+// GetConnected get Connected value
+func (a *Network1) GetConnected() (bool, error) {
+	v, err := a.GetProperty("Connected")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
 }
 
 

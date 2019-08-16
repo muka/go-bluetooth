@@ -86,7 +86,7 @@ type GattService1Properties struct {
 	Includes Array of object paths representing the included
 			services of this service.
 	*/
-	Includes []dbus.ObjectPath
+	Includes []dbus.ObjectPath `dbus:"omitEmpty"`
 
 	/*
 	IsService 

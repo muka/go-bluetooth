@@ -22,6 +22,7 @@ var PropertyTypes = map[string]map[string]string{
 	},
 	"org.bluez.GattService1": map[string]string{
 		"Characteristics": "[]dbus.ObjectPath `dbus:\"emit\"`",
+		"Includes":        "[]dbus.ObjectPath `dbus:\"omitEmpty\"`",
 		"Device":          "[]dbus.ObjectPath `dbus:\"ignore=isService\"`",
 		"IsService":       "bool `dbus:\"ignore\"`",
 	},

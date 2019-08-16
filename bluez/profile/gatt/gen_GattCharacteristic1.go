@@ -61,6 +61,31 @@ type GattCharacteristic1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	Flags Defines how the characteristic value can be used. See
+			Core spec "Table 3.5: Characteristic Properties bit
+			field", and "Table 3.8: Characteristic Extended
+			Properties bit field". Allowed values:
+
+				"broadcast"
+				"read"
+				"write-without-response"
+				"write"
+				"notify"
+				"indicate"
+				"authenticated-signed-writes"
+				"reliable-write"
+				"writable-auxiliaries"
+				"encrypt-read"
+				"encrypt-write"
+				"encrypt-authenticated-read"
+				"encrypt-authenticated-write"
+				"secure-read" (Server only)
+				"secure-write" (Server only)
+				"authorize"
+	*/
+	Flags []string
+
+	/*
 	Descriptors 
 	*/
 	Descriptors []dbus.ObjectPath
@@ -114,31 +139,6 @@ type GattCharacteristic1Properties struct {
 	*/
 	Notifying bool
 
-	/*
-	Flags Defines how the characteristic value can be used. See
-			Core spec "Table 3.5: Characteristic Properties bit
-			field", and "Table 3.8: Characteristic Extended
-			Properties bit field". Allowed values:
-
-				"broadcast"
-				"read"
-				"write-without-response"
-				"write"
-				"notify"
-				"indicate"
-				"authenticated-signed-writes"
-				"reliable-write"
-				"writable-auxiliaries"
-				"encrypt-read"
-				"encrypt-write"
-				"encrypt-authenticated-read"
-				"encrypt-authenticated-write"
-				"secure-read" (Server only)
-				"secure-write" (Server only)
-				"authorize"
-	*/
-	Flags []string
-
 }
 
 //Lock access to properties
@@ -149,6 +149,25 @@ func (p *GattCharacteristic1Properties) Lock() {
 //Unlock access to properties
 func (p *GattCharacteristic1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+// SetFlags set Flags value
+func (a *GattCharacteristic1) SetFlags(v []string) error {
+	return a.SetProperty("Flags", v)
+}
+
+
+
+// GetFlags get Flags value
+func (a *GattCharacteristic1) GetFlags() ([]string, error) {
+	v, err := a.GetProperty("Flags")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
 }
 
 
@@ -282,25 +301,6 @@ func (a *GattCharacteristic1) GetNotifying() (bool, error) {
 		return false, err
 	}
 	return v.Value().(bool), nil
-}
-
-
-
-
-// SetFlags set Flags value
-func (a *GattCharacteristic1) SetFlags(v []string) error {
-	return a.SetProperty("Flags", v)
-}
-
-
-
-// GetFlags get Flags value
-func (a *GattCharacteristic1) GetFlags() ([]string, error) {
-	v, err := a.GetProperty("Flags")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
 }
 
 
