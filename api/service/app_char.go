@@ -66,7 +66,7 @@ func (s *Char) DBusObjectManager() *api.DBusObjectManager {
 	return s.App().DBusObjectManager()
 }
 
-func (s *Char) Conn() *dbus.Conn {
+func (s *Char) DBusConn() *dbus.Conn {
 	return s.App().DBusConn()
 }
 
@@ -130,7 +130,7 @@ func (s *Char) AddDescr(descr *Descr) error {
 
 	s.descr[descr.Path()] = descr
 
-	log.Tracef("Added GATT Descriptor ID=%d %s", descr.ID, descr.Path())
+	// log.Tracef("Added GATT Descriptor ID=%d %s", descr.ID, descr.Path())
 
 	return nil
 }

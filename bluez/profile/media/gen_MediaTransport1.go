@@ -7,8 +7,8 @@ import (
    "github.com/muka/go-bluetooth/bluez"
   log "github.com/sirupsen/logrus"
    "reflect"
-   "github.com/fatih/structs"
    "github.com/muka/go-bluetooth/util"
+   "github.com/muka/go-bluetooth/props"
    "github.com/godbus/dbus"
 )
 
@@ -58,6 +58,21 @@ type MediaTransport1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	Configuration Configuration blob, it is used as it is so the size and
+			byte order must match.
+	*/
+	Configuration []byte
+
+	/*
+	State Indicates the state of the transport. Possible
+			values are:
+				"idle": not streaming
+				"pending": streaming but not acquired
+				"active": streaming and acquired
+	*/
+	State string
+
+	/*
 	Delay Optional. Transport delay in 1/10 of millisecond, this
 			property is only writeable when the transport was
 			acquired by the sender.
@@ -90,21 +105,6 @@ type MediaTransport1Properties struct {
 	*/
 	Codec byte
 
-	/*
-	Configuration Configuration blob, it is used as it is so the size and
-			byte order must match.
-	*/
-	Configuration []byte
-
-	/*
-	State Indicates the state of the transport. Possible
-			values are:
-				"idle": not streaming
-				"pending": streaming but not acquired
-				"active": streaming and acquired
-	*/
-	State string
-
 }
 
 //Lock access to properties
@@ -115,6 +115,34 @@ func (p *MediaTransport1Properties) Lock() {
 //Unlock access to properties
 func (p *MediaTransport1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+
+
+// GetConfiguration get Configuration value
+func (a *MediaTransport1) GetConfiguration() ([]byte, error) {
+	v, err := a.GetProperty("Configuration")
+	if err != nil {
+		return []byte{}, err
+	}
+	return v.Value().([]byte), nil
+}
+
+
+
+
+
+
+// GetState get State value
+func (a *MediaTransport1) GetState() (string, error) {
+	v, err := a.GetProperty("State")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 
@@ -199,34 +227,6 @@ func (a *MediaTransport1) GetCodec() (byte, error) {
 
 
 
-
-
-
-// GetConfiguration get Configuration value
-func (a *MediaTransport1) GetConfiguration() ([]byte, error) {
-	v, err := a.GetProperty("Configuration")
-	if err != nil {
-		return []byte{}, err
-	}
-	return v.Value().([]byte), nil
-}
-
-
-
-
-
-
-// GetState get State value
-func (a *MediaTransport1) GetState() (string, error) {
-	v, err := a.GetProperty("State")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
 // Close the connection
 func (a *MediaTransport1) Close() {
 	
@@ -279,7 +279,7 @@ func (a *MediaTransport1) GetObjectManagerSignal() (chan *dbus.Signal, func(), e
 
 // ToMap convert a MediaTransport1Properties to map
 func (a *MediaTransport1Properties) ToMap() (map[string]interface{}, error) {
-	return structs.Map(a), nil
+	return props.ToMap(a), nil
 }
 
 // FromMap convert a map to an MediaTransport1Properties

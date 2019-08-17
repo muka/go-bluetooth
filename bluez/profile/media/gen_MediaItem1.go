@@ -7,8 +7,8 @@ import (
    "github.com/muka/go-bluetooth/bluez"
   log "github.com/sirupsen/logrus"
    "reflect"
-   "github.com/fatih/structs"
    "github.com/muka/go-bluetooth/util"
+   "github.com/muka/go-bluetooth/props"
    "github.com/godbus/dbus"
 )
 
@@ -84,12 +84,56 @@ type MediaItem1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	Player Player object path the item belongs to
+	*/
+	Player dbus.ObjectPath
+
+	/*
+	Metadata Item metadata.
+
+			Possible values:
+	*/
+	Metadata map[string]interface{}
+
+	/*
+	Album Item album name
+
+					Available if property Type is "audio"
+					or "video"
+	*/
+	Album string
+
+	/*
+	Genre Item genre name
+
+					Available if property Type is "audio"
+					or "video"
+	*/
+	Genre string
+
+	/*
+	NumberOfTracks Item album number of tracks in total
+
+					Available if property Type is "audio"
+					or "video"
+	*/
+	NumberOfTracks uint32
+
+	/*
 	Duration Item duration in milliseconds
 
 					Available if property Type is "audio"
 					or "video"
 	*/
 	Duration uint32
+
+	/*
+	Number Item album number
+
+					Available if property Type is "audio"
+					or "video"
+	*/
+	Number uint32
 
 	/*
 	Name Item displayable name
@@ -104,50 +148,6 @@ type MediaItem1Properties struct {
 	Type string
 
 	/*
-	Playable Indicates if the item can be played
-
-			Available if property Type is "folder"
-	*/
-	Playable bool
-
-	/*
-	Artist Item artist name
-
-					Available if property Type is "audio"
-					or "video"
-	*/
-	Artist string
-
-	/*
-	Album Item album name
-
-					Available if property Type is "audio"
-					or "video"
-	*/
-	Album string
-
-	/*
-	NumberOfTracks Item album number of tracks in total
-
-					Available if property Type is "audio"
-					or "video"
-	*/
-	NumberOfTracks uint32
-
-	/*
-	Number Item album number
-
-					Available if property Type is "audio"
-					or "video"
-	*/
-	Number uint32
-
-	/*
-	Player Player object path the item belongs to
-	*/
-	Player dbus.ObjectPath
-
-	/*
 	FolderType Folder type.
 
 			Possible values: "mixed", "titles", "albums", "artists"
@@ -157,11 +157,11 @@ type MediaItem1Properties struct {
 	FolderType string
 
 	/*
-	Metadata Item metadata.
+	Playable Indicates if the item can be played
 
-			Possible values:
+			Available if property Type is "folder"
 	*/
-	Metadata map[string]interface{}
+	Playable bool
 
 	/*
 	Title Item title name
@@ -172,12 +172,12 @@ type MediaItem1Properties struct {
 	Title string
 
 	/*
-	Genre Item genre name
+	Artist Item artist name
 
 					Available if property Type is "audio"
 					or "video"
 	*/
-	Genre string
+	Artist string
 
 }
 
@@ -194,6 +194,91 @@ func (p *MediaItem1Properties) Unlock() {
 
 
 
+
+
+// GetPlayer get Player value
+func (a *MediaItem1) GetPlayer() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Player")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
+}
+
+
+
+
+
+
+// GetMetadata get Metadata value
+func (a *MediaItem1) GetMetadata() (map[string]interface{}, error) {
+	v, err := a.GetProperty("Metadata")
+	if err != nil {
+		return map[string]interface{}{}, err
+	}
+	return v.Value().(map[string]interface{}), nil
+}
+
+
+
+
+// SetAlbum set Album value
+func (a *MediaItem1) SetAlbum(v string) error {
+	return a.SetProperty("Album", v)
+}
+
+
+
+// GetAlbum get Album value
+func (a *MediaItem1) GetAlbum() (string, error) {
+	v, err := a.GetProperty("Album")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+// SetGenre set Genre value
+func (a *MediaItem1) SetGenre(v string) error {
+	return a.SetProperty("Genre", v)
+}
+
+
+
+// GetGenre get Genre value
+func (a *MediaItem1) GetGenre() (string, error) {
+	v, err := a.GetProperty("Genre")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+// SetNumberOfTracks set NumberOfTracks value
+func (a *MediaItem1) SetNumberOfTracks(v uint32) error {
+	return a.SetProperty("NumberOfTracks", v)
+}
+
+
+
+// GetNumberOfTracks get NumberOfTracks value
+func (a *MediaItem1) GetNumberOfTracks() (uint32, error) {
+	v, err := a.GetProperty("NumberOfTracks")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
+
+
+
+
 // SetDuration set Duration value
 func (a *MediaItem1) SetDuration(v uint32) error {
 	return a.SetProperty("Duration", v)
@@ -204,6 +289,25 @@ func (a *MediaItem1) SetDuration(v uint32) error {
 // GetDuration get Duration value
 func (a *MediaItem1) GetDuration() (uint32, error) {
 	v, err := a.GetProperty("Duration")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
+
+
+
+
+// SetNumber set Number value
+func (a *MediaItem1) SetNumber(v uint32) error {
+	return a.SetProperty("Number", v)
+}
+
+
+
+// GetNumber get Number value
+func (a *MediaItem1) GetNumber() (uint32, error) {
+	v, err := a.GetProperty("Number")
 	if err != nil {
 		return uint32(0), err
 	}
@@ -243,110 +347,6 @@ func (a *MediaItem1) GetType() (string, error) {
 
 
 
-// GetPlayable get Playable value
-func (a *MediaItem1) GetPlayable() (bool, error) {
-	v, err := a.GetProperty("Playable")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-// SetArtist set Artist value
-func (a *MediaItem1) SetArtist(v string) error {
-	return a.SetProperty("Artist", v)
-}
-
-
-
-// GetArtist get Artist value
-func (a *MediaItem1) GetArtist() (string, error) {
-	v, err := a.GetProperty("Artist")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-// SetAlbum set Album value
-func (a *MediaItem1) SetAlbum(v string) error {
-	return a.SetProperty("Album", v)
-}
-
-
-
-// GetAlbum get Album value
-func (a *MediaItem1) GetAlbum() (string, error) {
-	v, err := a.GetProperty("Album")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-// SetNumberOfTracks set NumberOfTracks value
-func (a *MediaItem1) SetNumberOfTracks(v uint32) error {
-	return a.SetProperty("NumberOfTracks", v)
-}
-
-
-
-// GetNumberOfTracks get NumberOfTracks value
-func (a *MediaItem1) GetNumberOfTracks() (uint32, error) {
-	v, err := a.GetProperty("NumberOfTracks")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
-}
-
-
-
-
-// SetNumber set Number value
-func (a *MediaItem1) SetNumber(v uint32) error {
-	return a.SetProperty("Number", v)
-}
-
-
-
-// GetNumber get Number value
-func (a *MediaItem1) GetNumber() (uint32, error) {
-	v, err := a.GetProperty("Number")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
-}
-
-
-
-
-
-
-// GetPlayer get Player value
-func (a *MediaItem1) GetPlayer() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Player")
-	if err != nil {
-		return dbus.ObjectPath(""), err
-	}
-	return v.Value().(dbus.ObjectPath), nil
-}
-
-
-
-
-
-
 // GetFolderType get FolderType value
 func (a *MediaItem1) GetFolderType() (string, error) {
 	v, err := a.GetProperty("FolderType")
@@ -361,13 +361,13 @@ func (a *MediaItem1) GetFolderType() (string, error) {
 
 
 
-// GetMetadata get Metadata value
-func (a *MediaItem1) GetMetadata() (map[string]interface{}, error) {
-	v, err := a.GetProperty("Metadata")
+// GetPlayable get Playable value
+func (a *MediaItem1) GetPlayable() (bool, error) {
+	v, err := a.GetProperty("Playable")
 	if err != nil {
-		return map[string]interface{}{}, err
+		return false, err
 	}
-	return v.Value().(map[string]interface{}), nil
+	return v.Value().(bool), nil
 }
 
 
@@ -392,16 +392,16 @@ func (a *MediaItem1) GetTitle() (string, error) {
 
 
 
-// SetGenre set Genre value
-func (a *MediaItem1) SetGenre(v string) error {
-	return a.SetProperty("Genre", v)
+// SetArtist set Artist value
+func (a *MediaItem1) SetArtist(v string) error {
+	return a.SetProperty("Artist", v)
 }
 
 
 
-// GetGenre get Genre value
-func (a *MediaItem1) GetGenre() (string, error) {
-	v, err := a.GetProperty("Genre")
+// GetArtist get Artist value
+func (a *MediaItem1) GetArtist() (string, error) {
+	v, err := a.GetProperty("Artist")
 	if err != nil {
 		return "", err
 	}
@@ -462,7 +462,7 @@ func (a *MediaItem1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error)
 
 // ToMap convert a MediaItem1Properties to map
 func (a *MediaItem1Properties) ToMap() (map[string]interface{}, error) {
-	return structs.Map(a), nil
+	return props.ToMap(a), nil
 }
 
 // FromMap convert a map to an MediaItem1Properties

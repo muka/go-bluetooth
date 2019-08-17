@@ -7,8 +7,8 @@ import (
    "github.com/muka/go-bluetooth/bluez"
   log "github.com/sirupsen/logrus"
    "reflect"
-   "github.com/fatih/structs"
    "github.com/muka/go-bluetooth/util"
+   "github.com/muka/go-bluetooth/props"
    "github.com/godbus/dbus"
    "fmt"
 )
@@ -82,6 +82,12 @@ type Adapter1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	Modalias Local Device ID information in modalias format
+			used by the kernel and udev.
+	*/
+	Modalias string
+
+	/*
 	Name The Bluetooth system name (pretty hostname).
 
 			This property is either a static system default
@@ -91,26 +97,6 @@ type Adapter1Properties struct {
 	Name string
 
 	/*
-	Alias The Bluetooth friendly name. This value can be
-			changed.
-
-			In case no alias is set, it will return the system
-			provided name. Setting an empty string as alias will
-			convert it back to the system provided name.
-
-			When resetting the alias with an empty string, the
-			property will default back to system name.
-
-			On a well configured system, this property never
-			needs to be changed since it defaults to the system
-			name and provides the pretty hostname. Only if the
-			local name needs to be different from the pretty
-			hostname, this property should be used as last
-			resort.
-	*/
-	Alias string
-
-	/*
 	Class The Bluetooth class of device.
 
 			This property represents the value that is either
@@ -118,6 +104,37 @@ type Adapter1Properties struct {
 			or provided as static configuration.
 	*/
 	Class uint32
+
+	/*
+	Powered Switch an adapter on or off. This will also set the
+			appropriate connectable state of the controller.
+
+			The value of this property is not persistent. After
+			restart or unplugging of the adapter it will reset
+			back to false.
+	*/
+	Powered bool
+
+	/*
+	Discoverable Switch an adapter to discoverable or non-discoverable
+			to either make it visible or hide it. This is a global
+			setting and should only be used by the settings
+			application.
+
+			If the DiscoverableTimeout is set to a non-zero
+			value then the system will set this value back to
+			false after the timer expired.
+
+			In case the adapter is switched off, setting this
+			value will fail.
+
+			When changing the Powered property the new state of
+			this property will be updated via a PropertiesChanged
+			signal.
+
+			For any new adapter this settings defaults to false.
+	*/
+	Discoverable bool
 
 	/*
 	Pairable Switch an adapter to pairable or non-pairable. This is
@@ -152,11 +169,6 @@ type Adapter1Properties struct {
 	DiscoverableTimeout uint32
 
 	/*
-	Discovering Indicates that a device discovery procedure is active.
-	*/
-	Discovering bool
-
-	/*
 	Address The Bluetooth device address.
 	*/
 	Address string
@@ -175,47 +187,35 @@ type Adapter1Properties struct {
 	AddressType string
 
 	/*
-	Powered Switch an adapter on or off. This will also set the
-			appropriate connectable state of the controller.
+	Alias The Bluetooth friendly name. This value can be
+			changed.
 
-			The value of this property is not persistent. After
-			restart or unplugging of the adapter it will reset
-			back to false.
+			In case no alias is set, it will return the system
+			provided name. Setting an empty string as alias will
+			convert it back to the system provided name.
+
+			When resetting the alias with an empty string, the
+			property will default back to system name.
+
+			On a well configured system, this property never
+			needs to be changed since it defaults to the system
+			name and provides the pretty hostname. Only if the
+			local name needs to be different from the pretty
+			hostname, this property should be used as last
+			resort.
 	*/
-	Powered bool
+	Alias string
 
 	/*
-	Discoverable Switch an adapter to discoverable or non-discoverable
-			to either make it visible or hide it. This is a global
-			setting and should only be used by the settings
-			application.
-
-			If the DiscoverableTimeout is set to a non-zero
-			value then the system will set this value back to
-			false after the timer expired.
-
-			In case the adapter is switched off, setting this
-			value will fail.
-
-			When changing the Powered property the new state of
-			this property will be updated via a PropertiesChanged
-			signal.
-
-			For any new adapter this settings defaults to false.
+	Discovering Indicates that a device discovery procedure is active.
 	*/
-	Discoverable bool
+	Discovering bool
 
 	/*
 	UUIDs List of 128-bit UUIDs that represents the available
 			local services.
 	*/
 	UUIDs []string
-
-	/*
-	Modalias Local Device ID information in modalias format
-			used by the kernel and udev.
-	*/
-	Modalias string
 
 }
 
@@ -227,6 +227,20 @@ func (p *Adapter1Properties) Lock() {
 //Unlock access to properties
 func (p *Adapter1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+
+
+// GetModalias get Modalias value
+func (a *Adapter1) GetModalias() (string, error) {
+	v, err := a.GetProperty("Modalias")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 
@@ -246,25 +260,6 @@ func (a *Adapter1) GetName() (string, error) {
 
 
 
-// SetAlias set Alias value
-func (a *Adapter1) SetAlias(v string) error {
-	return a.SetProperty("Alias", v)
-}
-
-
-
-// GetAlias get Alias value
-func (a *Adapter1) GetAlias() (string, error) {
-	v, err := a.GetProperty("Alias")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
 
 
 // GetClass get Class value
@@ -274,6 +269,44 @@ func (a *Adapter1) GetClass() (uint32, error) {
 		return uint32(0), err
 	}
 	return v.Value().(uint32), nil
+}
+
+
+
+
+// SetPowered set Powered value
+func (a *Adapter1) SetPowered(v bool) error {
+	return a.SetProperty("Powered", v)
+}
+
+
+
+// GetPowered get Powered value
+func (a *Adapter1) GetPowered() (bool, error) {
+	v, err := a.GetProperty("Powered")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+// SetDiscoverable set Discoverable value
+func (a *Adapter1) SetDiscoverable(v bool) error {
+	return a.SetProperty("Discoverable", v)
+}
+
+
+
+// GetDiscoverable get Discoverable value
+func (a *Adapter1) GetDiscoverable() (bool, error) {
+	v, err := a.GetProperty("Discoverable")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
 }
 
 
@@ -338,20 +371,6 @@ func (a *Adapter1) GetDiscoverableTimeout() (uint32, error) {
 
 
 
-// GetDiscovering get Discovering value
-func (a *Adapter1) GetDiscovering() (bool, error) {
-	v, err := a.GetProperty("Discovering")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-
-
 // GetAddress get Address value
 func (a *Adapter1) GetAddress() (string, error) {
 	v, err := a.GetProperty("Address")
@@ -378,35 +397,30 @@ func (a *Adapter1) GetAddressType() (string, error) {
 
 
 
-// SetPowered set Powered value
-func (a *Adapter1) SetPowered(v bool) error {
-	return a.SetProperty("Powered", v)
+// SetAlias set Alias value
+func (a *Adapter1) SetAlias(v string) error {
+	return a.SetProperty("Alias", v)
 }
 
 
 
-// GetPowered get Powered value
-func (a *Adapter1) GetPowered() (bool, error) {
-	v, err := a.GetProperty("Powered")
+// GetAlias get Alias value
+func (a *Adapter1) GetAlias() (string, error) {
+	v, err := a.GetProperty("Alias")
 	if err != nil {
-		return false, err
+		return "", err
 	}
-	return v.Value().(bool), nil
+	return v.Value().(string), nil
 }
 
 
 
 
-// SetDiscoverable set Discoverable value
-func (a *Adapter1) SetDiscoverable(v bool) error {
-	return a.SetProperty("Discoverable", v)
-}
 
 
-
-// GetDiscoverable get Discoverable value
-func (a *Adapter1) GetDiscoverable() (bool, error) {
-	v, err := a.GetProperty("Discoverable")
+// GetDiscovering get Discovering value
+func (a *Adapter1) GetDiscovering() (bool, error) {
+	v, err := a.GetProperty("Discovering")
 	if err != nil {
 		return false, err
 	}
@@ -425,20 +439,6 @@ func (a *Adapter1) GetUUIDs() ([]string, error) {
 		return []string{}, err
 	}
 	return v.Value().([]string), nil
-}
-
-
-
-
-
-
-// GetModalias get Modalias value
-func (a *Adapter1) GetModalias() (string, error) {
-	v, err := a.GetProperty("Modalias")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
 }
 
 
@@ -495,7 +495,7 @@ func (a *Adapter1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
 
 // ToMap convert a Adapter1Properties to map
 func (a *Adapter1Properties) ToMap() (map[string]interface{}, error) {
-	return structs.Map(a), nil
+	return props.ToMap(a), nil
 }
 
 // FromMap convert a map to an Adapter1Properties

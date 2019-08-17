@@ -33,7 +33,7 @@ type Advertisement struct {
 	props         *advertising.LEAdvertisement1Properties
 }
 
-func (a *Advertisement) Conn() *dbus.Conn {
+func (a *Advertisement) DBusConn() *dbus.Conn {
 	return a.conn
 }
 

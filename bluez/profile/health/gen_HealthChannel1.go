@@ -7,8 +7,8 @@ import (
    "github.com/muka/go-bluetooth/bluez"
   log "github.com/sirupsen/logrus"
    "reflect"
-   "github.com/fatih/structs"
    "github.com/muka/go-bluetooth/util"
+   "github.com/muka/go-bluetooth/props"
    "github.com/godbus/dbus"
 )
 
@@ -184,7 +184,7 @@ func (a *HealthChannel1) GetObjectManagerSignal() (chan *dbus.Signal, func(), er
 
 // ToMap convert a HealthChannel1Properties to map
 func (a *HealthChannel1Properties) ToMap() (map[string]interface{}, error) {
-	return structs.Map(a), nil
+	return props.ToMap(a), nil
 }
 
 // FromMap convert a map to an HealthChannel1Properties

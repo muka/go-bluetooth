@@ -137,7 +137,7 @@ func (a *{{.InterfaceName}}) GetObjectManagerSignal() (chan *dbus.Signal, func()
 {{if .ExposeProperties }}
 // ToMap convert a {{.InterfaceName}}Properties to map
 func (a *{{.InterfaceName}}Properties) ToMap() (map[string]interface{}, error) {
-	return structs.Map(a), nil
+	return props.ToMap(a), nil
 }
 
 // FromMap convert a map to an {{.InterfaceName}}Properties

@@ -10,7 +10,6 @@ func NewGattService1Properties(uuid string) *gatt.GattService1Properties {
 		IsService: true,
 		Primary:   true,
 		UUID:      uuid,
-		// Includes:  make([]dbus.ObjectPath, 0),
 	}
 }
 

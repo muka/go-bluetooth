@@ -4,17 +4,18 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/godbus/dbus/prop"
 	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
 	"github.com/muka/go-bluetooth/util"
 	"github.com/stretchr/testify/assert"
 )
 
 type testStruct struct {
 	IgnoreFlag        bool                   `dbus:"ignore"`
-	ToOmit            map[string]interface{} `dbus:"omitEmpty"`
+	ToOmit            map[string]interface{} `dbus:"omitEmpty,writable"`
 	Ignored           string                 `dbus:"ignore"`
 	IgnoredByProperty []string               `dbus:"ignore=IgnoreFlag"`
+	Avail             string
 }
 
 func (s testStruct) ToMap() (map[string]interface{}, error) {
@@ -29,11 +30,12 @@ func TestParseTag(t *testing.T) {
 		IgnoreFlag:        true,
 		Ignored:           "foo",
 		IgnoredByProperty: []string{"bar"},
+		Avail:             "foo",
 	}
 
 	prop := &DBusProperties{
 		props:       make(map[string]bluez.Properties),
-		propsConfig: make(map[string]map[string]*prop.Prop),
+		propsConfig: make(map[string]map[string]*props.PropInfo),
 	}
 
 	prop.AddProperties("test", s)
@@ -49,13 +51,10 @@ func TestParseTag(t *testing.T) {
 		fmt.Printf("%s: %++v\n", field, cfg)
 	}
 
-	_, ok := cfg["ToOmit"]
-	assert.True(t, !ok)
-
-	_, ok = cfg["Ignored"]
-	assert.True(t, !ok)
-
-	_, ok = cfg["IgnoredByProperty"]
-	assert.True(t, !ok)
+	assert.True(t, cfg["ToOmit"].Skip)
+	assert.True(t, cfg["ToOmit"].Writable)
+	assert.True(t, cfg["Ignored"].Skip)
+	assert.True(t, cfg["IgnoredByProperty"].Skip)
+	assert.Equal(t, "foo", cfg["Avail"].Value)
 
 }

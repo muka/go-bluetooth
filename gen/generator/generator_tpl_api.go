@@ -31,8 +31,9 @@ func ApiTemplate(filename string, api gen.Api, apiGroup gen.ApiGroup) error {
 		propsImports := []string{
 			"log github.com/sirupsen/logrus",
 			"reflect",
-			"github.com/fatih/structs",
+			// "github.com/fatih/structs",
 			"github.com/muka/go-bluetooth/util",
+			"github.com/muka/go-bluetooth/props",
 		}
 		imports = append(imports, propsImports...)
 	}

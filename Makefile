@@ -1,11 +1,14 @@
 
 .PHONY: gen
 
-FILTER ?= 
+FILTER ?=
 
 all: gen/clean gen/run
 
-bluetoothd:
+bluetoothd/logs:
+	journalctl -u bluetooth -f
+
+bluetoothd/start:
 	sudo killall bluetoothd || true && \
 	sudo bluetoothd -E -d -n -P hostname
 

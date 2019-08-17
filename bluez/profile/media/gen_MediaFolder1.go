@@ -7,8 +7,8 @@ import (
    "github.com/muka/go-bluetooth/bluez"
   log "github.com/sirupsen/logrus"
    "reflect"
-   "github.com/fatih/structs"
    "github.com/muka/go-bluetooth/util"
+   "github.com/muka/go-bluetooth/props"
    "github.com/godbus/dbus"
 )
 
@@ -84,22 +84,6 @@ type MediaFolder1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Name Folder name:
-
-			Possible values:
-				"/Filesystem/...": Filesystem scope
-				"/NowPlaying/...": NowPlaying scope
-
-			Note: /NowPlaying folder might not be listed if player
-			is stopped, folders created by Search are virtual so
-			once another Search is perform or the folder is
-			changed using ChangeFolder it will no longer be listed.
-
-Filters
-	*/
-	Name string
-
-	/*
 	Start Offset of the first item.
 
 			Default value: 0
@@ -130,6 +114,22 @@ Filters
 	*/
 	NumberOfItems uint32
 
+	/*
+	Name Folder name:
+
+			Possible values:
+				"/Filesystem/...": Filesystem scope
+				"/NowPlaying/...": NowPlaying scope
+
+			Note: /NowPlaying folder might not be listed if player
+			is stopped, folders created by Search are virtual so
+			once another Search is perform or the folder is
+			changed using ChangeFolder it will no longer be listed.
+
+Filters
+	*/
+	Name string
+
 }
 
 //Lock access to properties
@@ -140,20 +140,6 @@ func (p *MediaFolder1Properties) Lock() {
 //Unlock access to properties
 func (p *MediaFolder1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-
-
-// GetName get Name value
-func (a *MediaFolder1) GetName() (string, error) {
-	v, err := a.GetProperty("Name")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
 }
 
 
@@ -229,6 +215,20 @@ func (a *MediaFolder1) GetNumberOfItems() (uint32, error) {
 
 
 
+
+
+
+// GetName get Name value
+func (a *MediaFolder1) GetName() (string, error) {
+	v, err := a.GetProperty("Name")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
 // Close the connection
 func (a *MediaFolder1) Close() {
 	
@@ -281,7 +281,7 @@ func (a *MediaFolder1) GetObjectManagerSignal() (chan *dbus.Signal, func(), erro
 
 // ToMap convert a MediaFolder1Properties to map
 func (a *MediaFolder1Properties) ToMap() (map[string]interface{}, error) {
-	return structs.Map(a), nil
+	return props.ToMap(a), nil
 }
 
 // FromMap convert a map to an MediaFolder1Properties

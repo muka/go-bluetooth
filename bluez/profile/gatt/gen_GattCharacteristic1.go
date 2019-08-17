@@ -7,8 +7,8 @@ import (
    "github.com/muka/go-bluetooth/bluez"
   log "github.com/sirupsen/logrus"
    "reflect"
-   "github.com/fatih/structs"
    "github.com/muka/go-bluetooth/util"
+   "github.com/muka/go-bluetooth/props"
    "github.com/godbus/dbus"
 )
 
@@ -59,6 +59,12 @@ type GattCharacteristic1 struct {
 // GattCharacteristic1Properties contains the exposed properties of an interface
 type GattCharacteristic1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
+
+	/*
+	Notifying True, if notifications or indications on this
+			characteristic are currently enabled.
+	*/
+	Notifying bool
 
 	/*
 	Flags Defines how the characteristic value can be used. See
@@ -133,12 +139,6 @@ type GattCharacteristic1Properties struct {
 	*/
 	NotifyAcquired bool
 
-	/*
-	Notifying True, if notifications or indications on this
-			characteristic are currently enabled.
-	*/
-	Notifying bool
-
 }
 
 //Lock access to properties
@@ -149,6 +149,25 @@ func (p *GattCharacteristic1Properties) Lock() {
 //Unlock access to properties
 func (p *GattCharacteristic1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+// SetNotifying set Notifying value
+func (a *GattCharacteristic1) SetNotifying(v bool) error {
+	return a.SetProperty("Notifying", v)
+}
+
+
+
+// GetNotifying get Notifying value
+func (a *GattCharacteristic1) GetNotifying() (bool, error) {
+	v, err := a.GetProperty("Notifying")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
 }
 
 
@@ -286,25 +305,6 @@ func (a *GattCharacteristic1) GetNotifyAcquired() (bool, error) {
 
 
 
-
-// SetNotifying set Notifying value
-func (a *GattCharacteristic1) SetNotifying(v bool) error {
-	return a.SetProperty("Notifying", v)
-}
-
-
-
-// GetNotifying get Notifying value
-func (a *GattCharacteristic1) GetNotifying() (bool, error) {
-	v, err := a.GetProperty("Notifying")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
 // Close the connection
 func (a *GattCharacteristic1) Close() {
 	
@@ -357,7 +357,7 @@ func (a *GattCharacteristic1) GetObjectManagerSignal() (chan *dbus.Signal, func(
 
 // ToMap convert a GattCharacteristic1Properties to map
 func (a *GattCharacteristic1Properties) ToMap() (map[string]interface{}, error) {
-	return structs.Map(a), nil
+	return props.ToMap(a), nil
 }
 
 // FromMap convert a map to an GattCharacteristic1Properties

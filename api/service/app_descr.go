@@ -32,7 +32,7 @@ func (s *Descr) DBusObjectManager() *api.DBusObjectManager {
 	return s.App().DBusObjectManager()
 }
 
-func (s *Descr) Conn() *dbus.Conn {
+func (s *Descr) DBusConn() *dbus.Conn {
 	return s.App().DBusConn()
 }
 

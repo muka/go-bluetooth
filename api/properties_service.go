@@ -1,15 +1,13 @@
 package api
 
 import (
-	"reflect"
-	"strings"
-
 	"github.com/fatih/structs"
 	"github.com/godbus/dbus"
 	"github.com/godbus/dbus/introspect"
 	"github.com/godbus/dbus/prop"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile"
+	"github.com/muka/go-bluetooth/props"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -19,7 +17,7 @@ func NewDBusProperties(conn *dbus.Conn) (*DBusProperties, error) {
 	o := &DBusProperties{
 		conn:        conn,
 		props:       make(map[string]bluez.Properties),
-		propsConfig: make(map[string]map[string]*prop.Prop),
+		propsConfig: make(map[string]map[string]*props.PropInfo),
 	}
 
 	err := o.parseProperties()
@@ -30,121 +28,16 @@ func NewDBusProperties(conn *dbus.Conn) (*DBusProperties, error) {
 type DBusProperties struct {
 	conn        *dbus.Conn
 	props       map[string]bluez.Properties
-	propsConfig map[string]map[string]*prop.Prop
+	propsConfig map[string]map[string]*props.PropInfo
 	instance    *prop.Properties
-}
-
-func (p *DBusProperties) parseTag(t *structs.Struct, field *structs.Field, conf *prop.Prop, tag string) bool {
-
-	parts := strings.Split(tag, ",")
-	for i := 0; i < len(parts); i++ {
-
-		tagKey := parts[i]
-		tagValue := ""
-		if strings.Contains(parts[i], "=") {
-			subpts := strings.Split(parts[i], "=")
-			tagKey = subpts[0]
-			tagValue = strings.Join(subpts[1:], "=")
-		}
-
-		if tagKey == "ignore" {
-			if tagValue == "" {
-				return true
-			} else {
-
-				checkField, ok := t.FieldOk(tagValue)
-				if !ok {
-					log.Warnf("%s: field not found,  is it avaialable?", tagValue)
-					return false
-				}
-				if !checkField.IsExported() {
-					log.Warnf("%s: field must be exported. (add a tag `ignore` to avoid exposing it as property)", tagValue)
-					return false
-				}
-
-				varKind := checkField.Kind()
-				if varKind != reflect.Bool {
-					log.Warnf("%s: ignore tag expect a bool property to check, %s given", tagValue, varKind)
-					return false
-				}
-
-				if checkField.Value().(bool) {
-					return true
-				}
-			}
-		}
-
-		// check if empty
-		if tagKey == "omitEmpty" {
-			v := reflect.ValueOf(conf.Value)
-			if !v.IsValid() || isEmptyValue(v) {
-				return true
-			}
-		}
-
-		switch tagKey {
-		case "emit":
-			conf.Emit = prop.EmitTrue
-			conf.Writable = true
-			break
-		case "invalidates":
-			conf.Emit = prop.EmitInvalidates
-			conf.Writable = true
-			break
-		case "writable":
-			conf.Writable = true
-			break
-		default:
-			t := reflect.TypeOf(p)
-			m, ok := t.MethodByName(tagKey)
-			if ok {
-				conf.Writable = true
-				conf.Callback = m.Func.Interface().(func(*prop.Change) *dbus.Error)
-			}
-		}
-	}
-
-	return false
 }
 
 func (p *DBusProperties) parseProperties() error {
 	for iface, ifaceVal := range p.props {
-
 		if _, ok := p.propsConfig[iface]; !ok {
-			p.propsConfig[iface] = make(map[string]*prop.Prop)
+			p.propsConfig[iface] = make(map[string]*props.PropInfo)
 		}
-
-		t := structs.New(ifaceVal)
-		for _, field := range t.Fields() {
-
-			if !field.IsExported() {
-				continue
-			}
-
-			if _, ok := field.Value().(dbus.ObjectPath); ok && field.IsZero() {
-				// log.Debugf("parseProperties: skip empty ObjectPath %s", field.Name())
-				continue
-			}
-
-			propConf := &prop.Prop{
-				Value:    field.Value(),
-				Emit:     prop.EmitFalse,
-				Writable: false,
-				Callback: p.onChange,
-			}
-
-			tag := field.Tag("dbus")
-			if tag != "" {
-				skip := p.parseTag(t, field, propConf, tag)
-				// log.Printf("%t %s", skip, tag)
-				if skip {
-					continue
-				}
-			}
-
-			// log.Debugf("parseProperties: %s: `%s` %v", field.Name(), tag, propConf)
-			p.propsConfig[iface][field.Name()] = propConf
-		}
+		p.propsConfig[iface] = props.ParseProperties(ifaceVal)
 	}
 	return nil
 }
@@ -174,12 +67,31 @@ func (p *DBusProperties) Instance() *prop.Properties {
 
 //Introspection return the props instance
 func (p *DBusProperties) Introspection(iface string) []introspect.Property {
-	return p.instance.Introspection(iface)
+	res := p.instance.Introspection(iface)
+	// log.Debug("Introspect", res)
+	return res
 }
 
 //Expose expose the properties interface
 func (p *DBusProperties) Expose(path dbus.ObjectPath) {
-	p.instance = prop.New(p.conn, path, p.propsConfig)
+	propsConfig := make(map[string]map[string]*prop.Prop)
+	for iface1, props1 := range p.propsConfig {
+		propsConfig[iface1] = make(map[string]*prop.Prop)
+		for k, v := range props1 {
+			if v.Skip {
+				continue
+			}
+			propsConfig[iface1][k] = &v.Prop
+		}
+	}
+
+	p.instance = prop.New(p.conn, path, propsConfig)
+
+	// for _, v1 := range propsConfig {
+	// 	for k, v := range v1 {
+	// 		log.Tracef("Properties map: %s %++v", k, v)
+	// 	}
+	// }
 }
 
 //AddProperties add a property set
@@ -196,24 +108,4 @@ func (p *DBusProperties) RemoveProperties(iface string) {
 	if _, ok := p.propsConfig[iface]; ok {
 		delete(p.propsConfig, iface)
 	}
-}
-
-// check for empy value, from go encoding/json
-// https://github.com/golang/go/blob/master/src/encoding/json/encode.go#L318
-func isEmptyValue(v reflect.Value) bool {
-	switch v.Kind() {
-	case reflect.Array, reflect.Map, reflect.Slice, reflect.String:
-		return v.Len() == 0
-	case reflect.Bool:
-		return !v.Bool()
-	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
-		return v.Int() == 0
-	case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64, reflect.Uintptr:
-		return v.Uint() == 0
-	case reflect.Float32, reflect.Float64:
-		return v.Float() == 0
-	case reflect.Interface, reflect.Ptr:
-		return v.IsNil()
-	}
-	return false
 }

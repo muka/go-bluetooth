@@ -7,7 +7,6 @@ import (
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile/gatt"
-	log "github.com/sirupsen/logrus"
 )
 
 type Service struct {
@@ -39,8 +38,6 @@ func (s *Service) GetProperties() bluez.Properties {
 	}
 	s.Properties.Characteristics = chars
 
-	// s.Properties.Includes = append(s.Properties.Includes, "")
-
 	return s.Properties
 }
 
@@ -52,7 +49,7 @@ func (s *Service) DBusObjectManager() *api.DBusObjectManager {
 	return s.App().DBusObjectManager()
 }
 
-func (s *Service) Conn() *dbus.Conn {
+func (s *Service) DBusConn() *dbus.Conn {
 	return s.App().DBusConn()
 }
 
@@ -105,7 +102,7 @@ func (s *Service) AddChar(char *Char) error {
 		return err
 	}
 
-	log.Tracef("Added GATT Characteristic ID=%d %s", char.ID, char.Path())
+	// log.Tracef("Added GATT Characteristic ID=%d %s", char.ID, char.Path())
 
 	return nil
 }

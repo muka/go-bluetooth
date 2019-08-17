@@ -7,8 +7,8 @@ import (
    "github.com/muka/go-bluetooth/bluez"
   log "github.com/sirupsen/logrus"
    "reflect"
-   "github.com/fatih/structs"
    "github.com/muka/go-bluetooth/util"
+   "github.com/muka/go-bluetooth/props"
    "github.com/godbus/dbus"
    "fmt"
 )
@@ -213,7 +213,7 @@ func (a *GattManager1) GetObjectManagerSignal() (chan *dbus.Signal, func(), erro
 
 // ToMap convert a GattManager1Properties to map
 func (a *GattManager1Properties) ToMap() (map[string]interface{}, error) {
-	return structs.Map(a), nil
+	return props.ToMap(a), nil
 }
 
 // FromMap convert a map to an GattManager1Properties

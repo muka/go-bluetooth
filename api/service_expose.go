@@ -5,6 +5,7 @@ import (
 	"github.com/godbus/dbus/introspect"
 	"github.com/godbus/dbus/prop"
 	"github.com/muka/go-bluetooth/bluez"
+	log "github.com/sirupsen/logrus"
 )
 
 type ExposedDBusService interface {
@@ -14,7 +15,7 @@ type ExposedDBusService interface {
 	// App() *App
 	DBusProperties() *DBusProperties
 	DBusObjectManager() *DBusObjectManager
-	Conn() *dbus.Conn
+	DBusConn() *dbus.Conn
 	// ExportTree() error
 }
 
@@ -25,17 +26,15 @@ func RemoveDBusService(s ExposedDBusService) error {
 		return err
 	}
 
-	// err = s.ExportTree()
-	// if err != nil {
-	// 	return err
-	// }
-
 	return nil
 }
 
+// Expose
+// - Interface() (Service, Char or Descr)
+// - Properties interface
 func ExposeDBusService(s ExposedDBusService) (err error) {
 
-	conn := s.Conn()
+	conn := s.DBusConn()
 
 	if conn == nil {
 		conn, err = dbus.SystemBus()
@@ -44,6 +43,7 @@ func ExposeDBusService(s ExposedDBusService) (err error) {
 		}
 	}
 
+	log.Tracef("Expose %s (%s)", s.Path(), s.Interface())
 	err = conn.Export(s, s.Path(), s.Interface())
 	if err != nil {
 		return err
@@ -62,6 +62,7 @@ func ExposeDBusService(s ExposedDBusService) (err error) {
 			introspect.IntrospectData,
 			//Properties
 			prop.IntrospectData,
+			// Exposed service introspectable
 			{
 				Name:       s.Interface(),
 				Methods:    introspect.Methods(s),
@@ -70,14 +71,18 @@ func ExposeDBusService(s ExposedDBusService) (err error) {
 		},
 	}
 
+	intrsp := introspect.NewIntrospectable(node)
 	err = conn.Export(
-		introspect.NewIntrospectable(node),
+		intrsp,
 		s.Path(),
 		"org.freedesktop.DBus.Introspectable",
 	)
 	if err != nil {
 		return err
 	}
+
+	// v, _ := intrsp.Introspect()
+	// fmt.Println("service_expose introspection", v)
 
 	return nil
 }
