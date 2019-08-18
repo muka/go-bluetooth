@@ -37,6 +37,7 @@ func RandomUUID() (string, error) {
 func NewApp(adapterID string) (*App, error) {
 
 	app := new(App)
+
 	app.adapterID = adapterID
 	app.services = make(map[dbus.ObjectPath]*Service)
 	app.path = dbus.ObjectPath(
@@ -46,9 +47,13 @@ func NewApp(adapterID string) (*App, error) {
 			appCounter,
 		),
 	)
+
 	app.advertisement = &advertising.LEAdvertisement1Properties{
 		Type: advertising.AdvertisementTypePeripheral,
 	}
+
+	app.AgentCaps = agent.CapKeyboardDisplay
+	app.AgentSetAsDefault = false
 
 	appCounter += 1
 
@@ -57,34 +62,21 @@ func NewApp(adapterID string) (*App, error) {
 
 // Wrap a bluetooth application exposing services
 type App struct {
-	path          dbus.ObjectPath
-	baseUUID      string
-	adapterID     string
+	path     dbus.ObjectPath
+	baseUUID string
+
+	adapterID string
+	adapter   *adapter.Adapter1
+
+	agent             agent.Agent1Client
+	AgentCaps         string
+	AgentSetAsDefault bool
+
 	conn          *dbus.Conn
-	agent         agent.Agent1Client
 	objectManager *api.DBusObjectManager
-	adapter       *adapter.Adapter1
 	services      map[dbus.ObjectPath]*Service
 	advertisement *advertising.LEAdvertisement1Properties
 	gm            *gatt.GattManager1
-}
-
-// return the app dbus path
-func (app *App) Path() dbus.ObjectPath {
-	return app.path
-}
-
-// return the dbus connection
-func (app *App) DBusConn() *dbus.Conn {
-	return app.conn
-}
-
-func (app *App) DBusObjectManager() *api.DBusObjectManager {
-	return app.objectManager
-}
-
-func (app *App) SetName(name string) {
-	app.advertisement.LocalName = name
 }
 
 func (app *App) init() error {
@@ -150,6 +142,11 @@ func (app *App) init() error {
 
 func (app *App) Run() (err error) {
 
+	err = app.ExposeAgent(app.AgentCaps, app.AgentSetAsDefault)
+	if err != nil {
+		return fmt.Errorf("ExposeAgent: %s", err)
+	}
+
 	gm, err := gatt.NewGattManager1FromAdapterID(app.adapterID)
 	if err != nil {
 		return err
@@ -168,10 +165,17 @@ func (app *App) Run() (err error) {
 func (app *App) Close() {
 
 	if app.agent != nil {
-		err := app.agent.Release()
+
+		err := agent.RemoveAgent(app.agent)
 		if err != nil {
-			log.Warnf("Agent1.Release: %s", err)
+			log.Warnf("RemoveAgent: %s", err)
 		}
+
+		// err =
+		app.agent.Release()
+		// if err != nil {
+		// 	log.Warnf("Agent1.Release: %s", err)
+		// }
 	}
 
 	if app.gm != nil {

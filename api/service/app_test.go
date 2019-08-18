@@ -7,7 +7,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func TestApp(t *testing.T) {
+func createTestApp(t *testing.T) *App {
 
 	log.SetLevel(log.TraceLevel)
 
@@ -15,7 +15,6 @@ func TestApp(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer a.Close()
 
 	s1, err := a.NewService()
 	if err != nil {
@@ -60,4 +59,10 @@ func TestApp(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	return a
+}
+
+func TestApp(t *testing.T) {
+	a := createTestApp(t)
+	defer a.Close()
 }

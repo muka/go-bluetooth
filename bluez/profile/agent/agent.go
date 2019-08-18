@@ -65,13 +65,30 @@ func SetTrusted(adapterID string, devicePath dbus.ObjectPath) error {
 	return fmt.Errorf("Cannot trust device %s, not found", path)
 }
 
+// RemoveAgent remove an Agent1 implementation from AgentManager1
+func RemoveAgent(ag Agent1Client) error {
+
+	am, err := NewAgentManager1()
+	if err != nil {
+		return fmt.Errorf("NewAgentManager1: %s", err)
+	}
+
+	// Register the exported interface as application agent via AgenManager API
+	err = am.UnregisterAgent(ag.Path())
+	if err != nil {
+		return fmt.Errorf("UnregisterAgent %s: %s", ag.Path(), err)
+	}
+
+	return nil
+}
+
 // ExposeAgent expose an Agent1 implementation to DBus and set as default agent
 func ExposeAgent(ag Agent1Client, caps string, setAsDefaultAgent bool) error {
 
 	// Register agent
 	am, err := NewAgentManager1()
 	if err != nil {
-		return err
+		return fmt.Errorf("NewAgentManager1: %s", err)
 	}
 
 	// Export the Go interface to DBus
@@ -83,7 +100,7 @@ func ExposeAgent(ag Agent1Client, caps string, setAsDefaultAgent bool) error {
 	// Register the exported interface as application agent via AgenManager API
 	err = am.RegisterAgent(ag.Path(), caps)
 	if err != nil {
-		return err
+		return fmt.Errorf("RegisterAgent %s: %s", ag.Path(), err)
 	}
 
 	if setAsDefaultAgent {
@@ -108,6 +125,8 @@ func exportAgent(agentInstance Agent1Client) error {
 
 	targetPath := agentInstance.Path()
 	agentInterfacePath := agentInstance.Interface()
+
+	log.Tracef("Exposing Agent1 at %s", targetPath)
 
 	//Export the given agent to the given path as interface "org.bluez.Agent1"
 	err = conn.Export(agentInstance, targetPath, agentInterfacePath)

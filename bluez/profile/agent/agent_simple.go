@@ -8,17 +8,20 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const SimpleAgentPath = "/go_bluetooth/simple_agent"
+var agentInstances = 0
+
+const SimpleAgentPath = "/org/bluez/agent/simple%d"
 const SimpleAgentPinCode = "0000"
 const SimpleAgentPassKey uint32 = 1024
 
 // NewDefaultSimpleAgent return a SimpleAgent instance with default pincode and passcode
 func NewDefaultSimpleAgent() *SimpleAgent {
 	ag := &SimpleAgent{
-		path:    SimpleAgentPath,
+		path:    dbus.ObjectPath(fmt.Sprintf(SimpleAgentPath, agentInstances)),
 		passKey: SimpleAgentPassKey,
 		pinCode: SimpleAgentPinCode,
 	}
+	agentInstances += 1
 	return ag
 }
 
@@ -43,6 +46,14 @@ func (self *SimpleAgent) SetPassKey(passkey uint32) {
 
 func (self *SimpleAgent) SetPassCode(pinCode string) {
 	self.pinCode = pinCode
+}
+
+func (self *SimpleAgent) PassKey() uint32 {
+	return self.passKey
+}
+
+func (self *SimpleAgent) PassCode() string {
+	return self.pinCode
 }
 
 func (self *SimpleAgent) Path() dbus.ObjectPath {

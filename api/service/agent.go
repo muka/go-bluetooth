@@ -4,5 +4,10 @@ import "github.com/muka/go-bluetooth/bluez/profile/agent"
 
 func (app *App) createAgent() (agent.Agent1Client, error) {
 	a := agent.NewDefaultSimpleAgent()
-	return a, agent.ExposeAgent(a, agent.CapKeyboardDisplay, false)
+	return a, nil
+}
+
+// Expose app agent on DBus
+func (app *App) ExposeAgent(caps string, setAsDefaultAgent bool) error {
+	return agent.ExposeAgent(app.agent, caps, setAsDefaultAgent)
 }

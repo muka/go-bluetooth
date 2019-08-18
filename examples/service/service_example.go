@@ -1,19 +1,11 @@
 package service_example
 
 import (
-	"os"
 	"time"
 
 	"github.com/muka/go-bluetooth/api/service"
 	log "github.com/sirupsen/logrus"
 )
-
-func fail(where string, err error) {
-	if err != nil {
-		log.Errorf("%s: %s", where, err)
-		os.Exit(1)
-	}
-}
 
 func Run(adapterID string, mode string, hwaddr string) error {
 
@@ -35,6 +27,8 @@ func serve(adapterID string) error {
 	defer a.Close()
 
 	a.SetName("go_bluetooth")
+
+	log.Infof("HW address %s", a.Adapter().Properties.Address)
 
 	service1, err := a.NewService()
 	if err != nil {
