@@ -56,6 +56,12 @@ type HealthChannel1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	Type The quality of service of the data channel. ("reliable"
+			or "streaming")
+	*/
+	Type string
+
+	/*
 	Device Identifies the Remote Device that is connected with.
 			Maps with a HealthDevice object.
 	*/
@@ -68,12 +74,6 @@ type HealthChannel1Properties struct {
 	*/
 	Application dbus.ObjectPath
 
-	/*
-	Type The quality of service of the data channel. ("reliable"
-			or "streaming")
-	*/
-	Type string
-
 }
 
 //Lock access to properties
@@ -84,6 +84,20 @@ func (p *HealthChannel1Properties) Lock() {
 //Unlock access to properties
 func (p *HealthChannel1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+
+
+// GetType get Type value
+func (a *HealthChannel1) GetType() (string, error) {
+	v, err := a.GetProperty("Type")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 
@@ -112,20 +126,6 @@ func (a *HealthChannel1) GetApplication() (dbus.ObjectPath, error) {
 		return dbus.ObjectPath(""), err
 	}
 	return v.Value().(dbus.ObjectPath), nil
-}
-
-
-
-
-
-
-// GetType get Type value
-func (a *HealthChannel1) GetType() (string, error) {
-	v, err := a.GetProperty("Type")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
 }
 
 

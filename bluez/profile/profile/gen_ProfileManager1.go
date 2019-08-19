@@ -5,8 +5,6 @@ package profile
 import (
    "sync"
    "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
    "github.com/godbus/dbus"
 )
 
@@ -27,13 +25,6 @@ func NewProfileManager1() (*ProfileManager1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
-	a.Properties = new(ProfileManager1Properties)
-
-	_, err := a.GetProperties()
-	if err != nil {
-		return nil, err
-	}
 	
 	return a, nil
 }
@@ -71,8 +62,6 @@ func (p *ProfileManager1Properties) Unlock() {
 
 // Close the connection
 func (a *ProfileManager1) Close() {
-	
-	a.unregisterPropertiesSignal()
 	
 	a.client.Disconnect()
 }
@@ -121,82 +110,6 @@ func (a *ProfileManager1) GetObjectManagerSignal() (chan *dbus.Signal, func(), e
 	}
 
 	return a.objectManagerSignal, cancel, nil
-}
-
-
-// ToMap convert a ProfileManager1Properties to map
-func (a *ProfileManager1Properties) ToMap() (map[string]interface{}, error) {
-	return props.ToMap(a), nil
-}
-
-// FromMap convert a map to an ProfileManager1Properties
-func (a *ProfileManager1Properties) FromMap(props map[string]interface{}) (*ProfileManager1Properties, error) {
-	props1 := map[string]dbus.Variant{}
-	for k, val := range props {
-		props1[k] = dbus.MakeVariant(val)
-	}
-	return a.FromDBusMap(props1)
-}
-
-// FromDBusMap convert a map to an ProfileManager1Properties
-func (a *ProfileManager1Properties) FromDBusMap(props map[string]dbus.Variant) (*ProfileManager1Properties, error) {
-	s := new(ProfileManager1Properties)
-	err := util.MapToStruct(s, props)
-	return s, err
-}
-
-// ToProps return the properties interface
-func (a *ProfileManager1) ToProps() bluez.Properties {
-	return a.Properties
-}
-
-// GetProperties load all available properties
-func (a *ProfileManager1) GetProperties() (*ProfileManager1Properties, error) {
-	a.Properties.Lock()
-	err := a.client.GetProperties(a.Properties)
-	a.Properties.Unlock()
-	return a.Properties, err
-}
-
-// SetProperty set a property
-func (a *ProfileManager1) SetProperty(name string, value interface{}) error {
-	return a.client.SetProperty(name, value)
-}
-
-// GetProperty get a property
-func (a *ProfileManager1) GetProperty(name string) (dbus.Variant, error) {
-	return a.client.GetProperty(name)
-}
-
-// GetPropertiesSignal return a channel for receiving udpdates on property changes
-func (a *ProfileManager1) GetPropertiesSignal() (chan *dbus.Signal, error) {
-
-	if a.propertiesSignal == nil {
-		s, err := a.client.Register(a.client.Config.Path, bluez.PropertiesInterface)
-		if err != nil {
-			return nil, err
-		}
-		a.propertiesSignal = s
-	}
-
-	return a.propertiesSignal, nil
-}
-
-// Unregister for changes signalling
-func (a *ProfileManager1) unregisterPropertiesSignal() {
-	if a.propertiesSignal != nil {
-		a.propertiesSignal <- nil
-		a.propertiesSignal = nil
-	}
-}
-
-// WatchProperties updates on property changes
-func (a *ProfileManager1) WatchProperties() (chan *bluez.PropertyChanged, error) {
-	return bluez.WatchProperties(a)
-}
-
-func (a *ProfileManager1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
-	return bluez.UnwatchProperties(a, ch)
 }
 
 
