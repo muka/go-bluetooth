@@ -17,6 +17,8 @@ import (
 // - callback: a callable function in the struct compatible with the signature of Prop.Callback. Omit for no callback
 type Properties interface {
 	ToMap() (map[string]interface{}, error)
+	Lock()
+	Unlock()
 }
 
 //BusType a type of DBus connection

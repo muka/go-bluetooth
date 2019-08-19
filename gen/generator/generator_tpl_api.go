@@ -29,8 +29,8 @@ func ApiTemplate(filename string, api gen.Api, apiGroup gen.ApiGroup) error {
 
 	if exposeProps {
 		propsImports := []string{
-			"log github.com/sirupsen/logrus",
-			"reflect",
+			// "log github.com/sirupsen/logrus",
+			// "reflect",
 			// "github.com/fatih/structs",
 			"github.com/muka/go-bluetooth/util",
 			"github.com/muka/go-bluetooth/props",

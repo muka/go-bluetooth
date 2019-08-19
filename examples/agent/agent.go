@@ -30,12 +30,18 @@ func Run(deviceAddress, adapterID string) error {
 		return fmt.Errorf("GetDevices: %s", err)
 	}
 
+	found := false
 	for _, dev := range devices {
 
 		if dev.Properties.Address != deviceAddress {
 			continue
 		}
 
+		if dev.Properties.Paired {
+			continue
+		}
+
+		found = true
 		// log.Info(i, v.Path)
 		log.Infof("Pairing with %s", dev.Properties.Address)
 
@@ -52,6 +58,10 @@ func Run(deviceAddress, adapterID string) error {
 			return fmt.Errorf("Connect failed: %s", err)
 		}
 
+	}
+
+	if !found {
+		return fmt.Errorf("No device found that need to pair on %s", adapterID)
 	}
 
 	log.Info("Working...")

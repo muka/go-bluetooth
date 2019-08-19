@@ -5,8 +5,6 @@ package advertising
 import (
    "sync"
    "github.com/muka/go-bluetooth/bluez"
-  log "github.com/sirupsen/logrus"
-   "reflect"
    "github.com/muka/go-bluetooth/util"
    "github.com/muka/go-bluetooth/props"
    "github.com/godbus/dbus"
@@ -64,20 +62,20 @@ type LEAdvertisement1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	DiscoverableTimeout The discoverable timeout in seconds. A value of zero
-			means that the timeout is disabled and it will stay in
-			discoverable/limited mode forever.
+	LocalName Local name to be used in the advertising report. If the
+			string is too big to fit into the packet it will be
+			truncated.
 
-			Note: This property shall not be set when Type is set
-			to broadcast.
+			If this property is available 'local-name' cannot be
+			present in the Includes.
 	*/
-	DiscoverableTimeout uint16
+	LocalName string
 
 	/*
-	ServiceUUIDs List of UUIDs to include in the "Service UUID" field of
-			the Advertising Data.
+	Timeout Timeout of the advertisement in seconds. This defines
+			the lifetime of the advertisement.
 	*/
-	ServiceUUIDs []string
+	Timeout uint16
 
 	/*
 	ManufacturerData Manufactuer Data fields to include in
@@ -111,15 +109,6 @@ type LEAdvertisement1Properties struct {
 	Data map[byte]interface{}
 
 	/*
-	Discoverable Advertise as general discoverable. When present this
-			will override adapter Discoverable property.
-
-			Note: This property shall not be set when Type is set
-			to broadcast.
-	*/
-	Discoverable bool
-
-	/*
 	Includes List of features to be included in the advertising
 			packet.
 
@@ -129,14 +118,14 @@ type LEAdvertisement1Properties struct {
 	Includes []string
 
 	/*
-	LocalName Local name to be used in the advertising report. If the
-			string is too big to fit into the packet it will be
-			truncated.
+	DiscoverableTimeout The discoverable timeout in seconds. A value of zero
+			means that the timeout is disabled and it will stay in
+			discoverable/limited mode forever.
 
-			If this property is available 'local-name' cannot be
-			present in the Includes.
+			Note: This property shall not be set when Type is set
+			to broadcast.
 	*/
-	LocalName string
+	DiscoverableTimeout uint16
 
 	/*
 	Appearance Appearance to be used in the advertising report.
@@ -146,11 +135,24 @@ type LEAdvertisement1Properties struct {
 	Appearance uint16
 
 	/*
+	Duration Duration of the advertisement in seconds. If there are
+			other applications advertising no duration is set the
+			default is 2 seconds.
+	*/
+	Duration uint16
+
+	/*
 	Type Determines the type of advertising packet requested.
 
 			Possible values: "broadcast" or "peripheral"
 	*/
 	Type string
+
+	/*
+	ServiceUUIDs List of UUIDs to include in the "Service UUID" field of
+			the Advertising Data.
+	*/
+	ServiceUUIDs []string
 
 	/*
 	SolicitUUIDs Array of UUIDs to include in "Service Solicitation"
@@ -159,17 +161,13 @@ type LEAdvertisement1Properties struct {
 	SolicitUUIDs []string
 
 	/*
-	Duration Duration of the advertisement in seconds. If there are
-			other applications advertising no duration is set the
-			default is 2 seconds.
-	*/
-	Duration uint16
+	Discoverable Advertise as general discoverable. When present this
+			will override adapter Discoverable property.
 
-	/*
-	Timeout Timeout of the advertisement in seconds. This defines
-			the lifetime of the advertisement.
+			Note: This property shall not be set when Type is set
+			to broadcast.
 	*/
-	Timeout uint16
+	Discoverable bool
 
 }
 
@@ -186,39 +184,39 @@ func (p *LEAdvertisement1Properties) Unlock() {
 
 
 
-// SetDiscoverableTimeout set DiscoverableTimeout value
-func (a *LEAdvertisement1) SetDiscoverableTimeout(v uint16) error {
-	return a.SetProperty("DiscoverableTimeout", v)
+// SetLocalName set LocalName value
+func (a *LEAdvertisement1) SetLocalName(v string) error {
+	return a.SetProperty("LocalName", v)
 }
 
 
 
-// GetDiscoverableTimeout get DiscoverableTimeout value
-func (a *LEAdvertisement1) GetDiscoverableTimeout() (uint16, error) {
-	v, err := a.GetProperty("DiscoverableTimeout")
+// GetLocalName get LocalName value
+func (a *LEAdvertisement1) GetLocalName() (string, error) {
+	v, err := a.GetProperty("LocalName")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+// SetTimeout set Timeout value
+func (a *LEAdvertisement1) SetTimeout(v uint16) error {
+	return a.SetProperty("Timeout", v)
+}
+
+
+
+// GetTimeout get Timeout value
+func (a *LEAdvertisement1) GetTimeout() (uint16, error) {
+	v, err := a.GetProperty("Timeout")
 	if err != nil {
 		return uint16(0), err
 	}
 	return v.Value().(uint16), nil
-}
-
-
-
-
-// SetServiceUUIDs set ServiceUUIDs value
-func (a *LEAdvertisement1) SetServiceUUIDs(v []string) error {
-	return a.SetProperty("ServiceUUIDs", v)
-}
-
-
-
-// GetServiceUUIDs get ServiceUUIDs value
-func (a *LEAdvertisement1) GetServiceUUIDs() ([]string, error) {
-	v, err := a.GetProperty("ServiceUUIDs")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
 }
 
 
@@ -281,25 +279,6 @@ func (a *LEAdvertisement1) GetData() (map[string]interface{}, error) {
 
 
 
-// SetDiscoverable set Discoverable value
-func (a *LEAdvertisement1) SetDiscoverable(v bool) error {
-	return a.SetProperty("Discoverable", v)
-}
-
-
-
-// GetDiscoverable get Discoverable value
-func (a *LEAdvertisement1) GetDiscoverable() (bool, error) {
-	v, err := a.GetProperty("Discoverable")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
 // SetIncludes set Includes value
 func (a *LEAdvertisement1) SetIncludes(v []string) error {
 	return a.SetProperty("Includes", v)
@@ -319,20 +298,20 @@ func (a *LEAdvertisement1) GetIncludes() ([]string, error) {
 
 
 
-// SetLocalName set LocalName value
-func (a *LEAdvertisement1) SetLocalName(v string) error {
-	return a.SetProperty("LocalName", v)
+// SetDiscoverableTimeout set DiscoverableTimeout value
+func (a *LEAdvertisement1) SetDiscoverableTimeout(v uint16) error {
+	return a.SetProperty("DiscoverableTimeout", v)
 }
 
 
 
-// GetLocalName get LocalName value
-func (a *LEAdvertisement1) GetLocalName() (string, error) {
-	v, err := a.GetProperty("LocalName")
+// GetDiscoverableTimeout get DiscoverableTimeout value
+func (a *LEAdvertisement1) GetDiscoverableTimeout() (uint16, error) {
+	v, err := a.GetProperty("DiscoverableTimeout")
 	if err != nil {
-		return "", err
+		return uint16(0), err
 	}
-	return v.Value().(string), nil
+	return v.Value().(uint16), nil
 }
 
 
@@ -348,6 +327,25 @@ func (a *LEAdvertisement1) SetAppearance(v uint16) error {
 // GetAppearance get Appearance value
 func (a *LEAdvertisement1) GetAppearance() (uint16, error) {
 	v, err := a.GetProperty("Appearance")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
+
+
+
+
+// SetDuration set Duration value
+func (a *LEAdvertisement1) SetDuration(v uint16) error {
+	return a.SetProperty("Duration", v)
+}
+
+
+
+// GetDuration get Duration value
+func (a *LEAdvertisement1) GetDuration() (uint16, error) {
+	v, err := a.GetProperty("Duration")
 	if err != nil {
 		return uint16(0), err
 	}
@@ -376,6 +374,25 @@ func (a *LEAdvertisement1) GetType() (string, error) {
 
 
 
+// SetServiceUUIDs set ServiceUUIDs value
+func (a *LEAdvertisement1) SetServiceUUIDs(v []string) error {
+	return a.SetProperty("ServiceUUIDs", v)
+}
+
+
+
+// GetServiceUUIDs get ServiceUUIDs value
+func (a *LEAdvertisement1) GetServiceUUIDs() ([]string, error) {
+	v, err := a.GetProperty("ServiceUUIDs")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
+}
+
+
+
+
 // SetSolicitUUIDs set SolicitUUIDs value
 func (a *LEAdvertisement1) SetSolicitUUIDs(v []string) error {
 	return a.SetProperty("SolicitUUIDs", v)
@@ -395,39 +412,20 @@ func (a *LEAdvertisement1) GetSolicitUUIDs() ([]string, error) {
 
 
 
-// SetDuration set Duration value
-func (a *LEAdvertisement1) SetDuration(v uint16) error {
-	return a.SetProperty("Duration", v)
+// SetDiscoverable set Discoverable value
+func (a *LEAdvertisement1) SetDiscoverable(v bool) error {
+	return a.SetProperty("Discoverable", v)
 }
 
 
 
-// GetDuration get Duration value
-func (a *LEAdvertisement1) GetDuration() (uint16, error) {
-	v, err := a.GetProperty("Duration")
+// GetDiscoverable get Discoverable value
+func (a *LEAdvertisement1) GetDiscoverable() (bool, error) {
+	v, err := a.GetProperty("Discoverable")
 	if err != nil {
-		return uint16(0), err
+		return false, err
 	}
-	return v.Value().(uint16), nil
-}
-
-
-
-
-// SetTimeout set Timeout value
-func (a *LEAdvertisement1) SetTimeout(v uint16) error {
-	return a.SetProperty("Timeout", v)
-}
-
-
-
-// GetTimeout get Timeout value
-func (a *LEAdvertisement1) GetTimeout() (uint16, error) {
-	v, err := a.GetProperty("Timeout")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
+	return v.Value().(bool), nil
 }
 
 
@@ -443,6 +441,11 @@ func (a *LEAdvertisement1) Close() {
 // Path return LEAdvertisement1 object path
 func (a *LEAdvertisement1) Path() dbus.ObjectPath {
 	return a.client.Config.Path
+}
+
+// Client return LEAdvertisement1 dbus client
+func (a *LEAdvertisement1) Client() *bluez.Client {
+	return a.client
 }
 
 // Interface return LEAdvertisement1 interface
@@ -503,6 +506,11 @@ func (a *LEAdvertisement1Properties) FromDBusMap(props map[string]dbus.Variant) 
 	return s, err
 }
 
+// ToProps return the properties interface
+func (a *LEAdvertisement1) ToProps() bluez.Properties {
+	return a.Properties
+}
+
 // GetProperties load all available properties
 func (a *LEAdvertisement1) GetProperties() (*LEAdvertisement1Properties, error) {
 	a.Properties.Lock()
@@ -545,83 +553,11 @@ func (a *LEAdvertisement1) unregisterPropertiesSignal() {
 
 // WatchProperties updates on property changes
 func (a *LEAdvertisement1) WatchProperties() (chan *bluez.PropertyChanged, error) {
-
-	// channel, err := a.client.Register(a.Path(), a.Interface())
-	channel, err := a.client.Register(a.Path(), bluez.PropertiesInterface)
-	if err != nil {
-		return nil, err
-	}
-
-	ch := make(chan *bluez.PropertyChanged)
-
-	go (func() {
-		for {
-
-			if channel == nil {
-				break
-			}
-
-			sig := <-channel
-
-			if sig == nil {
-				return
-			}
-
-			if sig.Name != bluez.PropertiesChanged {
-				continue
-			}
-			if sig.Path != a.Path() {
-				continue
-			}
-
-			iface := sig.Body[0].(string)
-			changes := sig.Body[1].(map[string]dbus.Variant)
-
-			for field, val := range changes {
-
-				// updates [*]Properties struct when a property change
-				s := reflect.ValueOf(a.Properties).Elem()
-				// exported field
-				f := s.FieldByName(field)
-				if f.IsValid() {
-					// A Value can be changed only if it is
-					// addressable and was not obtained by
-					// the use of unexported struct fields.
-					if f.CanSet() {
-						x := reflect.ValueOf(val.Value())
-						a.Properties.Lock()
-						// map[*]variant -> map[*]interface{}
-						ok, err := util.AssignMapVariantToInterface(f, x)
-						if err != nil {
-							log.Errorf("Failed to set %s: %s", f.String(), err)
-							continue
-						}
-						// direct assignment
-						if !ok {
-							f.Set(x)
-						}
-						a.Properties.Unlock()
-					}
-				}
-
-				propChanged := &bluez.PropertyChanged{
-					Interface: iface,
-					Name:      field,
-					Value:     val.Value(),
-				}
-				ch <- propChanged
-			}
-
-		}
-	})()
-
-	return ch, nil
+	return bluez.WatchProperties(a)
 }
 
 func (a *LEAdvertisement1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
-	ch <- nil
-	close(ch)
-	return nil
+	return bluez.UnwatchProperties(a, ch)
 }
 
 

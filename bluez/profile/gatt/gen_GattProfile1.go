@@ -1,19 +1,15 @@
 package gatt
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-  log "github.com/sirupsen/logrus"
-   "reflect"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus"
+	"sync"
+
+	"github.com/godbus/dbus"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var GattProfile1Interface = "org.bluez.GattProfile1"
-
 
 // NewGattProfile1 create a new instance of GattProfile1
 //
@@ -30,17 +26,16 @@ func NewGattProfile1(servicePath string, objectPath dbus.ObjectPath) (*GattProfi
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
+
 	a.Properties = new(GattProfile1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return a, nil
 }
-
 
 /*
 GattProfile1 GATT Profile hierarchy
@@ -52,11 +47,11 @@ supporting it.
 
 */
 type GattProfile1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
+	client              *bluez.Client
+	propertiesSignal    chan *dbus.Signal
 	objectManagerSignal chan *dbus.Signal
 	objectManager       *bluez.ObjectManager
-	Properties 				*GattProfile1Properties
+	Properties          *GattProfile1Properties
 }
 
 // GattProfile1Properties contains the exposed properties of an interface
@@ -64,10 +59,9 @@ type GattProfile1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	UUIDs 128-bit GATT service UUIDs to auto connect.
+		UUIDs 128-bit GATT service UUIDs to auto connect.
 	*/
 	UUIDs []string
-
 }
 
 //Lock access to properties
@@ -80,15 +74,10 @@ func (p *GattProfile1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
-
 // SetUUIDs set UUIDs value
 func (a *GattProfile1) SetUUIDs(v []string) error {
 	return a.SetProperty("UUIDs", v)
 }
-
-
 
 // GetUUIDs get UUIDs value
 func (a *GattProfile1) GetUUIDs() ([]string, error) {
@@ -99,19 +88,22 @@ func (a *GattProfile1) GetUUIDs() ([]string, error) {
 	return v.Value().([]string), nil
 }
 
-
-
 // Close the connection
 func (a *GattProfile1) Close() {
-	
+
 	a.unregisterPropertiesSignal()
-	
+
 	a.client.Disconnect()
 }
 
 // Path return GattProfile1 object path
 func (a *GattProfile1) Path() dbus.ObjectPath {
 	return a.client.Config.Path
+}
+
+// Client return GattProfile1 dbus client
+func (a *GattProfile1) Client() *bluez.Client {
+	return a.client
 }
 
 // Interface return GattProfile1 interface
@@ -150,7 +142,6 @@ func (a *GattProfile1) GetObjectManagerSignal() (chan *dbus.Signal, func(), erro
 	return a.objectManagerSignal, cancel, nil
 }
 
-
 // ToMap convert a GattProfile1Properties to map
 func (a *GattProfile1Properties) ToMap() (map[string]interface{}, error) {
 	return props.ToMap(a), nil
@@ -170,6 +161,11 @@ func (a *GattProfile1Properties) FromDBusMap(props map[string]dbus.Variant) (*Ga
 	s := new(GattProfile1Properties)
 	err := util.MapToStruct(s, props)
 	return s, err
+}
+
+// ToProps return the properties interface
+func (a *GattProfile1) ToProps() bluez.Properties {
+	return a.Properties
 }
 
 // GetProperties load all available properties
@@ -214,90 +210,15 @@ func (a *GattProfile1) unregisterPropertiesSignal() {
 
 // WatchProperties updates on property changes
 func (a *GattProfile1) WatchProperties() (chan *bluez.PropertyChanged, error) {
-
-	// channel, err := a.client.Register(a.Path(), a.Interface())
-	channel, err := a.client.Register(a.Path(), bluez.PropertiesInterface)
-	if err != nil {
-		return nil, err
-	}
-
-	ch := make(chan *bluez.PropertyChanged)
-
-	go (func() {
-		for {
-
-			if channel == nil {
-				break
-			}
-
-			sig := <-channel
-
-			if sig == nil {
-				return
-			}
-
-			if sig.Name != bluez.PropertiesChanged {
-				continue
-			}
-			if sig.Path != a.Path() {
-				continue
-			}
-
-			iface := sig.Body[0].(string)
-			changes := sig.Body[1].(map[string]dbus.Variant)
-
-			for field, val := range changes {
-
-				// updates [*]Properties struct when a property change
-				s := reflect.ValueOf(a.Properties).Elem()
-				// exported field
-				f := s.FieldByName(field)
-				if f.IsValid() {
-					// A Value can be changed only if it is
-					// addressable and was not obtained by
-					// the use of unexported struct fields.
-					if f.CanSet() {
-						x := reflect.ValueOf(val.Value())
-						a.Properties.Lock()
-						// map[*]variant -> map[*]interface{}
-						ok, err := util.AssignMapVariantToInterface(f, x)
-						if err != nil {
-							log.Errorf("Failed to set %s: %s", f.String(), err)
-							continue
-						}
-						// direct assignment
-						if !ok {
-							f.Set(x)
-						}
-						a.Properties.Unlock()
-					}
-				}
-
-				propChanged := &bluez.PropertyChanged{
-					Interface: iface,
-					Name:      field,
-					Value:     val.Value(),
-				}
-				ch <- propChanged
-			}
-
-		}
-	})()
-
-	return ch, nil
+	return bluez.WatchProperties(a)
 }
 
 func (a *GattProfile1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
-	ch <- nil
-	close(ch)
-	return nil
+	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
-Release 
+Release
 			This method gets called when the service daemon
 			unregisters the profile. The profile can use it to
 			do cleanup tasks. There is no need to unregister the
@@ -307,8 +228,7 @@ Release
 
 */
 func (a *GattProfile1) Release() error {
-	
-	return a.client.Call("Release", 0, ).Store()
-	
-}
 
+	return a.client.Call("Release", 0).Store()
+
+}

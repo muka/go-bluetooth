@@ -5,8 +5,6 @@ package media
 import (
    "sync"
    "github.com/muka/go-bluetooth/bluez"
-  log "github.com/sirupsen/logrus"
-   "reflect"
    "github.com/muka/go-bluetooth/util"
    "github.com/muka/go-bluetooth/props"
    "github.com/godbus/dbus"
@@ -84,6 +82,27 @@ type MediaFolder1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	NumberOfItems Number of items in the folder
+	*/
+	NumberOfItems uint32
+
+	/*
+	Name Folder name:
+
+			Possible values:
+				"/Filesystem/...": Filesystem scope
+				"/NowPlaying/...": NowPlaying scope
+
+			Note: /NowPlaying folder might not be listed if player
+			is stopped, folders created by Search are virtual so
+			once another Search is perform or the folder is
+			changed using ChangeFolder it will no longer be listed.
+
+Filters
+	*/
+	Name string
+
+	/*
 	Start Offset of the first item.
 
 			Default value: 0
@@ -109,27 +128,6 @@ type MediaFolder1Properties struct {
 	*/
 	Attributes []string
 
-	/*
-	NumberOfItems Number of items in the folder
-	*/
-	NumberOfItems uint32
-
-	/*
-	Name Folder name:
-
-			Possible values:
-				"/Filesystem/...": Filesystem scope
-				"/NowPlaying/...": NowPlaying scope
-
-			Note: /NowPlaying folder might not be listed if player
-			is stopped, folders created by Search are virtual so
-			once another Search is perform or the folder is
-			changed using ChangeFolder it will no longer be listed.
-
-Filters
-	*/
-	Name string
-
 }
 
 //Lock access to properties
@@ -140,6 +138,34 @@ func (p *MediaFolder1Properties) Lock() {
 //Unlock access to properties
 func (p *MediaFolder1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+
+
+// GetNumberOfItems get NumberOfItems value
+func (a *MediaFolder1) GetNumberOfItems() (uint32, error) {
+	v, err := a.GetProperty("NumberOfItems")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
+
+
+
+
+
+
+// GetName get Name value
+func (a *MediaFolder1) GetName() (string, error) {
+	v, err := a.GetProperty("Name")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 
@@ -201,34 +227,6 @@ func (a *MediaFolder1) GetAttributes() ([]string, error) {
 
 
 
-
-
-
-// GetNumberOfItems get NumberOfItems value
-func (a *MediaFolder1) GetNumberOfItems() (uint32, error) {
-	v, err := a.GetProperty("NumberOfItems")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
-}
-
-
-
-
-
-
-// GetName get Name value
-func (a *MediaFolder1) GetName() (string, error) {
-	v, err := a.GetProperty("Name")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
 // Close the connection
 func (a *MediaFolder1) Close() {
 	
@@ -240,6 +238,11 @@ func (a *MediaFolder1) Close() {
 // Path return MediaFolder1 object path
 func (a *MediaFolder1) Path() dbus.ObjectPath {
 	return a.client.Config.Path
+}
+
+// Client return MediaFolder1 dbus client
+func (a *MediaFolder1) Client() *bluez.Client {
+	return a.client
 }
 
 // Interface return MediaFolder1 interface
@@ -300,6 +303,11 @@ func (a *MediaFolder1Properties) FromDBusMap(props map[string]dbus.Variant) (*Me
 	return s, err
 }
 
+// ToProps return the properties interface
+func (a *MediaFolder1) ToProps() bluez.Properties {
+	return a.Properties
+}
+
 // GetProperties load all available properties
 func (a *MediaFolder1) GetProperties() (*MediaFolder1Properties, error) {
 	a.Properties.Lock()
@@ -342,83 +350,11 @@ func (a *MediaFolder1) unregisterPropertiesSignal() {
 
 // WatchProperties updates on property changes
 func (a *MediaFolder1) WatchProperties() (chan *bluez.PropertyChanged, error) {
-
-	// channel, err := a.client.Register(a.Path(), a.Interface())
-	channel, err := a.client.Register(a.Path(), bluez.PropertiesInterface)
-	if err != nil {
-		return nil, err
-	}
-
-	ch := make(chan *bluez.PropertyChanged)
-
-	go (func() {
-		for {
-
-			if channel == nil {
-				break
-			}
-
-			sig := <-channel
-
-			if sig == nil {
-				return
-			}
-
-			if sig.Name != bluez.PropertiesChanged {
-				continue
-			}
-			if sig.Path != a.Path() {
-				continue
-			}
-
-			iface := sig.Body[0].(string)
-			changes := sig.Body[1].(map[string]dbus.Variant)
-
-			for field, val := range changes {
-
-				// updates [*]Properties struct when a property change
-				s := reflect.ValueOf(a.Properties).Elem()
-				// exported field
-				f := s.FieldByName(field)
-				if f.IsValid() {
-					// A Value can be changed only if it is
-					// addressable and was not obtained by
-					// the use of unexported struct fields.
-					if f.CanSet() {
-						x := reflect.ValueOf(val.Value())
-						a.Properties.Lock()
-						// map[*]variant -> map[*]interface{}
-						ok, err := util.AssignMapVariantToInterface(f, x)
-						if err != nil {
-							log.Errorf("Failed to set %s: %s", f.String(), err)
-							continue
-						}
-						// direct assignment
-						if !ok {
-							f.Set(x)
-						}
-						a.Properties.Unlock()
-					}
-				}
-
-				propChanged := &bluez.PropertyChanged{
-					Interface: iface,
-					Name:      field,
-					Value:     val.Value(),
-				}
-				ch <- propChanged
-			}
-
-		}
-	})()
-
-	return ch, nil
+	return bluez.WatchProperties(a)
 }
 
 func (a *MediaFolder1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
-	ch <- nil
-	close(ch)
-	return nil
+	return bluez.UnwatchProperties(a, ch)
 }
 
 

@@ -5,8 +5,6 @@ package adapter
 import (
    "sync"
    "github.com/muka/go-bluetooth/bluez"
-  log "github.com/sirupsen/logrus"
-   "reflect"
    "github.com/muka/go-bluetooth/util"
    "github.com/muka/go-bluetooth/props"
    "github.com/godbus/dbus"
@@ -82,38 +80,32 @@ type Adapter1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Modalias Local Device ID information in modalias format
-			used by the kernel and udev.
+	PairableTimeout The pairable timeout in seconds. A value of zero
+			means that the timeout is disabled and it will stay in
+			pairable mode forever.
+
+			The default value for pairable timeout should be
+			disabled (value 0).
 	*/
-	Modalias string
+	PairableTimeout uint32
 
 	/*
-	Name The Bluetooth system name (pretty hostname).
-
-			This property is either a static system default
-			or controlled by an external daemon providing
-			access to the pretty hostname configuration.
+	Discovering Indicates that a device discovery procedure is active.
 	*/
-	Name string
+	Discovering bool
 
 	/*
-	Class The Bluetooth class of device.
+	AddressType The Bluetooth  Address Type. For dual-mode and BR/EDR
+			only adapter this defaults to "public". Single mode LE
+			adapters may have either value. With privacy enabled
+			this contains type of Identity Address and not type of
+			address used for connection.
 
-			This property represents the value that is either
-			automatically configured by DMI/ACPI information
-			or provided as static configuration.
+			Possible values:
+				"public" - Public address
+				"random" - Random address
 	*/
-	Class uint32
-
-	/*
-	Powered Switch an adapter on or off. This will also set the
-			appropriate connectable state of the controller.
-
-			The value of this property is not persistent. After
-			restart or unplugging of the adapter it will reset
-			back to false.
-	*/
-	Powered bool
+	AddressType string
 
 	/*
 	Discoverable Switch an adapter to discoverable or non-discoverable
@@ -149,14 +141,23 @@ type Adapter1Properties struct {
 	Pairable bool
 
 	/*
-	PairableTimeout The pairable timeout in seconds. A value of zero
-			means that the timeout is disabled and it will stay in
-			pairable mode forever.
+	Class The Bluetooth class of device.
 
-			The default value for pairable timeout should be
-			disabled (value 0).
+			This property represents the value that is either
+			automatically configured by DMI/ACPI information
+			or provided as static configuration.
 	*/
-	PairableTimeout uint32
+	Class uint32
+
+	/*
+	Powered Switch an adapter on or off. This will also set the
+			appropriate connectable state of the controller.
+
+			The value of this property is not persistent. After
+			restart or unplugging of the adapter it will reset
+			back to false.
+	*/
+	Powered bool
 
 	/*
 	DiscoverableTimeout The discoverable timeout in seconds. A value of zero
@@ -169,22 +170,30 @@ type Adapter1Properties struct {
 	DiscoverableTimeout uint32
 
 	/*
+	UUIDs List of 128-bit UUIDs that represents the available
+			local services.
+	*/
+	UUIDs []string
+
+	/*
+	Modalias Local Device ID information in modalias format
+			used by the kernel and udev.
+	*/
+	Modalias string
+
+	/*
 	Address The Bluetooth device address.
 	*/
 	Address string
 
 	/*
-	AddressType The Bluetooth  Address Type. For dual-mode and BR/EDR
-			only adapter this defaults to "public". Single mode LE
-			adapters may have either value. With privacy enabled
-			this contains type of Identity Address and not type of
-			address used for connection.
+	Name The Bluetooth system name (pretty hostname).
 
-			Possible values:
-				"public" - Public address
-				"random" - Random address
+			This property is either a static system default
+			or controlled by an external daemon providing
+			access to the pretty hostname configuration.
 	*/
-	AddressType string
+	Name string
 
 	/*
 	Alias The Bluetooth friendly name. This value can be
@@ -206,17 +215,6 @@ type Adapter1Properties struct {
 	*/
 	Alias string
 
-	/*
-	Discovering Indicates that a device discovery procedure is active.
-	*/
-	Discovering bool
-
-	/*
-	UUIDs List of 128-bit UUIDs that represents the available
-			local services.
-	*/
-	UUIDs []string
-
 }
 
 //Lock access to properties
@@ -232,39 +230,16 @@ func (p *Adapter1Properties) Unlock() {
 
 
 
-
-
-// GetModalias get Modalias value
-func (a *Adapter1) GetModalias() (string, error) {
-	v, err := a.GetProperty("Modalias")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
+// SetPairableTimeout set PairableTimeout value
+func (a *Adapter1) SetPairableTimeout(v uint32) error {
+	return a.SetProperty("PairableTimeout", v)
 }
 
 
 
-
-
-
-// GetName get Name value
-func (a *Adapter1) GetName() (string, error) {
-	v, err := a.GetProperty("Name")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-
-
-// GetClass get Class value
-func (a *Adapter1) GetClass() (uint32, error) {
-	v, err := a.GetProperty("Class")
+// GetPairableTimeout get PairableTimeout value
+func (a *Adapter1) GetPairableTimeout() (uint32, error) {
+	v, err := a.GetProperty("PairableTimeout")
 	if err != nil {
 		return uint32(0), err
 	}
@@ -274,20 +249,29 @@ func (a *Adapter1) GetClass() (uint32, error) {
 
 
 
-// SetPowered set Powered value
-func (a *Adapter1) SetPowered(v bool) error {
-	return a.SetProperty("Powered", v)
-}
 
 
-
-// GetPowered get Powered value
-func (a *Adapter1) GetPowered() (bool, error) {
-	v, err := a.GetProperty("Powered")
+// GetDiscovering get Discovering value
+func (a *Adapter1) GetDiscovering() (bool, error) {
+	v, err := a.GetProperty("Discovering")
 	if err != nil {
 		return false, err
 	}
 	return v.Value().(bool), nil
+}
+
+
+
+
+
+
+// GetAddressType get AddressType value
+func (a *Adapter1) GetAddressType() (string, error) {
+	v, err := a.GetProperty("AddressType")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 
@@ -331,20 +315,34 @@ func (a *Adapter1) GetPairable() (bool, error) {
 
 
 
-// SetPairableTimeout set PairableTimeout value
-func (a *Adapter1) SetPairableTimeout(v uint32) error {
-	return a.SetProperty("PairableTimeout", v)
-}
 
 
-
-// GetPairableTimeout get PairableTimeout value
-func (a *Adapter1) GetPairableTimeout() (uint32, error) {
-	v, err := a.GetProperty("PairableTimeout")
+// GetClass get Class value
+func (a *Adapter1) GetClass() (uint32, error) {
+	v, err := a.GetProperty("Class")
 	if err != nil {
 		return uint32(0), err
 	}
 	return v.Value().(uint32), nil
+}
+
+
+
+
+// SetPowered set Powered value
+func (a *Adapter1) SetPowered(v bool) error {
+	return a.SetProperty("Powered", v)
+}
+
+
+
+// GetPowered get Powered value
+func (a *Adapter1) GetPowered() (bool, error) {
+	v, err := a.GetProperty("Powered")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
 }
 
 
@@ -371,6 +369,34 @@ func (a *Adapter1) GetDiscoverableTimeout() (uint32, error) {
 
 
 
+// GetUUIDs get UUIDs value
+func (a *Adapter1) GetUUIDs() ([]string, error) {
+	v, err := a.GetProperty("UUIDs")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
+}
+
+
+
+
+
+
+// GetModalias get Modalias value
+func (a *Adapter1) GetModalias() (string, error) {
+	v, err := a.GetProperty("Modalias")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+
+
 // GetAddress get Address value
 func (a *Adapter1) GetAddress() (string, error) {
 	v, err := a.GetProperty("Address")
@@ -385,9 +411,9 @@ func (a *Adapter1) GetAddress() (string, error) {
 
 
 
-// GetAddressType get AddressType value
-func (a *Adapter1) GetAddressType() (string, error) {
-	v, err := a.GetProperty("AddressType")
+// GetName get Name value
+func (a *Adapter1) GetName() (string, error) {
+	v, err := a.GetProperty("Name")
 	if err != nil {
 		return "", err
 	}
@@ -415,34 +441,6 @@ func (a *Adapter1) GetAlias() (string, error) {
 
 
 
-
-
-
-// GetDiscovering get Discovering value
-func (a *Adapter1) GetDiscovering() (bool, error) {
-	v, err := a.GetProperty("Discovering")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-
-
-// GetUUIDs get UUIDs value
-func (a *Adapter1) GetUUIDs() ([]string, error) {
-	v, err := a.GetProperty("UUIDs")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
-}
-
-
-
 // Close the connection
 func (a *Adapter1) Close() {
 	
@@ -454,6 +452,11 @@ func (a *Adapter1) Close() {
 // Path return Adapter1 object path
 func (a *Adapter1) Path() dbus.ObjectPath {
 	return a.client.Config.Path
+}
+
+// Client return Adapter1 dbus client
+func (a *Adapter1) Client() *bluez.Client {
+	return a.client
 }
 
 // Interface return Adapter1 interface
@@ -514,6 +517,11 @@ func (a *Adapter1Properties) FromDBusMap(props map[string]dbus.Variant) (*Adapte
 	return s, err
 }
 
+// ToProps return the properties interface
+func (a *Adapter1) ToProps() bluez.Properties {
+	return a.Properties
+}
+
 // GetProperties load all available properties
 func (a *Adapter1) GetProperties() (*Adapter1Properties, error) {
 	a.Properties.Lock()
@@ -556,83 +564,11 @@ func (a *Adapter1) unregisterPropertiesSignal() {
 
 // WatchProperties updates on property changes
 func (a *Adapter1) WatchProperties() (chan *bluez.PropertyChanged, error) {
-
-	// channel, err := a.client.Register(a.Path(), a.Interface())
-	channel, err := a.client.Register(a.Path(), bluez.PropertiesInterface)
-	if err != nil {
-		return nil, err
-	}
-
-	ch := make(chan *bluez.PropertyChanged)
-
-	go (func() {
-		for {
-
-			if channel == nil {
-				break
-			}
-
-			sig := <-channel
-
-			if sig == nil {
-				return
-			}
-
-			if sig.Name != bluez.PropertiesChanged {
-				continue
-			}
-			if sig.Path != a.Path() {
-				continue
-			}
-
-			iface := sig.Body[0].(string)
-			changes := sig.Body[1].(map[string]dbus.Variant)
-
-			for field, val := range changes {
-
-				// updates [*]Properties struct when a property change
-				s := reflect.ValueOf(a.Properties).Elem()
-				// exported field
-				f := s.FieldByName(field)
-				if f.IsValid() {
-					// A Value can be changed only if it is
-					// addressable and was not obtained by
-					// the use of unexported struct fields.
-					if f.CanSet() {
-						x := reflect.ValueOf(val.Value())
-						a.Properties.Lock()
-						// map[*]variant -> map[*]interface{}
-						ok, err := util.AssignMapVariantToInterface(f, x)
-						if err != nil {
-							log.Errorf("Failed to set %s: %s", f.String(), err)
-							continue
-						}
-						// direct assignment
-						if !ok {
-							f.Set(x)
-						}
-						a.Properties.Unlock()
-					}
-				}
-
-				propChanged := &bluez.PropertyChanged{
-					Interface: iface,
-					Name:      field,
-					Value:     val.Value(),
-				}
-				ch <- propChanged
-			}
-
-		}
-	})()
-
-	return ch, nil
+	return bluez.WatchProperties(a)
 }
 
 func (a *Adapter1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
-	ch <- nil
-	close(ch)
-	return nil
+	return bluez.UnwatchProperties(a, ch)
 }
 
 

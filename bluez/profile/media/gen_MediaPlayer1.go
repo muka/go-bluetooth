@@ -5,8 +5,6 @@ package media
 import (
    "sync"
    "github.com/muka/go-bluetooth/bluez"
-  log "github.com/sirupsen/logrus"
-   "reflect"
    "github.com/muka/go-bluetooth/util"
    "github.com/muka/go-bluetooth/props"
    "github.com/godbus/dbus"
@@ -58,63 +56,9 @@ type MediaPlayer1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Track Track metadata.
-
-			Possible values:
-	*/
-	Track map[string]interface{}
-
-	/*
-	Album Track album name
-	*/
-	Album string
-
-	/*
-	NumberOfTracks Number of tracks in total
-	*/
-	NumberOfTracks uint32
-
-	/*
-	Device Device object path.
-	*/
-	Device dbus.ObjectPath
-
-	/*
-	Type Player type
-
-			Possible values:
-
-				"Audio"
-				"Video"
-				"Audio Broadcasting"
-				"Video Broadcasting"
-	*/
-	Type string
-
-	/*
-	Subtype Player subtype
-
-			Possible values:
-
-				"Audio Book"
-				"Podcast"
-	*/
-	Subtype string
-
-	/*
 	Playlist Playlist object path.
 	*/
 	Playlist dbus.ObjectPath
-
-	/*
-	Shuffle Possible values: "off", "alltracks" or "group"
-	*/
-	Shuffle string
-
-	/*
-	TrackNumber Track number
-	*/
-	TrackNumber uint32
 
 	/*
 	Equalizer Possible values: "off" or "on"
@@ -122,22 +66,29 @@ type MediaPlayer1Properties struct {
 	Equalizer string
 
 	/*
-	Repeat Possible values: "off", "singletrack", "alltracks" or
-					"group"
+	Title Track title name
 	*/
-	Repeat string
+	Title string
 
 	/*
-	Status Possible status: "playing", "stopped", "paused",
-					"forward-seek", "reverse-seek"
-					or "error"
+	Album Track album name
 	*/
-	Status string
+	Album string
 
 	/*
-	Artist Track artist name
+	Browsable If present indicates the player can be browsed using
+			MediaFolder interface.
+
+			Possible values:
+
+				True: Supported and active
+				False: Supported but inactive
+
+			Note: If supported but inactive clients can enable it
+			by using MediaFolder interface but it might interfere
+			in the playback of other players.
 	*/
-	Artist string
+	Browsable bool
 
 	/*
 	Searchable If present indicates the player can be searched using
@@ -155,9 +106,54 @@ type MediaPlayer1Properties struct {
 	Searchable bool
 
 	/*
-	Scan Possible values: "off", "alltracks" or "group"
+	TrackNumber Track number
 	*/
-	Scan string
+	TrackNumber uint32
+
+	/*
+	Name Player name
+	*/
+	Name string
+
+	/*
+	Type Player type
+
+			Possible values:
+
+				"Audio"
+				"Video"
+				"Audio Broadcasting"
+				"Video Broadcasting"
+	*/
+	Type string
+
+	/*
+	Repeat Possible values: "off", "singletrack", "alltracks" or
+					"group"
+	*/
+	Repeat string
+
+	/*
+	Shuffle Possible values: "off", "alltracks" or "group"
+	*/
+	Shuffle string
+
+	/*
+	Status Possible status: "playing", "stopped", "paused",
+					"forward-seek", "reverse-seek"
+					or "error"
+	*/
+	Status string
+
+	/*
+	Genre Track genre name
+	*/
+	Genre string
+
+	/*
+	NumberOfTracks Number of tracks in total
+	*/
+	NumberOfTracks uint32
 
 	/*
 	Position Playback position in milliseconds. Changing the
@@ -172,39 +168,41 @@ type MediaPlayer1Properties struct {
 	Position uint32
 
 	/*
-	Title Track title name
+	Track Track metadata.
+
+			Possible values:
 	*/
-	Title string
+	Track map[string]interface{}
 
 	/*
-	Genre Track genre name
+	Device Device object path.
 	*/
-	Genre string
+	Device dbus.ObjectPath
+
+	/*
+	Subtype Player subtype
+
+			Possible values:
+
+				"Audio Book"
+				"Podcast"
+	*/
+	Subtype string
+
+	/*
+	Scan Possible values: "off", "alltracks" or "group"
+	*/
+	Scan string
+
+	/*
+	Artist Track artist name
+	*/
+	Artist string
 
 	/*
 	Duration Track duration in milliseconds
 	*/
 	Duration uint32
-
-	/*
-	Name Player name
-	*/
-	Name string
-
-	/*
-	Browsable If present indicates the player can be browsed using
-			MediaFolder interface.
-
-			Possible values:
-
-				True: Supported and active
-				False: Supported but inactive
-
-			Note: If supported but inactive clients can enable it
-			by using MediaFolder interface but it might interfere
-			in the playback of other players.
-	*/
-	Browsable bool
 
 }
 
@@ -221,15 +219,58 @@ func (p *MediaPlayer1Properties) Unlock() {
 
 
 
+// SetPlaylist set Playlist value
+func (a *MediaPlayer1) SetPlaylist(v dbus.ObjectPath) error {
+	return a.SetProperty("Playlist", v)
+}
 
 
-// GetTrack get Track value
-func (a *MediaPlayer1) GetTrack() (map[string]interface{}, error) {
-	v, err := a.GetProperty("Track")
+
+// GetPlaylist get Playlist value
+func (a *MediaPlayer1) GetPlaylist() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Playlist")
 	if err != nil {
-		return map[string]interface{}{}, err
+		return dbus.ObjectPath(""), err
 	}
-	return v.Value().(map[string]interface{}), nil
+	return v.Value().(dbus.ObjectPath), nil
+}
+
+
+
+
+// SetEqualizer set Equalizer value
+func (a *MediaPlayer1) SetEqualizer(v string) error {
+	return a.SetProperty("Equalizer", v)
+}
+
+
+
+// GetEqualizer get Equalizer value
+func (a *MediaPlayer1) GetEqualizer() (string, error) {
+	v, err := a.GetProperty("Equalizer")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+// SetTitle set Title value
+func (a *MediaPlayer1) SetTitle(v string) error {
+	return a.SetProperty("Title", v)
+}
+
+
+
+// GetTitle get Title value
+func (a *MediaPlayer1) GetTitle() (string, error) {
+	v, err := a.GetProperty("Title")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 
@@ -245,6 +286,152 @@ func (a *MediaPlayer1) SetAlbum(v string) error {
 // GetAlbum get Album value
 func (a *MediaPlayer1) GetAlbum() (string, error) {
 	v, err := a.GetProperty("Album")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+
+
+// GetBrowsable get Browsable value
+func (a *MediaPlayer1) GetBrowsable() (bool, error) {
+	v, err := a.GetProperty("Browsable")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+
+
+// GetSearchable get Searchable value
+func (a *MediaPlayer1) GetSearchable() (bool, error) {
+	v, err := a.GetProperty("Searchable")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+// SetTrackNumber set TrackNumber value
+func (a *MediaPlayer1) SetTrackNumber(v uint32) error {
+	return a.SetProperty("TrackNumber", v)
+}
+
+
+
+// GetTrackNumber get TrackNumber value
+func (a *MediaPlayer1) GetTrackNumber() (uint32, error) {
+	v, err := a.GetProperty("TrackNumber")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
+
+
+
+
+
+
+// GetName get Name value
+func (a *MediaPlayer1) GetName() (string, error) {
+	v, err := a.GetProperty("Name")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+
+
+// GetType get Type value
+func (a *MediaPlayer1) GetType() (string, error) {
+	v, err := a.GetProperty("Type")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+// SetRepeat set Repeat value
+func (a *MediaPlayer1) SetRepeat(v string) error {
+	return a.SetProperty("Repeat", v)
+}
+
+
+
+// GetRepeat get Repeat value
+func (a *MediaPlayer1) GetRepeat() (string, error) {
+	v, err := a.GetProperty("Repeat")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+// SetShuffle set Shuffle value
+func (a *MediaPlayer1) SetShuffle(v string) error {
+	return a.SetProperty("Shuffle", v)
+}
+
+
+
+// GetShuffle get Shuffle value
+func (a *MediaPlayer1) GetShuffle() (string, error) {
+	v, err := a.GetProperty("Shuffle")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+
+
+// GetStatus get Status value
+func (a *MediaPlayer1) GetStatus() (string, error) {
+	v, err := a.GetProperty("Status")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+// SetGenre set Genre value
+func (a *MediaPlayer1) SetGenre(v string) error {
+	return a.SetProperty("Genre", v)
+}
+
+
+
+// GetGenre get Genre value
+func (a *MediaPlayer1) GetGenre() (string, error) {
+	v, err := a.GetProperty("Genre")
 	if err != nil {
 		return "", err
 	}
@@ -275,13 +462,13 @@ func (a *MediaPlayer1) GetNumberOfTracks() (uint32, error) {
 
 
 
-// GetDevice get Device value
-func (a *MediaPlayer1) GetDevice() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Device")
+// GetPosition get Position value
+func (a *MediaPlayer1) GetPosition() (uint32, error) {
+	v, err := a.GetProperty("Position")
 	if err != nil {
-		return dbus.ObjectPath(""), err
+		return uint32(0), err
 	}
-	return v.Value().(dbus.ObjectPath), nil
+	return v.Value().(uint32), nil
 }
 
 
@@ -289,13 +476,27 @@ func (a *MediaPlayer1) GetDevice() (dbus.ObjectPath, error) {
 
 
 
-// GetType get Type value
-func (a *MediaPlayer1) GetType() (string, error) {
-	v, err := a.GetProperty("Type")
+// GetTrack get Track value
+func (a *MediaPlayer1) GetTrack() (map[string]interface{}, error) {
+	v, err := a.GetProperty("Track")
 	if err != nil {
-		return "", err
+		return map[string]interface{}{}, err
 	}
-	return v.Value().(string), nil
+	return v.Value().(map[string]interface{}), nil
+}
+
+
+
+
+
+
+// GetDevice get Device value
+func (a *MediaPlayer1) GetDevice() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Device")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
 }
 
 
@@ -315,106 +516,16 @@ func (a *MediaPlayer1) GetSubtype() (string, error) {
 
 
 
-// SetPlaylist set Playlist value
-func (a *MediaPlayer1) SetPlaylist(v dbus.ObjectPath) error {
-	return a.SetProperty("Playlist", v)
+// SetScan set Scan value
+func (a *MediaPlayer1) SetScan(v string) error {
+	return a.SetProperty("Scan", v)
 }
 
 
 
-// GetPlaylist get Playlist value
-func (a *MediaPlayer1) GetPlaylist() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Playlist")
-	if err != nil {
-		return dbus.ObjectPath(""), err
-	}
-	return v.Value().(dbus.ObjectPath), nil
-}
-
-
-
-
-// SetShuffle set Shuffle value
-func (a *MediaPlayer1) SetShuffle(v string) error {
-	return a.SetProperty("Shuffle", v)
-}
-
-
-
-// GetShuffle get Shuffle value
-func (a *MediaPlayer1) GetShuffle() (string, error) {
-	v, err := a.GetProperty("Shuffle")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-// SetTrackNumber set TrackNumber value
-func (a *MediaPlayer1) SetTrackNumber(v uint32) error {
-	return a.SetProperty("TrackNumber", v)
-}
-
-
-
-// GetTrackNumber get TrackNumber value
-func (a *MediaPlayer1) GetTrackNumber() (uint32, error) {
-	v, err := a.GetProperty("TrackNumber")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
-}
-
-
-
-
-// SetEqualizer set Equalizer value
-func (a *MediaPlayer1) SetEqualizer(v string) error {
-	return a.SetProperty("Equalizer", v)
-}
-
-
-
-// GetEqualizer get Equalizer value
-func (a *MediaPlayer1) GetEqualizer() (string, error) {
-	v, err := a.GetProperty("Equalizer")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-// SetRepeat set Repeat value
-func (a *MediaPlayer1) SetRepeat(v string) error {
-	return a.SetProperty("Repeat", v)
-}
-
-
-
-// GetRepeat get Repeat value
-func (a *MediaPlayer1) GetRepeat() (string, error) {
-	v, err := a.GetProperty("Repeat")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-
-
-// GetStatus get Status value
-func (a *MediaPlayer1) GetStatus() (string, error) {
-	v, err := a.GetProperty("Status")
+// GetScan get Scan value
+func (a *MediaPlayer1) GetScan() (string, error) {
+	v, err := a.GetProperty("Scan")
 	if err != nil {
 		return "", err
 	}
@@ -443,91 +554,6 @@ func (a *MediaPlayer1) GetArtist() (string, error) {
 
 
 
-
-
-// GetSearchable get Searchable value
-func (a *MediaPlayer1) GetSearchable() (bool, error) {
-	v, err := a.GetProperty("Searchable")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-// SetScan set Scan value
-func (a *MediaPlayer1) SetScan(v string) error {
-	return a.SetProperty("Scan", v)
-}
-
-
-
-// GetScan get Scan value
-func (a *MediaPlayer1) GetScan() (string, error) {
-	v, err := a.GetProperty("Scan")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-
-
-// GetPosition get Position value
-func (a *MediaPlayer1) GetPosition() (uint32, error) {
-	v, err := a.GetProperty("Position")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
-}
-
-
-
-
-// SetTitle set Title value
-func (a *MediaPlayer1) SetTitle(v string) error {
-	return a.SetProperty("Title", v)
-}
-
-
-
-// GetTitle get Title value
-func (a *MediaPlayer1) GetTitle() (string, error) {
-	v, err := a.GetProperty("Title")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-// SetGenre set Genre value
-func (a *MediaPlayer1) SetGenre(v string) error {
-	return a.SetProperty("Genre", v)
-}
-
-
-
-// GetGenre get Genre value
-func (a *MediaPlayer1) GetGenre() (string, error) {
-	v, err := a.GetProperty("Genre")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
 // SetDuration set Duration value
 func (a *MediaPlayer1) SetDuration(v uint32) error {
 	return a.SetProperty("Duration", v)
@@ -546,34 +572,6 @@ func (a *MediaPlayer1) GetDuration() (uint32, error) {
 
 
 
-
-
-
-// GetName get Name value
-func (a *MediaPlayer1) GetName() (string, error) {
-	v, err := a.GetProperty("Name")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-
-
-// GetBrowsable get Browsable value
-func (a *MediaPlayer1) GetBrowsable() (bool, error) {
-	v, err := a.GetProperty("Browsable")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
 // Close the connection
 func (a *MediaPlayer1) Close() {
 	
@@ -585,6 +583,11 @@ func (a *MediaPlayer1) Close() {
 // Path return MediaPlayer1 object path
 func (a *MediaPlayer1) Path() dbus.ObjectPath {
 	return a.client.Config.Path
+}
+
+// Client return MediaPlayer1 dbus client
+func (a *MediaPlayer1) Client() *bluez.Client {
+	return a.client
 }
 
 // Interface return MediaPlayer1 interface
@@ -645,6 +648,11 @@ func (a *MediaPlayer1Properties) FromDBusMap(props map[string]dbus.Variant) (*Me
 	return s, err
 }
 
+// ToProps return the properties interface
+func (a *MediaPlayer1) ToProps() bluez.Properties {
+	return a.Properties
+}
+
 // GetProperties load all available properties
 func (a *MediaPlayer1) GetProperties() (*MediaPlayer1Properties, error) {
 	a.Properties.Lock()
@@ -687,83 +695,11 @@ func (a *MediaPlayer1) unregisterPropertiesSignal() {
 
 // WatchProperties updates on property changes
 func (a *MediaPlayer1) WatchProperties() (chan *bluez.PropertyChanged, error) {
-
-	// channel, err := a.client.Register(a.Path(), a.Interface())
-	channel, err := a.client.Register(a.Path(), bluez.PropertiesInterface)
-	if err != nil {
-		return nil, err
-	}
-
-	ch := make(chan *bluez.PropertyChanged)
-
-	go (func() {
-		for {
-
-			if channel == nil {
-				break
-			}
-
-			sig := <-channel
-
-			if sig == nil {
-				return
-			}
-
-			if sig.Name != bluez.PropertiesChanged {
-				continue
-			}
-			if sig.Path != a.Path() {
-				continue
-			}
-
-			iface := sig.Body[0].(string)
-			changes := sig.Body[1].(map[string]dbus.Variant)
-
-			for field, val := range changes {
-
-				// updates [*]Properties struct when a property change
-				s := reflect.ValueOf(a.Properties).Elem()
-				// exported field
-				f := s.FieldByName(field)
-				if f.IsValid() {
-					// A Value can be changed only if it is
-					// addressable and was not obtained by
-					// the use of unexported struct fields.
-					if f.CanSet() {
-						x := reflect.ValueOf(val.Value())
-						a.Properties.Lock()
-						// map[*]variant -> map[*]interface{}
-						ok, err := util.AssignMapVariantToInterface(f, x)
-						if err != nil {
-							log.Errorf("Failed to set %s: %s", f.String(), err)
-							continue
-						}
-						// direct assignment
-						if !ok {
-							f.Set(x)
-						}
-						a.Properties.Unlock()
-					}
-				}
-
-				propChanged := &bluez.PropertyChanged{
-					Interface: iface,
-					Name:      field,
-					Value:     val.Value(),
-				}
-				ch <- propChanged
-			}
-
-		}
-	})()
-
-	return ch, nil
+	return bluez.WatchProperties(a)
 }
 
 func (a *MediaPlayer1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
-	ch <- nil
-	close(ch)
-	return nil
+	return bluez.UnwatchProperties(a, ch)
 }
 
 

@@ -5,8 +5,6 @@ package obex
 import (
    "sync"
    "github.com/muka/go-bluetooth/bluez"
-  log "github.com/sirupsen/logrus"
-   "reflect"
    "github.com/muka/go-bluetooth/util"
    "github.com/muka/go-bluetooth/props"
    "github.com/godbus/dbus"
@@ -58,6 +56,14 @@ type PhonebookAccess1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	FixedImageSize Indicate support for fixed image size.
+
+			Possible values: True if image is JPEG 300x300 pixels
+			otherwise False.
+	*/
+	FixedImageSize bool
+
+	/*
 	Folder Current folder.
 	*/
 	Folder string
@@ -86,14 +92,6 @@ type PhonebookAccess1Properties struct {
 	*/
 	SecondaryCounter string
 
-	/*
-	FixedImageSize Indicate support for fixed image size.
-
-			Possible values: True if image is JPEG 300x300 pixels
-			otherwise False.
-	*/
-	FixedImageSize bool
-
 }
 
 //Lock access to properties
@@ -104,6 +102,20 @@ func (p *PhonebookAccess1Properties) Lock() {
 //Unlock access to properties
 func (p *PhonebookAccess1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+
+
+// GetFixedImageSize get FixedImageSize value
+func (a *PhonebookAccess1) GetFixedImageSize() (bool, error) {
+	v, err := a.GetProperty("FixedImageSize")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
 }
 
 
@@ -164,20 +176,6 @@ func (a *PhonebookAccess1) GetSecondaryCounter() (string, error) {
 
 
 
-
-
-
-// GetFixedImageSize get FixedImageSize value
-func (a *PhonebookAccess1) GetFixedImageSize() (bool, error) {
-	v, err := a.GetProperty("FixedImageSize")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
 // Close the connection
 func (a *PhonebookAccess1) Close() {
 	
@@ -189,6 +187,11 @@ func (a *PhonebookAccess1) Close() {
 // Path return PhonebookAccess1 object path
 func (a *PhonebookAccess1) Path() dbus.ObjectPath {
 	return a.client.Config.Path
+}
+
+// Client return PhonebookAccess1 dbus client
+func (a *PhonebookAccess1) Client() *bluez.Client {
+	return a.client
 }
 
 // Interface return PhonebookAccess1 interface
@@ -249,6 +252,11 @@ func (a *PhonebookAccess1Properties) FromDBusMap(props map[string]dbus.Variant) 
 	return s, err
 }
 
+// ToProps return the properties interface
+func (a *PhonebookAccess1) ToProps() bluez.Properties {
+	return a.Properties
+}
+
 // GetProperties load all available properties
 func (a *PhonebookAccess1) GetProperties() (*PhonebookAccess1Properties, error) {
 	a.Properties.Lock()
@@ -291,83 +299,11 @@ func (a *PhonebookAccess1) unregisterPropertiesSignal() {
 
 // WatchProperties updates on property changes
 func (a *PhonebookAccess1) WatchProperties() (chan *bluez.PropertyChanged, error) {
-
-	// channel, err := a.client.Register(a.Path(), a.Interface())
-	channel, err := a.client.Register(a.Path(), bluez.PropertiesInterface)
-	if err != nil {
-		return nil, err
-	}
-
-	ch := make(chan *bluez.PropertyChanged)
-
-	go (func() {
-		for {
-
-			if channel == nil {
-				break
-			}
-
-			sig := <-channel
-
-			if sig == nil {
-				return
-			}
-
-			if sig.Name != bluez.PropertiesChanged {
-				continue
-			}
-			if sig.Path != a.Path() {
-				continue
-			}
-
-			iface := sig.Body[0].(string)
-			changes := sig.Body[1].(map[string]dbus.Variant)
-
-			for field, val := range changes {
-
-				// updates [*]Properties struct when a property change
-				s := reflect.ValueOf(a.Properties).Elem()
-				// exported field
-				f := s.FieldByName(field)
-				if f.IsValid() {
-					// A Value can be changed only if it is
-					// addressable and was not obtained by
-					// the use of unexported struct fields.
-					if f.CanSet() {
-						x := reflect.ValueOf(val.Value())
-						a.Properties.Lock()
-						// map[*]variant -> map[*]interface{}
-						ok, err := util.AssignMapVariantToInterface(f, x)
-						if err != nil {
-							log.Errorf("Failed to set %s: %s", f.String(), err)
-							continue
-						}
-						// direct assignment
-						if !ok {
-							f.Set(x)
-						}
-						a.Properties.Unlock()
-					}
-				}
-
-				propChanged := &bluez.PropertyChanged{
-					Interface: iface,
-					Name:      field,
-					Value:     val.Value(),
-				}
-				ch <- propChanged
-			}
-
-		}
-	})()
-
-	return ch, nil
+	return bluez.WatchProperties(a)
 }
 
 func (a *PhonebookAccess1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
-	ch <- nil
-	close(ch)
-	return nil
+	return bluez.UnwatchProperties(a, ch)
 }
 
 

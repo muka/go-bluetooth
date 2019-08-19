@@ -71,6 +71,11 @@ func (a *AgentManager1) Path() dbus.ObjectPath {
 	return a.client.Config.Path
 }
 
+// Client return AgentManager1 dbus client
+func (a *AgentManager1) Client() *bluez.Client {
+	return a.client
+}
+
 // Interface return AgentManager1 interface
 func (a *AgentManager1) Interface() string {
 	return a.client.Config.Iface

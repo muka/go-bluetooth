@@ -5,8 +5,6 @@ package network
 import (
    "sync"
    "github.com/muka/go-bluetooth/bluez"
-  log "github.com/sirupsen/logrus"
-   "reflect"
    "github.com/muka/go-bluetooth/util"
    "github.com/muka/go-bluetooth/props"
    "github.com/godbus/dbus"
@@ -58,11 +56,6 @@ type Network1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Interface Indicates the network interface name when available.
-	*/
-	Interface string
-
-	/*
 	UUID Indicates the connection role when available.
 	*/
 	UUID string
@@ -71,6 +64,11 @@ type Network1Properties struct {
 	Connected Indicates if the device is connected.
 	*/
 	Connected bool
+
+	/*
+	Interface Indicates the network interface name when available.
+	*/
+	Interface string
 
 }
 
@@ -82,20 +80,6 @@ func (p *Network1Properties) Lock() {
 //Unlock access to properties
 func (p *Network1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-
-
-// GetInterface get Interface value
-func (a *Network1) GetInterface() (string, error) {
-	v, err := a.GetProperty("Interface")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
 }
 
 
@@ -128,6 +112,20 @@ func (a *Network1) GetConnected() (bool, error) {
 
 
 
+
+
+
+// GetInterface get Interface value
+func (a *Network1) GetInterface() (string, error) {
+	v, err := a.GetProperty("Interface")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
 // Close the connection
 func (a *Network1) Close() {
 	
@@ -139,6 +137,11 @@ func (a *Network1) Close() {
 // Path return Network1 object path
 func (a *Network1) Path() dbus.ObjectPath {
 	return a.client.Config.Path
+}
+
+// Client return Network1 dbus client
+func (a *Network1) Client() *bluez.Client {
+	return a.client
 }
 
 // Interface return Network1 interface
@@ -199,6 +202,11 @@ func (a *Network1Properties) FromDBusMap(props map[string]dbus.Variant) (*Networ
 	return s, err
 }
 
+// ToProps return the properties interface
+func (a *Network1) ToProps() bluez.Properties {
+	return a.Properties
+}
+
 // GetProperties load all available properties
 func (a *Network1) GetProperties() (*Network1Properties, error) {
 	a.Properties.Lock()
@@ -241,83 +249,11 @@ func (a *Network1) unregisterPropertiesSignal() {
 
 // WatchProperties updates on property changes
 func (a *Network1) WatchProperties() (chan *bluez.PropertyChanged, error) {
-
-	// channel, err := a.client.Register(a.Path(), a.Interface())
-	channel, err := a.client.Register(a.Path(), bluez.PropertiesInterface)
-	if err != nil {
-		return nil, err
-	}
-
-	ch := make(chan *bluez.PropertyChanged)
-
-	go (func() {
-		for {
-
-			if channel == nil {
-				break
-			}
-
-			sig := <-channel
-
-			if sig == nil {
-				return
-			}
-
-			if sig.Name != bluez.PropertiesChanged {
-				continue
-			}
-			if sig.Path != a.Path() {
-				continue
-			}
-
-			iface := sig.Body[0].(string)
-			changes := sig.Body[1].(map[string]dbus.Variant)
-
-			for field, val := range changes {
-
-				// updates [*]Properties struct when a property change
-				s := reflect.ValueOf(a.Properties).Elem()
-				// exported field
-				f := s.FieldByName(field)
-				if f.IsValid() {
-					// A Value can be changed only if it is
-					// addressable and was not obtained by
-					// the use of unexported struct fields.
-					if f.CanSet() {
-						x := reflect.ValueOf(val.Value())
-						a.Properties.Lock()
-						// map[*]variant -> map[*]interface{}
-						ok, err := util.AssignMapVariantToInterface(f, x)
-						if err != nil {
-							log.Errorf("Failed to set %s: %s", f.String(), err)
-							continue
-						}
-						// direct assignment
-						if !ok {
-							f.Set(x)
-						}
-						a.Properties.Unlock()
-					}
-				}
-
-				propChanged := &bluez.PropertyChanged{
-					Interface: iface,
-					Name:      field,
-					Value:     val.Value(),
-				}
-				ch <- propChanged
-			}
-
-		}
-	})()
-
-	return ch, nil
+	return bluez.WatchProperties(a)
 }
 
 func (a *Network1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
-	ch <- nil
-	close(ch)
-	return nil
+	return bluez.UnwatchProperties(a, ch)
 }
 
 

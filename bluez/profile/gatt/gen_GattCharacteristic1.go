@@ -5,8 +5,6 @@ package gatt
 import (
    "sync"
    "github.com/muka/go-bluetooth/bluez"
-  log "github.com/sirupsen/logrus"
-   "reflect"
    "github.com/muka/go-bluetooth/util"
    "github.com/muka/go-bluetooth/props"
    "github.com/godbus/dbus"
@@ -61,37 +59,6 @@ type GattCharacteristic1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Notifying True, if notifications or indications on this
-			characteristic are currently enabled.
-	*/
-	Notifying bool
-
-	/*
-	Flags Defines how the characteristic value can be used. See
-			Core spec "Table 3.5: Characteristic Properties bit
-			field", and "Table 3.8: Characteristic Extended
-			Properties bit field". Allowed values:
-
-				"broadcast"
-				"read"
-				"write-without-response"
-				"write"
-				"notify"
-				"indicate"
-				"authenticated-signed-writes"
-				"reliable-write"
-				"writable-auxiliaries"
-				"encrypt-read"
-				"encrypt-write"
-				"encrypt-authenticated-read"
-				"encrypt-authenticated-write"
-				"secure-read" (Server only)
-				"secure-write" (Server only)
-				"authorize"
-	*/
-	Flags []string
-
-	/*
 	Descriptors 
 	*/
 	Descriptors []dbus.ObjectPath
@@ -139,6 +106,37 @@ type GattCharacteristic1Properties struct {
 	*/
 	NotifyAcquired bool
 
+	/*
+	Notifying True, if notifications or indications on this
+			characteristic are currently enabled.
+	*/
+	Notifying bool
+
+	/*
+	Flags Defines how the characteristic value can be used. See
+			Core spec "Table 3.5: Characteristic Properties bit
+			field", and "Table 3.8: Characteristic Extended
+			Properties bit field". Allowed values:
+
+				"broadcast"
+				"read"
+				"write-without-response"
+				"write"
+				"notify"
+				"indicate"
+				"authenticated-signed-writes"
+				"reliable-write"
+				"writable-auxiliaries"
+				"encrypt-read"
+				"encrypt-write"
+				"encrypt-authenticated-read"
+				"encrypt-authenticated-write"
+				"secure-read" (Server only)
+				"secure-write" (Server only)
+				"authorize"
+	*/
+	Flags []string
+
 }
 
 //Lock access to properties
@@ -149,44 +147,6 @@ func (p *GattCharacteristic1Properties) Lock() {
 //Unlock access to properties
 func (p *GattCharacteristic1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-// SetNotifying set Notifying value
-func (a *GattCharacteristic1) SetNotifying(v bool) error {
-	return a.SetProperty("Notifying", v)
-}
-
-
-
-// GetNotifying get Notifying value
-func (a *GattCharacteristic1) GetNotifying() (bool, error) {
-	v, err := a.GetProperty("Notifying")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-// SetFlags set Flags value
-func (a *GattCharacteristic1) SetFlags(v []string) error {
-	return a.SetProperty("Flags", v)
-}
-
-
-
-// GetFlags get Flags value
-func (a *GattCharacteristic1) GetFlags() ([]string, error) {
-	v, err := a.GetProperty("Flags")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
 }
 
 
@@ -305,6 +265,44 @@ func (a *GattCharacteristic1) GetNotifyAcquired() (bool, error) {
 
 
 
+
+// SetNotifying set Notifying value
+func (a *GattCharacteristic1) SetNotifying(v bool) error {
+	return a.SetProperty("Notifying", v)
+}
+
+
+
+// GetNotifying get Notifying value
+func (a *GattCharacteristic1) GetNotifying() (bool, error) {
+	v, err := a.GetProperty("Notifying")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+// SetFlags set Flags value
+func (a *GattCharacteristic1) SetFlags(v []string) error {
+	return a.SetProperty("Flags", v)
+}
+
+
+
+// GetFlags get Flags value
+func (a *GattCharacteristic1) GetFlags() ([]string, error) {
+	v, err := a.GetProperty("Flags")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
+}
+
+
+
 // Close the connection
 func (a *GattCharacteristic1) Close() {
 	
@@ -316,6 +314,11 @@ func (a *GattCharacteristic1) Close() {
 // Path return GattCharacteristic1 object path
 func (a *GattCharacteristic1) Path() dbus.ObjectPath {
 	return a.client.Config.Path
+}
+
+// Client return GattCharacteristic1 dbus client
+func (a *GattCharacteristic1) Client() *bluez.Client {
+	return a.client
 }
 
 // Interface return GattCharacteristic1 interface
@@ -376,6 +379,11 @@ func (a *GattCharacteristic1Properties) FromDBusMap(props map[string]dbus.Varian
 	return s, err
 }
 
+// ToProps return the properties interface
+func (a *GattCharacteristic1) ToProps() bluez.Properties {
+	return a.Properties
+}
+
 // GetProperties load all available properties
 func (a *GattCharacteristic1) GetProperties() (*GattCharacteristic1Properties, error) {
 	a.Properties.Lock()
@@ -418,83 +426,11 @@ func (a *GattCharacteristic1) unregisterPropertiesSignal() {
 
 // WatchProperties updates on property changes
 func (a *GattCharacteristic1) WatchProperties() (chan *bluez.PropertyChanged, error) {
-
-	// channel, err := a.client.Register(a.Path(), a.Interface())
-	channel, err := a.client.Register(a.Path(), bluez.PropertiesInterface)
-	if err != nil {
-		return nil, err
-	}
-
-	ch := make(chan *bluez.PropertyChanged)
-
-	go (func() {
-		for {
-
-			if channel == nil {
-				break
-			}
-
-			sig := <-channel
-
-			if sig == nil {
-				return
-			}
-
-			if sig.Name != bluez.PropertiesChanged {
-				continue
-			}
-			if sig.Path != a.Path() {
-				continue
-			}
-
-			iface := sig.Body[0].(string)
-			changes := sig.Body[1].(map[string]dbus.Variant)
-
-			for field, val := range changes {
-
-				// updates [*]Properties struct when a property change
-				s := reflect.ValueOf(a.Properties).Elem()
-				// exported field
-				f := s.FieldByName(field)
-				if f.IsValid() {
-					// A Value can be changed only if it is
-					// addressable and was not obtained by
-					// the use of unexported struct fields.
-					if f.CanSet() {
-						x := reflect.ValueOf(val.Value())
-						a.Properties.Lock()
-						// map[*]variant -> map[*]interface{}
-						ok, err := util.AssignMapVariantToInterface(f, x)
-						if err != nil {
-							log.Errorf("Failed to set %s: %s", f.String(), err)
-							continue
-						}
-						// direct assignment
-						if !ok {
-							f.Set(x)
-						}
-						a.Properties.Unlock()
-					}
-				}
-
-				propChanged := &bluez.PropertyChanged{
-					Interface: iface,
-					Name:      field,
-					Value:     val.Value(),
-				}
-				ch <- propChanged
-			}
-
-		}
-	})()
-
-	return ch, nil
+	return bluez.WatchProperties(a)
 }
 
 func (a *GattCharacteristic1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
-	ch <- nil
-	close(ch)
-	return nil
+	return bluez.UnwatchProperties(a, ch)
 }
 
 
