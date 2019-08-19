@@ -59,11 +59,6 @@ type GattCharacteristic1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Descriptors 
-	*/
-	Descriptors []dbus.ObjectPath
-
-	/*
 	UUID 128-bit characteristic UUID.
 	*/
 	UUID string
@@ -137,6 +132,11 @@ type GattCharacteristic1Properties struct {
 	*/
 	Flags []string
 
+	/*
+	Descriptors 
+	*/
+	Descriptors []dbus.ObjectPath
+
 }
 
 //Lock access to properties
@@ -147,25 +147,6 @@ func (p *GattCharacteristic1Properties) Lock() {
 //Unlock access to properties
 func (p *GattCharacteristic1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-// SetDescriptors set Descriptors value
-func (a *GattCharacteristic1) SetDescriptors(v []dbus.ObjectPath) error {
-	return a.SetProperty("Descriptors", v)
-}
-
-
-
-// GetDescriptors get Descriptors value
-func (a *GattCharacteristic1) GetDescriptors() ([]dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Descriptors")
-	if err != nil {
-		return []dbus.ObjectPath{}, err
-	}
-	return v.Value().([]dbus.ObjectPath), nil
 }
 
 
@@ -299,6 +280,25 @@ func (a *GattCharacteristic1) GetFlags() ([]string, error) {
 		return []string{}, err
 	}
 	return v.Value().([]string), nil
+}
+
+
+
+
+// SetDescriptors set Descriptors value
+func (a *GattCharacteristic1) SetDescriptors(v []dbus.ObjectPath) error {
+	return a.SetProperty("Descriptors", v)
+}
+
+
+
+// GetDescriptors get Descriptors value
+func (a *GattCharacteristic1) GetDescriptors() ([]dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Descriptors")
+	if err != nil {
+		return []dbus.ObjectPath{}, err
+	}
+	return v.Value().([]dbus.ObjectPath), nil
 }
 
 

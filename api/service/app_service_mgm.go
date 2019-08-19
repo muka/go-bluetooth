@@ -25,7 +25,7 @@ func (app *App) NewService() (*Service, error) {
 			return nil, err
 		}
 		app.baseUUID = "%08x" + rndUUID[8:]
-		log.Warnf("Base UUID: %s", rndUUID)
+		log.Tracef("Base UUID: %s", rndUUID)
 	}
 
 	uuid := fmt.Sprintf(app.baseUUID, s.ID)

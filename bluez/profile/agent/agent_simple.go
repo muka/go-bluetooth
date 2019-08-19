@@ -81,7 +81,7 @@ func (self *SimpleAgent) RequestPinCode(path dbus.ObjectPath) (string, *dbus.Err
 	adapterID, err := adapter.ParseAdapterID(path)
 	if err != nil {
 		log.Warnf("SimpleAgent.RequestPinCode: Failed to load adapter %s", err)
-		return "", &dbus.ErrMsgNoObject
+		return "", dbus.MakeFailedError(err)
 	}
 
 	err = SetTrusted(adapterID, path)
@@ -104,7 +104,7 @@ func (self *SimpleAgent) RequestPasskey(path dbus.ObjectPath) (uint32, *dbus.Err
 	adapterID, err := adapter.ParseAdapterID(path)
 	if err != nil {
 		log.Warnf("SimpleAgent.RequestPassKey: Failed to load adapter %s", err)
-		return 0, &dbus.ErrMsgNoObject
+		return 0, dbus.MakeFailedError(err)
 	}
 
 	err = SetTrusted(adapterID, path)
@@ -129,15 +129,16 @@ func (self *SimpleAgent) RequestConfirmation(path dbus.ObjectPath, passkey uint3
 	adapterID, err := adapter.ParseAdapterID(path)
 	if err != nil {
 		log.Warnf("SimpleAgent: Failed to load adapter %s", err)
-		return &dbus.ErrMsgNoObject
+		return dbus.MakeFailedError(err)
 	}
 
 	err = SetTrusted(adapterID, path)
 	if err != nil {
-		log.Warnf("Faile to set trust for %s: %s", path, err)
+		log.Warnf("Failed to set trust for %s: %s", path, err)
 		return dbus.MakeFailedError(err)
 	}
 
+	log.Debug("SimpleAgent: RequestConfirmation OK")
 	return nil
 }
 
@@ -147,7 +148,7 @@ func (self *SimpleAgent) RequestAuthorization(device dbus.ObjectPath) *dbus.Erro
 }
 
 func (self *SimpleAgent) AuthorizeService(device dbus.ObjectPath, uuid string) *dbus.Error {
-	log.Debugf("SimpleAgent: AuthorizeService (%s, %s)", device, uuid) // directly authrized
+	log.Debugf("SimpleAgent: AuthorizeService (%s, %s)", device, uuid) // directly authorized
 	return nil
 }
 

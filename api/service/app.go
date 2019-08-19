@@ -16,7 +16,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var AppPath = "/org/bluez/%s/app%d"
+var AppPath = "/org/bluez/%s/apps/app%d"
 
 var UseRandomUUID = false
 
@@ -53,7 +53,7 @@ func NewApp(adapterID string) (*App, error) {
 	}
 
 	app.AgentCaps = agent.CapKeyboardDisplay
-	app.AgentSetAsDefault = false
+	app.AgentSetAsDefault = true
 
 	appCounter += 1
 

@@ -6,7 +6,6 @@ import (
 
 	"github.com/godbus/dbus"
 	"github.com/godbus/dbus/introspect"
-	"github.com/godbus/dbus/prop"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile/adapter"
 	log "github.com/sirupsen/logrus"
@@ -38,7 +37,7 @@ type Agent1Client interface {
 // SetTrusted lookup for a device by object path and set it to trusted
 func SetTrusted(adapterID string, devicePath dbus.ObjectPath) error {
 
-	log.Debugf("Trust device %s on %s", devicePath, adapterID)
+	log.Tracef("Trust device %s on %s", devicePath, adapterID)
 
 	a, err := adapter.GetAdapter(adapterID)
 	if err != nil {
@@ -53,11 +52,12 @@ func SetTrusted(adapterID string, devicePath dbus.ObjectPath) error {
 	path := string(devicePath)
 	for _, dev := range devices {
 		if strings.Contains(string(dev.Path()), path) {
-			log.Debugf("SetTrusted: Trust device at %s", path)
+			log.Tracef("SetTrusted: Trust device at %s", path)
 			err := dev.SetTrusted(true)
 			if err != nil {
-				return fmt.Errorf("SetTrusted: %s", err)
+				return fmt.Errorf("SetTrusted error: %s", err)
 			}
+			log.Tracef("SetTrusted: OK")
 			return nil
 		}
 	}
@@ -83,7 +83,7 @@ func RemoveAgent(ag Agent1Client) error {
 }
 
 // ExposeAgent expose an Agent1 implementation to DBus and set as default agent
-func ExposeAgent(ag Agent1Client, caps string, setAsDefaultAgent bool) error {
+func ExposeAgent(conn *dbus.Conn, ag Agent1Client, caps string, setAsDefaultAgent bool) error {
 
 	// Register agent
 	am, err := NewAgentManager1()
@@ -92,7 +92,7 @@ func ExposeAgent(ag Agent1Client, caps string, setAsDefaultAgent bool) error {
 	}
 
 	// Export the Go interface to DBus
-	err = exportAgent(ag)
+	err = exportAgent(conn, ag)
 	if err != nil {
 		return err
 	}
@@ -115,21 +115,12 @@ func ExposeAgent(ag Agent1Client, caps string, setAsDefaultAgent bool) error {
 }
 
 //ExportAgent exports the xml of a go agent to dbus
-func exportAgent(agentInstance Agent1Client) error {
+func exportAgent(conn *dbus.Conn, ag Agent1Client) error {
 
-	//Connect DBus System bus
-	conn, err := dbus.SystemBus()
-	if err != nil {
-		return err
-	}
-
-	targetPath := agentInstance.Path()
-	agentInterfacePath := agentInstance.Interface()
-
-	log.Tracef("Exposing Agent1 at %s", targetPath)
+	log.Tracef("Exposing Agent1 at %s", ag.Path())
 
 	//Export the given agent to the given path as interface "org.bluez.Agent1"
-	err = conn.Export(agentInstance, targetPath, agentInterfacePath)
+	err := conn.Export(ag, ag.Path(), ag.Interface())
 	if err != nil {
 		return err
 	}
@@ -140,17 +131,17 @@ func exportAgent(agentInstance Agent1Client) error {
 			// Introspect
 			introspect.IntrospectData,
 			// Properties
-			prop.IntrospectData,
+			// prop.IntrospectData,
 			// org.bluez.Agent1
 			{
-				Name:    agentInterfacePath,
-				Methods: introspect.Methods(agentInstance),
+				Name:    ag.Interface(),
+				Methods: introspect.Methods(ag),
 			},
 		},
 	}
 
 	// Export Introspectable for the given agent instance
-	err = conn.Export(introspect.NewIntrospectable(node), targetPath, bluez.Introspectable)
+	err = conn.Export(introspect.NewIntrospectable(node), ag.Path(), bluez.Introspectable)
 	if err != nil {
 		return err
 	}

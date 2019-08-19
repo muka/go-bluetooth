@@ -24,6 +24,9 @@ func (s testStruct) ToMap() (map[string]interface{}, error) {
 	return m, err
 }
 
+func (s testStruct) Lock()   {}
+func (s testStruct) Unlock() {}
+
 func TestParseTag(t *testing.T) {
 
 	s := testStruct{

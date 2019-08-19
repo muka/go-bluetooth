@@ -62,6 +62,21 @@ type LEAdvertisement1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	ServiceData Service Data elements to include. The keys are the
+			UUID to associate with the data.
+	*/
+	ServiceData map[string]interface{}
+
+	/*
+	Includes List of features to be included in the advertising
+			packet.
+
+			Possible values: as found on
+					LEAdvertisingManager.SupportedIncludes
+	*/
+	Includes []string
+
+	/*
 	LocalName Local name to be used in the advertising report. If the
 			string is too big to fit into the packet it will be
 			truncated.
@@ -72,10 +87,10 @@ type LEAdvertisement1Properties struct {
 	LocalName string
 
 	/*
-	Timeout Timeout of the advertisement in seconds. This defines
-			the lifetime of the advertisement.
+	ServiceUUIDs List of UUIDs to include in the "Service UUID" field of
+			the Advertising Data.
 	*/
-	Timeout uint16
+	ServiceUUIDs []string
 
 	/*
 	ManufacturerData Manufactuer Data fields to include in
@@ -85,37 +100,10 @@ type LEAdvertisement1Properties struct {
 	ManufacturerData map[uint16]interface{}
 
 	/*
-	ServiceData Service Data elements to include. The keys are the
-			UUID to associate with the data.
+	SolicitUUIDs Array of UUIDs to include in "Service Solicitation"
+			Advertisement Data.
 	*/
-	ServiceData map[string]interface{}
-
-	/*
-	Data Advertising Type to include in the Advertising
-			Data. Key is the advertising type and value is the
-			data as byte array.
-
-			Note: Types already handled by other properties shall
-			not be used.
-
-			Possible values:
-				<type> <byte array>
-				...
-
-			Example:
-				<Transport Discovery> <Organization Flags...>
-				0x26                   0x01         0x01...
-	*/
-	Data map[byte]interface{}
-
-	/*
-	Includes List of features to be included in the advertising
-			packet.
-
-			Possible values: as found on
-					LEAdvertisingManager.SupportedIncludes
-	*/
-	Includes []string
+	SolicitUUIDs []string
 
 	/*
 	DiscoverableTimeout The discoverable timeout in seconds. A value of zero
@@ -142,6 +130,12 @@ type LEAdvertisement1Properties struct {
 	Duration uint16
 
 	/*
+	Timeout Timeout of the advertisement in seconds. This defines
+			the lifetime of the advertisement.
+	*/
+	Timeout uint16
+
+	/*
 	Type Determines the type of advertising packet requested.
 
 			Possible values: "broadcast" or "peripheral"
@@ -149,16 +143,22 @@ type LEAdvertisement1Properties struct {
 	Type string
 
 	/*
-	ServiceUUIDs List of UUIDs to include in the "Service UUID" field of
-			the Advertising Data.
-	*/
-	ServiceUUIDs []string
+	Data Advertising Type to include in the Advertising
+			Data. Key is the advertising type and value is the
+			data as byte array.
 
-	/*
-	SolicitUUIDs Array of UUIDs to include in "Service Solicitation"
-			Advertisement Data.
+			Note: Types already handled by other properties shall
+			not be used.
+
+			Possible values:
+				<type> <byte array>
+				...
+
+			Example:
+				<Transport Discovery> <Organization Flags...>
+				0x26                   0x01         0x01...
 	*/
-	SolicitUUIDs []string
+	Data map[byte]interface{}
 
 	/*
 	Discoverable Advertise as general discoverable. When present this
@@ -184,6 +184,44 @@ func (p *LEAdvertisement1Properties) Unlock() {
 
 
 
+// SetServiceData set ServiceData value
+func (a *LEAdvertisement1) SetServiceData(v map[string]interface{}) error {
+	return a.SetProperty("ServiceData", v)
+}
+
+
+
+// GetServiceData get ServiceData value
+func (a *LEAdvertisement1) GetServiceData() (map[string]interface{}, error) {
+	v, err := a.GetProperty("ServiceData")
+	if err != nil {
+		return map[string]interface{}{}, err
+	}
+	return v.Value().(map[string]interface{}), nil
+}
+
+
+
+
+// SetIncludes set Includes value
+func (a *LEAdvertisement1) SetIncludes(v []string) error {
+	return a.SetProperty("Includes", v)
+}
+
+
+
+// GetIncludes get Includes value
+func (a *LEAdvertisement1) GetIncludes() ([]string, error) {
+	v, err := a.GetProperty("Includes")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
+}
+
+
+
+
 // SetLocalName set LocalName value
 func (a *LEAdvertisement1) SetLocalName(v string) error {
 	return a.SetProperty("LocalName", v)
@@ -203,20 +241,20 @@ func (a *LEAdvertisement1) GetLocalName() (string, error) {
 
 
 
-// SetTimeout set Timeout value
-func (a *LEAdvertisement1) SetTimeout(v uint16) error {
-	return a.SetProperty("Timeout", v)
+// SetServiceUUIDs set ServiceUUIDs value
+func (a *LEAdvertisement1) SetServiceUUIDs(v []string) error {
+	return a.SetProperty("ServiceUUIDs", v)
 }
 
 
 
-// GetTimeout get Timeout value
-func (a *LEAdvertisement1) GetTimeout() (uint16, error) {
-	v, err := a.GetProperty("Timeout")
+// GetServiceUUIDs get ServiceUUIDs value
+func (a *LEAdvertisement1) GetServiceUUIDs() ([]string, error) {
+	v, err := a.GetProperty("ServiceUUIDs")
 	if err != nil {
-		return uint16(0), err
+		return []string{}, err
 	}
-	return v.Value().(uint16), nil
+	return v.Value().([]string), nil
 }
 
 
@@ -241,54 +279,16 @@ func (a *LEAdvertisement1) GetManufacturerData() (map[string]interface{}, error)
 
 
 
-// SetServiceData set ServiceData value
-func (a *LEAdvertisement1) SetServiceData(v map[string]interface{}) error {
-	return a.SetProperty("ServiceData", v)
+// SetSolicitUUIDs set SolicitUUIDs value
+func (a *LEAdvertisement1) SetSolicitUUIDs(v []string) error {
+	return a.SetProperty("SolicitUUIDs", v)
 }
 
 
 
-// GetServiceData get ServiceData value
-func (a *LEAdvertisement1) GetServiceData() (map[string]interface{}, error) {
-	v, err := a.GetProperty("ServiceData")
-	if err != nil {
-		return map[string]interface{}{}, err
-	}
-	return v.Value().(map[string]interface{}), nil
-}
-
-
-
-
-// SetData set Data value
-func (a *LEAdvertisement1) SetData(v map[string]interface{}) error {
-	return a.SetProperty("Data", v)
-}
-
-
-
-// GetData get Data value
-func (a *LEAdvertisement1) GetData() (map[string]interface{}, error) {
-	v, err := a.GetProperty("Data")
-	if err != nil {
-		return map[string]interface{}{}, err
-	}
-	return v.Value().(map[string]interface{}), nil
-}
-
-
-
-
-// SetIncludes set Includes value
-func (a *LEAdvertisement1) SetIncludes(v []string) error {
-	return a.SetProperty("Includes", v)
-}
-
-
-
-// GetIncludes get Includes value
-func (a *LEAdvertisement1) GetIncludes() ([]string, error) {
-	v, err := a.GetProperty("Includes")
+// GetSolicitUUIDs get SolicitUUIDs value
+func (a *LEAdvertisement1) GetSolicitUUIDs() ([]string, error) {
+	v, err := a.GetProperty("SolicitUUIDs")
 	if err != nil {
 		return []string{}, err
 	}
@@ -355,6 +355,25 @@ func (a *LEAdvertisement1) GetDuration() (uint16, error) {
 
 
 
+// SetTimeout set Timeout value
+func (a *LEAdvertisement1) SetTimeout(v uint16) error {
+	return a.SetProperty("Timeout", v)
+}
+
+
+
+// GetTimeout get Timeout value
+func (a *LEAdvertisement1) GetTimeout() (uint16, error) {
+	v, err := a.GetProperty("Timeout")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
+
+
+
+
 // SetType set Type value
 func (a *LEAdvertisement1) SetType(v string) error {
 	return a.SetProperty("Type", v)
@@ -374,39 +393,20 @@ func (a *LEAdvertisement1) GetType() (string, error) {
 
 
 
-// SetServiceUUIDs set ServiceUUIDs value
-func (a *LEAdvertisement1) SetServiceUUIDs(v []string) error {
-	return a.SetProperty("ServiceUUIDs", v)
+// SetData set Data value
+func (a *LEAdvertisement1) SetData(v map[string]interface{}) error {
+	return a.SetProperty("Data", v)
 }
 
 
 
-// GetServiceUUIDs get ServiceUUIDs value
-func (a *LEAdvertisement1) GetServiceUUIDs() ([]string, error) {
-	v, err := a.GetProperty("ServiceUUIDs")
+// GetData get Data value
+func (a *LEAdvertisement1) GetData() (map[string]interface{}, error) {
+	v, err := a.GetProperty("Data")
 	if err != nil {
-		return []string{}, err
+		return map[string]interface{}{}, err
 	}
-	return v.Value().([]string), nil
-}
-
-
-
-
-// SetSolicitUUIDs set SolicitUUIDs value
-func (a *LEAdvertisement1) SetSolicitUUIDs(v []string) error {
-	return a.SetProperty("SolicitUUIDs", v)
-}
-
-
-
-// GetSolicitUUIDs get SolicitUUIDs value
-func (a *LEAdvertisement1) GetSolicitUUIDs() ([]string, error) {
-	v, err := a.GetProperty("SolicitUUIDs")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
+	return v.Value().(map[string]interface{}), nil
 }
 
 

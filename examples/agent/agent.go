@@ -3,6 +3,7 @@ package agent_example
 import (
 	"fmt"
 
+	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez/profile/adapter"
 	"github.com/muka/go-bluetooth/bluez/profile/agent"
@@ -14,8 +15,14 @@ func Run(deviceAddress, adapterID string) error {
 
 	defer api.Exit()
 
+	//Connect DBus System bus
+	conn, err := dbus.SystemBus()
+	if err != nil {
+		return err
+	}
+
 	ag := agent.NewSimpleAgent()
-	err := agent.ExposeAgent(ag, agent.CapKeyboardDisplay, true)
+	err = agent.ExposeAgent(conn, ag, agent.CapKeyboardDisplay, true)
 	if err != nil {
 		return fmt.Errorf("SimpleAgent: %s", err)
 	}
@@ -61,7 +68,7 @@ func Run(deviceAddress, adapterID string) error {
 	}
 
 	if !found {
-		return fmt.Errorf("No device found that need to pair on %s", adapterID)
+		return fmt.Errorf("No device found that need to be paired on %s", adapterID)
 	}
 
 	log.Info("Working...")

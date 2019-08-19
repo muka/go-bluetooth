@@ -9,13 +9,13 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const baseAdvertismentPath = "/org/bluez/apps/advertisement%d"
+const baseAdvertismentPath = "/org/bluez/%s/apps/advertisement%d"
 
 var advertisingCount int = -1
 
-func nextAdvertismentPath() dbus.ObjectPath {
+func nextAdvertismentPath(adapterID string) dbus.ObjectPath {
 	advertisingCount++
-	return dbus.ObjectPath(fmt.Sprintf(baseAdvertismentPath, advertisingCount))
+	return dbus.ObjectPath(fmt.Sprintf(baseAdvertismentPath, adapterID, advertisingCount))
 }
 
 func decreaseAdvertismentCounter() {
@@ -57,12 +57,12 @@ func (a *Advertisement) Interface() string {
 	return advertising.LEAdvertisement1Interface
 }
 
-func NewAdvertisement(props *advertising.LEAdvertisement1Properties) (*Advertisement, error) {
+func NewAdvertisement(adapterID string, props *advertising.LEAdvertisement1Properties) (*Advertisement, error) {
 
 	adv := new(Advertisement)
 
 	adv.props = props
-	adv.path = nextAdvertismentPath()
+	adv.path = nextAdvertismentPath(adapterID)
 
 	conn, err := dbus.SystemBus()
 	if err != nil {
@@ -94,7 +94,7 @@ func ExposeAdvertisement(adapterID string, props *advertising.LEAdvertisement1Pr
 		return nil, err
 	}
 
-	adv, err := NewAdvertisement(props)
+	adv, err := NewAdvertisement(adapterID, props)
 	if err != nil {
 		return nil, err
 	}

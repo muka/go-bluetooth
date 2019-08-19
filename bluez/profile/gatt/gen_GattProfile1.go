@@ -1,15 +1,17 @@
 package gatt
 
-import (
-	"sync"
 
-	"github.com/godbus/dbus"
-	"github.com/muka/go-bluetooth/bluez"
-	"github.com/muka/go-bluetooth/props"
-	"github.com/muka/go-bluetooth/util"
+
+import (
+   "sync"
+   "github.com/muka/go-bluetooth/bluez"
+   "github.com/muka/go-bluetooth/util"
+   "github.com/muka/go-bluetooth/props"
+   "github.com/godbus/dbus"
 )
 
 var GattProfile1Interface = "org.bluez.GattProfile1"
+
 
 // NewGattProfile1 create a new instance of GattProfile1
 //
@@ -26,16 +28,17 @@ func NewGattProfile1(servicePath string, objectPath dbus.ObjectPath) (*GattProfi
 			Bus:   bluez.SystemBus,
 		},
 	)
-
+	
 	a.Properties = new(GattProfile1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-
+	
 	return a, nil
 }
+
 
 /*
 GattProfile1 GATT Profile hierarchy
@@ -47,11 +50,11 @@ supporting it.
 
 */
 type GattProfile1 struct {
-	client              *bluez.Client
-	propertiesSignal    chan *dbus.Signal
+	client     				*bluez.Client
+	propertiesSignal 	chan *dbus.Signal
 	objectManagerSignal chan *dbus.Signal
 	objectManager       *bluez.ObjectManager
-	Properties          *GattProfile1Properties
+	Properties 				*GattProfile1Properties
 }
 
 // GattProfile1Properties contains the exposed properties of an interface
@@ -59,9 +62,10 @@ type GattProfile1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-		UUIDs 128-bit GATT service UUIDs to auto connect.
+	UUIDs 128-bit GATT service UUIDs to auto connect.
 	*/
 	UUIDs []string
+
 }
 
 //Lock access to properties
@@ -74,10 +78,15 @@ func (p *GattProfile1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
+
+
+
 // SetUUIDs set UUIDs value
 func (a *GattProfile1) SetUUIDs(v []string) error {
 	return a.SetProperty("UUIDs", v)
 }
+
+
 
 // GetUUIDs get UUIDs value
 func (a *GattProfile1) GetUUIDs() ([]string, error) {
@@ -88,11 +97,13 @@ func (a *GattProfile1) GetUUIDs() ([]string, error) {
 	return v.Value().([]string), nil
 }
 
+
+
 // Close the connection
 func (a *GattProfile1) Close() {
-
+	
 	a.unregisterPropertiesSignal()
-
+	
 	a.client.Disconnect()
 }
 
@@ -141,6 +152,7 @@ func (a *GattProfile1) GetObjectManagerSignal() (chan *dbus.Signal, func(), erro
 
 	return a.objectManagerSignal, cancel, nil
 }
+
 
 // ToMap convert a GattProfile1Properties to map
 func (a *GattProfile1Properties) ToMap() (map[string]interface{}, error) {
@@ -217,8 +229,11 @@ func (a *GattProfile1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	return bluez.UnwatchProperties(a, ch)
 }
 
+
+
+
 /*
-Release
+Release 
 			This method gets called when the service daemon
 			unregisters the profile. The profile can use it to
 			do cleanup tasks. There is no need to unregister the
@@ -228,7 +243,8 @@ Release
 
 */
 func (a *GattProfile1) Release() error {
-
-	return a.client.Call("Release", 0).Store()
-
+	
+	return a.client.Call("Release", 0, ).Store()
+	
 }
+
