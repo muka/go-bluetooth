@@ -56,11 +56,6 @@ type PhonebookAccess1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Folder Current folder.
-	*/
-	Folder string
-
-	/*
 	DatabaseIdentifier 128 bits persistent database identifier.
 
 			Possible values: 32-character hexadecimal such
@@ -92,6 +87,11 @@ type PhonebookAccess1Properties struct {
 	*/
 	FixedImageSize bool
 
+	/*
+	Folder Current folder.
+	*/
+	Folder string
+
 }
 
 //Lock access to properties
@@ -102,20 +102,6 @@ func (p *PhonebookAccess1Properties) Lock() {
 //Unlock access to properties
 func (p *PhonebookAccess1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-
-
-// GetFolder get Folder value
-func (a *PhonebookAccess1) GetFolder() (string, error) {
-	v, err := a.GetProperty("Folder")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
 }
 
 
@@ -172,6 +158,20 @@ func (a *PhonebookAccess1) GetFixedImageSize() (bool, error) {
 		return false, err
 	}
 	return v.Value().(bool), nil
+}
+
+
+
+
+
+
+// GetFolder get Folder value
+func (a *PhonebookAccess1) GetFolder() (string, error) {
+	v, err := a.GetProperty("Folder")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 

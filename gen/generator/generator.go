@@ -60,9 +60,10 @@ func Generate(bluezApi gen.BluezAPI, outDir string, forceOverwrite bool) error {
 				continue
 			}
 			log.Debugf("Wrote %s", rootFile)
-		} else {
-			log.Infof("Skipped, file exists: %s", rootFile)
 		}
+		// else {
+		// log.Infof("Skipped, file exists: %s", rootFile)
+		// }
 
 		for _, api := range apiGroup.Api {
 
@@ -73,12 +74,12 @@ func Generate(bluezApi gen.BluezAPI, outDir string, forceOverwrite bool) error {
 			apiGenFilename := path.Join(dirpath, fmt.Sprintf("gen_%s.go", apiBaseName))
 
 			if gen.Exists(apiFilename) {
-				log.Infof("Skipped generation, API file exists: %s", apiFilename)
+				// log.Infof("Skipped generation, API file exists: %s", apiFilename)
 				continue
 			}
 
 			if !forceOverwrite && gen.Exists(apiGenFilename) {
-				log.Infof("Skipped, file exists: %s", apiGenFilename)
+				// log.Infof("Skipped, file exists: %s", apiGenFilename)
 				continue
 			}
 

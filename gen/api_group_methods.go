@@ -2,6 +2,7 @@ package gen
 
 import (
 	"errors"
+	"fmt"
 	"regexp"
 	"strings"
 
@@ -94,6 +95,13 @@ func (g *ApiGroup) parseMethod(raw []byte) (method Method, err error) {
 		}
 
 		rtype = strings.Trim(rtype, " \t")
+		for _, srtype := range strings.Split(rtype, ",") {
+			if len(strings.Split(strings.Trim(srtype, " "), " ")) > 2 {
+				// log.Warnf("****** %s | %s", strings.Trim(srtype, " "), strings.Split(strings.Trim(srtype, " "), " "))
+				return method, fmt.Errorf("Method %s return type contains space: `%s`", method.Name, rtype)
+			}
+		}
+
 		if len(rtype) > 20 {
 			log.Warnf("Return type value is too long? `%s`", rtype)
 		}
@@ -112,7 +120,6 @@ func (g *ApiGroup) parseMethod(raw []byte) (method Method, err error) {
 			}
 
 			argslist := strings.Split(args1, ",")
-
 			for _, arg := range argslist {
 				arg = strings.Trim(arg, " ")
 				argsparts := strings.Split(arg, " ")
@@ -126,8 +133,10 @@ func (g *ApiGroup) parseMethod(raw []byte) (method Method, err error) {
 						argsparts = []string{"<unknown>", argsparts[0]}
 					}
 				}
+
+				argType := strings.Trim(argsparts[0], " \t\n")
 				arg := Arg{
-					Type: strings.Trim(argsparts[0], " \t\n"),
+					Type: argType,
 					Name: argsparts[1],
 				}
 				args = append(args, arg)

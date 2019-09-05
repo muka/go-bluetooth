@@ -27,14 +27,14 @@ func NewNetwork1(objectPath dbus.ObjectPath) (*Network1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-
+	
 	a.Properties = new(Network1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-
+	
 	return a, nil
 }
 
@@ -56,6 +56,11 @@ type Network1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	Connected Indicates if the device is connected.
+	*/
+	Connected bool
+
+	/*
 	Interface Indicates the network interface name when available.
 	*/
 	Interface string
@@ -64,11 +69,6 @@ type Network1Properties struct {
 	UUID Indicates the connection role when available.
 	*/
 	UUID string
-
-	/*
-	Connected Indicates if the device is connected.
-	*/
-	Connected bool
 
 }
 
@@ -80,6 +80,20 @@ func (p *Network1Properties) Lock() {
 //Unlock access to properties
 func (p *Network1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+
+
+// GetConnected get Connected value
+func (a *Network1) GetConnected() (bool, error) {
+	v, err := a.GetProperty("Connected")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
 }
 
 
@@ -112,25 +126,11 @@ func (a *Network1) GetUUID() (string, error) {
 
 
 
-
-
-
-// GetConnected get Connected value
-func (a *Network1) GetConnected() (bool, error) {
-	v, err := a.GetProperty("Connected")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
 // Close the connection
 func (a *Network1) Close() {
-
+	
 	a.unregisterPropertiesSignal()
-
+	
 	a.client.Disconnect()
 }
 
@@ -260,7 +260,7 @@ func (a *Network1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 
 
 /*
-Connect
+Connect 
 			Connect to the network device and return the network
 			interface name. Examples of the interface name are
 			bnep0, bnep1 etc.
@@ -273,14 +273,14 @@ Connect
 
 */
 func (a *Network1) Connect(uuid string) (string, error) {
-
+	
 	var val0 string
 	err := a.client.Call("Connect", 0, uuid).Store(&val0)
-	return val0, err
+	return val0, err	
 }
 
 /*
-Disconnect
+Disconnect 
 			Disconnect from the network device.
 
 			To abort a connection attempt in case of errors or
@@ -291,7 +291,8 @@ Disconnect
 
 */
 func (a *Network1) Disconnect() error {
-
+	
 	return a.client.Call("Disconnect", 0, ).Store()
-
+	
 }
+

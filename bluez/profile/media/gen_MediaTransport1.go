@@ -56,6 +56,11 @@ type MediaTransport1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	UUID UUID of the profile which the transport is for.
+	*/
+	UUID string
+
+	/*
 	Codec Assigned number of codec that the transport support.
 			The values should match the profile specification which
 			is indicated by the UUID.
@@ -98,11 +103,6 @@ type MediaTransport1Properties struct {
 	*/
 	Device dbus.ObjectPath
 
-	/*
-	UUID UUID of the profile which the transport is for.
-	*/
-	UUID string
-
 }
 
 //Lock access to properties
@@ -113,6 +113,20 @@ func (p *MediaTransport1Properties) Lock() {
 //Unlock access to properties
 func (p *MediaTransport1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+
+
+// GetUUID get UUID value
+func (a *MediaTransport1) GetUUID() (string, error) {
+	v, err := a.GetProperty("UUID")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 
@@ -207,20 +221,6 @@ func (a *MediaTransport1) GetDevice() (dbus.ObjectPath, error) {
 		return dbus.ObjectPath(""), err
 	}
 	return v.Value().(dbus.ObjectPath), nil
-}
-
-
-
-
-
-
-// GetUUID get UUID value
-func (a *MediaTransport1) GetUUID() (string, error) {
-	v, err := a.GetProperty("UUID")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
 }
 
 
