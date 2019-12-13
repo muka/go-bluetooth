@@ -78,7 +78,7 @@ type GattService1Properties struct {
 			belongs to. Only present on services from remote
 			devices.
 	*/
-	Device []dbus.ObjectPath `dbus:"ignore=IsService"`
+	Device dbus.ObjectPath `dbus:"ignore=IsService"`
 
 	/*
 	Includes Array of object paths representing the included
