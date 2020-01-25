@@ -49,6 +49,7 @@ type FileTransfer struct {
 	objectManagerSignal chan *dbus.Signal
 	objectManager       *bluez.ObjectManager
 	Properties 				*FileTransferProperties
+	watchPropertiesChannel chan *dbus.Signal
 }
 
 // FileTransferProperties contains the exposed properties of an interface
@@ -148,6 +149,16 @@ func (a *FileTransferProperties) FromDBusMap(props map[string]dbus.Variant) (*Fi
 // ToProps return the properties interface
 func (a *FileTransfer) ToProps() bluez.Properties {
 	return a.Properties
+}
+
+// GetWatchPropertiesChannel return the dbus channel to receive properties interface
+func (a *FileTransfer) GetWatchPropertiesChannel() chan *dbus.Signal {
+	return a.watchPropertiesChannel
+}
+
+// SetWatchPropertiesChannel set the dbus channel to receive properties interface
+func (a *FileTransfer) SetWatchPropertiesChannel(c chan *dbus.Signal) {
+	a.watchPropertiesChannel = c
 }
 
 // GetProperties load all available properties

@@ -52,11 +52,42 @@ type GattCharacteristic1 struct {
 	objectManagerSignal chan *dbus.Signal
 	objectManager       *bluez.ObjectManager
 	Properties 				*GattCharacteristic1Properties
+	watchPropertiesChannel chan *dbus.Signal
 }
 
 // GattCharacteristic1Properties contains the exposed properties of an interface
 type GattCharacteristic1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
+
+	/*
+	Flags Defines how the characteristic value can be used. See
+			Core spec "Table 3.5: Characteristic Properties bit
+			field", and "Table 3.8: Characteristic Extended
+			Properties bit field". Allowed values:
+
+				"broadcast"
+				"read"
+				"write-without-response"
+				"write"
+				"notify"
+				"indicate"
+				"authenticated-signed-writes"
+				"reliable-write"
+				"writable-auxiliaries"
+				"encrypt-read"
+				"encrypt-write"
+				"encrypt-authenticated-read"
+				"encrypt-authenticated-write"
+				"secure-read" (Server only)
+				"secure-write" (Server only)
+				"authorize"
+	*/
+	Flags []string
+
+	/*
+	Descriptors 
+	*/
+	Descriptors []dbus.ObjectPath
 
 	/*
 	UUID 128-bit characteristic UUID.
@@ -107,36 +138,6 @@ type GattCharacteristic1Properties struct {
 	*/
 	Notifying bool
 
-	/*
-	Flags Defines how the characteristic value can be used. See
-			Core spec "Table 3.5: Characteristic Properties bit
-			field", and "Table 3.8: Characteristic Extended
-			Properties bit field". Allowed values:
-
-				"broadcast"
-				"read"
-				"write-without-response"
-				"write"
-				"notify"
-				"indicate"
-				"authenticated-signed-writes"
-				"reliable-write"
-				"writable-auxiliaries"
-				"encrypt-read"
-				"encrypt-write"
-				"encrypt-authenticated-read"
-				"encrypt-authenticated-write"
-				"secure-read" (Server only)
-				"secure-write" (Server only)
-				"authorize"
-	*/
-	Flags []string
-
-	/*
-	Descriptors 
-	*/
-	Descriptors []dbus.ObjectPath
-
 }
 
 //Lock access to properties
@@ -147,6 +148,44 @@ func (p *GattCharacteristic1Properties) Lock() {
 //Unlock access to properties
 func (p *GattCharacteristic1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+// SetFlags set Flags value
+func (a *GattCharacteristic1) SetFlags(v []string) error {
+	return a.SetProperty("Flags", v)
+}
+
+
+
+// GetFlags get Flags value
+func (a *GattCharacteristic1) GetFlags() ([]string, error) {
+	v, err := a.GetProperty("Flags")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
+}
+
+
+
+
+// SetDescriptors set Descriptors value
+func (a *GattCharacteristic1) SetDescriptors(v []dbus.ObjectPath) error {
+	return a.SetProperty("Descriptors", v)
+}
+
+
+
+// GetDescriptors get Descriptors value
+func (a *GattCharacteristic1) GetDescriptors() ([]dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Descriptors")
+	if err != nil {
+		return []dbus.ObjectPath{}, err
+	}
+	return v.Value().([]dbus.ObjectPath), nil
 }
 
 
@@ -265,44 +304,6 @@ func (a *GattCharacteristic1) GetNotifying() (bool, error) {
 
 
 
-
-// SetFlags set Flags value
-func (a *GattCharacteristic1) SetFlags(v []string) error {
-	return a.SetProperty("Flags", v)
-}
-
-
-
-// GetFlags get Flags value
-func (a *GattCharacteristic1) GetFlags() ([]string, error) {
-	v, err := a.GetProperty("Flags")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
-}
-
-
-
-
-// SetDescriptors set Descriptors value
-func (a *GattCharacteristic1) SetDescriptors(v []dbus.ObjectPath) error {
-	return a.SetProperty("Descriptors", v)
-}
-
-
-
-// GetDescriptors get Descriptors value
-func (a *GattCharacteristic1) GetDescriptors() ([]dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Descriptors")
-	if err != nil {
-		return []dbus.ObjectPath{}, err
-	}
-	return v.Value().([]dbus.ObjectPath), nil
-}
-
-
-
 // Close the connection
 func (a *GattCharacteristic1) Close() {
 	
@@ -382,6 +383,16 @@ func (a *GattCharacteristic1Properties) FromDBusMap(props map[string]dbus.Varian
 // ToProps return the properties interface
 func (a *GattCharacteristic1) ToProps() bluez.Properties {
 	return a.Properties
+}
+
+// GetWatchPropertiesChannel return the dbus channel to receive properties interface
+func (a *GattCharacteristic1) GetWatchPropertiesChannel() chan *dbus.Signal {
+	return a.watchPropertiesChannel
+}
+
+// SetWatchPropertiesChannel set the dbus channel to receive properties interface
+func (a *GattCharacteristic1) SetWatchPropertiesChannel(c chan *dbus.Signal) {
+	a.watchPropertiesChannel = c
 }
 
 // GetProperties load all available properties

@@ -50,6 +50,7 @@ type ThermometerWatcher1 struct {
 	objectManagerSignal chan *dbus.Signal
 	objectManager       *bluez.ObjectManager
 	Properties 				*ThermometerWatcher1Properties
+	watchPropertiesChannel chan *dbus.Signal
 }
 
 // ThermometerWatcher1Properties contains the exposed properties of an interface
@@ -149,6 +150,16 @@ func (a *ThermometerWatcher1Properties) FromDBusMap(props map[string]dbus.Varian
 // ToProps return the properties interface
 func (a *ThermometerWatcher1) ToProps() bluez.Properties {
 	return a.Properties
+}
+
+// GetWatchPropertiesChannel return the dbus channel to receive properties interface
+func (a *ThermometerWatcher1) GetWatchPropertiesChannel() chan *dbus.Signal {
+	return a.watchPropertiesChannel
+}
+
+// SetWatchPropertiesChannel set the dbus channel to receive properties interface
+func (a *ThermometerWatcher1) SetWatchPropertiesChannel(c chan *dbus.Signal) {
+	a.watchPropertiesChannel = c
 }
 
 // GetProperties load all available properties

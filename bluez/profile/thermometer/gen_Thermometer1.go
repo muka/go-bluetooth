@@ -49,11 +49,18 @@ type Thermometer1 struct {
 	objectManagerSignal chan *dbus.Signal
 	objectManager       *bluez.ObjectManager
 	Properties 				*Thermometer1Properties
+	watchPropertiesChannel chan *dbus.Signal
 }
 
 // Thermometer1Properties contains the exposed properties of an interface
 type Thermometer1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
+
+	/*
+	Minimum (optional) Defines the minimum value allowed for the interval
+			between periodic measurements.
+	*/
+	Minimum uint16
 
 	/*
 	Intermediate True if the thermometer supports intermediate
@@ -77,12 +84,6 @@ type Thermometer1Properties struct {
 	*/
 	Maximum uint16
 
-	/*
-	Minimum (optional) Defines the minimum value allowed for the interval
-			between periodic measurements.
-	*/
-	Minimum uint16
-
 }
 
 //Lock access to properties
@@ -93,6 +94,20 @@ func (p *Thermometer1Properties) Lock() {
 //Unlock access to properties
 func (p *Thermometer1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+
+
+// GetMinimum get Minimum value
+func (a *Thermometer1) GetMinimum() (uint16, error) {
+	v, err := a.GetProperty("Minimum")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
 }
 
 
@@ -136,20 +151,6 @@ func (a *Thermometer1) GetInterval() (uint16, error) {
 // GetMaximum get Maximum value
 func (a *Thermometer1) GetMaximum() (uint16, error) {
 	v, err := a.GetProperty("Maximum")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
-}
-
-
-
-
-
-
-// GetMinimum get Minimum value
-func (a *Thermometer1) GetMinimum() (uint16, error) {
-	v, err := a.GetProperty("Minimum")
 	if err != nil {
 		return uint16(0), err
 	}
@@ -237,6 +238,16 @@ func (a *Thermometer1Properties) FromDBusMap(props map[string]dbus.Variant) (*Th
 // ToProps return the properties interface
 func (a *Thermometer1) ToProps() bluez.Properties {
 	return a.Properties
+}
+
+// GetWatchPropertiesChannel return the dbus channel to receive properties interface
+func (a *Thermometer1) GetWatchPropertiesChannel() chan *dbus.Signal {
+	return a.watchPropertiesChannel
+}
+
+// SetWatchPropertiesChannel set the dbus channel to receive properties interface
+func (a *Thermometer1) SetWatchPropertiesChannel(c chan *dbus.Signal) {
+	a.watchPropertiesChannel = c
 }
 
 // GetProperties load all available properties

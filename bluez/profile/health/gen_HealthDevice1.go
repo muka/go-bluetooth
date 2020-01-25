@@ -49,6 +49,7 @@ type HealthDevice1 struct {
 	objectManagerSignal chan *dbus.Signal
 	objectManager       *bluez.ObjectManager
 	Properties 				*HealthDevice1Properties
+	watchPropertiesChannel chan *dbus.Signal
 }
 
 // HealthDevice1Properties contains the exposed properties of an interface
@@ -170,6 +171,16 @@ func (a *HealthDevice1Properties) FromDBusMap(props map[string]dbus.Variant) (*H
 // ToProps return the properties interface
 func (a *HealthDevice1) ToProps() bluez.Properties {
 	return a.Properties
+}
+
+// GetWatchPropertiesChannel return the dbus channel to receive properties interface
+func (a *HealthDevice1) GetWatchPropertiesChannel() chan *dbus.Signal {
+	return a.watchPropertiesChannel
+}
+
+// SetWatchPropertiesChannel set the dbus channel to receive properties interface
+func (a *HealthDevice1) SetWatchPropertiesChannel(c chan *dbus.Signal) {
+	a.watchPropertiesChannel = c
 }
 
 // GetProperties load all available properties

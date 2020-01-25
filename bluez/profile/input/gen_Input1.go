@@ -1,17 +1,15 @@
 package input
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus"
+	"sync"
+
+	"github.com/godbus/dbus"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var Input1Interface = "org.bluez.Input1"
-
 
 // NewInput1 create a new instance of Input1
 //
@@ -27,28 +25,28 @@ func NewInput1(objectPath dbus.ObjectPath) (*Input1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
+
 	a.Properties = new(Input1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
+
 	return a, nil
 }
-
 
 /*
 Input1 Input hierarchy
 
 */
 type Input1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*Input1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *Input1Properties
+	watchPropertiesChannel chan *dbus.Signal
 }
 
 // Input1Properties contains the exposed properties of an interface
@@ -56,29 +54,28 @@ type Input1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	ReconnectMode Determines the Connectability mode of the HID device as
-			defined by the HID Profile specification, Section 5.4.2.
+		ReconnectMode Determines the Connectability mode of the HID device as
+				defined by the HID Profile specification, Section 5.4.2.
 
-			This mode is based in the two properties
-			HIDReconnectInitiate (see Section 5.3.4.6) and
-			HIDNormallyConnectable (see Section 5.3.4.14) which
-			define the following four possible values:
+				This mode is based in the two properties
+				HIDReconnectInitiate (see Section 5.3.4.6) and
+				HIDNormallyConnectable (see Section 5.3.4.14) which
+				define the following four possible values:
 
-			"none"		Device and host are not required to
-					automatically restore the connection.
+				"none"		Device and host are not required to
+						automatically restore the connection.
 
-			"host"		Bluetooth HID host restores connection.
+				"host"		Bluetooth HID host restores connection.
 
-			"device"	Bluetooth HID device restores
-					connection.
+				"device"	Bluetooth HID device restores
+						connection.
 
-			"any"		Bluetooth HID device shall attempt to
-					restore the lost connection, but
-					Bluetooth HID Host may also restore the
-					connection.
+				"any"		Bluetooth HID device shall attempt to
+						restore the lost connection, but
+						Bluetooth HID Host may also restore the
+						connection.
 	*/
 	ReconnectMode string
-
 }
 
 //Lock access to properties
@@ -91,11 +88,6 @@ func (p *Input1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
-
-
-
 // GetReconnectMode get ReconnectMode value
 func (a *Input1) GetReconnectMode() (string, error) {
 	v, err := a.GetProperty("ReconnectMode")
@@ -105,13 +97,11 @@ func (a *Input1) GetReconnectMode() (string, error) {
 	return v.Value().(string), nil
 }
 
-
-
 // Close the connection
 func (a *Input1) Close() {
-	
+
 	a.unregisterPropertiesSignal()
-	
+
 	a.client.Disconnect()
 }
 
@@ -161,7 +151,6 @@ func (a *Input1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
 	return a.objectManagerSignal, cancel, nil
 }
 
-
 // ToMap convert a Input1Properties to map
 func (a *Input1Properties) ToMap() (map[string]interface{}, error) {
 	return props.ToMap(a), nil
@@ -186,6 +175,16 @@ func (a *Input1Properties) FromDBusMap(props map[string]dbus.Variant) (*Input1Pr
 // ToProps return the properties interface
 func (a *Input1) ToProps() bluez.Properties {
 	return a.Properties
+}
+
+// GetWatchPropertiesChannel return the dbus channel to receive properties interface
+func (a *Input1) GetWatchPropertiesChannel() chan *dbus.Signal {
+	return a.watchPropertiesChannel
+}
+
+// SetWatchPropertiesChannel set the dbus channel to receive properties interface
+func (a *Input1) SetWatchPropertiesChannel(c chan *dbus.Signal) {
+	a.watchPropertiesChannel = c
 }
 
 // GetProperties load all available properties
@@ -236,7 +235,3 @@ func (a *Input1) WatchProperties() (chan *bluez.PropertyChanged, error) {
 func (a *Input1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	return bluez.UnwatchProperties(a, ch)
 }
-
-
-
-

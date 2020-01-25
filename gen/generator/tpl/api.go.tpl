@@ -41,6 +41,7 @@ type {{.InterfaceName}} struct {
 	objectManagerSignal chan *dbus.Signal
 	objectManager       *bluez.ObjectManager
 	Properties 				*{{.InterfaceName}}Properties
+	watchPropertiesChannel chan *dbus.Signal
 }
 
 // {{.InterfaceName}}Properties contains the exposed properties of an interface
@@ -164,6 +165,16 @@ func (a *{{.InterfaceName}}Properties) FromDBusMap(props map[string]dbus.Variant
 // ToProps return the properties interface
 func (a *{{.InterfaceName}}) ToProps() bluez.Properties {
 	return a.Properties
+}
+
+// GetWatchPropertiesChannel return the dbus channel to receive properties interface
+func (a *{{.InterfaceName}}) GetWatchPropertiesChannel() chan *dbus.Signal {
+	return a.watchPropertiesChannel
+}
+
+// SetWatchPropertiesChannel set the dbus channel to receive properties interface
+func (a *{{.InterfaceName}}) SetWatchPropertiesChannel(c chan *dbus.Signal) {
+	a.watchPropertiesChannel = c
 }
 
 // GetProperties load all available properties

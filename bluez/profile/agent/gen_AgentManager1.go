@@ -40,6 +40,7 @@ type AgentManager1 struct {
 	objectManagerSignal chan *dbus.Signal
 	objectManager       *bluez.ObjectManager
 	Properties 				*AgentManager1Properties
+	watchPropertiesChannel chan *dbus.Signal
 }
 
 // AgentManager1Properties contains the exposed properties of an interface

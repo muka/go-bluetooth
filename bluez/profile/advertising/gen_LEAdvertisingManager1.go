@@ -77,11 +77,21 @@ type LEAdvertisingManager1 struct {
 	objectManagerSignal chan *dbus.Signal
 	objectManager       *bluez.ObjectManager
 	Properties 				*LEAdvertisingManager1Properties
+	watchPropertiesChannel chan *dbus.Signal
 }
 
 // LEAdvertisingManager1Properties contains the exposed properties of an interface
 type LEAdvertisingManager1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
+
+	/*
+	SupportedIncludes List of supported system includes.
+
+			Possible values: "tx-power"
+					 "appearance"
+					 "local-name"
+	*/
+	SupportedIncludes []string
 
 	/*
 	ActiveInstances Number of active advertising instances.
@@ -93,15 +103,6 @@ type LEAdvertisingManager1Properties struct {
 	*/
 	SupportedInstances byte
 
-	/*
-	SupportedIncludes List of supported system includes.
-
-			Possible values: "tx-power"
-					 "appearance"
-					 "local-name"
-	*/
-	SupportedIncludes []string
-
 }
 
 //Lock access to properties
@@ -112,6 +113,25 @@ func (p *LEAdvertisingManager1Properties) Lock() {
 //Unlock access to properties
 func (p *LEAdvertisingManager1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+// SetSupportedIncludes set SupportedIncludes value
+func (a *LEAdvertisingManager1) SetSupportedIncludes(v []string) error {
+	return a.SetProperty("SupportedIncludes", v)
+}
+
+
+
+// GetSupportedIncludes get SupportedIncludes value
+func (a *LEAdvertisingManager1) GetSupportedIncludes() ([]string, error) {
+	v, err := a.GetProperty("SupportedIncludes")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
 }
 
 
@@ -150,25 +170,6 @@ func (a *LEAdvertisingManager1) GetSupportedInstances() (byte, error) {
 		return byte(0), err
 	}
 	return v.Value().(byte), nil
-}
-
-
-
-
-// SetSupportedIncludes set SupportedIncludes value
-func (a *LEAdvertisingManager1) SetSupportedIncludes(v []string) error {
-	return a.SetProperty("SupportedIncludes", v)
-}
-
-
-
-// GetSupportedIncludes get SupportedIncludes value
-func (a *LEAdvertisingManager1) GetSupportedIncludes() ([]string, error) {
-	v, err := a.GetProperty("SupportedIncludes")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
 }
 
 
@@ -252,6 +253,16 @@ func (a *LEAdvertisingManager1Properties) FromDBusMap(props map[string]dbus.Vari
 // ToProps return the properties interface
 func (a *LEAdvertisingManager1) ToProps() bluez.Properties {
 	return a.Properties
+}
+
+// GetWatchPropertiesChannel return the dbus channel to receive properties interface
+func (a *LEAdvertisingManager1) GetWatchPropertiesChannel() chan *dbus.Signal {
+	return a.watchPropertiesChannel
+}
+
+// SetWatchPropertiesChannel set the dbus channel to receive properties interface
+func (a *LEAdvertisingManager1) SetWatchPropertiesChannel(c chan *dbus.Signal) {
+	a.watchPropertiesChannel = c
 }
 
 // GetProperties load all available properties

@@ -49,34 +49,12 @@ type MediaTransport1 struct {
 	objectManagerSignal chan *dbus.Signal
 	objectManager       *bluez.ObjectManager
 	Properties 				*MediaTransport1Properties
+	watchPropertiesChannel chan *dbus.Signal
 }
 
 // MediaTransport1Properties contains the exposed properties of an interface
 type MediaTransport1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
-	/*
-	Device Device object which the transport is connected to.
-	*/
-	Device dbus.ObjectPath
-
-	/*
-	UUID UUID of the profile which the transport is for.
-	*/
-	UUID string
-
-	/*
-	Codec Assigned number of codec that the transport support.
-			The values should match the profile specification which
-			is indicated by the UUID.
-	*/
-	Codec byte
-
-	/*
-	Configuration Configuration blob, it is used as it is so the size and
-			byte order must match.
-	*/
-	Configuration []byte
 
 	/*
 	State Indicates the state of the transport. Possible
@@ -103,6 +81,29 @@ type MediaTransport1Properties struct {
 	*/
 	Volume uint16
 
+	/*
+	Device Device object which the transport is connected to.
+	*/
+	Device dbus.ObjectPath
+
+	/*
+	UUID UUID of the profile which the transport is for.
+	*/
+	UUID string
+
+	/*
+	Codec Assigned number of codec that the transport support.
+			The values should match the profile specification which
+			is indicated by the UUID.
+	*/
+	Codec byte
+
+	/*
+	Configuration Configuration blob, it is used as it is so the size and
+			byte order must match.
+	*/
+	Configuration []byte
+
 }
 
 //Lock access to properties
@@ -113,6 +114,58 @@ func (p *MediaTransport1Properties) Lock() {
 //Unlock access to properties
 func (p *MediaTransport1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+
+
+// GetState get State value
+func (a *MediaTransport1) GetState() (string, error) {
+	v, err := a.GetProperty("State")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+// SetDelay set Delay value
+func (a *MediaTransport1) SetDelay(v uint16) error {
+	return a.SetProperty("Delay", v)
+}
+
+
+
+// GetDelay get Delay value
+func (a *MediaTransport1) GetDelay() (uint16, error) {
+	v, err := a.GetProperty("Delay")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
+
+
+
+
+// SetVolume set Volume value
+func (a *MediaTransport1) SetVolume(v uint16) error {
+	return a.SetProperty("Volume", v)
+}
+
+
+
+// GetVolume get Volume value
+func (a *MediaTransport1) GetVolume() (uint16, error) {
+	v, err := a.GetProperty("Volume")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
 }
 
 
@@ -169,58 +222,6 @@ func (a *MediaTransport1) GetConfiguration() ([]byte, error) {
 		return []byte{}, err
 	}
 	return v.Value().([]byte), nil
-}
-
-
-
-
-
-
-// GetState get State value
-func (a *MediaTransport1) GetState() (string, error) {
-	v, err := a.GetProperty("State")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-// SetDelay set Delay value
-func (a *MediaTransport1) SetDelay(v uint16) error {
-	return a.SetProperty("Delay", v)
-}
-
-
-
-// GetDelay get Delay value
-func (a *MediaTransport1) GetDelay() (uint16, error) {
-	v, err := a.GetProperty("Delay")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
-}
-
-
-
-
-// SetVolume set Volume value
-func (a *MediaTransport1) SetVolume(v uint16) error {
-	return a.SetProperty("Volume", v)
-}
-
-
-
-// GetVolume get Volume value
-func (a *MediaTransport1) GetVolume() (uint16, error) {
-	v, err := a.GetProperty("Volume")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
 }
 
 
@@ -304,6 +305,16 @@ func (a *MediaTransport1Properties) FromDBusMap(props map[string]dbus.Variant) (
 // ToProps return the properties interface
 func (a *MediaTransport1) ToProps() bluez.Properties {
 	return a.Properties
+}
+
+// GetWatchPropertiesChannel return the dbus channel to receive properties interface
+func (a *MediaTransport1) GetWatchPropertiesChannel() chan *dbus.Signal {
+	return a.watchPropertiesChannel
+}
+
+// SetWatchPropertiesChannel set the dbus channel to receive properties interface
+func (a *MediaTransport1) SetWatchPropertiesChannel(c chan *dbus.Signal) {
+	a.watchPropertiesChannel = c
 }
 
 // GetProperties load all available properties

@@ -49,27 +49,12 @@ type PhonebookAccess1 struct {
 	objectManagerSignal chan *dbus.Signal
 	objectManager       *bluez.ObjectManager
 	Properties 				*PhonebookAccess1Properties
+	watchPropertiesChannel chan *dbus.Signal
 }
 
 // PhonebookAccess1Properties contains the exposed properties of an interface
 type PhonebookAccess1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
-	/*
-	DatabaseIdentifier 128 bits persistent database identifier.
-
-			Possible values: 32-character hexadecimal such
-			as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
-	*/
-	DatabaseIdentifier string
-
-	/*
-	PrimaryCounter 128 bits primary version counter.
-
-			Possible values: 32-character hexadecimal such
-			as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
-	*/
-	PrimaryCounter string
 
 	/*
 	SecondaryCounter 128 bits secondary version counter.
@@ -92,6 +77,22 @@ type PhonebookAccess1Properties struct {
 	*/
 	Folder string
 
+	/*
+	DatabaseIdentifier 128 bits persistent database identifier.
+
+			Possible values: 32-character hexadecimal such
+			as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
+	*/
+	DatabaseIdentifier string
+
+	/*
+	PrimaryCounter 128 bits primary version counter.
+
+			Possible values: 32-character hexadecimal such
+			as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
+	*/
+	PrimaryCounter string
+
 }
 
 //Lock access to properties
@@ -102,34 +103,6 @@ func (p *PhonebookAccess1Properties) Lock() {
 //Unlock access to properties
 func (p *PhonebookAccess1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-
-
-// GetDatabaseIdentifier get DatabaseIdentifier value
-func (a *PhonebookAccess1) GetDatabaseIdentifier() (string, error) {
-	v, err := a.GetProperty("DatabaseIdentifier")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-
-
-// GetPrimaryCounter get PrimaryCounter value
-func (a *PhonebookAccess1) GetPrimaryCounter() (string, error) {
-	v, err := a.GetProperty("PrimaryCounter")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
 }
 
 
@@ -168,6 +141,34 @@ func (a *PhonebookAccess1) GetFixedImageSize() (bool, error) {
 // GetFolder get Folder value
 func (a *PhonebookAccess1) GetFolder() (string, error) {
 	v, err := a.GetProperty("Folder")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+
+
+// GetDatabaseIdentifier get DatabaseIdentifier value
+func (a *PhonebookAccess1) GetDatabaseIdentifier() (string, error) {
+	v, err := a.GetProperty("DatabaseIdentifier")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+
+
+// GetPrimaryCounter get PrimaryCounter value
+func (a *PhonebookAccess1) GetPrimaryCounter() (string, error) {
+	v, err := a.GetProperty("PrimaryCounter")
 	if err != nil {
 		return "", err
 	}
@@ -255,6 +256,16 @@ func (a *PhonebookAccess1Properties) FromDBusMap(props map[string]dbus.Variant) 
 // ToProps return the properties interface
 func (a *PhonebookAccess1) ToProps() bluez.Properties {
 	return a.Properties
+}
+
+// GetWatchPropertiesChannel return the dbus channel to receive properties interface
+func (a *PhonebookAccess1) GetWatchPropertiesChannel() chan *dbus.Signal {
+	return a.watchPropertiesChannel
+}
+
+// SetWatchPropertiesChannel set the dbus channel to receive properties interface
+func (a *PhonebookAccess1) SetWatchPropertiesChannel(c chan *dbus.Signal) {
+	a.watchPropertiesChannel = c
 }
 
 // GetProperties load all available properties

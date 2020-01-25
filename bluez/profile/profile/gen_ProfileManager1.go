@@ -49,6 +49,7 @@ type ProfileManager1 struct {
 	objectManagerSignal chan *dbus.Signal
 	objectManager       *bluez.ObjectManager
 	Properties 				*ProfileManager1Properties
+	watchPropertiesChannel chan *dbus.Signal
 }
 
 // ProfileManager1Properties contains the exposed properties of an interface
@@ -148,6 +149,16 @@ func (a *ProfileManager1Properties) FromDBusMap(props map[string]dbus.Variant) (
 // ToProps return the properties interface
 func (a *ProfileManager1) ToProps() bluez.Properties {
 	return a.Properties
+}
+
+// GetWatchPropertiesChannel return the dbus channel to receive properties interface
+func (a *ProfileManager1) GetWatchPropertiesChannel() chan *dbus.Signal {
+	return a.watchPropertiesChannel
+}
+
+// SetWatchPropertiesChannel set the dbus channel to receive properties interface
+func (a *ProfileManager1) SetWatchPropertiesChannel(c chan *dbus.Signal) {
+	a.watchPropertiesChannel = c
 }
 
 // GetProperties load all available properties

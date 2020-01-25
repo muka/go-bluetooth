@@ -49,6 +49,7 @@ type SimAccess1 struct {
 	objectManagerSignal chan *dbus.Signal
 	objectManager       *bluez.ObjectManager
 	Properties 				*SimAccess1Properties
+	watchPropertiesChannel chan *dbus.Signal
 }
 
 // SimAccess1Properties contains the exposed properties of an interface
@@ -167,6 +168,16 @@ func (a *SimAccess1Properties) FromDBusMap(props map[string]dbus.Variant) (*SimA
 // ToProps return the properties interface
 func (a *SimAccess1) ToProps() bluez.Properties {
 	return a.Properties
+}
+
+// GetWatchPropertiesChannel return the dbus channel to receive properties interface
+func (a *SimAccess1) GetWatchPropertiesChannel() chan *dbus.Signal {
+	return a.watchPropertiesChannel
+}
+
+// SetWatchPropertiesChannel set the dbus channel to receive properties interface
+func (a *SimAccess1) SetWatchPropertiesChannel(c chan *dbus.Signal) {
+	a.watchPropertiesChannel = c
 }
 
 // GetProperties load all available properties

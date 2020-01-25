@@ -12,6 +12,8 @@ type WatchableClient interface {
 	Client() *Client
 	Path() dbus.ObjectPath
 	ToProps() Properties
+	GetWatchPropertiesChannel() chan *dbus.Signal
+	SetWatchPropertiesChannel(chan *dbus.Signal)
 }
 
 // WatchProperties updates on property changes
@@ -22,6 +24,7 @@ func WatchProperties(wprop WatchableClient) (chan *PropertyChanged, error) {
 		return nil, err
 	}
 
+	wprop.SetWatchPropertiesChannel(channel)
 	ch := make(chan *PropertyChanged)
 
 	go (func() {
@@ -91,5 +94,11 @@ func WatchProperties(wprop WatchableClient) (chan *PropertyChanged, error) {
 func UnwatchProperties(wprop WatchableClient, ch chan *PropertyChanged) error {
 	ch <- nil
 	close(ch)
+	if wprop.GetWatchPropertiesChannel() != nil {
+		err := wprop.Client().Unregister(wprop.Path(), PropertiesInterface, wprop.GetWatchPropertiesChannel())
+		if err != nil {
+			return err
+		}
+	}
 	return nil
 }

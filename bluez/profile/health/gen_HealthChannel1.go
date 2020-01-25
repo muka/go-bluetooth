@@ -49,17 +49,12 @@ type HealthChannel1 struct {
 	objectManagerSignal chan *dbus.Signal
 	objectManager       *bluez.ObjectManager
 	Properties 				*HealthChannel1Properties
+	watchPropertiesChannel chan *dbus.Signal
 }
 
 // HealthChannel1Properties contains the exposed properties of an interface
 type HealthChannel1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
-	/*
-	Device Identifies the Remote Device that is connected with.
-			Maps with a HealthDevice object.
-	*/
-	Device dbus.ObjectPath
 
 	/*
 	Application Identifies the HealthApplication to which this channel
@@ -74,6 +69,12 @@ type HealthChannel1Properties struct {
 	*/
 	Type string
 
+	/*
+	Device Identifies the Remote Device that is connected with.
+			Maps with a HealthDevice object.
+	*/
+	Device dbus.ObjectPath
+
 }
 
 //Lock access to properties
@@ -84,20 +85,6 @@ func (p *HealthChannel1Properties) Lock() {
 //Unlock access to properties
 func (p *HealthChannel1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-
-
-// GetDevice get Device value
-func (a *HealthChannel1) GetDevice() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Device")
-	if err != nil {
-		return dbus.ObjectPath(""), err
-	}
-	return v.Value().(dbus.ObjectPath), nil
 }
 
 
@@ -126,6 +113,20 @@ func (a *HealthChannel1) GetType() (string, error) {
 		return "", err
 	}
 	return v.Value().(string), nil
+}
+
+
+
+
+
+
+// GetDevice get Device value
+func (a *HealthChannel1) GetDevice() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Device")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
 }
 
 
@@ -209,6 +210,16 @@ func (a *HealthChannel1Properties) FromDBusMap(props map[string]dbus.Variant) (*
 // ToProps return the properties interface
 func (a *HealthChannel1) ToProps() bluez.Properties {
 	return a.Properties
+}
+
+// GetWatchPropertiesChannel return the dbus channel to receive properties interface
+func (a *HealthChannel1) GetWatchPropertiesChannel() chan *dbus.Signal {
+	return a.watchPropertiesChannel
+}
+
+// SetWatchPropertiesChannel set the dbus channel to receive properties interface
+func (a *HealthChannel1) SetWatchPropertiesChannel(c chan *dbus.Signal) {
+	a.watchPropertiesChannel = c
 }
 
 // GetProperties load all available properties

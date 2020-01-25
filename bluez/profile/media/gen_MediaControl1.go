@@ -73,6 +73,7 @@ type MediaControl1 struct {
 	objectManagerSignal chan *dbus.Signal
 	objectManager       *bluez.ObjectManager
 	Properties 				*MediaControl1Properties
+	watchPropertiesChannel chan *dbus.Signal
 }
 
 // MediaControl1Properties contains the exposed properties of an interface
@@ -80,14 +81,14 @@ type MediaControl1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Connected 
-	*/
-	Connected bool
-
-	/*
 	Player Addressed Player object path.
 	*/
 	Player dbus.ObjectPath
+
+	/*
+	Connected 
+	*/
+	Connected bool
 
 }
 
@@ -106,20 +107,6 @@ func (p *MediaControl1Properties) Unlock() {
 
 
 
-// GetConnected get Connected value
-func (a *MediaControl1) GetConnected() (bool, error) {
-	v, err := a.GetProperty("Connected")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-
-
 // GetPlayer get Player value
 func (a *MediaControl1) GetPlayer() (dbus.ObjectPath, error) {
 	v, err := a.GetProperty("Player")
@@ -127,6 +114,20 @@ func (a *MediaControl1) GetPlayer() (dbus.ObjectPath, error) {
 		return dbus.ObjectPath(""), err
 	}
 	return v.Value().(dbus.ObjectPath), nil
+}
+
+
+
+
+
+
+// GetConnected get Connected value
+func (a *MediaControl1) GetConnected() (bool, error) {
+	v, err := a.GetProperty("Connected")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
 }
 
 
@@ -210,6 +211,16 @@ func (a *MediaControl1Properties) FromDBusMap(props map[string]dbus.Variant) (*M
 // ToProps return the properties interface
 func (a *MediaControl1) ToProps() bluez.Properties {
 	return a.Properties
+}
+
+// GetWatchPropertiesChannel return the dbus channel to receive properties interface
+func (a *MediaControl1) GetWatchPropertiesChannel() chan *dbus.Signal {
+	return a.watchPropertiesChannel
+}
+
+// SetWatchPropertiesChannel set the dbus channel to receive properties interface
+func (a *MediaControl1) SetWatchPropertiesChannel(c chan *dbus.Signal) {
+	a.watchPropertiesChannel = c
 }
 
 // GetProperties load all available properties

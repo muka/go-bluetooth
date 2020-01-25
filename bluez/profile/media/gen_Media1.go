@@ -49,6 +49,7 @@ type Media1 struct {
 	objectManagerSignal chan *dbus.Signal
 	objectManager       *bluez.ObjectManager
 	Properties 				*Media1Properties
+	watchPropertiesChannel chan *dbus.Signal
 }
 
 // Media1Properties contains the exposed properties of an interface
@@ -148,6 +149,16 @@ func (a *Media1Properties) FromDBusMap(props map[string]dbus.Variant) (*Media1Pr
 // ToProps return the properties interface
 func (a *Media1) ToProps() bluez.Properties {
 	return a.Properties
+}
+
+// GetWatchPropertiesChannel return the dbus channel to receive properties interface
+func (a *Media1) GetWatchPropertiesChannel() chan *dbus.Signal {
+	return a.watchPropertiesChannel
+}
+
+// SetWatchPropertiesChannel set the dbus channel to receive properties interface
+func (a *Media1) SetWatchPropertiesChannel(c chan *dbus.Signal) {
+	a.watchPropertiesChannel = c
 }
 
 // GetProperties load all available properties

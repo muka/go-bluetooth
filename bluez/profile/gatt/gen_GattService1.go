@@ -56,11 +56,25 @@ type GattService1 struct {
 	objectManagerSignal chan *dbus.Signal
 	objectManager       *bluez.ObjectManager
 	Properties 				*GattService1Properties
+	watchPropertiesChannel chan *dbus.Signal
 }
 
 // GattService1Properties contains the exposed properties of an interface
 type GattService1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
+
+	/*
+	Device Object path of the Bluetooth device the service
+			belongs to. Only present on services from remote
+			devices.
+	*/
+	Device []dbus.ObjectPath `dbus:"ignore=IsService"`
+
+	/*
+	Includes Array of object paths representing the included
+			services of this service.
+	*/
+	Includes []dbus.ObjectPath `dbus:"omitEmpty"`
 
 	/*
 	IsService 
@@ -83,19 +97,6 @@ type GattService1Properties struct {
 	*/
 	Primary bool
 
-	/*
-	Device Object path of the Bluetooth device the service
-			belongs to. Only present on services from remote
-			devices.
-	*/
-	Device []dbus.ObjectPath `dbus:"ignore=IsService"`
-
-	/*
-	Includes Array of object paths representing the included
-			services of this service.
-	*/
-	Includes []dbus.ObjectPath `dbus:"omitEmpty"`
-
 }
 
 //Lock access to properties
@@ -106,6 +107,44 @@ func (p *GattService1Properties) Lock() {
 //Unlock access to properties
 func (p *GattService1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+// SetDevice set Device value
+func (a *GattService1) SetDevice(v dbus.ObjectPath) error {
+	return a.SetProperty("Device", v)
+}
+
+
+
+// GetDevice get Device value
+func (a *GattService1) GetDevice() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Device")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
+}
+
+
+
+
+// SetIncludes set Includes value
+func (a *GattService1) SetIncludes(v []dbus.ObjectPath) error {
+	return a.SetProperty("Includes", v)
+}
+
+
+
+// GetIncludes get Includes value
+func (a *GattService1) GetIncludes() ([]dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Includes")
+	if err != nil {
+		return []dbus.ObjectPath{}, err
+	}
+	return v.Value().([]dbus.ObjectPath), nil
 }
 
 
@@ -182,44 +221,6 @@ func (a *GattService1) GetPrimary() (bool, error) {
 		return false, err
 	}
 	return v.Value().(bool), nil
-}
-
-
-
-
-// SetDevice set Device value
-func (a *GattService1) SetDevice(v dbus.ObjectPath) error {
-	return a.SetProperty("Device", v)
-}
-
-
-
-// GetDevice get Device value
-func (a *GattService1) GetDevice() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Device")
-	if err != nil {
-		return dbus.ObjectPath(""), err
-	}
-	return v.Value().(dbus.ObjectPath), nil
-}
-
-
-
-
-// SetIncludes set Includes value
-func (a *GattService1) SetIncludes(v []dbus.ObjectPath) error {
-	return a.SetProperty("Includes", v)
-}
-
-
-
-// GetIncludes get Includes value
-func (a *GattService1) GetIncludes() ([]dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Includes")
-	if err != nil {
-		return []dbus.ObjectPath{}, err
-	}
-	return v.Value().([]dbus.ObjectPath), nil
 }
 
 
@@ -303,6 +304,16 @@ func (a *GattService1Properties) FromDBusMap(props map[string]dbus.Variant) (*Ga
 // ToProps return the properties interface
 func (a *GattService1) ToProps() bluez.Properties {
 	return a.Properties
+}
+
+// GetWatchPropertiesChannel return the dbus channel to receive properties interface
+func (a *GattService1) GetWatchPropertiesChannel() chan *dbus.Signal {
+	return a.watchPropertiesChannel
+}
+
+// SetWatchPropertiesChannel set the dbus channel to receive properties interface
+func (a *GattService1) SetWatchPropertiesChannel(c chan *dbus.Signal) {
+	a.watchPropertiesChannel = c
 }
 
 // GetProperties load all available properties
