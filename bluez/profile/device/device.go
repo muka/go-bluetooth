@@ -91,7 +91,6 @@ func (d *Device1) GetDescriptorList() ([]dbus.ObjectPath, error) {
 
 //GetDescriptors returns all descriptors for a given characteristic
 func (d *Device1) GetDescriptors(char *gatt.GattCharacteristic1) ([]*gatt.GattDescriptor1, error) {
-
 	descrPaths, err := d.GetDescriptorList()
 	if err != nil {
 		return nil, err
@@ -99,18 +98,13 @@ func (d *Device1) GetDescriptors(char *gatt.GattCharacteristic1) ([]*gatt.GattDe
 
 	descrFound := []*gatt.GattDescriptor1{}
 	for _, path := range descrPaths {
-
 		descr, err := gatt.NewGattDescriptor1(path)
 		if err != nil {
 			return nil, err
 		}
-
-		charPath := fmt.Sprintf("%s/%s", char.Properties.Service, strings.Replace(char.Properties.UUID, "-", "_", -1))
-
-		if dbus.ObjectPath(charPath) == descr.Properties.Characteristic {
+		if char.Path() == descr.Properties.Characteristic {
 			descrFound = append(descrFound, descr)
 		}
-
 	}
 
 	if len(descrFound) == 0 {
