@@ -41,3 +41,7 @@ test/linux:
 
 build: gen
 	CGO_ENABLED=0 go build -o go-bluetooth ./main.go
+
+dev/cp: build
+	scp go-bluetooth minion:~/
+	ssh minion "~/go-bluetooth service server --adapterID hci1"

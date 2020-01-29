@@ -7,6 +7,7 @@ import (
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile/gatt"
+	log "github.com/sirupsen/logrus"
 )
 
 type Service struct {
@@ -102,12 +103,13 @@ func (s *Service) AddChar(char *Char) error {
 		return err
 	}
 
-	// log.Tracef("Added GATT Characteristic ID=%d %s", char.ID, char.Path())
+	log.Tracef("Added GATT Characteristic ID=%d %s", char.ID, char.Path())
 
 	return nil
 }
 
 func (s *Service) RemoveChar(char *Char) error {
+	// todo unregister properties
 	if _, ok := s.chars[char.Path()]; !ok {
 		return nil
 	}

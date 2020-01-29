@@ -86,7 +86,7 @@ func (self *SimpleAgent) RequestPinCode(path dbus.ObjectPath) (string, *dbus.Err
 
 	err = SetTrusted(adapterID, path)
 	if err != nil {
-		log.Errorf("SimpleAgent.RequestPinCode failed: %s", err)
+		log.Errorf("SimpleAgent.RequestPinCode SetTrusted failed: %s", err)
 		return "", dbus.MakeFailedError(err)
 	}
 
@@ -109,7 +109,7 @@ func (self *SimpleAgent) RequestPasskey(path dbus.ObjectPath) (uint32, *dbus.Err
 
 	err = SetTrusted(adapterID, path)
 	if err != nil {
-		log.Errorf("SimpleAgent.RequestPassKey: %s", err)
+		log.Errorf("SimpleAgent.RequestPassKey: SetTrusted %s", err)
 		return 0, dbus.MakeFailedError(err)
 	}
 

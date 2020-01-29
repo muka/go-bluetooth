@@ -28,21 +28,29 @@ func client(adapterID, hwaddr string) (err error) {
 		return errors.New("Device not found, is it advertising?")
 	}
 
-	err = connect(dev)
-	if err != nil {
-		return err
-	}
-
 	watchProps, err := dev.WatchProperties()
 	if err != nil {
 		return err
 	}
 
-	for propUpdate := range watchProps {
-		log.Debugf("propUpdate %++v", propUpdate)
+	go func() {
+		for propUpdate := range watchProps {
+			log.Debugf("propUpdate %++v", propUpdate)
+
+			if propUpdate.Name == "Connected" {
+				log.Debug("Device connected")
+			}
+
+		}
+	}()
+
+	err = connect(dev)
+	if err != nil {
+		return err
 	}
 
-	return nil
+	select {}
+	// return nil
 }
 
 func discover(a *adapter.Adapter1, hwaddr string) (*device.Device1, error) {
@@ -98,6 +106,11 @@ func connect(dev *device.Device1) error {
 		return nil
 	}
 
+	err := dev.SetTrusted(true)
+	if err != nil {
+		return fmt.Errorf("SetTrusted failed: %s", err)
+	}
+
 	if !props.Paired {
 		log.Trace("Pairing device")
 		err := dev.Pair()
@@ -106,12 +119,11 @@ func connect(dev *device.Device1) error {
 		}
 	}
 
-	log.Trace("Connecting device")
-	err := dev.Connect()
-	if err != nil {
-		return fmt.Errorf("Connect failed: %s", err)
-	}
+	// log.Trace("Connecting device")
+	// err = dev.Connect()
+	// if err != nil {
+	// 	return fmt.Errorf("Connect failed: %s", err)
+	// }
 
-	log.Debug("Device connected")
 	return nil
 }
