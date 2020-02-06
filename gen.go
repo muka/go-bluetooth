@@ -1,4 +1,4 @@
-//go:generate make all
+//go:generate -command make all
 
 package main
 
