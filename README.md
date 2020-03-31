@@ -1,18 +1,22 @@
 # go-bluetooth
 
-Go bluetooth API for Bluez DBus interface.
+Go bluetooth API for Linux-based Bluez DBus interface.
 
 [![GoDoc](https://godoc.org/github.com/muka/go-bluetooth?status.svg)](https://godoc.org/github.com/muka/go-bluetooth)
 
-<img align="center" width="240" src="./gopher.png">
+<img align="center" width="90" src="./gopher.png">
 
-## Usage
+## Getting started
 
-1. Build the binary
+1. Clone the repository
 
-  `cd $GOPATH/src/github.com/muka/go-bluetooth && make build`
+  `git clone https://github.com/muka/go-bluetooth.git`
 
-2. Run the examples eg.
+1. Retrieve the bluetooth API and generate GO code
+
+  `make all`
+
+2. Run an example
 
   `go-bluetooth discovery`
 
@@ -20,26 +24,28 @@ The `examples/` folder offer an API overview.
 
 ## Features
 
-The library offers a wrapper to Bluez DBus API and some high level API to ease the interaction.
+The library is a wrapper to the Bluez DBus API and some high level API to ease the interaction.
 
 High level features supported:
 
 - [x] Client code generation from bluez documentation
 - [x] Shell wrappers for `rfkill`, `btmgmt`, `hciconfig`, `hcitool`
 - [x] An `hci` basic API (from a fork of [go-ble/ble](https://github.com/muka/ble))
-- [x] Expose bluetooth service from go code
+- [x] Expose bluetooth service from go code [*unstable*]
 - [x] Pairing and authentication support (via agent)
-- [x] Basic beaconing (iBeacon and Eddystone)
+- [x] Beaconing send & receive (iBeacon and Eddystone)
 
-## Setup
+## Code generation
 
-The go Bluez API is generated from the documentation, run `make gen` to re-generate go sources. There is also a commodity bluez JSON file available in the root folder for reference.
+The go Bluez API is generated from `bluez` documentation, run `make gen` to re-generate go sources. There is also a commodity bluez JSON file available in the root folder for reference.
 
 Code generation will not overwrite existing files, run `make gen/clean` to remove generated content.
 
 Generated code has `gen_` prefix. If an API file exists with the same filename but without the prefix, generation will be skipped for that API.
 
-**Note** Ensure to install proper dbus rules on the system. For a dev setup, you can use the library configuration as follow
+## DBus configuration setup
+
+In order to interact with DBus, propert configurations must be installed in the system. For a development setup, the repository provides example configurations.
 
 ```sh
   cd $GOPATH/src/github.com/muka/go-bluetooth
@@ -56,12 +62,12 @@ Generated code has `gen_` prefix. If an API file exists with the same filename b
 
 The library is tested with
 
-- golang `1.11`
+- golang `1.14.1`
 - bluez bluetooth `v5.50`
 
 ### Development notes
 
--  Standard GATT characteristics descriptions can be found on https://www.bluetooth.com/specifications/gatt/
+-  
 
 -   Give access to `hciconfig` to any user and avoid `sudo` (may have [security implications](https://www.insecure.ws/linux/getcap_setcap.html))
 
@@ -97,17 +103,14 @@ Feel free to open an issue and/or a PR to contribute. If you would like to help 
 
 ## References
 
-- https://git.kernel.org/cgit/bluetooth/bluez.git/tree/doc
-- https://www.bluetooth.com/specifications/gatt/services
-- http://events.linuxfoundation.org/sites/events/files/slides/Bluetooth%20on%20Modern%20Linux_0.pdf
-- https://github.com/nettlep/gobbledegook
-- https://dbus.freedesktop.org/doc/dbus-specification.html#type-system
-- http://processors.wiki.ti.com/images/a/a8/BLE_SensorTag_GATT_Server.pdf
-- https://git.kernel.org/cgit/bluetooth/bluez.git/tree/doc
+- [Standard GATT characteristics descriptions](https://www.bluetooth.com/specifications/gatt/)
+- [bluez git](https://git.kernel.org/cgit/bluetooth/bluez.git/tree/doc)
+- [GATT services specs](https://www.bluetooth.com/specifications/gatt/services)
+- [A C++ implementation](https://github.com/nettlep/gobbledegook)
+- [DBus specifications](https://dbus.freedesktop.org/doc/dbus-specification.html#type-system)
+- [SensorTag specs](http://processors.wiki.ti.com/images/a/a8/BLE_SensorTag_GATT_Server.pdf)
 
 ## License
-
-Copyright 2019 luca capra
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
