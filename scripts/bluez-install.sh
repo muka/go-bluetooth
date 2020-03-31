@@ -1,5 +1,5 @@
 
-vv=5.48
+vv=5.50
 
 # Script to update bluez, tested on Ubuntu 16.04, 16.10, 17.04, 17.10
 # See next comment for Raspbian jessie
