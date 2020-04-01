@@ -102,10 +102,6 @@ func (p *DBusProperties) AddProperties(iface string, props bluez.Properties) err
 
 //RemoveProperties remove a property set
 func (p *DBusProperties) RemoveProperties(iface string) {
-	if _, ok := p.props[iface]; ok {
-		delete(p.props, iface)
-	}
-	if _, ok := p.propsConfig[iface]; ok {
-		delete(p.propsConfig, iface)
-	}
+	delete(p.props, iface)
+	delete(p.propsConfig, iface)
 }

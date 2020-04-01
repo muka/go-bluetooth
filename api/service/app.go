@@ -137,7 +137,7 @@ func (app *App) init() error {
 		"org.freedesktop.DBus.Introspectable",
 	)
 
-	return nil
+	return err
 }
 
 func (app *App) Run() (err error) {
@@ -155,11 +155,8 @@ func (app *App) Run() (err error) {
 
 	options := map[string]interface{}{}
 	err = gm.RegisterApplication(app.Path(), options)
-	if err != nil {
-		return err
-	}
 
-	return nil
+	return err
 }
 
 func (app *App) Close() {

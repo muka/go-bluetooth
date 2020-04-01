@@ -3,6 +3,7 @@ package obex
 import (
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
+	log "github.com/sirupsen/logrus"
 )
 
 // NewObexSession1 create a new ObexSession1 client
@@ -17,7 +18,10 @@ func NewObexSession1(path string) *ObexSession1 {
 		},
 	)
 	a.Properties = new(ObexSession1Properties)
-	a.GetProperties()
+	_, err := a.GetProperties()
+	if err != nil {
+		log.Warn(err)
+	}
 	return a
 }
 

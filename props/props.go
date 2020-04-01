@@ -92,14 +92,11 @@ func ParseProperties(propertyVal bluez.Properties) map[string]*PropInfo {
 			case "emit":
 				propInfo.Emit = prop.EmitTrue
 				propInfo.Writable = true
-				break
 			case "invalidates":
 				propInfo.Emit = prop.EmitInvalidates
 				propInfo.Writable = true
-				break
 			case "writable":
 				propInfo.Writable = true
-				break
 			default:
 				t := reflect.TypeOf(propertyVal)
 				m, ok := t.MethodByName(tagKey)

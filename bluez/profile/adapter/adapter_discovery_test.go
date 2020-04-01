@@ -14,7 +14,12 @@ func TestDiscovery(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer a.StopDiscovery()
+	defer func() {
+		err := a.StopDiscovery()
+		if err != nil {
+			t.Error(err)
+		}
+	}()
 
 	discovery, cancel, err := a.OnDeviceDiscovered()
 	if err != nil {

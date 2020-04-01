@@ -263,9 +263,7 @@ func newDeviceInfo(tag *SensorTag) (SensorTagDeviceInfo, error) {
 	DeviceManufacturerUUID := getDeviceInfoUUID("MANUFACTURER_NAME_UUID")
 	DeviceModelUUID := getDeviceInfoUUID("MODEL_NUMBER_UUID")
 
-	var loadChars func() (SensorTagDeviceInfo, error)
-
-	loadChars = func() (SensorTagDeviceInfo, error) {
+	loadChars := func() (SensorTagDeviceInfo, error) {
 
 		firmwareInfo, err := dev.GetCharByUUID(DeviceFirmwareUUID)
 		if err != nil {

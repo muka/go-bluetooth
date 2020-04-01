@@ -34,7 +34,14 @@ func TestHciUp(t *testing.T) {
 		t.Fatal("At least an adapter should be available")
 	}
 
-	Up(list[0])
-	Down(list[0])
+	err = Up(list[0])
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = Down(list[0])
+	if err != nil {
+		t.Fatal(err)
+	}
 
 }

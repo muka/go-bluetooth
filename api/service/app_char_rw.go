@@ -39,7 +39,7 @@ func (s *Char) WriteValue(value []byte, options map[string]interface{}) *dbus.Er
 
 	// TODO update on Properties interface
 	s.Properties.Value = val
-	s.iprops.Instance().Set(s.Interface(), "Value", dbus.MakeVariant(value))
+	err := s.iprops.Instance().Set(s.Interface(), "Value", dbus.MakeVariant(value))
 
-	return nil
+	return err
 }

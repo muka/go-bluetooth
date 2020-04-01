@@ -49,9 +49,12 @@ func (a *ObjectPush1) SendFile(sourcefile string) (string, *ObexTransfer1Propert
 	result := make(map[string]dbus.Variant)
 	var sessionPath string
 	err := a.client.Call("SendFile", 0, sourcefile).Store(&sessionPath, &result)
+	if err != nil {
+		return "", nil, err
+	}
 
 	transportProps := new(ObexTransfer1Properties)
-	util.MapToStruct(transportProps, result)
+	err = util.MapToStruct(transportProps, result)
 
 	return sessionPath, transportProps, err
 }
