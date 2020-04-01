@@ -1,4 +1,4 @@
-//go:generate make all
+// go:generate make
 
 // Copyright © 2019
 //
