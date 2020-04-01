@@ -30,10 +30,15 @@ func (a *Adapter1) OnDeviceDiscovered() (chan *DeviceDiscovered, func(), error) 
 		return nil, nil, err
 	}
 
-	ch := make(chan *DeviceDiscovered)
-	go (func() {
-		for v := range signal {
+	var (
+		ch   = make(chan *DeviceDiscovered)
+		done = make(chan struct{})
+	)
 
+	go func() {
+		defer func() { done <- struct{}{} }()
+
+		for v := range signal {
 			if v == nil {
 				return
 			}
@@ -72,10 +77,11 @@ func (a *Adapter1) OnDeviceDiscovered() (chan *DeviceDiscovered, func(), error) 
 			}
 
 		}
-	})()
+	}()
 
 	cancel := func() {
 		omSignalCancel()
+		<-done
 		close(ch)
 	}
 

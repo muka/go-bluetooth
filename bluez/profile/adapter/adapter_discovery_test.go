@@ -1,10 +1,10 @@
 package adapter
 
 import (
+	"fmt"
+	"sync"
 	"testing"
 	"time"
-
-	log "github.com/sirupsen/logrus"
 )
 
 func TestDiscovery(t *testing.T) {
@@ -25,11 +25,16 @@ func TestDiscovery(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer cancel()
 
-	wait := make(chan error)
+	var (
+		wait = make(chan error, 2)
+		wg   sync.WaitGroup
+	)
+
+	wg.Add(2)
 
 	go func() {
+		defer wg.Done()
 		for dev := range discovery {
 			if dev == nil {
 				return
@@ -39,15 +44,18 @@ func TestDiscovery(t *testing.T) {
 	}()
 
 	go func() {
+		defer wg.Done()
 		sleep := 5
 		time.Sleep(time.Duration(sleep) * time.Second)
-		log.Debugf("Discovery timeout exceeded (%ds)", sleep)
-		wait <- nil
+		wait <- fmt.Errorf("Discovery timeout exceeded (%ds)", sleep)
 	}()
 
 	err = <-wait
+	cancel()
+
 	if err != nil {
 		t.Fatal(err)
 	}
 
+	wg.Wait()
 }
