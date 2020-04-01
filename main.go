@@ -1,4 +1,4 @@
-// go:generate make
+// go:generate go run ./gen/srcgen/main.go
 
 // Copyright © 2019
 //

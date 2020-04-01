@@ -29,7 +29,7 @@ gen/clean:
 
 gen/run:
 	git submodule update
-	FILTER=${FILTER} go run gen/srcgen/main.go
+	FILTER=${FILTER} go run gen/srcgen/main.go full
 
 gen: gen/run
 

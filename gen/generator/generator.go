@@ -60,11 +60,9 @@ func Generate(bluezApi gen.BluezAPI, outDir string, forceOverwrite bool) error {
 				continue
 			}
 			log.Debugf("Wrote %s", rootFile)
-		}
-		// else {
-		// log.Infof("Skipped, file exists: %s", rootFile)
-		// }
-
+		} /* else {
+			log.Infof("Skipped, file exists: %s", rootFile)
+		} */
 		for _, api := range apiGroup.Api {
 
 			pts := strings.Split(api.Interface, ".")
