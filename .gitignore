@@ -1,6 +1,6 @@
 
-/bluez/profile/*/gen_*
-/bluez/profile/gen_*
+# /bluez/profile/*/gen_*
+# /bluez/profile/gen_*
 
 /go-bluetooth
 logs/*.log

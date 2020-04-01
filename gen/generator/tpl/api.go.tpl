@@ -1,3 +1,5 @@
+// Code generated DO NOT EDIT
+
 package {{.Package}}
 {{$InterfaceName := .InterfaceName}}
 {{$ExposeProperties := .ExposeProperties}}
