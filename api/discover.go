@@ -6,7 +6,11 @@ import (
 )
 
 // Discover start device discovery
-func Discover(a *adapter.Adapter1, filter *adapter.DiscoveryFilter) (chan *adapter.DeviceDiscovered, func(), error) {
+func Discover(
+	a *adapter.Adapter1, filter *adapter.DiscoveryFilter,
+) (
+	chan *adapter.DeviceDiscovered, func(), error,
+) {
 
 	err := a.SetPairable(false)
 	if err != nil {
@@ -36,6 +40,9 @@ func Discover(a *adapter.Adapter1, filter *adapter.DiscoveryFilter) (chan *adapt
 	}
 
 	ch, discoveryCancel, err := a.OnDeviceDiscovered()
+	if err != nil {
+		return nil, nil, err
+	}
 
 	cancel := func() {
 		err := a.StopDiscovery()

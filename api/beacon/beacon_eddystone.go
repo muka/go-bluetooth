@@ -4,22 +4,24 @@ import (
 	"encoding/binary"
 	"encoding/hex"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 const eddystoneSrvcUid = "FEAA"
 
 const (
 	frameTypeUID byte = 0x00
-	frameTypeURL      = 0x10
-	frameTypeTLM      = 0x20
+	frameTypeURL byte = 0x10
+	frameTypeTLM byte = 0x20
 )
 
 type EddystoneFrame string
 
 const (
 	EddystoneFrameUID EddystoneFrame = "uid"
-	EddystoneFrameURL                = "url"
-	EddystoneFrameTLM                = "tlm"
+	EddystoneFrameURL EddystoneFrame = "url"
+	EddystoneFrameTLM EddystoneFrame = "tlm"
 )
 
 type BeaconEddystone struct {
@@ -49,19 +51,19 @@ func (b *Beacon) ParseEddystone(frames []byte) BeaconEddystone {
 			info.Frame = EddystoneFrameUID
 			parseEddystoneUID(&info, frames)
 		}
-		break
 	case frameTypeTLM:
 		{
 			info.Frame = EddystoneFrameTLM
 			parseEddystoneTLM(&info, frames)
 		}
-		break
 	case frameTypeURL:
 		{
 			info.Frame = EddystoneFrameURL
-			parseEddystoneURL(&info, frames)
+			err := parseEddystoneURL(&info, frames)
+			if err != nil {
+				log.Warn(err)
+			}
 		}
-		break
 
 	}
 

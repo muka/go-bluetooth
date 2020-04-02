@@ -3,6 +3,7 @@ package obex
 import (
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez"
+	log "github.com/sirupsen/logrus"
 )
 
 // NewObexTransfer1 create a new ObexTransfer1 client
@@ -17,7 +18,10 @@ func NewObexTransfer1(path string) *ObexTransfer1 {
 		},
 	)
 	a.Properties = new(ObexTransfer1Properties)
-	a.GetProperties()
+	_, err := a.GetProperties()
+	if err != nil {
+		log.Warn(err)
+	}
 	return a
 }
 

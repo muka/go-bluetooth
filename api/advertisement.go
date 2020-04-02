@@ -132,8 +132,14 @@ func ExposeAdvertisement(adapterID string, props *advertising.LEAdvertisement1Pr
 
 	cancel := func() {
 		decreaseAdvertismentCounter()
-		advManager.UnregisterAdvertisement(adv.Path())
-		a.SetProperty("Discoverable", false)
+		err := advManager.UnregisterAdvertisement(adv.Path())
+		if err != nil {
+			log.Warn(err)
+		}
+		err = a.SetProperty("Discoverable", false)
+		if err != nil {
+			log.Warn(err)
+		}
 	}
 
 	return cancel, nil

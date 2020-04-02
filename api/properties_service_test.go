@@ -20,8 +20,8 @@ type testStruct struct {
 
 func (s testStruct) ToMap() (map[string]interface{}, error) {
 	m := map[string]interface{}{}
-	err := util.StructToMap(s, m)
-	return m, err
+	util.StructToMap(s, m)
+	return m, nil
 }
 
 func (s testStruct) Lock()   {}
@@ -41,9 +41,12 @@ func TestParseTag(t *testing.T) {
 		propsConfig: make(map[string]map[string]*props.PropInfo),
 	}
 
-	prop.AddProperties("test", s)
+	err := prop.AddProperties("test", s)
+	if err != nil {
+		t.Fatal(err)
+	}
 
-	err := prop.parseProperties()
+	err = prop.parseProperties()
 	if err != nil {
 		t.Fatal(err)
 	}

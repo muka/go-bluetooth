@@ -46,10 +46,8 @@ type RFKillResult struct {
 // IsInstalled Checks if the program rfkill exists using PATH environment variable
 func (self RFKill) IsInstalled() bool {
 	_, err := exec.LookPath("rfkill")
-	if err != nil {
-		return false
-	}
-	return true
+	// no log? really?
+	return err == nil
 }
 
 // ListAll Returns a list of rfkill results for every identifier type
@@ -158,7 +156,11 @@ func (self RFKill) IsHardBlocked(identifier string) bool {
 // removing a software block if it exists
 func (self RFKill) IsBlockedAfterUnblocking(identifier string) bool {
 	if self.IsBlocked(identifier) {
-		self.SoftUnblock(identifier)
+		err := self.SoftUnblock(identifier)
+		if err != nil {
+			log.Warn(err)
+		}
+
 		if self.IsBlocked(identifier) {
 			return true
 		}

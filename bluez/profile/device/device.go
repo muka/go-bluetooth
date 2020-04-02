@@ -43,7 +43,7 @@ func (d *Device1) GetCharacteristicsList() ([]dbus.ObjectPath, error) {
 			continue
 		}
 
-		if strings.Index(spath[charPos:], "desc") > -1 {
+		if strings.Contains(spath[charPos:], "desc") {
 			continue
 		}
 
@@ -79,7 +79,7 @@ func (d *Device1) GetDescriptorList() ([]dbus.ObjectPath, error) {
 			continue
 		}
 
-		if strings.Index(spath[charPos:], "desc") == -1 {
+		if strings.Contains(spath[charPos:], "desc") {
 			continue
 		}
 

@@ -9,15 +9,17 @@ import (
 
 const (
 	// DeviceRemoved a device has been removed from local cache
-	DeviceRemoved uint8 = 0
+	DeviceRemoved DeviceActions = iota
 	// DeviceAdded new device found, eg. via discovery
-	DeviceAdded = iota
+	DeviceAdded
 )
+
+type DeviceActions uint8
 
 // DeviceDiscovered event emitted when a device is added or removed from Object Manager
 type DeviceDiscovered struct {
 	Path dbus.ObjectPath
-	Type uint8
+	Type DeviceActions
 }
 
 // OnDeviceDiscovered monitor for new devices and send updates via channel. Use cancel to close the monitoring process
@@ -28,15 +30,20 @@ func (a *Adapter1) OnDeviceDiscovered() (chan *DeviceDiscovered, func(), error) 
 		return nil, nil, err
 	}
 
-	ch := make(chan *DeviceDiscovered)
-	go (func() {
-		for v := range signal {
+	var (
+		ch   = make(chan *DeviceDiscovered)
+		done = make(chan struct{})
+	)
 
+	go func() {
+		defer func() { done <- struct{}{} }()
+
+		for v := range signal {
 			if v == nil {
 				return
 			}
 
-			var op uint8
+			var op DeviceActions
 			if v.Name == bluez.InterfacesAdded {
 				op = DeviceAdded
 			} else {
@@ -70,10 +77,11 @@ func (a *Adapter1) OnDeviceDiscovered() (chan *DeviceDiscovered, func(), error) 
 			}
 
 		}
-	})()
+	}()
 
 	cancel := func() {
 		omSignalCancel()
+		<-done
 		close(ch)
 	}
 
