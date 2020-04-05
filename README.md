@@ -6,7 +6,29 @@ Go bluetooth API for Linux-based Bluez DBus interface.
 
 <img align="center" width="90" src="./gopher.png">
 
-## Getting started
+## Features
+
+The library is a wrapper to the Bluez DBus API and some high level API to ease the interaction.
+
+High level features supported:
+
+- [x] Client code generation from bluez documentation
+- [x] Shell wrappers for `rfkill`, `btmgmt`, `hciconfig`, `hcitool`
+- [x] An `hci` socket basic API (inspired by [go-ble/ble](https://github.com/go-ble/ble))
+- [x] Expose bluetooth service from go code [*unstable*]
+- [x] Pairing and authentication support (via agent)
+- [x] Beaconing send & receive (iBeacon and Eddystone)
+
+## Code generation
+
+The go Bluez API is generated from `bluez` documentation, run `make gen` to re-generate go sources. There is also a commodity bluez JSON file available in the root folder for reference.
+
+Code generation will not overwrite existing files, run `make gen/clean` to remove generated content.
+
+Generated code has `gen_` prefix. If an API file exists with the same filename but without the prefix, generation will be skipped for that API.
+
+
+## Development setup
 
 1. Clone the repository
 
@@ -21,27 +43,6 @@ Go bluetooth API for Linux-based Bluez DBus interface.
   `go-bluetooth discovery`
 
 The `examples/` folder offer an API overview.
-
-## Features
-
-The library is a wrapper to the Bluez DBus API and some high level API to ease the interaction.
-
-High level features supported:
-
-- [x] Client code generation from bluez documentation
-- [x] Shell wrappers for `rfkill`, `btmgmt`, `hciconfig`, `hcitool`
-- [x] An `hci` basic API (from a fork of [go-ble/ble](https://github.com/muka/ble))
-- [x] Expose bluetooth service from go code [*unstable*]
-- [x] Pairing and authentication support (via agent)
-- [x] Beaconing send & receive (iBeacon and Eddystone)
-
-## Code generation
-
-The go Bluez API is generated from `bluez` documentation, run `make gen` to re-generate go sources. There is also a commodity bluez JSON file available in the root folder for reference.
-
-Code generation will not overwrite existing files, run `make gen/clean` to remove generated content.
-
-Generated code has `gen_` prefix. If an API file exists with the same filename but without the prefix, generation will be skipped for that API.
 
 ## DBus configuration setup
 
