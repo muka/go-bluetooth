@@ -45,3 +45,6 @@ build: gen
 dev/cp: build
 	scp go-bluetooth minion:~/
 	ssh minion "~/go-bluetooth service server --adapterID hci1"
+
+dev/logs:
+	ssh minion "journalctl -f -u bluetooth.service"
