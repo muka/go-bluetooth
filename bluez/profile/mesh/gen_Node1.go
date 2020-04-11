@@ -59,23 +59,15 @@ type Node1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Relay Indicates support for relaying messages
-
-	If a key is absent from the dictionary, the feature is not supported.
-	Otherwise, true means that the feature is enabled and false means that
-	the feature is disabled.
-	*/
-	Relay bool
-
-	/*
 	Addresses This property contains unicast addresses of node's elements.
 	*/
 	Addresses []uint16
 
 	/*
-	LowPower Indicates support for operating in Low Power node mode
+	Friend Indicates the ability to establish a friendship with a
+			Low Power node
 	*/
-	LowPower bool
+	Friend bool
 
 	/*
 	Proxy Indicates support for GATT proxy
@@ -93,13 +85,6 @@ type Node1Properties struct {
 		network key.
 	*/
 	Beacon bool
-
-	/*
-	IvIndex This property may be read at any time to determine the IV_Index
-		that the current network is on. This information is only useful
-		for provisioning.
-	*/
-	IvIndex uint32
 
 	/*
 	SecondsSinceLastHeard This property may be read at any time to determine the number of
@@ -121,10 +106,25 @@ type Node1Properties struct {
 	Features map[string]interface{}
 
 	/*
-	Friend Indicates the ability to establish a friendship with a
-			Low Power node
+	LowPower Indicates support for operating in Low Power node mode
 	*/
-	Friend bool
+	LowPower bool
+
+	/*
+	Relay Indicates support for relaying messages
+
+	If a key is absent from the dictionary, the feature is not supported.
+	Otherwise, true means that the feature is enabled and false means that
+	the feature is disabled.
+	*/
+	Relay bool
+
+	/*
+	IvIndex This property may be read at any time to determine the IV_Index
+		that the current network is on. This information is only useful
+		for provisioning.
+	*/
+	IvIndex uint32
 
 }
 
@@ -136,25 +136,6 @@ func (p *Node1Properties) Lock() {
 //Unlock access to properties
 func (p *Node1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-// SetRelay set Relay value
-func (a *Node1) SetRelay(v bool) error {
-	return a.SetProperty("Relay", v)
-}
-
-
-
-// GetRelay get Relay value
-func (a *Node1) GetRelay() (bool, error) {
-	v, err := a.GetProperty("Relay")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
 }
 
 
@@ -179,16 +160,16 @@ func (a *Node1) GetAddresses() ([]uint16, error) {
 
 
 
-// SetLowPower set LowPower value
-func (a *Node1) SetLowPower(v bool) error {
-	return a.SetProperty("LowPower", v)
+// SetFriend set Friend value
+func (a *Node1) SetFriend(v bool) error {
+	return a.SetProperty("Friend", v)
 }
 
 
 
-// GetLowPower get LowPower value
-func (a *Node1) GetLowPower() (bool, error) {
-	v, err := a.GetProperty("LowPower")
+// GetFriend get Friend value
+func (a *Node1) GetFriend() (bool, error) {
+	v, err := a.GetProperty("Friend")
 	if err != nil {
 		return false, err
 	}
@@ -231,25 +212,6 @@ func (a *Node1) GetBeacon() (bool, error) {
 		return false, err
 	}
 	return v.Value().(bool), nil
-}
-
-
-
-
-// SetIvIndex set IvIndex value
-func (a *Node1) SetIvIndex(v uint32) error {
-	return a.SetProperty("IvIndex", v)
-}
-
-
-
-// GetIvIndex get IvIndex value
-func (a *Node1) GetIvIndex() (uint32, error) {
-	v, err := a.GetProperty("IvIndex")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
 }
 
 
@@ -312,20 +274,58 @@ func (a *Node1) GetFeatures() (map[string]interface{}, error) {
 
 
 
-// SetFriend set Friend value
-func (a *Node1) SetFriend(v bool) error {
-	return a.SetProperty("Friend", v)
+// SetLowPower set LowPower value
+func (a *Node1) SetLowPower(v bool) error {
+	return a.SetProperty("LowPower", v)
 }
 
 
 
-// GetFriend get Friend value
-func (a *Node1) GetFriend() (bool, error) {
-	v, err := a.GetProperty("Friend")
+// GetLowPower get LowPower value
+func (a *Node1) GetLowPower() (bool, error) {
+	v, err := a.GetProperty("LowPower")
 	if err != nil {
 		return false, err
 	}
 	return v.Value().(bool), nil
+}
+
+
+
+
+// SetRelay set Relay value
+func (a *Node1) SetRelay(v bool) error {
+	return a.SetProperty("Relay", v)
+}
+
+
+
+// GetRelay get Relay value
+func (a *Node1) GetRelay() (bool, error) {
+	v, err := a.GetProperty("Relay")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+// SetIvIndex set IvIndex value
+func (a *Node1) SetIvIndex(v uint32) error {
+	return a.SetProperty("IvIndex", v)
+}
+
+
+
+// GetIvIndex get IvIndex value
+func (a *Node1) GetIvIndex() (uint32, error) {
+	v, err := a.GetProperty("IvIndex")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
 }
 
 

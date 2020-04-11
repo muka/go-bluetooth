@@ -61,13 +61,30 @@ type GattDescriptor1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Handle [read-write, optional] (Server Only) (optional) Characteristic handle. When available in the server it
+	Flags Defines how the descriptor value can be used.
+
+			Possible values:
+
+				"read"
+				"write"
+				"encrypt-read"
+				"encrypt-write"
+				"encrypt-authenticated-read"
+				"encrypt-authenticated-write"
+				"secure-read" (Server Only)
+				"secure-write" (Server Only)
+				"authorize"
+	*/
+	Flags []string
+
+	/*
+	Handle Characteristic handle. When available in the server it
 			would attempt to use to allocate into the database
 			which may fail, to auto allocate the value 0x0000
 			shall be used which will cause the allocated handle to
 			be set once registered.
 	*/
-	Handle [read-write, optional] (Server Only) uint16
+	Handle uint16
 
 	/*
 	UUID 128-bit descriptor UUID.
@@ -87,23 +104,6 @@ type GattDescriptor1Properties struct {
 	*/
 	Value []byte `dbus:"emit"`
 
-	/*
-	Flags Defines how the descriptor value can be used.
-
-			Possible values:
-
-				"read"
-				"write"
-				"encrypt-read"
-				"encrypt-write"
-				"encrypt-authenticated-read"
-				"encrypt-authenticated-write"
-				"secure-read" (Server Only)
-				"secure-write" (Server Only)
-				"authorize"
-	*/
-	Flags []string
-
 }
 
 //Lock access to properties
@@ -119,16 +119,35 @@ func (p *GattDescriptor1Properties) Unlock() {
 
 
 
-// SetHandle [read-write, optional] (Server Only) set Handle [read-write, optional] (Server Only) value
-func (a *GattDescriptor1) SetHandle [read-write, optional] (Server Only)(v uint16) error {
-	return a.SetProperty("Handle [read-write, optional] (Server Only)", v)
+// SetFlags set Flags value
+func (a *GattDescriptor1) SetFlags(v []string) error {
+	return a.SetProperty("Flags", v)
 }
 
 
 
-// GetHandle [read-write, optional] (Server Only) get Handle [read-write, optional] (Server Only) value
-func (a *GattDescriptor1) GetHandle [read-write, optional] (Server Only)() (uint16, error) {
-	v, err := a.GetProperty("Handle [read-write, optional] (Server Only)")
+// GetFlags get Flags value
+func (a *GattDescriptor1) GetFlags() ([]string, error) {
+	v, err := a.GetProperty("Flags")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
+}
+
+
+
+
+// SetHandle set Handle value
+func (a *GattDescriptor1) SetHandle(v uint16) error {
+	return a.SetProperty("Handle", v)
+}
+
+
+
+// GetHandle get Handle value
+func (a *GattDescriptor1) GetHandle() (uint16, error) {
+	v, err := a.GetProperty("Handle")
 	if err != nil {
 		return uint16(0), err
 	}
@@ -190,25 +209,6 @@ func (a *GattDescriptor1) GetValue() ([]byte, error) {
 		return []byte{}, err
 	}
 	return v.Value().([]byte), nil
-}
-
-
-
-
-// SetFlags set Flags value
-func (a *GattDescriptor1) SetFlags(v []string) error {
-	return a.SetProperty("Flags", v)
-}
-
-
-
-// GetFlags get Flags value
-func (a *GattDescriptor1) GetFlags() ([]string, error) {
-	v, err := a.GetProperty("Flags")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
 }
 
 

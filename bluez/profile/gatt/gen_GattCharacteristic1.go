@@ -67,10 +67,30 @@ type GattCharacteristic1Properties struct {
 	UUID string
 
 	/*
-	Service Object path of the GATT service the characteristic
-			belongs to.
+	Flags Defines how the characteristic value can be used. See
+			Core spec "Table 3.5: Characteristic Properties bit
+			field", and "Table 3.8: Characteristic Extended
+			Properties bit field". Allowed values:
+
+				"broadcast"
+				"read"
+				"write-without-response"
+				"write"
+				"notify"
+				"indicate"
+				"authenticated-signed-writes"
+				"extended-properties"
+				"reliable-write"
+				"writable-auxiliaries"
+				"encrypt-read"
+				"encrypt-write"
+				"encrypt-authenticated-read"
+				"encrypt-authenticated-write"
+				"secure-read" (Server only)
+				"secure-write" (Server only)
+				"authorize"
 	*/
-	Service dbus.ObjectPath
+	Flags []string
 
 	/*
 	WriteAcquired True, if this characteristic has been acquired by any
@@ -103,30 +123,24 @@ type GattCharacteristic1Properties struct {
 	Notifying bool
 
 	/*
-	Flags Defines how the characteristic value can be used. See
-			Core spec "Table 3.5: Characteristic Properties bit
-			field", and "Table 3.8: Characteristic Extended
-			Properties bit field". Allowed values:
-
-				"broadcast"
-				"read"
-				"write-without-response"
-				"write"
-				"notify"
-				"indicate"
-				"authenticated-signed-writes"
-				"extended-properties"
-				"reliable-write"
-				"writable-auxiliaries"
-				"encrypt-read"
-				"encrypt-write"
-				"encrypt-authenticated-read"
-				"encrypt-authenticated-write"
-				"secure-read" (Server only)
-				"secure-write" (Server only)
-				"authorize"
+	Handle Characteristic handle. When available in the server it
+			would attempt to use to allocate into the database
+			which may fail, to auto allocate the value 0x0000
+			shall be used which will cause the allocated handle to
+			be set once registered.
 	*/
-	Flags []string
+	Handle uint16
+
+	/*
+	Descriptors 
+	*/
+	Descriptors []dbus.ObjectPath
+
+	/*
+	Service Object path of the GATT service the characteristic
+			belongs to.
+	*/
+	Service dbus.ObjectPath
 
 	/*
 	Value The cached value of the characteristic. This property
@@ -135,20 +149,6 @@ type GattCharacteristic1Properties struct {
 			which a PropertiesChanged signal will be emitted.
 	*/
 	Value []byte `dbus:"emit"`
-
-	/*
-	Handle [read-write, optional] (Server Only) (optional) Characteristic handle. When available in the server it
-			would attempt to use to allocate into the database
-			which may fail, to auto allocate the value 0x0000
-			shall be used which will cause the allocated handle to
-			be set once registered.
-	*/
-	Handle [read-write, optional] (Server Only) uint16
-
-	/*
-	Descriptors 
-	*/
-	Descriptors []dbus.ObjectPath
 
 }
 
@@ -184,20 +184,20 @@ func (a *GattCharacteristic1) GetUUID() (string, error) {
 
 
 
-// SetService set Service value
-func (a *GattCharacteristic1) SetService(v dbus.ObjectPath) error {
-	return a.SetProperty("Service", v)
+// SetFlags set Flags value
+func (a *GattCharacteristic1) SetFlags(v []string) error {
+	return a.SetProperty("Flags", v)
 }
 
 
 
-// GetService get Service value
-func (a *GattCharacteristic1) GetService() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Service")
+// GetFlags get Flags value
+func (a *GattCharacteristic1) GetFlags() ([]string, error) {
+	v, err := a.GetProperty("Flags")
 	if err != nil {
-		return dbus.ObjectPath(""), err
+		return []string{}, err
 	}
-	return v.Value().(dbus.ObjectPath), nil
+	return v.Value().([]string), nil
 }
 
 
@@ -260,54 +260,16 @@ func (a *GattCharacteristic1) GetNotifying() (bool, error) {
 
 
 
-// SetFlags set Flags value
-func (a *GattCharacteristic1) SetFlags(v []string) error {
-	return a.SetProperty("Flags", v)
+// SetHandle set Handle value
+func (a *GattCharacteristic1) SetHandle(v uint16) error {
+	return a.SetProperty("Handle", v)
 }
 
 
 
-// GetFlags get Flags value
-func (a *GattCharacteristic1) GetFlags() ([]string, error) {
-	v, err := a.GetProperty("Flags")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
-}
-
-
-
-
-// SetValue set Value value
-func (a *GattCharacteristic1) SetValue(v []byte) error {
-	return a.SetProperty("Value", v)
-}
-
-
-
-// GetValue get Value value
-func (a *GattCharacteristic1) GetValue() ([]byte, error) {
-	v, err := a.GetProperty("Value")
-	if err != nil {
-		return []byte{}, err
-	}
-	return v.Value().([]byte), nil
-}
-
-
-
-
-// SetHandle [read-write, optional] (Server Only) set Handle [read-write, optional] (Server Only) value
-func (a *GattCharacteristic1) SetHandle [read-write, optional] (Server Only)(v uint16) error {
-	return a.SetProperty("Handle [read-write, optional] (Server Only)", v)
-}
-
-
-
-// GetHandle [read-write, optional] (Server Only) get Handle [read-write, optional] (Server Only) value
-func (a *GattCharacteristic1) GetHandle [read-write, optional] (Server Only)() (uint16, error) {
-	v, err := a.GetProperty("Handle [read-write, optional] (Server Only)")
+// GetHandle get Handle value
+func (a *GattCharacteristic1) GetHandle() (uint16, error) {
+	v, err := a.GetProperty("Handle")
 	if err != nil {
 		return uint16(0), err
 	}
@@ -331,6 +293,44 @@ func (a *GattCharacteristic1) GetDescriptors() ([]dbus.ObjectPath, error) {
 		return []dbus.ObjectPath{}, err
 	}
 	return v.Value().([]dbus.ObjectPath), nil
+}
+
+
+
+
+// SetService set Service value
+func (a *GattCharacteristic1) SetService(v dbus.ObjectPath) error {
+	return a.SetProperty("Service", v)
+}
+
+
+
+// GetService get Service value
+func (a *GattCharacteristic1) GetService() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Service")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
+}
+
+
+
+
+// SetValue set Value value
+func (a *GattCharacteristic1) SetValue(v []byte) error {
+	return a.SetProperty("Value", v)
+}
+
+
+
+// GetValue get Value value
+func (a *GattCharacteristic1) GetValue() ([]byte, error) {
+	v, err := a.GetProperty("Value")
+	if err != nil {
+		return []byte{}, err
+	}
+	return v.Value().([]byte), nil
 }
 
 

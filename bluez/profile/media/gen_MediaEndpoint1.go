@@ -84,27 +84,27 @@ type MediaEndpoint1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	UUID [readonly, optional] (optional) UUID of the profile which the endpoint is for.
+	UUID UUID of the profile which the endpoint is for.
 	*/
-	UUID [readonly, optional] string
+	UUID string
 
 	/*
-	Codec [readonly, optional] (optional) Assigned number of codec that the endpoint implements.
+	Codec Assigned number of codec that the endpoint implements.
 			The values should match the profile specification which
 			is indicated by the UUID.
 	*/
-	Codec [readonly, optional] byte
+	Codec byte
 
 	/*
-	Capabilities [readonly, optional] (optional) Capabilities blob, it is used as it is so the size and
+	Capabilities Capabilities blob, it is used as it is so the size and
 			byte order must match.
 	*/
-	Capabilities [readonly, optional] []byte
+	Capabilities []byte
 
 	/*
-	Device [readonly, optional] (optional) Device object which the endpoint is belongs to.
+	Device Device object which the endpoint is belongs to.
 	*/
-	Device [readonly, optional] dbus.ObjectPath
+	Device dbus.ObjectPath
 
 }
 
@@ -121,16 +121,11 @@ func (p *MediaEndpoint1Properties) Unlock() {
 
 
 
-// SetUUID [readonly, optional] set UUID [readonly, optional] value
-func (a *MediaEndpoint1) SetUUID [readonly, optional](v string) error {
-	return a.SetProperty("UUID [readonly, optional]", v)
-}
 
 
-
-// GetUUID [readonly, optional] get UUID [readonly, optional] value
-func (a *MediaEndpoint1) GetUUID [readonly, optional]() (string, error) {
-	v, err := a.GetProperty("UUID [readonly, optional]")
+// GetUUID get UUID value
+func (a *MediaEndpoint1) GetUUID() (string, error) {
+	v, err := a.GetProperty("UUID")
 	if err != nil {
 		return "", err
 	}
@@ -140,16 +135,11 @@ func (a *MediaEndpoint1) GetUUID [readonly, optional]() (string, error) {
 
 
 
-// SetCodec [readonly, optional] set Codec [readonly, optional] value
-func (a *MediaEndpoint1) SetCodec [readonly, optional](v byte) error {
-	return a.SetProperty("Codec [readonly, optional]", v)
-}
 
 
-
-// GetCodec [readonly, optional] get Codec [readonly, optional] value
-func (a *MediaEndpoint1) GetCodec [readonly, optional]() (byte, error) {
-	v, err := a.GetProperty("Codec [readonly, optional]")
+// GetCodec get Codec value
+func (a *MediaEndpoint1) GetCodec() (byte, error) {
+	v, err := a.GetProperty("Codec")
 	if err != nil {
 		return byte(0), err
 	}
@@ -159,16 +149,11 @@ func (a *MediaEndpoint1) GetCodec [readonly, optional]() (byte, error) {
 
 
 
-// SetCapabilities [readonly, optional] set Capabilities [readonly, optional] value
-func (a *MediaEndpoint1) SetCapabilities [readonly, optional](v []byte) error {
-	return a.SetProperty("Capabilities [readonly, optional]", v)
-}
 
 
-
-// GetCapabilities [readonly, optional] get Capabilities [readonly, optional] value
-func (a *MediaEndpoint1) GetCapabilities [readonly, optional]() ([]byte, error) {
-	v, err := a.GetProperty("Capabilities [readonly, optional]")
+// GetCapabilities get Capabilities value
+func (a *MediaEndpoint1) GetCapabilities() ([]byte, error) {
+	v, err := a.GetProperty("Capabilities")
 	if err != nil {
 		return []byte{}, err
 	}
@@ -178,16 +163,11 @@ func (a *MediaEndpoint1) GetCapabilities [readonly, optional]() ([]byte, error) 
 
 
 
-// SetDevice [readonly, optional] set Device [readonly, optional] value
-func (a *MediaEndpoint1) SetDevice [readonly, optional](v dbus.ObjectPath) error {
-	return a.SetProperty("Device [readonly, optional]", v)
-}
 
 
-
-// GetDevice [readonly, optional] get Device [readonly, optional] value
-func (a *MediaEndpoint1) GetDevice [readonly, optional]() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Device [readonly, optional]")
+// GetDevice get Device value
+func (a *MediaEndpoint1) GetDevice() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Device")
 	if err != nil {
 		return dbus.ObjectPath(""), err
 	}
