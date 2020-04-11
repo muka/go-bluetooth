@@ -11,20 +11,14 @@ bluez/checkout:
 	git submodule update
 	cd src/bluez && git checkout ${BLUEZ_VERSION}
 
-bluetoothd/logs:
+service/bluetoothd/logs:
 	journalctl -u bluetooth -f
 
-bluetoothd/start: bluetoothd/stop
+service/bluetoothd/start: bluetoothd/stop
 	sudo bluetoothd -E -d -n -P hostname
 
-bluetoothd/stop:
+service/bluetoothd/stop:
 	sudo killall bluetoothd || true
-
-run/example/service:
-	go run examples/service/*.go
-
-run/example/client:
-	go run examples/service/*.go client
 
 gen/clean:
 	rm `ls bluez/profile/*/gen_* -1` || true
@@ -38,9 +32,6 @@ gen: gen/run
 test/api:
 	sudo go test github.com/muka/go-bluetooth/api
 
-test/linux:
-	sudo go test -v github.com/muka/go-bluetooth/linux/btmgmt
-
 build: gen
 	CGO_ENABLED=0 go build -o go-bluetooth ./main.go
 
@@ -52,13 +43,10 @@ dev/cp: build
 dev/logs:
 	ssh minion "journalctl -u bluetooth.service -f"
 
-bluetooth/stop:
-	sudo service bluetooth stop
-
-docker/build/bluez:
+docker/bluetoothd/build:
 	docker build ./env/bluez --build-arg BLUEZ_VERSION=${BLUEZ_VERSION} -t opny/bluez-${BLUEZ_VERSION}
 
-docker/run/bluez: bluetoothd/stop
+docker/bluetoothd/run: service/bluetoothd/stop
 	docker run -it --rm --name bluez_${BLUEZ_VERSION} \
 		--privileged \
 		--net=host \

@@ -59,19 +59,6 @@ type PhonebookAccess1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	FixedImageSize Indicate support for fixed image size.
-
-			Possible values: True if image is JPEG 300x300 pixels
-			otherwise False.
-	*/
-	FixedImageSize bool
-
-	/*
-	Folder Current folder.
-	*/
-	Folder string
-
-	/*
 	DatabaseIdentifier 128 bits persistent database identifier.
 
 			Possible values: 32-character hexadecimal such
@@ -95,6 +82,19 @@ type PhonebookAccess1Properties struct {
 	*/
 	SecondaryCounter string
 
+	/*
+	FixedImageSize Indicate support for fixed image size.
+
+			Possible values: True if image is JPEG 300x300 pixels
+			otherwise False.
+	*/
+	FixedImageSize bool
+
+	/*
+	Folder Current folder.
+	*/
+	Folder string
+
 }
 
 //Lock access to properties
@@ -105,34 +105,6 @@ func (p *PhonebookAccess1Properties) Lock() {
 //Unlock access to properties
 func (p *PhonebookAccess1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-
-
-// GetFixedImageSize get FixedImageSize value
-func (a *PhonebookAccess1) GetFixedImageSize() (bool, error) {
-	v, err := a.GetProperty("FixedImageSize")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-
-
-// GetFolder get Folder value
-func (a *PhonebookAccess1) GetFolder() (string, error) {
-	v, err := a.GetProperty("Folder")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
 }
 
 
@@ -171,6 +143,34 @@ func (a *PhonebookAccess1) GetPrimaryCounter() (string, error) {
 // GetSecondaryCounter get SecondaryCounter value
 func (a *PhonebookAccess1) GetSecondaryCounter() (string, error) {
 	v, err := a.GetProperty("SecondaryCounter")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+
+
+// GetFixedImageSize get FixedImageSize value
+func (a *PhonebookAccess1) GetFixedImageSize() (bool, error) {
+	v, err := a.GetProperty("FixedImageSize")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+
+
+// GetFolder get Folder value
+func (a *PhonebookAccess1) GetFolder() (string, error) {
+	v, err := a.GetProperty("Folder")
 	if err != nil {
 		return "", err
 	}

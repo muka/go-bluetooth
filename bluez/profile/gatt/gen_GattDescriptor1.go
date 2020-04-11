@@ -61,23 +61,6 @@ type GattDescriptor1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Flags Defines how the descriptor value can be used.
-
-			Possible values:
-
-				"read"
-				"write"
-				"encrypt-read"
-				"encrypt-write"
-				"encrypt-authenticated-read"
-				"encrypt-authenticated-write"
-				"secure-read" (Server Only)
-				"secure-write" (Server Only)
-				"authorize"
-	*/
-	Flags []string
-
-	/*
 	UUID 128-bit descriptor UUID.
 	*/
 	UUID string
@@ -95,6 +78,23 @@ type GattDescriptor1Properties struct {
 	*/
 	Value []byte `dbus:"emit"`
 
+	/*
+	Flags Defines how the descriptor value can be used.
+
+			Possible values:
+
+				"read"
+				"write"
+				"encrypt-read"
+				"encrypt-write"
+				"encrypt-authenticated-read"
+				"encrypt-authenticated-write"
+				"secure-read" (Server Only)
+				"secure-write" (Server Only)
+				"authorize"
+	*/
+	Flags []string
+
 }
 
 //Lock access to properties
@@ -105,25 +105,6 @@ func (p *GattDescriptor1Properties) Lock() {
 //Unlock access to properties
 func (p *GattDescriptor1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-// SetFlags set Flags value
-func (a *GattDescriptor1) SetFlags(v []string) error {
-	return a.SetProperty("Flags", v)
-}
-
-
-
-// GetFlags get Flags value
-func (a *GattDescriptor1) GetFlags() ([]string, error) {
-	v, err := a.GetProperty("Flags")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
 }
 
 
@@ -181,6 +162,25 @@ func (a *GattDescriptor1) GetValue() ([]byte, error) {
 		return []byte{}, err
 	}
 	return v.Value().([]byte), nil
+}
+
+
+
+
+// SetFlags set Flags value
+func (a *GattDescriptor1) SetFlags(v []string) error {
+	return a.SetProperty("Flags", v)
+}
+
+
+
+// GetFlags get Flags value
+func (a *GattDescriptor1) GetFlags() ([]string, error) {
+	v, err := a.GetProperty("Flags")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
 }
 
 
