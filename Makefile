@@ -1,7 +1,7 @@
 
 .PHONY: gen
 
-BLUEZ_VERSION ?= 5.50
+BLUEZ_VERSION ?= 5.54
 FILTER ?=
 
 all: bluez/checkout gen/clean gen/run
@@ -14,9 +14,11 @@ bluez/checkout:
 bluetoothd/logs:
 	journalctl -u bluetooth -f
 
-bluetoothd/start:
-	sudo killall bluetoothd || true && \
+bluetoothd/start: bluetoothd/stop
 	sudo bluetoothd -E -d -n -P hostname
+
+bluetoothd/stop:
+	sudo killall bluetoothd || true
 
 run/example/service:
 	go run examples/service/*.go
@@ -49,3 +51,19 @@ dev/cp: build
 
 dev/logs:
 	ssh minion "journalctl -u bluetooth.service -f"
+
+bluetooth/stop:
+	sudo service bluetooth stop
+
+docker/build/bluez:
+	docker build ./env/bluez --build-arg BLUEZ_VERSION=${BLUEZ_VERSION} -t opny/bluez-${BLUEZ_VERSION}
+
+docker/run/bluez: bluetoothd/stop
+	docker run -it --rm --name bluez_${BLUEZ_VERSION} \
+		--privileged \
+		--net=host \
+	  -v /dev:/dev \
+		-v /var/run/dbus:/var/run/dbus \
+		-v /sys/class/bluetooth:/sys/class/bluetooth \
+		-v /var/lib/bluetooth:/var/lib/bluetooth \
+		opny/bluez-${BLUEZ_VERSION}
