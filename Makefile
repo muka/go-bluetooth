@@ -43,8 +43,9 @@ build: gen
 	CGO_ENABLED=0 go build -o go-bluetooth ./main.go
 
 dev/cp: build
+	ssh minion "killall go-bluetooth" || true
 	scp go-bluetooth minion:~/
 	ssh minion "~/go-bluetooth service server --adapterID hci1"
 
 dev/logs:
-	ssh minion "journalctl -f -u bluetooth.service"
+	ssh minion "journalctl -u bluetooth.service -f"

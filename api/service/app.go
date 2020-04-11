@@ -140,6 +140,10 @@ func (app *App) init() error {
 	return err
 }
 
+func (app *App) GetAdapter() *adapter.Adapter1 {
+	return app.adapter
+}
+
 func (app *App) Run() (err error) {
 
 	err = app.ExposeAgent(app.AgentCaps, app.AgentSetAsDefault)
