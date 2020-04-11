@@ -3,10 +3,14 @@ module github.com/muka/go-bluetooth
 go 1.14
 
 require (
+	github.com/aymerick/douceur v0.2.0 // indirect
+	github.com/chris-ramon/douceur v0.2.0
 	github.com/fatih/structs v1.1.0
 	github.com/fsnotify/fsnotify v1.4.9 // indirect
 	github.com/godbus/dbus v4.1.0+incompatible
+	github.com/gogo/protobuf v1.2.1
 	github.com/google/uuid v1.1.1
+	github.com/gorilla/css v1.0.0 // indirect
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/mitchellh/mapstructure v1.2.2 // indirect
 	github.com/pelletier/go-toml v1.6.0 // indirect
