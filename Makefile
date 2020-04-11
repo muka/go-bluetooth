@@ -23,7 +23,7 @@ service/bluetoothd/stop:
 	sudo killall bluetoothd || true
 
 gen/clean:
-	rm `ls bluez/profile/*/gen_* -1` || true
+	rm -f `ls bluez/profile/*/gen_* -1` || true
 
 gen/run: bluez/checkout
 	BLUEZ_VERSION=${BLUEZ_VERSION} FILTER=${FILTER} go run gen/srcgen/main.go full
