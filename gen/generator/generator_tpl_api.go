@@ -5,12 +5,12 @@ import (
 	"os"
 	"strings"
 
-	"github.com/muka/go-bluetooth/gen"
 	"github.com/muka/go-bluetooth/gen/override"
+	"github.com/muka/go-bluetooth/gen/types"
 	log "github.com/sirupsen/logrus"
 )
 
-func ApiTemplate(filename string, api gen.Api, apiGroup gen.ApiGroup) error {
+func ApiTemplate(filename string, api *types.Api, apiGroup *types.ApiGroup) error {
 
 	fw, err := os.Create(filename)
 	if err != nil {
@@ -47,11 +47,11 @@ func ApiTemplate(filename string, api gen.Api, apiGroup gen.ApiGroup) error {
 	pts := strings.Split(api.Interface, ".")
 	iface := pts[len(pts)-1]
 
-	propsList := map[string]*gen.PropertyDoc{}
+	propsList := map[string]*types.PropertyDoc{}
 
 	for _, p := range api.Properties {
 
-		prop := gen.PropertyDoc{
+		prop := types.PropertyDoc{
 			Property: p,
 		}
 
@@ -67,7 +67,7 @@ func ApiTemplate(filename string, api gen.Api, apiGroup gen.ApiGroup) error {
 	if found {
 		for propName, propType := range propertiesOverride {
 
-			var prop *gen.PropertyDoc
+			var prop *types.PropertyDoc
 			if _, ok := propsList[propName]; ok {
 				prop = propsList[propName]
 				prop.RawType = getRawType(prop.Property.Type)
@@ -75,8 +75,8 @@ func ApiTemplate(filename string, api gen.Api, apiGroup gen.ApiGroup) error {
 				prop.Property.Type = propType
 				// log.Debugf("props --> %s %s", propName, propType)
 			} else {
-				prop = &gen.PropertyDoc{
-					Property: gen.Property{
+				prop = &types.PropertyDoc{
+					Property: &types.Property{
 						Name: propName,
 						Type: propType,
 					},
@@ -93,18 +93,18 @@ func ApiTemplate(filename string, api gen.Api, apiGroup gen.ApiGroup) error {
 		}
 	}
 
-	props := []gen.PropertyDoc{}
+	props := []types.PropertyDoc{}
 	for _, prop := range propsList {
 
 		// add propery flags
 		for _, flag := range prop.Flags {
-			if flag == gen.FlagReadOnly {
+			if flag == types.FlagReadOnly {
 				prop.ReadOnly = true
 			}
-			if flag == gen.FlagWriteOnly {
+			if flag == types.FlagWriteOnly {
 				prop.WriteOnly = true
 			}
-			if flag == gen.FlagReadWrite {
+			if flag == types.FlagReadWrite {
 				prop.ReadWrite = true
 			}
 		}
@@ -112,7 +112,7 @@ func ApiTemplate(filename string, api gen.Api, apiGroup gen.ApiGroup) error {
 		props = append(props, *prop)
 	}
 
-	methods := []gen.MethodDoc{}
+	methods := []types.MethodDoc{}
 	for _, m := range api.Methods {
 
 		args := []string{}
@@ -123,7 +123,7 @@ func ApiTemplate(filename string, api gen.Api, apiGroup gen.ApiGroup) error {
 			params = append(params, a.Name)
 		}
 
-		mm := gen.MethodDoc{
+		mm := types.MethodDoc{
 			Method:     m,
 			ArgsList:   strings.Join(args, ", "),
 			ParamsList: strings.Join(params, ", "),
@@ -223,7 +223,7 @@ func ApiTemplate(filename string, api gen.Api, apiGroup gen.ApiGroup) error {
 		importsTpl = fmt.Sprintf("import (\n  %s\n)", strings.Join(imports, "\n  "))
 	}
 
-	apidocs := gen.ApiDoc{
+	apidocs := types.ApiDoc{
 		Imports:          importsTpl,
 		Package:          apiName,
 		Api:              api,

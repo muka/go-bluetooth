@@ -3,11 +3,13 @@ package gen
 import (
 	"encoding/json"
 	"io/ioutil"
+
+	"github.com/muka/go-bluetooth/gen/types"
 )
 
 type BluezAPI struct {
 	Version string
-	Api     []ApiGroup
+	Api     []*types.ApiGroup
 }
 
 // Serialize store the structure as JSON

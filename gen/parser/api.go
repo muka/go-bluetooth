@@ -1,26 +1,39 @@
-package gen
+package parser
 
 import (
-	"fmt"
 	"regexp"
 
+	"github.com/muka/go-bluetooth/gen/types"
 	log "github.com/sirupsen/logrus"
 )
 
-func (g *ApiGroup) parseApi(raw []byte) Api {
+type ApiParser struct {
+	model *types.Api
+	debug bool
+}
 
-	api := Api{}
+// NewApiParser parser for Api
+func NewApiParser(debug bool) ApiParser {
+	parser := ApiParser{
+		debug: false,
+		model: new(types.Api),
+	}
+	return parser
+}
+
+func (g *ApiParser) Parse(raw []byte) (*types.Api, error) {
+
+	var err error = nil
+	api := g.model
 
 	// title & description
 	re := regexp.MustCompile(`(?s)(.+)\n[=]+\n?(.*)\nService|Interface *`)
 	matches := re.FindSubmatchIndex(raw)
 
-	fmt.Println(matches)
-
 	api.Title = string(raw[matches[2]:matches[3]])
 	api.Description = string(raw[matches[4]:matches[5]])
 
-	log.Infof("= %s", api.Title)
+	log.Debugf("= %s", api.Title)
 
 	raw = raw[matches[5]:]
 
@@ -41,29 +54,26 @@ func (g *ApiGroup) parseApi(raw []byte) Api {
 	}
 
 	raw = raw[matches[7]:]
-	api.Methods = g.parseMethods(raw)
-	api.Signals = g.parseSignals(raw)
-	api.Properties = g.parseProperties(raw)
 
-	return api
-}
+	methods, err := g.ParseMethods(raw)
+	if err != nil {
+		return api, err
+	}
+	api.Methods = methods
 
-func (g *ApiGroup) parseGroup(raw []byte) {
+	properties, err := g.ParseProperties(raw)
+	if err != nil {
+		return api, err
+	}
+	api.Properties = properties
 
-	// Group Name
-	re := regexp.MustCompile(`(.+)\n[*]+\n(.*)`)
-	matches := re.FindAllSubmatchIndex(raw, -1)
+	signals, err := g.ParseSignals(raw)
+	if err != nil {
+		return api, err
+	}
+	api.Signals = signals
 
-	// log.Debugf("\nRAW\n%s\n\n/RAW\n", raw)
-	// for _, m1 := range matches {
-	// 	// for _, m := range m1 {
-	// 	log.Debugf("> %v", m1)
-	// 	// }
-	// }
+	g.model = api
 
-	g.Name = string(raw[matches[0][2]:matches[0][3]])
-	g.Description = string(raw[matches[0][1]+1:])
-
-	log.Infof("* %s", g.Name)
-
+	return api, nil
 }

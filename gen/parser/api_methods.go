@@ -1,39 +1,37 @@
-package gen
+package parser
 
 import (
 	"regexp"
 
+	"github.com/muka/go-bluetooth/gen/types"
 	log "github.com/sirupsen/logrus"
 )
 
-func (g *ApiGroup) parseSignals(raw []byte) []Method {
+func (g *ApiParser) ParseMethods(raw []byte) ([]*types.Method, error) {
 
-	methods := make([]Method, 0)
+	var err error = nil
+	methods := make([]*types.Method, 0)
 	slices := make([][]byte, 0)
 
-	re := regexp.MustCompile(`(?s)Signals(.+)\n\nProperties`)
+	re := regexp.MustCompile(`(?s)Methods(.+?)(Properties|Signals)[\t ]`)
 	matches1 := re.FindSubmatch(raw)
 
 	if len(matches1) == 0 {
-		return methods
+		re = regexp.MustCompile(`(?s)[ \t\n]+(.+)`)
+		matches1 = re.FindSubmatch(raw)
+		if len(matches1) == 1 {
+			matches1 = append(matches1, matches1[0])
+		}
+		// log.Debugf("matches1 %s", matches1[1:])
 	}
 
-	// if len(matches1) == 0 {
-	// 	re = regexp.MustCompile(`(?s)[ \t\n]+(.+)`)
-	// 	matches1 = re.FindSubmatch(raw)
-	// 	if len(matches1) == 1 {
-	// 		matches1 = append(matches1, matches1[0])
-	// 	}
-	// }
-
-	// log.Debugf("matches1 %s", matches1[1:])
+	// log.Debugf("matches1 %s", matches1[:1])
 	// log.Debugf("%s", matches1)
 
 	for _, methodsRaw := range matches1[1:] {
 
 		re1 := regexp.MustCompile(`[ \t]*?(.*?)? ?([^ ]+)\(([^)]+?)?\) ?(.*)`)
 		matches2 := re1.FindAllSubmatchIndex(methodsRaw, -1)
-
 		if len(matches2) == 1 {
 			if len(methodsRaw) > 0 {
 				slices = append(slices, methodsRaw)
@@ -68,16 +66,18 @@ func (g *ApiGroup) parseSignals(raw []byte) []Method {
 	}
 
 	if g.debug {
-		log.Debug("\nSignals:")
+		log.Debug("\tMethods:")
 	}
+
 	for _, methodRaw := range slices {
-		method, err := g.parseMethod(methodRaw)
+		methodParser := NewMethodParser(g.debug)
+		method, err := methodParser.Parse(methodRaw)
 		if err != nil {
-			log.Debugf("Skip signal: %s", err)
+			log.Warnf("Skip method: %s", err)
 			continue
 		}
 		methods = append(methods, method)
 	}
 
-	return methods
+	return methods, err
 }

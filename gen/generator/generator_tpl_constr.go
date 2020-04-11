@@ -5,8 +5,8 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/muka/go-bluetooth/gen"
 	"github.com/muka/go-bluetooth/gen/override"
+	"github.com/muka/go-bluetooth/gen/types"
 )
 
 var defaultService = "org.bluez"
@@ -15,11 +15,11 @@ func isDefaultService(s string) bool {
 	return len(s) >= len(defaultService) && s[:len(defaultService)] == defaultService
 }
 
-func createConstructors(api gen.Api) []gen.Constructor {
+func createConstructors(api *types.Api) []types.Constructor {
 
 	// log.Debugf("-------------------------------------- %s", api.Interface)
 
-	constructors := []gen.Constructor{}
+	constructors := []types.Constructor{}
 	constructors = inspectServiceName(api.Service, constructors)
 	constructors = inspectObjectPath(api.ObjectPath, constructors)
 
@@ -68,7 +68,7 @@ func createConstructors(api gen.Api) []gen.Constructor {
 				for _, c1 := range constructors {
 					// log.Debugf("------ oveerride %+v", c1)
 
-					c := gen.Constructor{
+					c := types.Constructor{
 						Args:       "adapterID string",
 						ArgsDocs:   "// adapterID: ID of an adapter eg. hci0",
 						Docs:       c1.Docs,
@@ -90,7 +90,7 @@ func createConstructors(api gen.Api) []gen.Constructor {
 	return constructors
 }
 
-func inspectServiceName(serviceName string, constructors []gen.Constructor) []gen.Constructor {
+func inspectServiceName(serviceName string, constructors []types.Constructor) []types.Constructor {
 
 	// log.Debugf("ObjectPath %s", api.ObjectPath)
 	// log.Debugf("Interface %s", api.Interface)
@@ -129,7 +129,7 @@ func inspectServiceName(serviceName string, constructors []gen.Constructor) []ge
 					docslist = append(docslist, "servicePath: "+doc)
 				}
 
-				c := gen.Constructor{
+				c := types.Constructor{
 					Service: srvc,
 					Role:    string(m1[2]),
 					Docs:    docslist,
@@ -139,7 +139,7 @@ func inspectServiceName(serviceName string, constructors []gen.Constructor) []ge
 			}
 		} else {
 
-			c := gen.Constructor{
+			c := types.Constructor{
 				Service: "",
 				Role:    "",
 				Docs: []string{
@@ -149,7 +149,7 @@ func inspectServiceName(serviceName string, constructors []gen.Constructor) []ge
 			constructors = append(constructors, c)
 		}
 	} else {
-		c := gen.Constructor{
+		c := types.Constructor{
 			Service:    apiService,
 			Role:       "",
 			ObjectPath: "",
@@ -162,9 +162,9 @@ func inspectServiceName(serviceName string, constructors []gen.Constructor) []ge
 	return constructors
 }
 
-func inspectObjectPath(objectPath string, constructors []gen.Constructor) []gen.Constructor {
+func inspectObjectPath(objectPath string, constructors []types.Constructor) []types.Constructor {
 
-	constructors2 := []gen.Constructor{}
+	constructors2 := []types.Constructor{}
 
 	// log.Debugf("%d %s", len(constructors), objectPath)
 	// log.Debugf("%+v", constructors)

@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/muka/go-bluetooth/gen"
+	"github.com/muka/go-bluetooth/gen/util"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -14,21 +15,21 @@ func Generate(bluezApi gen.BluezAPI, outDir string, forceOverwrite bool) error {
 
 	apiGroups := bluezApi.Api
 
-	err := gen.Mkdir(outDir)
+	err := util.Mkdir(outDir)
 	if err != nil {
 		log.Errorf("Failed to mkdir %s: %s", outDir, err)
 		return err
 	}
 
 	outDir += "/profile"
-	err = gen.Mkdir(outDir)
+	err = util.Mkdir(outDir)
 	if err != nil {
 		log.Errorf("Failed to mkdir %s: %s", outDir, err)
 		return err
 	}
 
 	errorsFile := path.Join(outDir, "gen_errors.go")
-	if forceOverwrite || !gen.Exists(errorsFile) {
+	if forceOverwrite || !util.Exists(errorsFile) {
 		err = ErrorsTemplate(errorsFile, apiGroups)
 		if err != nil {
 			return err
@@ -45,7 +46,7 @@ func Generate(bluezApi gen.BluezAPI, outDir string, forceOverwrite bool) error {
 
 		apiName := getApiPackage(apiGroup)
 		dirpath := path.Join(outDir, apiName)
-		err := gen.Mkdir(dirpath)
+		err := util.Mkdir(dirpath)
 		if err != nil {
 			log.Errorf("Failed to mkdir %s: %s", dirpath, err)
 			continue
@@ -53,15 +54,15 @@ func Generate(bluezApi gen.BluezAPI, outDir string, forceOverwrite bool) error {
 
 		rootFile := path.Join(dirpath, "gen_"+apiName+".go")
 
-		if forceOverwrite || !gen.Exists(rootFile) {
+		if forceOverwrite || !util.Exists(rootFile) {
 			err = RootTemplate(rootFile, apiGroup)
 			if err != nil {
 				log.Errorf("Failed to create %s: %s", rootFile, err)
 				continue
 			}
-			log.Debugf("Wrote %s", rootFile)
+			log.Tracef("Wrote %s", rootFile)
 		} /* else {
-			log.Infof("Skipped, file exists: %s", rootFile)
+			log.Debugf("Skipped, file exists: %s", rootFile)
 		} */
 		for _, api := range apiGroup.Api {
 
@@ -71,13 +72,13 @@ func Generate(bluezApi gen.BluezAPI, outDir string, forceOverwrite bool) error {
 			apiFilename := path.Join(dirpath, fmt.Sprintf("%s.go", apiBaseName))
 			apiGenFilename := path.Join(dirpath, fmt.Sprintf("gen_%s.go", apiBaseName))
 
-			if gen.Exists(apiFilename) {
-				// log.Infof("Skipped generation, API file exists: %s", apiFilename)
+			if util.Exists(apiFilename) {
+				// log.Debugf("Skipped generation, API file exists: %s", apiFilename)
 				continue
 			}
 
-			if !forceOverwrite && gen.Exists(apiGenFilename) {
-				// log.Infof("Skipped, file exists: %s", apiGenFilename)
+			if !forceOverwrite && util.Exists(apiGenFilename) {
+				// log.Debugf("Skipped, file exists: %s", apiGenFilename)
 				continue
 			}
 

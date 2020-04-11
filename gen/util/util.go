@@ -1,9 +1,10 @@
-package gen
+package util
 
 import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"strings"
 
@@ -78,4 +79,12 @@ func Exists(name string) bool {
 		}
 	}
 	return true
+}
+
+//GetGitVersion return the docs git version
+func GetGitVersion(docsDir string) (string, error) {
+	cmd := exec.Command("git", "describe")
+	cmd.Dir = docsDir
+	res, err := cmd.CombinedOutput()
+	return strings.Trim(string(res), " \n\r"), err
 }

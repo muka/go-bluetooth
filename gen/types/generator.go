@@ -1,4 +1,4 @@
-package gen
+package types
 
 type BluezError struct {
 	Name  string
@@ -10,7 +10,7 @@ type BluezErrors struct {
 }
 
 type MethodDoc struct {
-	Method
+	*Method
 	ArgsList             string
 	ParamsList           string
 	SingleReturn         bool
@@ -30,7 +30,7 @@ type InterfacesDoc struct {
 }
 
 type PropertyDoc struct {
-	Property
+	*Property
 	RawType            string
 	RawTypeInitializer string
 	ReadOnly           bool
@@ -39,12 +39,12 @@ type PropertyDoc struct {
 }
 
 type ApiGroupDoc struct {
-	ApiGroup
+	*ApiGroup
 	Package string
 }
 
 type ApiDoc struct {
-	Api              Api
+	Api              *Api
 	InterfaceName    string
 	Package          string
 	Properties       []PropertyDoc

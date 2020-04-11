@@ -1,19 +1,21 @@
 package gen
 
 import (
-	"os/exec"
 	"strings"
 
+	"github.com/muka/go-bluetooth/gen/parser"
+	"github.com/muka/go-bluetooth/gen/types"
+	"github.com/muka/go-bluetooth/gen/util"
 	log "github.com/sirupsen/logrus"
 )
 
 // Parse bluez DBus API docs
-func Parse(docsDir string, filters []string) (BluezAPI, error) {
-	files, err := ListFiles(docsDir)
+func Parse(docsDir string, filters []string, debug bool) (BluezAPI, error) {
+	files, err := util.ListFiles(docsDir)
 	if err != nil {
 		return BluezAPI{}, err
 	}
-	apis := []ApiGroup{}
+	apis := make([]*types.ApiGroup, 0)
 	for _, file := range files {
 
 		keep := true
@@ -22,6 +24,7 @@ func Parse(docsDir string, filters []string) (BluezAPI, error) {
 			for _, filter := range filters {
 				if strings.Contains(file, filter) {
 					keep = true
+					log.Debugf("[filter %s] Keep %s", filter, file)
 					break
 				}
 			}
@@ -31,7 +34,8 @@ func Parse(docsDir string, filters []string) (BluezAPI, error) {
 			continue
 		}
 
-		apiGroup, err := NewApiGroup(file)
+		apiGroupParser := parser.NewApiGroupParser(debug)
+		apiGroup, err := apiGroupParser.Parse(file)
 		if err != nil {
 			log.Errorf("Failed to load %s, skipped", file)
 			continue
@@ -39,7 +43,7 @@ func Parse(docsDir string, filters []string) (BluezAPI, error) {
 		apis = append(apis, apiGroup)
 	}
 
-	version, err := GetGitVersion(docsDir)
+	version, err := util.GetGitVersion(docsDir)
 	if err != nil {
 		log.Errorf("Failed to parse version: %s", err)
 	}
@@ -48,11 +52,4 @@ func Parse(docsDir string, filters []string) (BluezAPI, error) {
 		Version: version,
 		Api:     apis,
 	}, nil
-}
-
-func GetGitVersion(docsDir string) (string, error) {
-	cmd := exec.Command("git", "describe")
-	cmd.Dir = docsDir
-	res, err := cmd.CombinedOutput()
-	return strings.Trim(string(res), " \n\r"), err
 }

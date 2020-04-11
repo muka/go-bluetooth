@@ -6,7 +6,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/muka/go-bluetooth/gen"
+	"github.com/muka/go-bluetooth/gen/types"
 )
 
 var TplPath = "./gen/generator/tpl/%s.go.tpl"
@@ -131,7 +131,7 @@ func castType(rawtype string) string {
 	return typedef
 }
 
-func getApiPackage(apiGroup gen.ApiGroup) string {
+func getApiPackage(apiGroup *types.ApiGroup) string {
 	apiName := strings.Replace(apiGroup.FileName, "-api.txt", "", -1)
 	apiName = strings.Replace(apiName, "-", "_", -1)
 	return apiName

@@ -5,17 +5,17 @@ import (
 	"os"
 	"strings"
 
-	"github.com/muka/go-bluetooth/gen"
+	"github.com/muka/go-bluetooth/gen/types"
 )
 
-func RootTemplate(filename string, api gen.ApiGroup) error {
+func RootTemplate(filename string, api *types.ApiGroup) error {
 
 	fw, err := os.Create(filename)
 	if err != nil {
 		return fmt.Errorf("create file: %s", err)
 	}
 
-	apidoc := gen.ApiGroupDoc{
+	apidoc := types.ApiGroupDoc{
 		ApiGroup: api,
 		Package:  getApiPackage(api),
 	}
@@ -32,7 +32,7 @@ func RootTemplate(filename string, api gen.ApiGroup) error {
 	return nil
 }
 
-func ErrorsTemplate(filename string, apis []gen.ApiGroup) error {
+func ErrorsTemplate(filename string, apis []*types.ApiGroup) error {
 
 	fw, err := os.Create(filename)
 	if err != nil {
@@ -50,12 +50,12 @@ func ErrorsTemplate(filename string, apis []gen.ApiGroup) error {
 		}
 	}
 
-	errorsList := gen.BluezErrors{
-		List: make([]gen.BluezError, len(errors)),
+	errorsList := types.BluezErrors{
+		List: make([]types.BluezError, len(errors)),
 	}
 
 	for i, err := range errors {
-		errorsList.List[i] = gen.BluezError{
+		errorsList.List[i] = types.BluezError{
 			Name: strings.Replace(err, "org.bluez.Error.", "", 1),
 		}
 	}
@@ -70,14 +70,14 @@ func ErrorsTemplate(filename string, apis []gen.ApiGroup) error {
 	return nil
 }
 
-func InterfacesTemplate(filename string, apis []gen.ApiGroup) error {
+func InterfacesTemplate(filename string, apis []types.ApiGroup) error {
 
 	fw, err := os.Create(filename)
 	if err != nil {
 		return fmt.Errorf("create file: %s", err)
 	}
 
-	interfaces := []gen.InterfaceDoc{}
+	interfaces := []types.InterfaceDoc{}
 	for _, apiGroup := range apis {
 		for _, api := range apiGroup.Api {
 
@@ -91,7 +91,7 @@ func InterfacesTemplate(filename string, apis []gen.ApiGroup) error {
 				}
 			}
 
-			iface := gen.InterfaceDoc{
+			iface := types.InterfaceDoc{
 				Title:     api.Title,
 				Name:      ifaceName,
 				Interface: api.Interface,
@@ -100,7 +100,7 @@ func InterfacesTemplate(filename string, apis []gen.ApiGroup) error {
 		}
 	}
 
-	ifaces := gen.InterfacesDoc{
+	ifaces := types.InterfacesDoc{
 		Interfaces: interfaces,
 	}
 

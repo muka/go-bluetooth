@@ -1,4 +1,4 @@
-package gen
+package parser
 
 import (
 	"errors"
@@ -6,82 +6,27 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/muka/go-bluetooth/gen/types"
 	log "github.com/sirupsen/logrus"
 )
 
-func (g *ApiGroup) parseMethods(raw []byte) []Method {
-
-	methods := make([]Method, 0)
-	slices := make([][]byte, 0)
-
-	re := regexp.MustCompile(`(?s)Methods(.+?)(Properties|Signals)[\t ]`)
-	matches1 := re.FindSubmatch(raw)
-
-	if len(matches1) == 0 {
-		re = regexp.MustCompile(`(?s)[ \t\n]+(.+)`)
-		matches1 = re.FindSubmatch(raw)
-		if len(matches1) == 1 {
-			matches1 = append(matches1, matches1[0])
-		}
-		// log.Debugf("matches1 %s", matches1[1:])
+// NewMethodParser
+func NewMethodParser(debug bool) MethodParser {
+	return MethodParser{
+		model: new(types.Method),
+		debug: false,
 	}
-
-	// log.Debugf("matches1 %s", matches1[:1])
-	// log.Debugf("%s", matches1)
-
-	for _, methodsRaw := range matches1[1:] {
-
-		re1 := regexp.MustCompile(`[ \t]*?(.*?)? ?([^ ]+)\(([^)]+?)?\) ?(.*)`)
-		matches2 := re1.FindAllSubmatchIndex(methodsRaw, -1)
-		if len(matches2) == 1 {
-			if len(methodsRaw) > 0 {
-				slices = append(slices, methodsRaw)
-			}
-		} else {
-			prevPos := -1
-			for i := 0; i < len(matches2); i++ {
-
-				if prevPos == -1 {
-					prevPos = matches2[i][0]
-					continue
-				}
-
-				nextPos := matches2[i][0]
-				methodRaw := methodsRaw[prevPos:nextPos]
-				prevPos = nextPos
-
-				if len(methodRaw) > 0 {
-					slices = append(slices, methodRaw)
-				}
-
-				// keep the last one
-				lastItem := len(matches2) - 1
-				if i == lastItem {
-					methodRaw = methodsRaw[matches2[lastItem][0]:]
-					if len(methodRaw) > 0 {
-						slices = append(slices, methodRaw)
-					}
-				}
-			}
-		}
-	}
-
-	if g.debug {
-		log.Debug("\tMethods:")
-	}
-	for _, methodRaw := range slices {
-		method, err := g.parseMethod(methodRaw)
-		if err != nil {
-			log.Warnf("Skip method: %s", err)
-			continue
-		}
-		methods = append(methods, method)
-	}
-
-	return methods
 }
 
-func (g *ApiGroup) parseMethod(raw []byte) (method Method, err error) {
+type MethodParser struct {
+	model *types.Method
+	debug bool
+}
+
+func (g *MethodParser) Parse(raw []byte) (*types.Method, error) {
+
+	var err error = nil
+	method := g.model
 
 	re := regexp.MustCompile(`[ \t]*(.*?) ?(\w+)\(([^)]*)\) ?(.*?)\n((?s).+)`)
 	matches1 := re.FindAllSubmatch(raw, -1)
@@ -98,7 +43,7 @@ func (g *ApiGroup) parseMethod(raw []byte) (method Method, err error) {
 		for _, srtype := range strings.Split(rtype, ",") {
 			if len(strings.Split(strings.Trim(srtype, " "), " ")) > 2 {
 				// log.Warnf("****** %s | %s", strings.Trim(srtype, " "), strings.Split(strings.Trim(srtype, " "), " "))
-				return method, fmt.Errorf("Method %s return type contains space: `%s`", method.Name, rtype)
+				return g.model, fmt.Errorf("Method %s return type contains space: `%s`", method.Name, rtype)
 			}
 		}
 
@@ -111,7 +56,7 @@ func (g *ApiGroup) parseMethod(raw []byte) (method Method, err error) {
 		name := string(matches2[2])
 		method.Name = strings.Trim(name, " \t")
 
-		args := []Arg{}
+		args := []types.Arg{}
 		if len(matches2[3]) > 0 {
 
 			args1 := string(matches2[3])
@@ -135,7 +80,7 @@ func (g *ApiGroup) parseMethod(raw []byte) (method Method, err error) {
 				}
 
 				argType := strings.Trim(argsparts[0], " \t\n")
-				arg := Arg{
+				arg := types.Arg{
 					Type: argType,
 					Name: argsparts[1],
 				}
@@ -159,6 +104,11 @@ func (g *ApiGroup) parseMethod(raw []byte) (method Method, err error) {
 	if method.Name == "" {
 		return method, errors.New("Empty method name")
 	}
+
+	// if strings.Contains(method.ReturnType, "Handle") {
+	// 	fmt.Println(method)
+	// 	os.Exit(1)
+	// }
 
 	if method.Name != "" && g.debug {
 		log.Debugf("\t - %s %s(%s)", method.ReturnType, method.Name, method.Args)
