@@ -15,7 +15,7 @@ type ApiParser struct {
 // NewApiParser parser for Api
 func NewApiParser(debug bool) ApiParser {
 	parser := ApiParser{
-		debug: false,
+		debug: debug,
 		model: new(types.Api),
 	}
 	return parser
@@ -33,15 +33,15 @@ func (g *ApiParser) Parse(raw []byte) (*types.Api, error) {
 	api.Title = string(raw[matches[2]:matches[3]])
 	api.Description = string(raw[matches[4]:matches[5]])
 
-	log.Debugf("= %s", api.Title)
+	if g.debug {
+		log.Debugf("= %s", api.Title)
+	}
 
 	raw = raw[matches[5]:]
 
 	// service interface object
 	re = regexp.MustCompile(`Service[ \t]*((?s).+)\nInterface[ \t]*((?s).+)\nObject path[ \t]*((?s).+?)\n\n`)
 	matches = re.FindSubmatchIndex(raw)
-
-	// log.Debugf("%d", matches)
 
 	api.Service = string(raw[matches[2]:matches[3]])
 	api.Interface = string(raw[matches[4]:matches[5]])

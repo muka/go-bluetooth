@@ -14,7 +14,7 @@ import (
 func NewMethodParser(debug bool) MethodParser {
 	return MethodParser{
 		model: new(types.Method),
-		debug: false,
+		debug: debug,
 	}
 }
 
@@ -31,7 +31,6 @@ func (g *MethodParser) Parse(raw []byte) (*types.Method, error) {
 	re := regexp.MustCompile(`[ \t]*(.*?) ?(\w+)\(([^)]*)\) ?(.*?)\n((?s).+)`)
 	matches1 := re.FindAllSubmatch(raw, -1)
 
-	// log.Debugf("matches1 %s", matches1)
 	for _, matches2 := range matches1 {
 
 		rtype := string(matches2[1])
@@ -110,8 +109,8 @@ func (g *MethodParser) Parse(raw []byte) (*types.Method, error) {
 	// 	os.Exit(1)
 	// }
 
-	if method.Name != "" && g.debug {
-		log.Debugf("\t - %s %s(%s)", method.ReturnType, method.Name, method.Args)
+	if g.debug {
+		log.Debugf("\t - %s", method)
 	}
 
 	return method, err

@@ -30,15 +30,15 @@ func (g *PropertyParser) Parse(raw []byte) (*types.Property, error) {
 	property := g.model
 	// log.Debugf("prop raw -> %s", raw)
 
-	re1 := regexp.MustCompile(`[ \t]*?` + propBaseRegexp + `( \[[^\]]*\])?\n((?s).+)`)
+	re1 := regexp.MustCompile(`[ \t]*?` + propBaseRegexp + `( \[[^\]]*\].*)?\n((?s).+)`)
 	matches2 := re1.FindAllSubmatch(raw, -1)
 
-	// log.Debugf("m1 %s", matches2)
+	// log.Warnf("m1 %s", matches2)
 
 	if len(matches2) == 0 || len(matches2[0]) == 1 {
 		re1 = regexp.MustCompile(`[ \t]*?` + propBaseRegexp + `\n((?s).+)`)
 		matches2 = re1.FindAllSubmatch(raw, -1)
-		// log.Debugf("m2 %s", matches2)
+		// log.Warnf("m2 %s", matches2)
 	}
 
 	if len(matches2) == 0 {
@@ -51,6 +51,11 @@ func (g *PropertyParser) Parse(raw []byte) (*types.Property, error) {
 	flagList := strings.Split(strings.Trim(flagListRaw, "[] "), ",")
 
 	for _, f := range flagList {
+
+		// int16 Handle [read-write, optional] (Server Only)
+		if strings.Contains(f, "]") {
+			f = strings.Split(f, "]")[0]
+		}
 
 		var flag types.Flag
 		switch f {
@@ -93,7 +98,7 @@ func (g *PropertyParser) Parse(raw []byte) (*types.Property, error) {
 	property.Docs = docs
 
 	if g.debug {
-		log.Debugf("\t - %s %s %s", property.Type, property.Name, strings.Trim(flagListRaw, " "))
+		log.Debugf("\t - %s", property)
 	}
 	return property, err
 }

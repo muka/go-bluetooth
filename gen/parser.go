@@ -24,7 +24,9 @@ func Parse(docsDir string, filters []string, debug bool) (BluezAPI, error) {
 			for _, filter := range filters {
 				if strings.Contains(file, filter) {
 					keep = true
-					log.Debugf("[filter %s] Keep %s", filter, file)
+					if debug {
+						log.Debugf("[filter %s] Keep %s", filter, file)
+					}
 					break
 				}
 			}

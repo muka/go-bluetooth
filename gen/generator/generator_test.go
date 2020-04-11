@@ -1,6 +1,7 @@
 package generator
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/muka/go-bluetooth/gen"
@@ -11,13 +12,12 @@ import (
 func TestGenerate(t *testing.T) {
 
 	TplPath = "../../gen/generator/tpl/%s.go.tpl"
+	outdir := "../../test/out"
 
 	bluezApi, err := gen.Parse("../../src/bluez/doc", []string{}, false)
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	outdir := "../../test/out"
 
 	err = util.Mkdir("../../test")
 	if err != nil {
@@ -28,12 +28,12 @@ func TestGenerate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	err = Generate(bluezApi, outdir, true)
+	err = Generate(bluezApi, outdir, true, true)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	assert.DirExists(t, outdir)
-	assert.DirExists(t, outdir+"/profile/adapter")
+	assert.DirExists(t, fmt.Sprintf("%s/profile/adapter", outdir))
 
 }

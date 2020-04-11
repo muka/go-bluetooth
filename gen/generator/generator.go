@@ -11,7 +11,7 @@ import (
 )
 
 // Generate go code from the API definition
-func Generate(bluezApi gen.BluezAPI, outDir string, forceOverwrite bool) error {
+func Generate(bluezApi gen.BluezAPI, outDir string, debug bool, forceOverwrite bool) error {
 
 	apiGroups := bluezApi.Api
 
@@ -52,7 +52,7 @@ func Generate(bluezApi gen.BluezAPI, outDir string, forceOverwrite bool) error {
 			continue
 		}
 
-		rootFile := path.Join(dirpath, "gen_"+apiName+".go")
+		rootFile := path.Join(dirpath, fmt.Sprintf("gen_%s.go", apiName))
 
 		if forceOverwrite || !util.Exists(rootFile) {
 			err = RootTemplate(rootFile, apiGroup)
@@ -60,10 +60,11 @@ func Generate(bluezApi gen.BluezAPI, outDir string, forceOverwrite bool) error {
 				log.Errorf("Failed to create %s: %s", rootFile, err)
 				continue
 			}
-			log.Tracef("Wrote %s", rootFile)
-		} /* else {
-			log.Debugf("Skipped, file exists: %s", rootFile)
-		} */
+			if debug {
+				log.Tracef("Wrote %s", rootFile)
+			}
+		}
+
 		for _, api := range apiGroup.Api {
 
 			pts := strings.Split(api.Interface, ".")
@@ -87,10 +88,10 @@ func Generate(bluezApi gen.BluezAPI, outDir string, forceOverwrite bool) error {
 				log.Errorf("Api generation failed %s: %s", api.Title, err1)
 				return err1
 			}
-			log.Debugf("Wrote %s", apiGenFilename)
+			if debug {
+				log.Tracef("Wrote %s", apiGenFilename)
+			}
 		}
-
 	}
-
 	return nil
 }
