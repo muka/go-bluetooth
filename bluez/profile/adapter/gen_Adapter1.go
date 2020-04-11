@@ -154,18 +154,6 @@ type Adapter1Properties struct {
 	DiscoverableTimeout uint32
 
 	/*
-	UUIDs List of 128-bit UUIDs that represents the available
-			local services.
-	*/
-	UUIDs []string
-
-	/*
-	Modalias Local Device ID information in modalias format
-			used by the kernel and udev.
-	*/
-	Modalias string
-
-	/*
 	Address The Bluetooth device address.
 	*/
 	Address string
@@ -191,6 +179,18 @@ type Adapter1Properties struct {
 			access to the pretty hostname configuration.
 	*/
 	Name string
+
+	/*
+	UUIDs List of 128-bit UUIDs that represents the available
+			local services.
+	*/
+	UUIDs []string
+
+	/*
+	Modalias Local Device ID information in modalias format
+			used by the kernel and udev.
+	*/
+	Modalias string
 
 	/*
 	Class The Bluetooth class of device.
@@ -330,34 +330,6 @@ func (a *Adapter1) GetDiscoverableTimeout() (uint32, error) {
 
 
 
-// GetUUIDs get UUIDs value
-func (a *Adapter1) GetUUIDs() ([]string, error) {
-	v, err := a.GetProperty("UUIDs")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
-}
-
-
-
-
-
-
-// GetModalias get Modalias value
-func (a *Adapter1) GetModalias() (string, error) {
-	v, err := a.GetProperty("Modalias")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-
-
 // GetAddress get Address value
 func (a *Adapter1) GetAddress() (string, error) {
 	v, err := a.GetProperty("Address")
@@ -389,6 +361,34 @@ func (a *Adapter1) GetAddressType() (string, error) {
 // GetName get Name value
 func (a *Adapter1) GetName() (string, error) {
 	v, err := a.GetProperty("Name")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+
+
+// GetUUIDs get UUIDs value
+func (a *Adapter1) GetUUIDs() ([]string, error) {
+	v, err := a.GetProperty("UUIDs")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
+}
+
+
+
+
+
+
+// GetModalias get Modalias value
+func (a *Adapter1) GetModalias() (string, error) {
+	v, err := a.GetProperty("Modalias")
 	if err != nil {
 		return "", err
 	}
@@ -714,6 +714,27 @@ SetDiscoveryFilter
 				When enabled PropertiesChanged signals will be
 				generated for either ManufacturerData and
 				ServiceData everytime they are discovered.
+
+			bool Discoverable (Default: false)
+
+				Make adapter discoverable while discovering,
+				if the adapter is already discoverable setting
+				this filter won't do anything.
+
+			string Pattern (Default: none)
+
+				Discover devices where the pattern matches
+				either the prefix of the address or
+				device name which is convenient way to limited
+				the number of device objects created during a
+				discovery.
+
+				When set disregards device discoverable flags.
+
+				Note: The pattern matching is ignored if there
+				are other client that don't set any pattern as
+				it work as a logical OR, also setting empty
+				string "" pattern will match any device found.
 
 			When discovery filter is set, Device objects will be
 			created as new devices with matching criteria are

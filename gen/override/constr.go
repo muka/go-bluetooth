@@ -5,22 +5,22 @@ type ConstructorOverride struct {
 }
 
 var constructorOverrides = map[string][]ConstructorOverride{
-	"org.bluez.Adapter1": []ConstructorOverride{
+	"org.bluez.Adapter1": {
 		ConstructorOverride{
 			AdapterAsArgument: true,
 		},
 	},
-	"org.bluez.GattManager1": []ConstructorOverride{
+	"org.bluez.GattManager1": {
 		ConstructorOverride{
 			AdapterAsArgument: true,
 		},
 	},
-	"org.bluez.LEAdvertisingManager1": []ConstructorOverride{
+	"org.bluez.LEAdvertisingManager1": {
 		ConstructorOverride{
 			AdapterAsArgument: true,
 		},
 	},
-	"org.bluez.MediaControl1": []ConstructorOverride{
+	"org.bluez.MediaControl1": {
 		ConstructorOverride{
 			AdapterAsArgument: true,
 		},

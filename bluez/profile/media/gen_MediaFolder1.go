@@ -85,6 +85,18 @@ type MediaFolder1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	Attributes Item properties that should be included in the list.
+
+			Possible Values:
+
+				"title", "artist", "album", "genre",
+				"number-of-tracks", "number", "duration"
+
+			Default Value: All
+	*/
+	Attributes []string
+
+	/*
 	NumberOfItems Number of items in the folder
 	*/
 	NumberOfItems uint32
@@ -119,18 +131,6 @@ Filters
 	*/
 	End uint32
 
-	/*
-	Attributes Item properties that should be included in the list.
-
-			Possible Values:
-
-				"title", "artist", "album", "genre",
-				"number-of-tracks", "number", "duration"
-
-			Default Value: All
-	*/
-	Attributes []string
-
 }
 
 //Lock access to properties
@@ -141,6 +141,25 @@ func (p *MediaFolder1Properties) Lock() {
 //Unlock access to properties
 func (p *MediaFolder1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+// SetAttributes set Attributes value
+func (a *MediaFolder1) SetAttributes(v []string) error {
+	return a.SetProperty("Attributes", v)
+}
+
+
+
+// GetAttributes get Attributes value
+func (a *MediaFolder1) GetAttributes() ([]string, error) {
+	v, err := a.GetProperty("Attributes")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
 }
 
 
@@ -207,25 +226,6 @@ func (a *MediaFolder1) GetEnd() (uint32, error) {
 		return uint32(0), err
 	}
 	return v.Value().(uint32), nil
-}
-
-
-
-
-// SetAttributes set Attributes value
-func (a *MediaFolder1) SetAttributes(v []string) error {
-	return a.SetProperty("Attributes", v)
-}
-
-
-
-// GetAttributes get Attributes value
-func (a *MediaFolder1) GetAttributes() ([]string, error) {
-	v, err := a.GetProperty("Attributes")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
 }
 
 

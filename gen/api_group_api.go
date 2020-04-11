@@ -1,6 +1,7 @@
 package gen
 
 import (
+	"fmt"
 	"regexp"
 
 	log "github.com/sirupsen/logrus"
@@ -11,8 +12,10 @@ func (g *ApiGroup) parseApi(raw []byte) Api {
 	api := Api{}
 
 	// title & description
-	re := regexp.MustCompile(`(?s)(.+)\n[=]+\n(.*)\nService|Interface *`)
+	re := regexp.MustCompile(`(?s)(.+)\n[=]+\n?(.*)\nService|Interface *`)
 	matches := re.FindSubmatchIndex(raw)
+
+	fmt.Println(matches)
 
 	api.Title = string(raw[matches[2]:matches[3]])
 	api.Description = string(raw[matches[4]:matches[5]])

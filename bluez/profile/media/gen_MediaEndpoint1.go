@@ -15,16 +15,40 @@ import (
 var MediaEndpoint1Interface = "org.bluez.MediaEndpoint1"
 
 
-// NewMediaEndpoint1 create a new instance of MediaEndpoint1
+// NewMediaEndpoint1Server create a new instance of MediaEndpoint1
 //
 // Args:
 // - servicePath: unique name
-// - objectPath: freely definable
-func NewMediaEndpoint1(servicePath string, objectPath dbus.ObjectPath) (*MediaEndpoint1, error) {
+func NewMediaEndpoint1Server(servicePath string, objectPath dbus.ObjectPath) (*MediaEndpoint1, error) {
 	a := new(MediaEndpoint1)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  servicePath,
+			Iface: MediaEndpoint1Interface,
+			Path:  dbus.ObjectPath(objectPath),
+			Bus:   bluez.SystemBus,
+		},
+	)
+	
+	a.Properties = new(MediaEndpoint1Properties)
+
+	_, err := a.GetProperties()
+	if err != nil {
+		return nil, err
+	}
+	
+	return a, nil
+}
+
+// NewMediaEndpoint1Client create a new instance of MediaEndpoint1
+//
+// Args:
+
+func NewMediaEndpoint1Client(objectPath dbus.ObjectPath) (*MediaEndpoint1, error) {
+	a := new(MediaEndpoint1)
+	a.client = bluez.NewClient(
+		&bluez.Config{
+			Name:  "org.bluez",
 			Iface: MediaEndpoint1Interface,
 			Path:  dbus.ObjectPath(objectPath),
 			Bus:   bluez.SystemBus,
@@ -59,6 +83,29 @@ type MediaEndpoint1 struct {
 type MediaEndpoint1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
+	/*
+	Codec [readonly, optional] (optional) Assigned number of codec that the endpoint implements.
+			The values should match the profile specification which
+			is indicated by the UUID.
+	*/
+	Codec [readonly, optional] byte
+
+	/*
+	Capabilities [readonly, optional] (optional) Capabilities blob, it is used as it is so the size and
+			byte order must match.
+	*/
+	Capabilities [readonly, optional] []byte
+
+	/*
+	Device [readonly, optional] (optional) Device object which the endpoint is belongs to.
+	*/
+	Device [readonly, optional] dbus.ObjectPath
+
+	/*
+	UUID [readonly, optional] (optional) UUID of the profile which the endpoint is for.
+	*/
+	UUID [readonly, optional] string
+
 }
 
 //Lock access to properties
@@ -69,6 +116,82 @@ func (p *MediaEndpoint1Properties) Lock() {
 //Unlock access to properties
 func (p *MediaEndpoint1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+// SetCodec [readonly, optional] set Codec [readonly, optional] value
+func (a *MediaEndpoint1) SetCodec [readonly, optional](v byte) error {
+	return a.SetProperty("Codec [readonly, optional]", v)
+}
+
+
+
+// GetCodec [readonly, optional] get Codec [readonly, optional] value
+func (a *MediaEndpoint1) GetCodec [readonly, optional]() (byte, error) {
+	v, err := a.GetProperty("Codec [readonly, optional]")
+	if err != nil {
+		return byte(0), err
+	}
+	return v.Value().(byte), nil
+}
+
+
+
+
+// SetCapabilities [readonly, optional] set Capabilities [readonly, optional] value
+func (a *MediaEndpoint1) SetCapabilities [readonly, optional](v []byte) error {
+	return a.SetProperty("Capabilities [readonly, optional]", v)
+}
+
+
+
+// GetCapabilities [readonly, optional] get Capabilities [readonly, optional] value
+func (a *MediaEndpoint1) GetCapabilities [readonly, optional]() ([]byte, error) {
+	v, err := a.GetProperty("Capabilities [readonly, optional]")
+	if err != nil {
+		return []byte{}, err
+	}
+	return v.Value().([]byte), nil
+}
+
+
+
+
+// SetDevice [readonly, optional] set Device [readonly, optional] value
+func (a *MediaEndpoint1) SetDevice [readonly, optional](v dbus.ObjectPath) error {
+	return a.SetProperty("Device [readonly, optional]", v)
+}
+
+
+
+// GetDevice [readonly, optional] get Device [readonly, optional] value
+func (a *MediaEndpoint1) GetDevice [readonly, optional]() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Device [readonly, optional]")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
+}
+
+
+
+
+// SetUUID [readonly, optional] set UUID [readonly, optional] value
+func (a *MediaEndpoint1) SetUUID [readonly, optional](v string) error {
+	return a.SetProperty("UUID [readonly, optional]", v)
+}
+
+
+
+// GetUUID [readonly, optional] get UUID [readonly, optional] value
+func (a *MediaEndpoint1) GetUUID [readonly, optional]() (string, error) {
+	v, err := a.GetProperty("UUID [readonly, optional]")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 
@@ -220,6 +343,12 @@ func (a *MediaEndpoint1) UnwatchProperties(ch chan *bluez.PropertyChanged) error
 SetConfiguration 
 			Set configuration for the transport.
 
+			For client role transport must be set with a server
+			endpoint oject which will be configured and the
+			properties must contain the following properties:
+
+				array{byte} Capabilities
+
 
 */
 func (a *MediaEndpoint1) SetConfiguration(transport dbus.ObjectPath, properties map[string]interface{}) error {
@@ -268,7 +397,6 @@ Release
 			cleanup tasks. There is no need to unregister the
 			endpoint, because when this method gets called it has
 			already been unregistered.
-
 
 
 */

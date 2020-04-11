@@ -39,7 +39,7 @@ func Parse(docsDir string, filters []string) (BluezAPI, error) {
 		apis = append(apis, apiGroup)
 	}
 
-	version, err := getGitVersion(docsDir)
+	version, err := GetGitVersion(docsDir)
 	if err != nil {
 		log.Errorf("Failed to parse version: %s", err)
 	}
@@ -50,7 +50,7 @@ func Parse(docsDir string, filters []string) (BluezAPI, error) {
 	}, nil
 }
 
-func getGitVersion(docsDir string) (string, error) {
+func GetGitVersion(docsDir string) (string, error) {
 	cmd := exec.Command("git", "describe")
 	cmd.Dir = docsDir
 	res, err := cmd.CombinedOutput()

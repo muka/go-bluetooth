@@ -62,6 +62,20 @@ type GattCharacteristic1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	Service Object path of the GATT service the characteristic
+			belongs to.
+	*/
+	Service dbus.ObjectPath
+
+	/*
+	Value The cached value of the characteristic. This property
+			gets updated only after a successful read request and
+			when a notification or indication is received, upon
+			which a PropertiesChanged signal will be emitted.
+	*/
+	Value []byte `dbus:"emit"`
+
+	/*
 	WriteAcquired True, if this characteristic has been acquired by any
 			client using AcquireWrite.
 
@@ -72,6 +86,25 @@ type GattCharacteristic1Properties struct {
 			that AcquireWrite is supported.
 	*/
 	WriteAcquired bool
+
+	/*
+	Handle [read-write, optional] (Server Only) (optional) Characteristic handle. When available in the server it
+			would attempt to use to allocate into the database
+			which may fail, to auto allocate the value 0x0000
+			shall be used which will cause the allocated handle to
+			be set once registered.
+	*/
+	Handle [read-write, optional] (Server Only) uint16
+
+	/*
+	Descriptors 
+	*/
+	Descriptors []dbus.ObjectPath
+
+	/*
+	UUID 128-bit characteristic UUID.
+	*/
+	UUID string
 
 	/*
 	NotifyAcquired True, if this characteristic has been acquired by any
@@ -104,6 +137,7 @@ type GattCharacteristic1Properties struct {
 				"notify"
 				"indicate"
 				"authenticated-signed-writes"
+				"extended-properties"
 				"reliable-write"
 				"writable-auxiliaries"
 				"encrypt-read"
@@ -116,30 +150,6 @@ type GattCharacteristic1Properties struct {
 	*/
 	Flags []string
 
-	/*
-	Descriptors 
-	*/
-	Descriptors []dbus.ObjectPath
-
-	/*
-	UUID 128-bit characteristic UUID.
-	*/
-	UUID string
-
-	/*
-	Service Object path of the GATT service the characteristic
-			belongs to.
-	*/
-	Service dbus.ObjectPath
-
-	/*
-	Value The cached value of the characteristic. This property
-			gets updated only after a successful read request and
-			when a notification or indication is received, upon
-			which a PropertiesChanged signal will be emitted.
-	*/
-	Value []byte `dbus:"emit"`
-
 }
 
 //Lock access to properties
@@ -150,6 +160,44 @@ func (p *GattCharacteristic1Properties) Lock() {
 //Unlock access to properties
 func (p *GattCharacteristic1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+// SetService set Service value
+func (a *GattCharacteristic1) SetService(v dbus.ObjectPath) error {
+	return a.SetProperty("Service", v)
+}
+
+
+
+// GetService get Service value
+func (a *GattCharacteristic1) GetService() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Service")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
+}
+
+
+
+
+// SetValue set Value value
+func (a *GattCharacteristic1) SetValue(v []byte) error {
+	return a.SetProperty("Value", v)
+}
+
+
+
+// GetValue get Value value
+func (a *GattCharacteristic1) GetValue() ([]byte, error) {
+	v, err := a.GetProperty("Value")
+	if err != nil {
+		return []byte{}, err
+	}
+	return v.Value().([]byte), nil
 }
 
 
@@ -169,6 +217,63 @@ func (a *GattCharacteristic1) GetWriteAcquired() (bool, error) {
 		return false, err
 	}
 	return v.Value().(bool), nil
+}
+
+
+
+
+// SetHandle [read-write, optional] (Server Only) set Handle [read-write, optional] (Server Only) value
+func (a *GattCharacteristic1) SetHandle [read-write, optional] (Server Only)(v uint16) error {
+	return a.SetProperty("Handle [read-write, optional] (Server Only)", v)
+}
+
+
+
+// GetHandle [read-write, optional] (Server Only) get Handle [read-write, optional] (Server Only) value
+func (a *GattCharacteristic1) GetHandle [read-write, optional] (Server Only)() (uint16, error) {
+	v, err := a.GetProperty("Handle [read-write, optional] (Server Only)")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
+
+
+
+
+// SetDescriptors set Descriptors value
+func (a *GattCharacteristic1) SetDescriptors(v []dbus.ObjectPath) error {
+	return a.SetProperty("Descriptors", v)
+}
+
+
+
+// GetDescriptors get Descriptors value
+func (a *GattCharacteristic1) GetDescriptors() ([]dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Descriptors")
+	if err != nil {
+		return []dbus.ObjectPath{}, err
+	}
+	return v.Value().([]dbus.ObjectPath), nil
+}
+
+
+
+
+// SetUUID set UUID value
+func (a *GattCharacteristic1) SetUUID(v string) error {
+	return a.SetProperty("UUID", v)
+}
+
+
+
+// GetUUID get UUID value
+func (a *GattCharacteristic1) GetUUID() (string, error) {
+	v, err := a.GetProperty("UUID")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 
@@ -226,82 +331,6 @@ func (a *GattCharacteristic1) GetFlags() ([]string, error) {
 		return []string{}, err
 	}
 	return v.Value().([]string), nil
-}
-
-
-
-
-// SetDescriptors set Descriptors value
-func (a *GattCharacteristic1) SetDescriptors(v []dbus.ObjectPath) error {
-	return a.SetProperty("Descriptors", v)
-}
-
-
-
-// GetDescriptors get Descriptors value
-func (a *GattCharacteristic1) GetDescriptors() ([]dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Descriptors")
-	if err != nil {
-		return []dbus.ObjectPath{}, err
-	}
-	return v.Value().([]dbus.ObjectPath), nil
-}
-
-
-
-
-// SetUUID set UUID value
-func (a *GattCharacteristic1) SetUUID(v string) error {
-	return a.SetProperty("UUID", v)
-}
-
-
-
-// GetUUID get UUID value
-func (a *GattCharacteristic1) GetUUID() (string, error) {
-	v, err := a.GetProperty("UUID")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-// SetService set Service value
-func (a *GattCharacteristic1) SetService(v dbus.ObjectPath) error {
-	return a.SetProperty("Service", v)
-}
-
-
-
-// GetService get Service value
-func (a *GattCharacteristic1) GetService() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Service")
-	if err != nil {
-		return dbus.ObjectPath(""), err
-	}
-	return v.Value().(dbus.ObjectPath), nil
-}
-
-
-
-
-// SetValue set Value value
-func (a *GattCharacteristic1) SetValue(v []byte) error {
-	return a.SetProperty("Value", v)
-}
-
-
-
-// GetValue get Value value
-func (a *GattCharacteristic1) GetValue() ([]byte, error) {
-	v, err := a.GetProperty("Value")
-	if err != nil {
-		return []byte{}, err
-	}
-	return v.Value().([]byte), nil
 }
 
 
@@ -456,6 +485,7 @@ ReadValue
 			operation was successful.
 
 			Possible options: "offset": uint16 offset
+					  "mtu": Exchanged MTU (Server only)
 					  "device": Object Device (Server only)
 
 			Possible Errors: org.bluez.Error.Failed
@@ -480,9 +510,16 @@ WriteValue
 			characteristic.
 
 			Possible options: "offset": Start offset
+					  "type": string
+						Possible values:
+						"command": Write without
+						response
+						"request": Write with response
+						"reliable": Reliable Write
+					  "mtu": Exchanged MTU (Server only)
 					  "device": Device path (Server only)
 					  "link": Link type (Server only)
-					  "prepare-authorize": boolean Is prepare
+					  "prepare-authorize": True if prepare
 							       authorization
 							       request
 
@@ -503,9 +540,9 @@ func (a *GattCharacteristic1) WriteValue(value []byte, options map[string]interf
 
 /*
 AcquireWrite 
-			Acquire file descriptor and MTU for writing. Usage of
-			WriteValue will be locked causing it to return
-			NotPermitted error.
+			Acquire file descriptor and MTU for writing. Only
+			sockets are supported. Usage of WriteValue will be
+			locked causing it to return NotPermitted error.
 
 			For server the MTU returned shall be equal or smaller
 			than the negotiated MTU.
@@ -525,7 +562,7 @@ AcquireWrite
 			reconnections as the MTU has to be renegotiated.
 
 			Possible options: "device": Object Device (Server only)
-					  "MTU": Exchanged MTU (Server only)
+					  "mtu": Exchanged MTU (Server only)
 					  "link": Link type (Server only)
 
 			Possible Errors: org.bluez.Error.Failed
@@ -543,9 +580,9 @@ func (a *GattCharacteristic1) AcquireWrite(options map[string]interface{}) (dbus
 
 /*
 AcquireNotify 
-			Acquire file descriptor and MTU for notify. Usage of
-			StartNotify will be locked causing it to return
-			NotPermitted error.
+			Acquire file descriptor and MTU for notify. Only
+			sockets are support. Usage of StartNotify will be locked
+			causing it to return NotPermitted error.
 
 			For server the MTU returned shall be equal or smaller
 			than the negotiated MTU.
@@ -571,7 +608,7 @@ AcquireNotify
 			reconnections as the MTU has to be renegotiated.
 
 			Possible options: "device": Object Device (Server only)
-					  "MTU": Exchanged MTU (Server only)
+					  "mtu": Exchanged MTU (Server only)
 					  "link": Link type (Server only)
 
 			Possible Errors: org.bluez.Error.Failed

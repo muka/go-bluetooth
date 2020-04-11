@@ -1,5 +1,3 @@
-// +build ignore
-
 package main
 
 import (
@@ -14,11 +12,25 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const ApiFile = "./bluez-5.50.json"
+const docsDir = "./src/bluez/doc"
 
 func main() {
 
 	log.SetLevel(log.DebugLevel)
+
+	bluezVersion, err := gen.GetGitVersion(docsDir)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	envBluezVersion := os.Getenv("BLUEZ_VERSION")
+	if envBluezVersion != "" {
+		bluezVersion = envBluezVersion
+	}
+
+	fmt.Printf("---\nAPI %s\n---\n", bluezVersion)
+
+	apiFile := fmt.Sprintf("./bluez-%s.json", bluezVersion)
 
 	if len(os.Args) > 1 && os.Args[1] == "full" {
 		log.Info("Generating src")
@@ -29,14 +41,16 @@ func main() {
 		}
 	}
 
-	err := Generate(ApiFile)
+	err = Generate(apiFile)
 	if err != nil {
-		os.Exit(1)
+		log.Fatal(err)
 	}
 
 }
 
 func Generate(filename string) error {
+
+	fmt.Printf("Generating from %s\n", filename)
 
 	file, err := ioutil.ReadFile(filename)
 	if err != nil {
@@ -62,13 +76,15 @@ func Generate(filename string) error {
 
 func Parse(filters []string) error {
 
-	api, err := gen.Parse("./src/bluez/doc", filters)
+	api, err := gen.Parse(docsDir, filters)
 	if err != nil {
 		log.Fatalf("Parse failed: %s", err)
 		return err
 	}
 
-	err = api.Serialize(fmt.Sprintf("./bluez-%s.json", api.Version))
+	apiFile := fmt.Sprintf("./bluez-%s.json", api.Version)
+	fmt.Printf("Creating from %s\n", apiFile)
+	err = api.Serialize(apiFile)
 	if err != nil {
 		log.Fatalf("Failed to serialize JSON: %s", err)
 		return err

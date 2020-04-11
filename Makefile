@@ -6,10 +6,12 @@ FILTER ?=
 
 all: bluez/checkout gen/clean gen/run
 
-bluez/checkout:
+bluez/init:
 	git submodule init
 	git submodule update
-	cd src/bluez && git checkout ${BLUEZ_VERSION}
+
+bluez/checkout:
+	cd src/bluez && git fetch && git checkout ${BLUEZ_VERSION}
 
 service/bluetoothd/logs:
 	journalctl -u bluetooth -f
@@ -23,9 +25,8 @@ service/bluetoothd/stop:
 gen/clean:
 	rm `ls bluez/profile/*/gen_* -1` || true
 
-gen/run:
-	git submodule update
-	FILTER=${FILTER} go run gen/srcgen/main.go full
+gen/run: bluez/checkout
+	BLUEZ_VERSION=${BLUEZ_VERSION} FILTER=${FILTER} go run gen/srcgen/main.go full
 
 gen: gen/run
 

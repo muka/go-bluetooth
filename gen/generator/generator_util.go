@@ -152,6 +152,13 @@ func getRawType(t string) string {
 		p1 := strings.Trim(strings.Split(t, "`")[0], " ")
 		return p1
 	}
+
+	// mesh-api.txt
+	// array{(uint16, uint16)}
+	if t == "array{(uint16, uint16)}" {
+		t = "[]uint16"
+	}
+
 	return t
 }
 
