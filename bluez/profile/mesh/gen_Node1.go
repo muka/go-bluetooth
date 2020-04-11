@@ -59,17 +59,6 @@ type Node1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Friend Indicates the ability to establish a friendship with a
-			Low Power node
-	*/
-	Friend bool
-
-	/*
-	LowPower Indicates support for operating in Low Power node mode
-	*/
-	LowPower bool
-
-	/*
 	Relay Indicates support for relaying messages
 
 	If a key is absent from the dictionary, the feature is not supported.
@@ -77,6 +66,21 @@ type Node1Properties struct {
 	the feature is disabled.
 	*/
 	Relay bool
+
+	/*
+	Addresses This property contains unicast addresses of node's elements.
+	*/
+	Addresses []uint16
+
+	/*
+	LowPower Indicates support for operating in Low Power node mode
+	*/
+	LowPower bool
+
+	/*
+	Proxy Indicates support for GATT proxy
+	*/
+	Proxy bool
 
 	/*
 	Beacon This property indicates whether the periodic beaconing is
@@ -98,17 +102,6 @@ type Node1Properties struct {
 	IvIndex uint32
 
 	/*
-	Features The dictionary that contains information about feature support.
-		The following keys are defined:
-	*/
-	Features map[string]interface{}
-
-	/*
-	Proxy Indicates support for GATT proxy
-	*/
-	Proxy bool
-
-	/*
 	SecondsSinceLastHeard This property may be read at any time to determine the number of
 		seconds since mesh network layer traffic was last detected on
 		this node's network.
@@ -116,15 +109,22 @@ type Node1Properties struct {
 	SecondsSinceLastHeard uint32
 
 	/*
-	Addresses This property contains unicast addresses of node's elements.
-	*/
-	Addresses []uint16
-
-	/*
 	SequenceNumber This property may be read at any time to determine the
 		sequence number.
 	*/
 	SequenceNumber uint32
+
+	/*
+	Features The dictionary that contains information about feature support.
+		The following keys are defined:
+	*/
+	Features map[string]interface{}
+
+	/*
+	Friend Indicates the ability to establish a friendship with a
+			Low Power node
+	*/
+	Friend bool
 
 }
 
@@ -141,20 +141,39 @@ func (p *Node1Properties) Unlock() {
 
 
 
-// SetFriend set Friend value
-func (a *Node1) SetFriend(v bool) error {
-	return a.SetProperty("Friend", v)
+// SetRelay set Relay value
+func (a *Node1) SetRelay(v bool) error {
+	return a.SetProperty("Relay", v)
 }
 
 
 
-// GetFriend get Friend value
-func (a *Node1) GetFriend() (bool, error) {
-	v, err := a.GetProperty("Friend")
+// GetRelay get Relay value
+func (a *Node1) GetRelay() (bool, error) {
+	v, err := a.GetProperty("Relay")
 	if err != nil {
 		return false, err
 	}
 	return v.Value().(bool), nil
+}
+
+
+
+
+// SetAddresses set Addresses value
+func (a *Node1) SetAddresses(v []uint16) error {
+	return a.SetProperty("Addresses", v)
+}
+
+
+
+// GetAddresses get Addresses value
+func (a *Node1) GetAddresses() ([]uint16, error) {
+	v, err := a.GetProperty("Addresses")
+	if err != nil {
+		return []uint16{}, err
+	}
+	return v.Value().([]uint16), nil
 }
 
 
@@ -179,16 +198,16 @@ func (a *Node1) GetLowPower() (bool, error) {
 
 
 
-// SetRelay set Relay value
-func (a *Node1) SetRelay(v bool) error {
-	return a.SetProperty("Relay", v)
+// SetProxy set Proxy value
+func (a *Node1) SetProxy(v bool) error {
+	return a.SetProperty("Proxy", v)
 }
 
 
 
-// GetRelay get Relay value
-func (a *Node1) GetRelay() (bool, error) {
-	v, err := a.GetProperty("Relay")
+// GetProxy get Proxy value
+func (a *Node1) GetProxy() (bool, error) {
+	v, err := a.GetProperty("Proxy")
 	if err != nil {
 		return false, err
 	}
@@ -236,44 +255,6 @@ func (a *Node1) GetIvIndex() (uint32, error) {
 
 
 
-// SetFeatures set Features value
-func (a *Node1) SetFeatures(v map[string]interface{}) error {
-	return a.SetProperty("Features", v)
-}
-
-
-
-// GetFeatures get Features value
-func (a *Node1) GetFeatures() (map[string]interface{}, error) {
-	v, err := a.GetProperty("Features")
-	if err != nil {
-		return map[string]interface{}{}, err
-	}
-	return v.Value().(map[string]interface{}), nil
-}
-
-
-
-
-// SetProxy set Proxy value
-func (a *Node1) SetProxy(v bool) error {
-	return a.SetProperty("Proxy", v)
-}
-
-
-
-// GetProxy get Proxy value
-func (a *Node1) GetProxy() (bool, error) {
-	v, err := a.GetProperty("Proxy")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
 // SetSecondsSinceLastHeard set SecondsSinceLastHeard value
 func (a *Node1) SetSecondsSinceLastHeard(v uint32) error {
 	return a.SetProperty("SecondsSinceLastHeard", v)
@@ -293,25 +274,6 @@ func (a *Node1) GetSecondsSinceLastHeard() (uint32, error) {
 
 
 
-// SetAddresses set Addresses value
-func (a *Node1) SetAddresses(v []uint16) error {
-	return a.SetProperty("Addresses", v)
-}
-
-
-
-// GetAddresses get Addresses value
-func (a *Node1) GetAddresses() ([]uint16, error) {
-	v, err := a.GetProperty("Addresses")
-	if err != nil {
-		return []uint16{}, err
-	}
-	return v.Value().([]uint16), nil
-}
-
-
-
-
 // SetSequenceNumber set SequenceNumber value
 func (a *Node1) SetSequenceNumber(v uint32) error {
 	return a.SetProperty("SequenceNumber", v)
@@ -326,6 +288,44 @@ func (a *Node1) GetSequenceNumber() (uint32, error) {
 		return uint32(0), err
 	}
 	return v.Value().(uint32), nil
+}
+
+
+
+
+// SetFeatures set Features value
+func (a *Node1) SetFeatures(v map[string]interface{}) error {
+	return a.SetProperty("Features", v)
+}
+
+
+
+// GetFeatures get Features value
+func (a *Node1) GetFeatures() (map[string]interface{}, error) {
+	v, err := a.GetProperty("Features")
+	if err != nil {
+		return map[string]interface{}{}, err
+	}
+	return v.Value().(map[string]interface{}), nil
+}
+
+
+
+
+// SetFriend set Friend value
+func (a *Node1) SetFriend(v bool) error {
+	return a.SetProperty("Friend", v)
+}
+
+
+
+// GetFriend get Friend value
+func (a *Node1) GetFriend() (bool, error) {
+	v, err := a.GetProperty("Friend")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
 }
 
 

@@ -60,6 +60,22 @@ type ProvisionAgent1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	Capabilities An array of strings with the following allowed values:
+			"blink"
+			"beep"
+			"vibrate"
+			"out-numeric"
+			"out-alpha"
+			"push"
+			"twist"
+			"in-numeric"
+			"in-alpha"
+			"static-oob"
+			"public-oob"
+	*/
+	Capabilities []string
+
+	/*
 	OutOfBandInfo Indicates availability of OOB data. An array of strings with the
 		following allowed values:
 			"other"
@@ -83,22 +99,6 @@ type ProvisionAgent1Properties struct {
 	*/
 	URI string
 
-	/*
-	Capabilities An array of strings with the following allowed values:
-			"blink"
-			"beep"
-			"vibrate"
-			"out-numeric"
-			"out-alpha"
-			"push"
-			"twist"
-			"in-numeric"
-			"in-alpha"
-			"static-oob"
-			"public-oob"
-	*/
-	Capabilities []string
-
 }
 
 //Lock access to properties
@@ -109,6 +109,25 @@ func (p *ProvisionAgent1Properties) Lock() {
 //Unlock access to properties
 func (p *ProvisionAgent1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+// SetCapabilities set Capabilities value
+func (a *ProvisionAgent1) SetCapabilities(v []string) error {
+	return a.SetProperty("Capabilities", v)
+}
+
+
+
+// GetCapabilities get Capabilities value
+func (a *ProvisionAgent1) GetCapabilities() ([]string, error) {
+	v, err := a.GetProperty("Capabilities")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
 }
 
 
@@ -147,25 +166,6 @@ func (a *ProvisionAgent1) GetURI() (string, error) {
 		return "", err
 	}
 	return v.Value().(string), nil
-}
-
-
-
-
-// SetCapabilities set Capabilities value
-func (a *ProvisionAgent1) SetCapabilities(v []string) error {
-	return a.SetProperty("Capabilities", v)
-}
-
-
-
-// GetCapabilities get Capabilities value
-func (a *ProvisionAgent1) GetCapabilities() ([]string, error) {
-	v, err := a.GetProperty("Capabilities")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
 }
 
 

@@ -84,6 +84,11 @@ type MediaEndpoint1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	UUID [readonly, optional] (optional) UUID of the profile which the endpoint is for.
+	*/
+	UUID [readonly, optional] string
+
+	/*
 	Codec [readonly, optional] (optional) Assigned number of codec that the endpoint implements.
 			The values should match the profile specification which
 			is indicated by the UUID.
@@ -101,11 +106,6 @@ type MediaEndpoint1Properties struct {
 	*/
 	Device [readonly, optional] dbus.ObjectPath
 
-	/*
-	UUID [readonly, optional] (optional) UUID of the profile which the endpoint is for.
-	*/
-	UUID [readonly, optional] string
-
 }
 
 //Lock access to properties
@@ -116,6 +116,25 @@ func (p *MediaEndpoint1Properties) Lock() {
 //Unlock access to properties
 func (p *MediaEndpoint1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+// SetUUID [readonly, optional] set UUID [readonly, optional] value
+func (a *MediaEndpoint1) SetUUID [readonly, optional](v string) error {
+	return a.SetProperty("UUID [readonly, optional]", v)
+}
+
+
+
+// GetUUID [readonly, optional] get UUID [readonly, optional] value
+func (a *MediaEndpoint1) GetUUID [readonly, optional]() (string, error) {
+	v, err := a.GetProperty("UUID [readonly, optional]")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 
@@ -173,25 +192,6 @@ func (a *MediaEndpoint1) GetDevice [readonly, optional]() (dbus.ObjectPath, erro
 		return dbus.ObjectPath(""), err
 	}
 	return v.Value().(dbus.ObjectPath), nil
-}
-
-
-
-
-// SetUUID [readonly, optional] set UUID [readonly, optional] value
-func (a *MediaEndpoint1) SetUUID [readonly, optional](v string) error {
-	return a.SetProperty("UUID [readonly, optional]", v)
-}
-
-
-
-// GetUUID [readonly, optional] get UUID [readonly, optional] value
-func (a *MediaEndpoint1) GetUUID [readonly, optional]() (string, error) {
-	v, err := a.GetProperty("UUID [readonly, optional]")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
 }
 
 

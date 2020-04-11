@@ -62,18 +62,15 @@ type GattCharacteristic1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	UUID 128-bit characteristic UUID.
+	*/
+	UUID string
+
+	/*
 	Service Object path of the GATT service the characteristic
 			belongs to.
 	*/
 	Service dbus.ObjectPath
-
-	/*
-	Value The cached value of the characteristic. This property
-			gets updated only after a successful read request and
-			when a notification or indication is received, upon
-			which a PropertiesChanged signal will be emitted.
-	*/
-	Value []byte `dbus:"emit"`
 
 	/*
 	WriteAcquired True, if this characteristic has been acquired by any
@@ -86,25 +83,6 @@ type GattCharacteristic1Properties struct {
 			that AcquireWrite is supported.
 	*/
 	WriteAcquired bool
-
-	/*
-	Handle [read-write, optional] (Server Only) (optional) Characteristic handle. When available in the server it
-			would attempt to use to allocate into the database
-			which may fail, to auto allocate the value 0x0000
-			shall be used which will cause the allocated handle to
-			be set once registered.
-	*/
-	Handle [read-write, optional] (Server Only) uint16
-
-	/*
-	Descriptors 
-	*/
-	Descriptors []dbus.ObjectPath
-
-	/*
-	UUID 128-bit characteristic UUID.
-	*/
-	UUID string
 
 	/*
 	NotifyAcquired True, if this characteristic has been acquired by any
@@ -150,6 +128,28 @@ type GattCharacteristic1Properties struct {
 	*/
 	Flags []string
 
+	/*
+	Value The cached value of the characteristic. This property
+			gets updated only after a successful read request and
+			when a notification or indication is received, upon
+			which a PropertiesChanged signal will be emitted.
+	*/
+	Value []byte `dbus:"emit"`
+
+	/*
+	Handle [read-write, optional] (Server Only) (optional) Characteristic handle. When available in the server it
+			would attempt to use to allocate into the database
+			which may fail, to auto allocate the value 0x0000
+			shall be used which will cause the allocated handle to
+			be set once registered.
+	*/
+	Handle [read-write, optional] (Server Only) uint16
+
+	/*
+	Descriptors 
+	*/
+	Descriptors []dbus.ObjectPath
+
 }
 
 //Lock access to properties
@@ -160,6 +160,25 @@ func (p *GattCharacteristic1Properties) Lock() {
 //Unlock access to properties
 func (p *GattCharacteristic1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+// SetUUID set UUID value
+func (a *GattCharacteristic1) SetUUID(v string) error {
+	return a.SetProperty("UUID", v)
+}
+
+
+
+// GetUUID get UUID value
+func (a *GattCharacteristic1) GetUUID() (string, error) {
+	v, err := a.GetProperty("UUID")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 
@@ -184,25 +203,6 @@ func (a *GattCharacteristic1) GetService() (dbus.ObjectPath, error) {
 
 
 
-// SetValue set Value value
-func (a *GattCharacteristic1) SetValue(v []byte) error {
-	return a.SetProperty("Value", v)
-}
-
-
-
-// GetValue get Value value
-func (a *GattCharacteristic1) GetValue() ([]byte, error) {
-	v, err := a.GetProperty("Value")
-	if err != nil {
-		return []byte{}, err
-	}
-	return v.Value().([]byte), nil
-}
-
-
-
-
 // SetWriteAcquired set WriteAcquired value
 func (a *GattCharacteristic1) SetWriteAcquired(v bool) error {
 	return a.SetProperty("WriteAcquired", v)
@@ -217,63 +217,6 @@ func (a *GattCharacteristic1) GetWriteAcquired() (bool, error) {
 		return false, err
 	}
 	return v.Value().(bool), nil
-}
-
-
-
-
-// SetHandle [read-write, optional] (Server Only) set Handle [read-write, optional] (Server Only) value
-func (a *GattCharacteristic1) SetHandle [read-write, optional] (Server Only)(v uint16) error {
-	return a.SetProperty("Handle [read-write, optional] (Server Only)", v)
-}
-
-
-
-// GetHandle [read-write, optional] (Server Only) get Handle [read-write, optional] (Server Only) value
-func (a *GattCharacteristic1) GetHandle [read-write, optional] (Server Only)() (uint16, error) {
-	v, err := a.GetProperty("Handle [read-write, optional] (Server Only)")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
-}
-
-
-
-
-// SetDescriptors set Descriptors value
-func (a *GattCharacteristic1) SetDescriptors(v []dbus.ObjectPath) error {
-	return a.SetProperty("Descriptors", v)
-}
-
-
-
-// GetDescriptors get Descriptors value
-func (a *GattCharacteristic1) GetDescriptors() ([]dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Descriptors")
-	if err != nil {
-		return []dbus.ObjectPath{}, err
-	}
-	return v.Value().([]dbus.ObjectPath), nil
-}
-
-
-
-
-// SetUUID set UUID value
-func (a *GattCharacteristic1) SetUUID(v string) error {
-	return a.SetProperty("UUID", v)
-}
-
-
-
-// GetUUID get UUID value
-func (a *GattCharacteristic1) GetUUID() (string, error) {
-	v, err := a.GetProperty("UUID")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
 }
 
 
@@ -331,6 +274,63 @@ func (a *GattCharacteristic1) GetFlags() ([]string, error) {
 		return []string{}, err
 	}
 	return v.Value().([]string), nil
+}
+
+
+
+
+// SetValue set Value value
+func (a *GattCharacteristic1) SetValue(v []byte) error {
+	return a.SetProperty("Value", v)
+}
+
+
+
+// GetValue get Value value
+func (a *GattCharacteristic1) GetValue() ([]byte, error) {
+	v, err := a.GetProperty("Value")
+	if err != nil {
+		return []byte{}, err
+	}
+	return v.Value().([]byte), nil
+}
+
+
+
+
+// SetHandle [read-write, optional] (Server Only) set Handle [read-write, optional] (Server Only) value
+func (a *GattCharacteristic1) SetHandle [read-write, optional] (Server Only)(v uint16) error {
+	return a.SetProperty("Handle [read-write, optional] (Server Only)", v)
+}
+
+
+
+// GetHandle [read-write, optional] (Server Only) get Handle [read-write, optional] (Server Only) value
+func (a *GattCharacteristic1) GetHandle [read-write, optional] (Server Only)() (uint16, error) {
+	v, err := a.GetProperty("Handle [read-write, optional] (Server Only)")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
+
+
+
+
+// SetDescriptors set Descriptors value
+func (a *GattCharacteristic1) SetDescriptors(v []dbus.ObjectPath) error {
+	return a.SetProperty("Descriptors", v)
+}
+
+
+
+// GetDescriptors get Descriptors value
+func (a *GattCharacteristic1) GetDescriptors() ([]dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Descriptors")
+	if err != nil {
+		return []dbus.ObjectPath{}, err
+	}
+	return v.Value().([]dbus.ObjectPath), nil
 }
 
 
