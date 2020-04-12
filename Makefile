@@ -55,6 +55,10 @@ dev/cp: build
 dev/logs:
 	ssh minion "journalctl -u bluetooth.service -f"
 
+docker/bluetoothd/init:
+	sudo addgroup bluetooth || true
+	sudo adduser `id -nu` bluetooth || true
+
 docker/bluetoothd/build:
 	docker build ./env/bluez --build-arg BLUEZ_VERSION=${BLUEZ_VERSION} -t opny/bluez-${BLUEZ_VERSION}
 
