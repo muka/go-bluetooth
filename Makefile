@@ -36,6 +36,17 @@ test/api:
 build: gen
 	CGO_ENABLED=0 go build -o go-bluetooth ./main.go
 
+dev/dbus/install: dev/dbus/link dev/dbus/reload
+
+dev/dbus/link:
+	sudo ln -s `pwd`/env/dbus/dbus-go-bluetooth-dev.conf /etc/dbus-1/system.d/
+	sudo ln -s `pwd`/env/dbus/dbus-go-bluetooth-service.conf /etc/dbus-1/system.d/
+
+dev/dbus/reload:
+	dbus-send --system --type=method_call \
+		--dest=org.freedesktop.DBus / org.freedesktop.DBus.ReloadConfig
+
+
 dev/cp: build
 	ssh minion "killall go-bluetooth" || true
 	scp go-bluetooth minion:~/
@@ -46,6 +57,9 @@ dev/logs:
 
 docker/bluetoothd/build:
 	docker build ./env/bluez --build-arg BLUEZ_VERSION=${BLUEZ_VERSION} -t opny/bluez-${BLUEZ_VERSION}
+
+docker/bluetoothd/push:
+	docker push opny/bluez-${BLUEZ_VERSION}
 
 docker/bluetoothd/run: service/bluetoothd/stop
 	docker run -it --rm --name bluez_${BLUEZ_VERSION} \

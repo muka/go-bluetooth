@@ -21,12 +21,14 @@ High level features supported:
 
 ## Code generation
 
-The go Bluez API is generated from `bluez` documentation, run `make gen` to re-generate go sources. There is also a commodity bluez JSON file available in the root folder for reference.
+The code structure follow this pattern:
 
-Code generation will not overwrite existing files, run `make gen/clean` to remove generated content.
+ - `./api` contains wrappers for the DBus Api
+ - `./bluez` contains the actual implementation, generated from the `bluez` documentation
 
-Generated code has `gen_` prefix. If an API file exists with the same filename but without the prefix, generation will be skipped for that API.
+Use `make gen` to re-generate go sources. There is also a commodity bluez JSON file available in the root folder for reference.
 
+Generated code has `gen_` prefix. If an API file exists with the same filename but _without_ the prefix, generation will be skipped for that API.
 
 ## Development setup
 
@@ -42,7 +44,7 @@ Generated code has `gen_` prefix. If an API file exists with the same filename b
 
   `go-bluetooth discovery`
 
-The `examples/` folder offer an API overview.
+The `examples/` folder offer an overview of the API.
 
 ## DBus configuration setup
 
@@ -50,13 +52,7 @@ In order to interact with DBus, propert configurations must be installed in the 
 
 ```sh
   cd $GOPATH/src/github.com/muka/go-bluetooth
-  sudo ln -s `pwd`/scripts/dbus-go-bluetooth-service.conf /etc/dbus-1/system.d/
-  sudo ln -s `pwd`/scripts/dbus-go-bluetooth-dev.conf /etc/dbus-1/system.d/
-  # Reload dbus to load new policies:
-  # via dbus
-  # dbus-send --system --type=method_call --dest=org.freedesktop.DBus / org.freedesktop.DBus.ReloadConfig
-  # via systemctl
-  systemctl reload dbus
+  make dev/dbus/install
 ```
 
 ## Requirements
@@ -64,11 +60,9 @@ In order to interact with DBus, propert configurations must be installed in the 
 The library is tested with
 
 - golang `1.14.1`
-- bluez bluetooth `v5.50`
+- bluez bluetooth `v5.54`
 
 ### Development notes
-
--  
 
 -   Give access to `hciconfig` to any user and avoid `sudo` (may have [security implications](https://www.insecure.ws/linux/getcap_setcap.html))
 
@@ -97,10 +91,6 @@ The library is tested with
     sudo btmgmt -i 0 power on
 
   ```
-
-## Contributing
-
-Feel free to open an issue and/or a PR to contribute. If you would like to help improve the library without coding directly, you can also consider to contribute by providing some hardware to test on.
 
 ## References
 
