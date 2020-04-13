@@ -19,8 +19,6 @@ func Run(adapterID string, mode string, hwaddr string) error {
 	// set LE mode
 	btmgmt.SetPowered(false)
 	btmgmt.SetLe(true)
-	btmgmt.SetConnectable(true)
-	btmgmt.SetDiscoverable(true)
 	btmgmt.SetBredr(false)
 	btmgmt.SetPowered(true)
 

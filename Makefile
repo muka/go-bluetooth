@@ -55,10 +55,16 @@ dev/dbus/reload:
 	dbus-send --system --type=method_call \
 		--dest=org.freedesktop.DBus / org.freedesktop.DBus.ReloadConfig
 
-dev/cp: build
+dev/kill:
 	ssh ${DEV_HOST} "killall go-bluetooth" || true
-	scp go-bluetooth ${DEV_HOST}:~/
+
+dev/exec: dev/kill
 	ssh ${DEV_HOST} "~/go-bluetooth service server --adapterID hci0"
+
+dev/run: dev/cp dev/exec
+
+dev/cp: build dev/kill
+	scp go-bluetooth ${DEV_HOST}:~/
 
 dev/logs:
 	ssh ${DEV_HOST} "journalctl -u bluetooth.service -f"
