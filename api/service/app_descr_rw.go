@@ -5,6 +5,18 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+// Set the Read callback, called when a client attempt to read
+func (s *Descr) OnRead(fx DescrReadCallback) *Descr {
+	s.readCallback = fx
+	return s
+}
+
+// Set the Write callback, called when a client attempt to write
+func (s *Descr) OnWrite(fx DescrWriteCallback) *Descr {
+	s.writeCallback = fx
+	return s
+}
+
 //ReadValue read a value
 func (s *Descr) ReadValue(options map[string]interface{}) ([]byte, *dbus.Error) {
 

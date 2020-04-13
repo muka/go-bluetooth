@@ -61,6 +61,13 @@ type GattDescriptor1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	Value The cached value of the descriptor. This property
+			gets updated only after a successful read request, upon
+			which a PropertiesChanged signal will be emitted.
+	*/
+	Value []byte `dbus:"emit"`
+
+	/*
 	Flags Defines how the descriptor value can be used.
 
 			Possible values:
@@ -97,13 +104,6 @@ type GattDescriptor1Properties struct {
 	*/
 	Characteristic dbus.ObjectPath
 
-	/*
-	Value The cached value of the descriptor. This property
-			gets updated only after a successful read request, upon
-			which a PropertiesChanged signal will be emitted.
-	*/
-	Value []byte `dbus:"emit"`
-
 }
 
 //Lock access to properties
@@ -114,6 +114,25 @@ func (p *GattDescriptor1Properties) Lock() {
 //Unlock access to properties
 func (p *GattDescriptor1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+// SetValue set Value value
+func (a *GattDescriptor1) SetValue(v []byte) error {
+	return a.SetProperty("Value", v)
+}
+
+
+
+// GetValue get Value value
+func (a *GattDescriptor1) GetValue() ([]byte, error) {
+	v, err := a.GetProperty("Value")
+	if err != nil {
+		return []byte{}, err
+	}
+	return v.Value().([]byte), nil
 }
 
 
@@ -190,25 +209,6 @@ func (a *GattDescriptor1) GetCharacteristic() (dbus.ObjectPath, error) {
 		return dbus.ObjectPath(""), err
 	}
 	return v.Value().(dbus.ObjectPath), nil
-}
-
-
-
-
-// SetValue set Value value
-func (a *GattDescriptor1) SetValue(v []byte) error {
-	return a.SetProperty("Value", v)
-}
-
-
-
-// GetValue get Value value
-func (a *GattDescriptor1) GetValue() ([]byte, error) {
-	v, err := a.GetProperty("Value")
-	if err != nil {
-		return []byte{}, err
-	}
-	return v.Value().([]byte), nil
 }
 
 

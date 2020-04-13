@@ -40,21 +40,21 @@ func client(adapterID, hwaddr string) (err error) {
 		return errors.New("Device not found, is it advertising?")
 	}
 
-	watchProps, err := dev.WatchProperties()
-	if err != nil {
-		return err
-	}
-	go func() {
-		for propUpdate := range watchProps {
-			log.Debugf("propUpdate %++v", propUpdate)
-
-			if propUpdate.Name == "Connected" {
-				log.Debug("Device connected")
-				retrieveServices(a, dev)
-			}
-
-		}
-	}()
+	// watchProps, err := dev.WatchProperties()
+	// if err != nil {
+	// 	return err
+	// }
+	//
+	// go func() {
+	// 	for propUpdate := range watchProps {
+	// 		log.Debugf("propUpdate %++v", propUpdate)
+	// 		// if propUpdate.Name == "Connected" {
+	// 		// 	log.Debug("----- Device connected -----")
+	// 		// 	retrieveServices(a, dev)
+	// 		// 	break
+	// 		// }
+	// 	}
+	// }()
 
 	err = connect(dev, ag, adapterID)
 	if err != nil {
@@ -102,7 +102,6 @@ func discover(a *adapter.Adapter1, hwaddr string) (*device.Device1, error) {
 			continue
 		}
 
-		log.Infof("Found device %s", p.Address)
 		return dev, nil
 	}
 
@@ -111,7 +110,11 @@ func discover(a *adapter.Adapter1, hwaddr string) (*device.Device1, error) {
 
 func connect(dev *device.Device1, ag *agent.SimpleAgent, adapterID string) error {
 
-	props := dev.Properties
+	props, err := dev.GetProperties()
+	if err != nil {
+		return fmt.Errorf("Failed to load props: %s", err)
+	}
+
 	log.Infof("Found device name=%s addr=%s rssi=%d", props.Name, props.Address, props.RSSI)
 
 	if props.Connected {
@@ -128,12 +131,12 @@ func connect(dev *device.Device1, ag *agent.SimpleAgent, adapterID string) error
 		}
 
 		log.Info("Pair succeed, connecting...")
-		agent.SetTrusted(adapterID, dev.Path())
+		// agent.SetTrusted(adapterID, dev.Path())
 
 	}
 
 	log.Trace("Connecting device")
-	err := dev.Connect()
+	err = dev.Connect()
 	if err != nil {
 		return fmt.Errorf("Connect failed: %s", err)
 	}

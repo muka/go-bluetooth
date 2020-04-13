@@ -130,7 +130,7 @@ func (s *Char) AddDescr(descr *Descr) error {
 
 	s.descr[descr.Path()] = descr
 
-	// log.Tracef("Added GATT Descriptor ID=%d %s", descr.ID, descr.Path())
+	log.Tracef("Added GATT Descriptor ID=%d %s", descr.ID, descr.Path())
 
 	return nil
 }

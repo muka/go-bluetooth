@@ -60,6 +60,11 @@ type Application1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	CRPL A 16-bit minimum number of replay protection list entries
+	*/
+	CRPL uint16
+
+	/*
 	CompanyID A 16-bit Bluetooth-assigned Company Identifier of the vendor as
 		defined by Bluetooth SIG
 	*/
@@ -75,11 +80,6 @@ type Application1Properties struct {
 	*/
 	VersionID uint16
 
-	/*
-	CRPL A 16-bit minimum number of replay protection list entries
-	*/
-	CRPL uint16
-
 }
 
 //Lock access to properties
@@ -90,6 +90,25 @@ func (p *Application1Properties) Lock() {
 //Unlock access to properties
 func (p *Application1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+// SetCRPL set CRPL value
+func (a *Application1) SetCRPL(v uint16) error {
+	return a.SetProperty("CRPL", v)
+}
+
+
+
+// GetCRPL get CRPL value
+func (a *Application1) GetCRPL() (uint16, error) {
+	v, err := a.GetProperty("CRPL")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
 }
 
 
@@ -143,25 +162,6 @@ func (a *Application1) SetVersionID(v uint16) error {
 // GetVersionID get VersionID value
 func (a *Application1) GetVersionID() (uint16, error) {
 	v, err := a.GetProperty("VersionID")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
-}
-
-
-
-
-// SetCRPL set CRPL value
-func (a *Application1) SetCRPL(v uint16) error {
-	return a.SetProperty("CRPL", v)
-}
-
-
-
-// GetCRPL get CRPL value
-func (a *Application1) GetCRPL() (uint16, error) {
-	v, err := a.GetProperty("CRPL")
 	if err != nil {
 		return uint16(0), err
 	}

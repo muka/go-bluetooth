@@ -33,5 +33,7 @@ var PropertyTypes = map[string]map[string]string{
 		"ManufacturerData": "map[uint16]interface{}",
 		// dbus type: (s[v]) dict of string variant (array of bytes)
 		"ServiceData": "map[string]interface{}",
+		// SecondaryChannel, if set on 5.54 cause a parsing exception
+		"SecondaryChannel": "string `dbus:\"omitEmpty\"`",
 	},
 }

@@ -62,9 +62,30 @@ type GattCharacteristic1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	UUID 128-bit characteristic UUID.
+	Value The cached value of the characteristic. This property
+			gets updated only after a successful read request and
+			when a notification or indication is received, upon
+			which a PropertiesChanged signal will be emitted.
 	*/
-	UUID string
+	Value []byte `dbus:"emit"`
+
+	/*
+	WriteAcquired True, if this characteristic has been acquired by any
+			client using AcquireWrite.
+
+			For client properties is ommited in case
+			'write-without-response' flag is not set.
+
+			For server the presence of this property indicates
+			that AcquireWrite is supported.
+	*/
+	WriteAcquired bool
+
+	/*
+	Notifying True, if notifications or indications on this
+			characteristic are currently enabled.
+	*/
+	Notifying bool
 
 	/*
 	Flags Defines how the characteristic value can be used. See
@@ -93,36 +114,6 @@ type GattCharacteristic1Properties struct {
 	Flags []string
 
 	/*
-	WriteAcquired True, if this characteristic has been acquired by any
-			client using AcquireWrite.
-
-			For client properties is ommited in case
-			'write-without-response' flag is not set.
-
-			For server the presence of this property indicates
-			that AcquireWrite is supported.
-	*/
-	WriteAcquired bool
-
-	/*
-	NotifyAcquired True, if this characteristic has been acquired by any
-			client using AcquireNotify.
-
-			For client this properties is ommited in case 'notify'
-			flag is not set.
-
-			For server the presence of this property indicates
-			that AcquireNotify is supported.
-	*/
-	NotifyAcquired bool
-
-	/*
-	Notifying True, if notifications or indications on this
-			characteristic are currently enabled.
-	*/
-	Notifying bool
-
-	/*
 	Handle Characteristic handle. When available in the server it
 			would attempt to use to allocate into the database
 			which may fail, to auto allocate the value 0x0000
@@ -137,18 +128,27 @@ type GattCharacteristic1Properties struct {
 	Descriptors []dbus.ObjectPath
 
 	/*
+	UUID 128-bit characteristic UUID.
+	*/
+	UUID string
+
+	/*
 	Service Object path of the GATT service the characteristic
 			belongs to.
 	*/
 	Service dbus.ObjectPath
 
 	/*
-	Value The cached value of the characteristic. This property
-			gets updated only after a successful read request and
-			when a notification or indication is received, upon
-			which a PropertiesChanged signal will be emitted.
+	NotifyAcquired True, if this characteristic has been acquired by any
+			client using AcquireNotify.
+
+			For client this properties is ommited in case 'notify'
+			flag is not set.
+
+			For server the presence of this property indicates
+			that AcquireNotify is supported.
 	*/
-	Value []byte `dbus:"emit"`
+	NotifyAcquired bool
 
 }
 
@@ -165,39 +165,20 @@ func (p *GattCharacteristic1Properties) Unlock() {
 
 
 
-// SetUUID set UUID value
-func (a *GattCharacteristic1) SetUUID(v string) error {
-	return a.SetProperty("UUID", v)
+// SetValue set Value value
+func (a *GattCharacteristic1) SetValue(v []byte) error {
+	return a.SetProperty("Value", v)
 }
 
 
 
-// GetUUID get UUID value
-func (a *GattCharacteristic1) GetUUID() (string, error) {
-	v, err := a.GetProperty("UUID")
+// GetValue get Value value
+func (a *GattCharacteristic1) GetValue() ([]byte, error) {
+	v, err := a.GetProperty("Value")
 	if err != nil {
-		return "", err
+		return []byte{}, err
 	}
-	return v.Value().(string), nil
-}
-
-
-
-
-// SetFlags set Flags value
-func (a *GattCharacteristic1) SetFlags(v []string) error {
-	return a.SetProperty("Flags", v)
-}
-
-
-
-// GetFlags get Flags value
-func (a *GattCharacteristic1) GetFlags() ([]string, error) {
-	v, err := a.GetProperty("Flags")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
+	return v.Value().([]byte), nil
 }
 
 
@@ -222,25 +203,6 @@ func (a *GattCharacteristic1) GetWriteAcquired() (bool, error) {
 
 
 
-// SetNotifyAcquired set NotifyAcquired value
-func (a *GattCharacteristic1) SetNotifyAcquired(v bool) error {
-	return a.SetProperty("NotifyAcquired", v)
-}
-
-
-
-// GetNotifyAcquired get NotifyAcquired value
-func (a *GattCharacteristic1) GetNotifyAcquired() (bool, error) {
-	v, err := a.GetProperty("NotifyAcquired")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
 // SetNotifying set Notifying value
 func (a *GattCharacteristic1) SetNotifying(v bool) error {
 	return a.SetProperty("Notifying", v)
@@ -255,6 +217,25 @@ func (a *GattCharacteristic1) GetNotifying() (bool, error) {
 		return false, err
 	}
 	return v.Value().(bool), nil
+}
+
+
+
+
+// SetFlags set Flags value
+func (a *GattCharacteristic1) SetFlags(v []string) error {
+	return a.SetProperty("Flags", v)
+}
+
+
+
+// GetFlags get Flags value
+func (a *GattCharacteristic1) GetFlags() ([]string, error) {
+	v, err := a.GetProperty("Flags")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
 }
 
 
@@ -298,6 +279,25 @@ func (a *GattCharacteristic1) GetDescriptors() ([]dbus.ObjectPath, error) {
 
 
 
+// SetUUID set UUID value
+func (a *GattCharacteristic1) SetUUID(v string) error {
+	return a.SetProperty("UUID", v)
+}
+
+
+
+// GetUUID get UUID value
+func (a *GattCharacteristic1) GetUUID() (string, error) {
+	v, err := a.GetProperty("UUID")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
 // SetService set Service value
 func (a *GattCharacteristic1) SetService(v dbus.ObjectPath) error {
 	return a.SetProperty("Service", v)
@@ -317,20 +317,20 @@ func (a *GattCharacteristic1) GetService() (dbus.ObjectPath, error) {
 
 
 
-// SetValue set Value value
-func (a *GattCharacteristic1) SetValue(v []byte) error {
-	return a.SetProperty("Value", v)
+// SetNotifyAcquired set NotifyAcquired value
+func (a *GattCharacteristic1) SetNotifyAcquired(v bool) error {
+	return a.SetProperty("NotifyAcquired", v)
 }
 
 
 
-// GetValue get Value value
-func (a *GattCharacteristic1) GetValue() ([]byte, error) {
-	v, err := a.GetProperty("Value")
+// GetNotifyAcquired get NotifyAcquired value
+func (a *GattCharacteristic1) GetNotifyAcquired() (bool, error) {
+	v, err := a.GetProperty("NotifyAcquired")
 	if err != nil {
-		return []byte{}, err
+		return false, err
 	}
-	return v.Value().([]byte), nil
+	return v.Value().(bool), nil
 }
 
 

@@ -3,6 +3,15 @@
 
 BLUEZ_VERSION ?= 5.54
 FILTER ?=
+DEV_HOST ?= minion
+
+DOCKER_PARAMS :=  --privileged -it --rm \
+									--net=host \
+								  -v /dev:/dev \
+									-v /var/run/dbus:/var/run/dbus \
+									-v /sys/class/bluetooth:/sys/class/bluetooth \
+									-v /var/lib/bluetooth:/var/lib/bluetooth \
+									opny/bluez-${BLUEZ_VERSION}
 
 all: bluez/checkout gen/clean gen/run
 
@@ -46,18 +55,25 @@ dev/dbus/reload:
 	dbus-send --system --type=method_call \
 		--dest=org.freedesktop.DBus / org.freedesktop.DBus.ReloadConfig
 
-
 dev/cp: build
-	ssh minion "killall go-bluetooth" || true
-	scp go-bluetooth minion:~/
-	ssh minion "~/go-bluetooth service server --adapterID hci1"
+	ssh ${DEV_HOST} "killall go-bluetooth" || true
+	scp go-bluetooth ${DEV_HOST}:~/
+	ssh ${DEV_HOST} "~/go-bluetooth service server --adapterID hci0"
 
 dev/logs:
-	ssh minion "journalctl -u bluetooth.service -f"
+	ssh ${DEV_HOST} "journalctl -u bluetooth.service -f"
 
 docker/bluetoothd/init:
 	sudo addgroup bluetooth || true
 	sudo adduser `id -nu` bluetooth || true
+	sudo ln -s `pwd`/src/bluetooth.conf /etc/dbus-1/system.d/
+
+docker/btmgmt:
+
+	docker run --name bluez_btmgmt \
+		${DOCKER_PARAMS} \
+		/bluez/tools/btmgmt
+
 
 docker/bluetoothd/build:
 	docker build ./env/bluez --build-arg BLUEZ_VERSION=${BLUEZ_VERSION} -t opny/bluez-${BLUEZ_VERSION}
@@ -66,11 +82,5 @@ docker/bluetoothd/push:
 	docker push opny/bluez-${BLUEZ_VERSION}
 
 docker/bluetoothd/run: service/bluetoothd/stop
-	docker run -it --rm --name bluez_${BLUEZ_VERSION} \
-		--privileged \
-		--net=host \
-	  -v /dev:/dev \
-		-v /var/run/dbus:/var/run/dbus \
-		-v /sys/class/bluetooth:/sys/class/bluetooth \
-		-v /var/lib/bluetooth:/var/lib/bluetooth \
-		opny/bluez-${BLUEZ_VERSION}
+	docker run --name bluez_bluetoothd \
+		${DOCKER_PARAMS}

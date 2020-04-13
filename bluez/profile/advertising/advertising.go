@@ -1,5 +1,11 @@
 package advertising
 
+const (
+	SecondaryChannel1M    = "1M"
+	SecondaryChannel2M    = "2M"
+	SecondaryChannelCoded = "Coded"
+)
+
 // "tx-power"
 // "appearance"
 // "local-name"

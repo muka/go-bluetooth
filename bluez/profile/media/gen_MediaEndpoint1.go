@@ -84,6 +84,11 @@ type MediaEndpoint1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	Device Device object which the endpoint is belongs to.
+	*/
+	Device dbus.ObjectPath
+
+	/*
 	UUID UUID of the profile which the endpoint is for.
 	*/
 	UUID string
@@ -101,11 +106,6 @@ type MediaEndpoint1Properties struct {
 	*/
 	Capabilities []byte
 
-	/*
-	Device Device object which the endpoint is belongs to.
-	*/
-	Device dbus.ObjectPath
-
 }
 
 //Lock access to properties
@@ -116,6 +116,20 @@ func (p *MediaEndpoint1Properties) Lock() {
 //Unlock access to properties
 func (p *MediaEndpoint1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+
+
+// GetDevice get Device value
+func (a *MediaEndpoint1) GetDevice() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Device")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
 }
 
 
@@ -158,20 +172,6 @@ func (a *MediaEndpoint1) GetCapabilities() ([]byte, error) {
 		return []byte{}, err
 	}
 	return v.Value().([]byte), nil
-}
-
-
-
-
-
-
-// GetDevice get Device value
-func (a *MediaEndpoint1) GetDevice() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Device")
-	if err != nil {
-		return dbus.ObjectPath(""), err
-	}
-	return v.Value().(dbus.ObjectPath), nil
 }
 
 
