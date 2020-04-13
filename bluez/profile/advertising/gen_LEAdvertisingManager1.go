@@ -105,17 +105,6 @@ type LEAdvertisingManager1Properties struct {
 	*/
 	SupportedIncludes []string
 
-	/*
-	SupportedSecondaryChannels List of supported Secondary channels. Secondary
-			channels can be used to advertise with the
-			corresponding PHY.
-
-			Possible values: "1M"
-					 "2M"
-					 "Coded"
-	*/
-	SupportedSecondaryChannels []string
-
 }
 
 //Lock access to properties
@@ -179,25 +168,6 @@ func (a *LEAdvertisingManager1) SetSupportedIncludes(v []string) error {
 // GetSupportedIncludes get SupportedIncludes value
 func (a *LEAdvertisingManager1) GetSupportedIncludes() ([]string, error) {
 	v, err := a.GetProperty("SupportedIncludes")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
-}
-
-
-
-
-// SetSupportedSecondaryChannels set SupportedSecondaryChannels value
-func (a *LEAdvertisingManager1) SetSupportedSecondaryChannels(v []string) error {
-	return a.SetProperty("SupportedSecondaryChannels", v)
-}
-
-
-
-// GetSupportedSecondaryChannels get SupportedSecondaryChannels value
-func (a *LEAdvertisingManager1) GetSupportedSecondaryChannels() ([]string, error) {
-	v, err := a.GetProperty("SupportedSecondaryChannels")
 	if err != nil {
 		return []string{}, err
 	}

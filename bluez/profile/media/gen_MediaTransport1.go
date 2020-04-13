@@ -59,19 +59,6 @@ type MediaTransport1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Codec Assigned number of codec that the transport support.
-			The values should match the profile specification which
-			is indicated by the UUID.
-	*/
-	Codec byte
-
-	/*
-	Configuration Configuration blob, it is used as it is so the size and
-			byte order must match.
-	*/
-	Configuration []byte
-
-	/*
 	State Indicates the state of the transport. Possible
 			values are:
 				"idle": not streaming
@@ -97,12 +84,6 @@ type MediaTransport1Properties struct {
 	Volume uint16
 
 	/*
-	Endpoint Endpoint object which the transport is associated
-			with.
-	*/
-	Endpoint dbus.ObjectPath
-
-	/*
 	Device Device object which the transport is connected to.
 	*/
 	Device dbus.ObjectPath
@@ -111,6 +92,19 @@ type MediaTransport1Properties struct {
 	UUID UUID of the profile which the transport is for.
 	*/
 	UUID string
+
+	/*
+	Codec Assigned number of codec that the transport support.
+			The values should match the profile specification which
+			is indicated by the UUID.
+	*/
+	Codec byte
+
+	/*
+	Configuration Configuration blob, it is used as it is so the size and
+			byte order must match.
+	*/
+	Configuration []byte
 
 }
 
@@ -122,34 +116,6 @@ func (p *MediaTransport1Properties) Lock() {
 //Unlock access to properties
 func (p *MediaTransport1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-
-
-// GetCodec get Codec value
-func (a *MediaTransport1) GetCodec() (byte, error) {
-	v, err := a.GetProperty("Codec")
-	if err != nil {
-		return byte(0), err
-	}
-	return v.Value().(byte), nil
-}
-
-
-
-
-
-
-// GetConfiguration get Configuration value
-func (a *MediaTransport1) GetConfiguration() ([]byte, error) {
-	v, err := a.GetProperty("Configuration")
-	if err != nil {
-		return []byte{}, err
-	}
-	return v.Value().([]byte), nil
 }
 
 
@@ -209,20 +175,6 @@ func (a *MediaTransport1) GetVolume() (uint16, error) {
 
 
 
-// GetEndpoint get Endpoint value
-func (a *MediaTransport1) GetEndpoint() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Endpoint")
-	if err != nil {
-		return dbus.ObjectPath(""), err
-	}
-	return v.Value().(dbus.ObjectPath), nil
-}
-
-
-
-
-
-
 // GetDevice get Device value
 func (a *MediaTransport1) GetDevice() (dbus.ObjectPath, error) {
 	v, err := a.GetProperty("Device")
@@ -244,6 +196,34 @@ func (a *MediaTransport1) GetUUID() (string, error) {
 		return "", err
 	}
 	return v.Value().(string), nil
+}
+
+
+
+
+
+
+// GetCodec get Codec value
+func (a *MediaTransport1) GetCodec() (byte, error) {
+	v, err := a.GetProperty("Codec")
+	if err != nil {
+		return byte(0), err
+	}
+	return v.Value().(byte), nil
+}
+
+
+
+
+
+
+// GetConfiguration get Configuration value
+func (a *MediaTransport1) GetConfiguration() ([]byte, error) {
+	v, err := a.GetProperty("Configuration")
+	if err != nil {
+		return []byte{}, err
+	}
+	return v.Value().([]byte), nil
 }
 
 

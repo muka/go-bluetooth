@@ -59,6 +59,12 @@ type Thermometer1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	Intermediate True if the thermometer supports intermediate
+			measurement notifications.
+	*/
+	Intermediate bool
+
+	/*
 	Interval (optional) The Measurement Interval defines the time (in
 			seconds) between measurements. This interval is
 			not related to the intermediate measurements and
@@ -80,12 +86,6 @@ type Thermometer1Properties struct {
 	*/
 	Minimum uint16
 
-	/*
-	Intermediate True if the thermometer supports intermediate
-			measurement notifications.
-	*/
-	Intermediate bool
-
 }
 
 //Lock access to properties
@@ -96,6 +96,20 @@ func (p *Thermometer1Properties) Lock() {
 //Unlock access to properties
 func (p *Thermometer1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+
+
+// GetIntermediate get Intermediate value
+func (a *Thermometer1) GetIntermediate() (bool, error) {
+	v, err := a.GetProperty("Intermediate")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
 }
 
 
@@ -143,20 +157,6 @@ func (a *Thermometer1) GetMinimum() (uint16, error) {
 		return uint16(0), err
 	}
 	return v.Value().(uint16), nil
-}
-
-
-
-
-
-
-// GetIntermediate get Intermediate value
-func (a *Thermometer1) GetIntermediate() (bool, error) {
-	v, err := a.GetProperty("Intermediate")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
 }
 
 
