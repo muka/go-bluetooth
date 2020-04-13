@@ -87,16 +87,6 @@ type LEAdvertisingManager1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	ActiveInstances Number of active advertising instances.
-	*/
-	ActiveInstances byte
-
-	/*
-	SupportedInstances Number of available advertising instances.
-	*/
-	SupportedInstances byte
-
-	/*
 	SupportedIncludes List of supported system includes.
 
 			Possible values: "tx-power"
@@ -116,6 +106,16 @@ type LEAdvertisingManager1Properties struct {
 	*/
 	SupportedSecondaryChannels []string
 
+	/*
+	ActiveInstances Number of active advertising instances.
+	*/
+	ActiveInstances byte
+
+	/*
+	SupportedInstances Number of available advertising instances.
+	*/
+	SupportedInstances byte
+
 }
 
 //Lock access to properties
@@ -126,44 +126,6 @@ func (p *LEAdvertisingManager1Properties) Lock() {
 //Unlock access to properties
 func (p *LEAdvertisingManager1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-// SetActiveInstances set ActiveInstances value
-func (a *LEAdvertisingManager1) SetActiveInstances(v byte) error {
-	return a.SetProperty("ActiveInstances", v)
-}
-
-
-
-// GetActiveInstances get ActiveInstances value
-func (a *LEAdvertisingManager1) GetActiveInstances() (byte, error) {
-	v, err := a.GetProperty("ActiveInstances")
-	if err != nil {
-		return byte(0), err
-	}
-	return v.Value().(byte), nil
-}
-
-
-
-
-// SetSupportedInstances set SupportedInstances value
-func (a *LEAdvertisingManager1) SetSupportedInstances(v byte) error {
-	return a.SetProperty("SupportedInstances", v)
-}
-
-
-
-// GetSupportedInstances get SupportedInstances value
-func (a *LEAdvertisingManager1) GetSupportedInstances() (byte, error) {
-	v, err := a.GetProperty("SupportedInstances")
-	if err != nil {
-		return byte(0), err
-	}
-	return v.Value().(byte), nil
 }
 
 
@@ -202,6 +164,44 @@ func (a *LEAdvertisingManager1) GetSupportedSecondaryChannels() ([]string, error
 		return []string{}, err
 	}
 	return v.Value().([]string), nil
+}
+
+
+
+
+// SetActiveInstances set ActiveInstances value
+func (a *LEAdvertisingManager1) SetActiveInstances(v byte) error {
+	return a.SetProperty("ActiveInstances", v)
+}
+
+
+
+// GetActiveInstances get ActiveInstances value
+func (a *LEAdvertisingManager1) GetActiveInstances() (byte, error) {
+	v, err := a.GetProperty("ActiveInstances")
+	if err != nil {
+		return byte(0), err
+	}
+	return v.Value().(byte), nil
+}
+
+
+
+
+// SetSupportedInstances set SupportedInstances value
+func (a *LEAdvertisingManager1) SetSupportedInstances(v byte) error {
+	return a.SetProperty("SupportedInstances", v)
+}
+
+
+
+// GetSupportedInstances get SupportedInstances value
+func (a *LEAdvertisingManager1) GetSupportedInstances() (byte, error) {
+	v, err := a.GetProperty("SupportedInstances")
+	if err != nil {
+		return byte(0), err
+	}
+	return v.Value().(byte), nil
 }
 
 

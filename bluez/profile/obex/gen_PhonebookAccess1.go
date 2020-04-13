@@ -59,6 +59,14 @@ type PhonebookAccess1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	DatabaseIdentifier 128 bits persistent database identifier.
+
+			Possible values: 32-character hexadecimal such
+			as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
+	*/
+	DatabaseIdentifier string
+
+	/*
 	PrimaryCounter 128 bits primary version counter.
 
 			Possible values: 32-character hexadecimal such
@@ -87,14 +95,6 @@ type PhonebookAccess1Properties struct {
 	*/
 	Folder string
 
-	/*
-	DatabaseIdentifier 128 bits persistent database identifier.
-
-			Possible values: 32-character hexadecimal such
-			as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
-	*/
-	DatabaseIdentifier string
-
 }
 
 //Lock access to properties
@@ -105,6 +105,20 @@ func (p *PhonebookAccess1Properties) Lock() {
 //Unlock access to properties
 func (p *PhonebookAccess1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+
+
+// GetDatabaseIdentifier get DatabaseIdentifier value
+func (a *PhonebookAccess1) GetDatabaseIdentifier() (string, error) {
+	v, err := a.GetProperty("DatabaseIdentifier")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 
@@ -157,20 +171,6 @@ func (a *PhonebookAccess1) GetFixedImageSize() (bool, error) {
 // GetFolder get Folder value
 func (a *PhonebookAccess1) GetFolder() (string, error) {
 	v, err := a.GetProperty("Folder")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-
-
-// GetDatabaseIdentifier get DatabaseIdentifier value
-func (a *PhonebookAccess1) GetDatabaseIdentifier() (string, error) {
-	v, err := a.GetProperty("DatabaseIdentifier")
 	if err != nil {
 		return "", err
 	}

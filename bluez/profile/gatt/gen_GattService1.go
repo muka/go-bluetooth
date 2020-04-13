@@ -99,14 +99,14 @@ type GattService1Properties struct {
 	Handle uint16
 
 	/*
-	IsService 
-	*/
-	IsService bool `dbus:"ignore"`
-
-	/*
 	Characteristics 
 	*/
 	Characteristics []dbus.ObjectPath `dbus:"emit"`
+
+	/*
+	IsService 
+	*/
+	IsService bool `dbus:"ignore"`
 
 }
 
@@ -218,25 +218,6 @@ func (a *GattService1) GetHandle() (uint16, error) {
 
 
 
-// SetIsService set IsService value
-func (a *GattService1) SetIsService(v bool) error {
-	return a.SetProperty("IsService", v)
-}
-
-
-
-// GetIsService get IsService value
-func (a *GattService1) GetIsService() (bool, error) {
-	v, err := a.GetProperty("IsService")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
 // SetCharacteristics set Characteristics value
 func (a *GattService1) SetCharacteristics(v []dbus.ObjectPath) error {
 	return a.SetProperty("Characteristics", v)
@@ -251,6 +232,25 @@ func (a *GattService1) GetCharacteristics() ([]dbus.ObjectPath, error) {
 		return []dbus.ObjectPath{}, err
 	}
 	return v.Value().([]dbus.ObjectPath), nil
+}
+
+
+
+
+// SetIsService set IsService value
+func (a *GattService1) SetIsService(v bool) error {
+	return a.SetProperty("IsService", v)
+}
+
+
+
+// GetIsService get IsService value
+func (a *GattService1) GetIsService() (bool, error) {
+	v, err := a.GetProperty("IsService")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
 }
 
 

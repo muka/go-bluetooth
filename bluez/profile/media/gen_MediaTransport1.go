@@ -59,13 +59,6 @@ type MediaTransport1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Codec Assigned number of codec that the transport support.
-			The values should match the profile specification which
-			is indicated by the UUID.
-	*/
-	Codec byte
-
-	/*
 	Configuration Configuration blob, it is used as it is so the size and
 			byte order must match.
 	*/
@@ -112,6 +105,13 @@ type MediaTransport1Properties struct {
 	*/
 	UUID string
 
+	/*
+	Codec Assigned number of codec that the transport support.
+			The values should match the profile specification which
+			is indicated by the UUID.
+	*/
+	Codec byte
+
 }
 
 //Lock access to properties
@@ -122,20 +122,6 @@ func (p *MediaTransport1Properties) Lock() {
 //Unlock access to properties
 func (p *MediaTransport1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-
-
-// GetCodec get Codec value
-func (a *MediaTransport1) GetCodec() (byte, error) {
-	v, err := a.GetProperty("Codec")
-	if err != nil {
-		return byte(0), err
-	}
-	return v.Value().(byte), nil
 }
 
 
@@ -244,6 +230,20 @@ func (a *MediaTransport1) GetUUID() (string, error) {
 		return "", err
 	}
 	return v.Value().(string), nil
+}
+
+
+
+
+
+
+// GetCodec get Codec value
+func (a *MediaTransport1) GetCodec() (byte, error) {
+	v, err := a.GetProperty("Codec")
+	if err != nil {
+		return byte(0), err
+	}
+	return v.Value().(byte), nil
 }
 
 

@@ -59,42 +59,6 @@ type Node1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	LowPower Indicates support for operating in Low Power node mode
-	*/
-	LowPower bool
-
-	/*
-	Beacon This property indicates whether the periodic beaconing is
-		enabled (true) or disabled (false).
-
-	uint8 BeaconFlags [read-only]
-
-		This property may be read at any time to determine the flag
-		field setting on sent and received beacons of the primary
-		network key.
-	*/
-	Beacon bool
-
-	/*
-	IvIndex This property may be read at any time to determine the IV_Index
-		that the current network is on. This information is only useful
-		for provisioning.
-	*/
-	IvIndex uint32
-
-	/*
-	SecondsSinceLastHeard This property may be read at any time to determine the number of
-		seconds since mesh network layer traffic was last detected on
-		this node's network.
-	*/
-	SecondsSinceLastHeard uint32
-
-	/*
-	Addresses This property contains unicast addresses of node's elements.
-	*/
-	Addresses []uint16
-
-	/*
 	SequenceNumber This property may be read at any time to determine the
 		sequence number.
 	*/
@@ -113,11 +77,6 @@ type Node1Properties struct {
 	Friend bool
 
 	/*
-	Proxy Indicates support for GATT proxy
-	*/
-	Proxy bool
-
-	/*
 	Relay Indicates support for relaying messages
 
 	If a key is absent from the dictionary, the feature is not supported.
@@ -125,6 +84,47 @@ type Node1Properties struct {
 	the feature is disabled.
 	*/
 	Relay bool
+
+	/*
+	Beacon This property indicates whether the periodic beaconing is
+		enabled (true) or disabled (false).
+
+	uint8 BeaconFlags [read-only]
+
+		This property may be read at any time to determine the flag
+		field setting on sent and received beacons of the primary
+		network key.
+	*/
+	Beacon bool
+
+	/*
+	Addresses This property contains unicast addresses of node's elements.
+	*/
+	Addresses []uint16
+
+	/*
+	LowPower Indicates support for operating in Low Power node mode
+	*/
+	LowPower bool
+
+	/*
+	Proxy Indicates support for GATT proxy
+	*/
+	Proxy bool
+
+	/*
+	IvIndex This property may be read at any time to determine the IV_Index
+		that the current network is on. This information is only useful
+		for provisioning.
+	*/
+	IvIndex uint32
+
+	/*
+	SecondsSinceLastHeard This property may be read at any time to determine the number of
+		seconds since mesh network layer traffic was last detected on
+		this node's network.
+	*/
+	SecondsSinceLastHeard uint32
 
 }
 
@@ -136,101 +136,6 @@ func (p *Node1Properties) Lock() {
 //Unlock access to properties
 func (p *Node1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-// SetLowPower set LowPower value
-func (a *Node1) SetLowPower(v bool) error {
-	return a.SetProperty("LowPower", v)
-}
-
-
-
-// GetLowPower get LowPower value
-func (a *Node1) GetLowPower() (bool, error) {
-	v, err := a.GetProperty("LowPower")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-// SetBeacon set Beacon value
-func (a *Node1) SetBeacon(v bool) error {
-	return a.SetProperty("Beacon", v)
-}
-
-
-
-// GetBeacon get Beacon value
-func (a *Node1) GetBeacon() (bool, error) {
-	v, err := a.GetProperty("Beacon")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-// SetIvIndex set IvIndex value
-func (a *Node1) SetIvIndex(v uint32) error {
-	return a.SetProperty("IvIndex", v)
-}
-
-
-
-// GetIvIndex get IvIndex value
-func (a *Node1) GetIvIndex() (uint32, error) {
-	v, err := a.GetProperty("IvIndex")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
-}
-
-
-
-
-// SetSecondsSinceLastHeard set SecondsSinceLastHeard value
-func (a *Node1) SetSecondsSinceLastHeard(v uint32) error {
-	return a.SetProperty("SecondsSinceLastHeard", v)
-}
-
-
-
-// GetSecondsSinceLastHeard get SecondsSinceLastHeard value
-func (a *Node1) GetSecondsSinceLastHeard() (uint32, error) {
-	v, err := a.GetProperty("SecondsSinceLastHeard")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
-}
-
-
-
-
-// SetAddresses set Addresses value
-func (a *Node1) SetAddresses(v []uint16) error {
-	return a.SetProperty("Addresses", v)
-}
-
-
-
-// GetAddresses get Addresses value
-func (a *Node1) GetAddresses() ([]uint16, error) {
-	v, err := a.GetProperty("Addresses")
-	if err != nil {
-		return []uint16{}, err
-	}
-	return v.Value().([]uint16), nil
 }
 
 
@@ -293,6 +198,82 @@ func (a *Node1) GetFriend() (bool, error) {
 
 
 
+// SetRelay set Relay value
+func (a *Node1) SetRelay(v bool) error {
+	return a.SetProperty("Relay", v)
+}
+
+
+
+// GetRelay get Relay value
+func (a *Node1) GetRelay() (bool, error) {
+	v, err := a.GetProperty("Relay")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+// SetBeacon set Beacon value
+func (a *Node1) SetBeacon(v bool) error {
+	return a.SetProperty("Beacon", v)
+}
+
+
+
+// GetBeacon get Beacon value
+func (a *Node1) GetBeacon() (bool, error) {
+	v, err := a.GetProperty("Beacon")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+// SetAddresses set Addresses value
+func (a *Node1) SetAddresses(v []uint16) error {
+	return a.SetProperty("Addresses", v)
+}
+
+
+
+// GetAddresses get Addresses value
+func (a *Node1) GetAddresses() ([]uint16, error) {
+	v, err := a.GetProperty("Addresses")
+	if err != nil {
+		return []uint16{}, err
+	}
+	return v.Value().([]uint16), nil
+}
+
+
+
+
+// SetLowPower set LowPower value
+func (a *Node1) SetLowPower(v bool) error {
+	return a.SetProperty("LowPower", v)
+}
+
+
+
+// GetLowPower get LowPower value
+func (a *Node1) GetLowPower() (bool, error) {
+	v, err := a.GetProperty("LowPower")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
 // SetProxy set Proxy value
 func (a *Node1) SetProxy(v bool) error {
 	return a.SetProperty("Proxy", v)
@@ -312,20 +293,39 @@ func (a *Node1) GetProxy() (bool, error) {
 
 
 
-// SetRelay set Relay value
-func (a *Node1) SetRelay(v bool) error {
-	return a.SetProperty("Relay", v)
+// SetIvIndex set IvIndex value
+func (a *Node1) SetIvIndex(v uint32) error {
+	return a.SetProperty("IvIndex", v)
 }
 
 
 
-// GetRelay get Relay value
-func (a *Node1) GetRelay() (bool, error) {
-	v, err := a.GetProperty("Relay")
+// GetIvIndex get IvIndex value
+func (a *Node1) GetIvIndex() (uint32, error) {
+	v, err := a.GetProperty("IvIndex")
 	if err != nil {
-		return false, err
+		return uint32(0), err
 	}
-	return v.Value().(bool), nil
+	return v.Value().(uint32), nil
+}
+
+
+
+
+// SetSecondsSinceLastHeard set SecondsSinceLastHeard value
+func (a *Node1) SetSecondsSinceLastHeard(v uint32) error {
+	return a.SetProperty("SecondsSinceLastHeard", v)
+}
+
+
+
+// GetSecondsSinceLastHeard get SecondsSinceLastHeard value
+func (a *Node1) GetSecondsSinceLastHeard() (uint32, error) {
+	v, err := a.GetProperty("SecondsSinceLastHeard")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
 }
 
 

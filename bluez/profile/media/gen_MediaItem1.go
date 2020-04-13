@@ -85,13 +85,9 @@ type MediaItem1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	FolderType Folder type.
-
-			Possible values: "mixed", "titles", "albums", "artists"
-
-			Available if property Type is "Folder"
+	Name Item displayable name
 	*/
-	FolderType string
+	Name string
 
 	/*
 	Playable Indicates if the item can be played
@@ -99,62 +95,6 @@ type MediaItem1Properties struct {
 			Available if property Type is "folder"
 	*/
 	Playable bool
-
-	/*
-	Album Item album name
-
-					Available if property Type is "audio"
-					or "video"
-	*/
-	Album string
-
-	/*
-	Player Player object path the item belongs to
-	*/
-	Player dbus.ObjectPath
-
-	/*
-	Name Item displayable name
-	*/
-	Name string
-
-	/*
-	Type Item type
-
-			Possible values: "video", "audio", "folder"
-	*/
-	Type string
-
-	/*
-	Metadata Item metadata.
-
-			Possible values:
-	*/
-	Metadata map[string]interface{}
-
-	/*
-	Title Item title name
-
-					Available if property Type is "audio"
-					or "video"
-	*/
-	Title string
-
-	/*
-	Artist Item artist name
-
-					Available if property Type is "audio"
-					or "video"
-	*/
-	Artist string
-
-	/*
-	Genre Item genre name
-
-					Available if property Type is "audio"
-					or "video"
-	*/
-	Genre string
 
 	/*
 	NumberOfTracks Item album number of tracks in total
@@ -180,6 +120,66 @@ type MediaItem1Properties struct {
 	*/
 	Duration uint32
 
+	/*
+	Player Player object path the item belongs to
+	*/
+	Player dbus.ObjectPath
+
+	/*
+	FolderType Folder type.
+
+			Possible values: "mixed", "titles", "albums", "artists"
+
+			Available if property Type is "Folder"
+	*/
+	FolderType string
+
+	/*
+	Metadata Item metadata.
+
+			Possible values:
+	*/
+	Metadata map[string]interface{}
+
+	/*
+	Title Item title name
+
+					Available if property Type is "audio"
+					or "video"
+	*/
+	Title string
+
+	/*
+	Artist Item artist name
+
+					Available if property Type is "audio"
+					or "video"
+	*/
+	Artist string
+
+	/*
+	Album Item album name
+
+					Available if property Type is "audio"
+					or "video"
+	*/
+	Album string
+
+	/*
+	Genre Item genre name
+
+					Available if property Type is "audio"
+					or "video"
+	*/
+	Genre string
+
+	/*
+	Type Item type
+
+			Possible values: "video", "audio", "folder"
+	*/
+	Type string
+
 }
 
 //Lock access to properties
@@ -197,9 +197,9 @@ func (p *MediaItem1Properties) Unlock() {
 
 
 
-// GetFolderType get FolderType value
-func (a *MediaItem1) GetFolderType() (string, error) {
-	v, err := a.GetProperty("FolderType")
+// GetName get Name value
+func (a *MediaItem1) GetName() (string, error) {
+	v, err := a.GetProperty("Name")
 	if err != nil {
 		return "", err
 	}
@@ -223,20 +223,58 @@ func (a *MediaItem1) GetPlayable() (bool, error) {
 
 
 
-// SetAlbum set Album value
-func (a *MediaItem1) SetAlbum(v string) error {
-	return a.SetProperty("Album", v)
+// SetNumberOfTracks set NumberOfTracks value
+func (a *MediaItem1) SetNumberOfTracks(v uint32) error {
+	return a.SetProperty("NumberOfTracks", v)
 }
 
 
 
-// GetAlbum get Album value
-func (a *MediaItem1) GetAlbum() (string, error) {
-	v, err := a.GetProperty("Album")
+// GetNumberOfTracks get NumberOfTracks value
+func (a *MediaItem1) GetNumberOfTracks() (uint32, error) {
+	v, err := a.GetProperty("NumberOfTracks")
 	if err != nil {
-		return "", err
+		return uint32(0), err
 	}
-	return v.Value().(string), nil
+	return v.Value().(uint32), nil
+}
+
+
+
+
+// SetNumber set Number value
+func (a *MediaItem1) SetNumber(v uint32) error {
+	return a.SetProperty("Number", v)
+}
+
+
+
+// GetNumber get Number value
+func (a *MediaItem1) GetNumber() (uint32, error) {
+	v, err := a.GetProperty("Number")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
+
+
+
+
+// SetDuration set Duration value
+func (a *MediaItem1) SetDuration(v uint32) error {
+	return a.SetProperty("Duration", v)
+}
+
+
+
+// GetDuration get Duration value
+func (a *MediaItem1) GetDuration() (uint32, error) {
+	v, err := a.GetProperty("Duration")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
 }
 
 
@@ -258,23 +296,9 @@ func (a *MediaItem1) GetPlayer() (dbus.ObjectPath, error) {
 
 
 
-// GetName get Name value
-func (a *MediaItem1) GetName() (string, error) {
-	v, err := a.GetProperty("Name")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-
-
-// GetType get Type value
-func (a *MediaItem1) GetType() (string, error) {
-	v, err := a.GetProperty("Type")
+// GetFolderType get FolderType value
+func (a *MediaItem1) GetFolderType() (string, error) {
+	v, err := a.GetProperty("FolderType")
 	if err != nil {
 		return "", err
 	}
@@ -336,6 +360,25 @@ func (a *MediaItem1) GetArtist() (string, error) {
 
 
 
+// SetAlbum set Album value
+func (a *MediaItem1) SetAlbum(v string) error {
+	return a.SetProperty("Album", v)
+}
+
+
+
+// GetAlbum get Album value
+func (a *MediaItem1) GetAlbum() (string, error) {
+	v, err := a.GetProperty("Album")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
 // SetGenre set Genre value
 func (a *MediaItem1) SetGenre(v string) error {
 	return a.SetProperty("Genre", v)
@@ -355,58 +398,15 @@ func (a *MediaItem1) GetGenre() (string, error) {
 
 
 
-// SetNumberOfTracks set NumberOfTracks value
-func (a *MediaItem1) SetNumberOfTracks(v uint32) error {
-	return a.SetProperty("NumberOfTracks", v)
-}
 
 
-
-// GetNumberOfTracks get NumberOfTracks value
-func (a *MediaItem1) GetNumberOfTracks() (uint32, error) {
-	v, err := a.GetProperty("NumberOfTracks")
+// GetType get Type value
+func (a *MediaItem1) GetType() (string, error) {
+	v, err := a.GetProperty("Type")
 	if err != nil {
-		return uint32(0), err
+		return "", err
 	}
-	return v.Value().(uint32), nil
-}
-
-
-
-
-// SetNumber set Number value
-func (a *MediaItem1) SetNumber(v uint32) error {
-	return a.SetProperty("Number", v)
-}
-
-
-
-// GetNumber get Number value
-func (a *MediaItem1) GetNumber() (uint32, error) {
-	v, err := a.GetProperty("Number")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
-}
-
-
-
-
-// SetDuration set Duration value
-func (a *MediaItem1) SetDuration(v uint32) error {
-	return a.SetProperty("Duration", v)
-}
-
-
-
-// GetDuration get Duration value
-func (a *MediaItem1) GetDuration() (uint32, error) {
-	v, err := a.GetProperty("Duration")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
+	return v.Value().(string), nil
 }
 
 
