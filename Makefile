@@ -96,5 +96,8 @@ docker/bluetoothd/run: service/bluetoothd/stop
 bluez-5.50/gen:
 	BLUEZ_VERSION=5.50 make gen/clean gen
 
+bluez-5.53/gen:
+	BLUEZ_VERSION=5.53 make gen/clean gen
+
 bluez-5.54/gen:
 	BLUEZ_VERSION=5.54 make gen/clean gen
