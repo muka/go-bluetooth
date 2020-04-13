@@ -83,6 +83,19 @@ type Adapter1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	AddressType The Bluetooth  Address Type. For dual-mode and BR/EDR
+			only adapter this defaults to "public". Single mode LE
+			adapters may have either value. With privacy enabled
+			this contains type of Identity Address and not type of
+			address used for connection.
+
+			Possible values:
+				"public" - Public address
+				"random" - Random address
+	*/
+	AddressType string
+
+	/*
 	Name The Bluetooth system name (pretty hostname).
 
 			This property is either a static system default
@@ -90,45 +103,6 @@ type Adapter1Properties struct {
 			access to the pretty hostname configuration.
 	*/
 	Name string
-
-	/*
-	Alias The Bluetooth friendly name. This value can be
-			changed.
-
-			In case no alias is set, it will return the system
-			provided name. Setting an empty string as alias will
-			convert it back to the system provided name.
-
-			When resetting the alias with an empty string, the
-			property will default back to system name.
-
-			On a well configured system, this property never
-			needs to be changed since it defaults to the system
-			name and provides the pretty hostname. Only if the
-			local name needs to be different from the pretty
-			hostname, this property should be used as last
-			resort.
-	*/
-	Alias string
-
-	/*
-	Class The Bluetooth class of device.
-
-			This property represents the value that is either
-			automatically configured by DMI/ACPI information
-			or provided as static configuration.
-	*/
-	Class uint32
-
-	/*
-	Powered Switch an adapter on or off. This will also set the
-			appropriate connectable state of the controller.
-
-			The value of this property is not persistent. After
-			restart or unplugging of the adapter it will reset
-			back to false.
-	*/
-	Powered bool
 
 	/*
 	Discoverable Switch an adapter to discoverable or non-discoverable
@@ -170,9 +144,34 @@ type Adapter1Properties struct {
 	UUIDs []string
 
 	/*
+	Modalias Local Device ID information in modalias format
+			used by the kernel and udev.
+	*/
+	Modalias string
+
+	/*
 	Address The Bluetooth device address.
 	*/
 	Address string
+
+	/*
+	Class The Bluetooth class of device.
+
+			This property represents the value that is either
+			automatically configured by DMI/ACPI information
+			or provided as static configuration.
+	*/
+	Class uint32
+
+	/*
+	Powered Switch an adapter on or off. This will also set the
+			appropriate connectable state of the controller.
+
+			The value of this property is not persistent. After
+			restart or unplugging of the adapter it will reset
+			back to false.
+	*/
+	Powered bool
 
 	/*
 	PairableTimeout The pairable timeout in seconds. A value of zero
@@ -200,23 +199,24 @@ type Adapter1Properties struct {
 	Discovering bool
 
 	/*
-	Modalias Local Device ID information in modalias format
-			used by the kernel and udev.
-	*/
-	Modalias string
+	Alias The Bluetooth friendly name. This value can be
+			changed.
 
-	/*
-	AddressType The Bluetooth  Address Type. For dual-mode and BR/EDR
-			only adapter this defaults to "public". Single mode LE
-			adapters may have either value. With privacy enabled
-			this contains type of Identity Address and not type of
-			address used for connection.
+			In case no alias is set, it will return the system
+			provided name. Setting an empty string as alias will
+			convert it back to the system provided name.
 
-			Possible values:
-				"public" - Public address
-				"random" - Random address
+			When resetting the alias with an empty string, the
+			property will default back to system name.
+
+			On a well configured system, this property never
+			needs to be changed since it defaults to the system
+			name and provides the pretty hostname. Only if the
+			local name needs to be different from the pretty
+			hostname, this property should be used as last
+			resort.
 	*/
-	AddressType string
+	Alias string
 
 }
 
@@ -235,6 +235,20 @@ func (p *Adapter1Properties) Unlock() {
 
 
 
+// GetAddressType get AddressType value
+func (a *Adapter1) GetAddressType() (string, error) {
+	v, err := a.GetProperty("AddressType")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+
+
 // GetName get Name value
 func (a *Adapter1) GetName() (string, error) {
 	v, err := a.GetProperty("Name")
@@ -242,58 +256,6 @@ func (a *Adapter1) GetName() (string, error) {
 		return "", err
 	}
 	return v.Value().(string), nil
-}
-
-
-
-
-// SetAlias set Alias value
-func (a *Adapter1) SetAlias(v string) error {
-	return a.SetProperty("Alias", v)
-}
-
-
-
-// GetAlias get Alias value
-func (a *Adapter1) GetAlias() (string, error) {
-	v, err := a.GetProperty("Alias")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-
-
-// GetClass get Class value
-func (a *Adapter1) GetClass() (uint32, error) {
-	v, err := a.GetProperty("Class")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
-}
-
-
-
-
-// SetPowered set Powered value
-func (a *Adapter1) SetPowered(v bool) error {
-	return a.SetProperty("Powered", v)
-}
-
-
-
-// GetPowered get Powered value
-func (a *Adapter1) GetPowered() (bool, error) {
-	v, err := a.GetProperty("Powered")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
 }
 
 
@@ -353,6 +315,20 @@ func (a *Adapter1) GetUUIDs() ([]string, error) {
 
 
 
+// GetModalias get Modalias value
+func (a *Adapter1) GetModalias() (string, error) {
+	v, err := a.GetProperty("Modalias")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+
+
 // GetAddress get Address value
 func (a *Adapter1) GetAddress() (string, error) {
 	v, err := a.GetProperty("Address")
@@ -360,6 +336,39 @@ func (a *Adapter1) GetAddress() (string, error) {
 		return "", err
 	}
 	return v.Value().(string), nil
+}
+
+
+
+
+
+
+// GetClass get Class value
+func (a *Adapter1) GetClass() (uint32, error) {
+	v, err := a.GetProperty("Class")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
+
+
+
+
+// SetPowered set Powered value
+func (a *Adapter1) SetPowered(v bool) error {
+	return a.SetProperty("Powered", v)
+}
+
+
+
+// GetPowered get Powered value
+func (a *Adapter1) GetPowered() (bool, error) {
+	v, err := a.GetProperty("Powered")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
 }
 
 
@@ -417,25 +426,16 @@ func (a *Adapter1) GetDiscovering() (bool, error) {
 
 
 
-
-
-// GetModalias get Modalias value
-func (a *Adapter1) GetModalias() (string, error) {
-	v, err := a.GetProperty("Modalias")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
+// SetAlias set Alias value
+func (a *Adapter1) SetAlias(v string) error {
+	return a.SetProperty("Alias", v)
 }
 
 
 
-
-
-
-// GetAddressType get AddressType value
-func (a *Adapter1) GetAddressType() (string, error) {
-	v, err := a.GetProperty("AddressType")
+// GetAlias get Alias value
+func (a *Adapter1) GetAlias() (string, error) {
+	v, err := a.GetProperty("Alias")
 	if err != nil {
 		return "", err
 	}
@@ -714,27 +714,6 @@ SetDiscoveryFilter
 				When enabled PropertiesChanged signals will be
 				generated for either ManufacturerData and
 				ServiceData everytime they are discovered.
-
-			bool Discoverable (Default: false)
-
-				Make adapter discoverable while discovering,
-				if the adapter is already discoverable setting
-				this filter won't do anything.
-
-			string Pattern (Default: none)
-
-				Discover devices where the pattern matches
-				either the prefix of the address or
-				device name which is convenient way to limited
-				the number of device objects created during a
-				discovery.
-
-				When set disregards device discoverable flags.
-
-				Note: The pattern matching is ignored if there
-				are other client that don't set any pattern as
-				it work as a logical OR, also setting empty
-				string "" pattern will match any device found.
 
 			When discovery filter is set, Device objects will be
 			created as new devices with matching criteria are

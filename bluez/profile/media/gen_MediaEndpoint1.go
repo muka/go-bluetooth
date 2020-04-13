@@ -15,40 +15,16 @@ import (
 var MediaEndpoint1Interface = "org.bluez.MediaEndpoint1"
 
 
-// NewMediaEndpoint1Server create a new instance of MediaEndpoint1
+// NewMediaEndpoint1 create a new instance of MediaEndpoint1
 //
 // Args:
 // - servicePath: unique name
-func NewMediaEndpoint1Server(servicePath string, objectPath dbus.ObjectPath) (*MediaEndpoint1, error) {
+// - objectPath: freely definable
+func NewMediaEndpoint1(servicePath string, objectPath dbus.ObjectPath) (*MediaEndpoint1, error) {
 	a := new(MediaEndpoint1)
 	a.client = bluez.NewClient(
 		&bluez.Config{
 			Name:  servicePath,
-			Iface: MediaEndpoint1Interface,
-			Path:  dbus.ObjectPath(objectPath),
-			Bus:   bluez.SystemBus,
-		},
-	)
-	
-	a.Properties = new(MediaEndpoint1Properties)
-
-	_, err := a.GetProperties()
-	if err != nil {
-		return nil, err
-	}
-	
-	return a, nil
-}
-
-// NewMediaEndpoint1Client create a new instance of MediaEndpoint1
-//
-// Args:
-
-func NewMediaEndpoint1Client(objectPath dbus.ObjectPath) (*MediaEndpoint1, error) {
-	a := new(MediaEndpoint1)
-	a.client = bluez.NewClient(
-		&bluez.Config{
-			Name:  "org.bluez",
 			Iface: MediaEndpoint1Interface,
 			Path:  dbus.ObjectPath(objectPath),
 			Bus:   bluez.SystemBus,
@@ -83,29 +59,6 @@ type MediaEndpoint1 struct {
 type MediaEndpoint1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
-	/*
-	UUID UUID of the profile which the endpoint is for.
-	*/
-	UUID string
-
-	/*
-	Codec Assigned number of codec that the endpoint implements.
-			The values should match the profile specification which
-			is indicated by the UUID.
-	*/
-	Codec byte
-
-	/*
-	Capabilities Capabilities blob, it is used as it is so the size and
-			byte order must match.
-	*/
-	Capabilities []byte
-
-	/*
-	Device Device object which the endpoint is belongs to.
-	*/
-	Device dbus.ObjectPath
-
 }
 
 //Lock access to properties
@@ -116,62 +69,6 @@ func (p *MediaEndpoint1Properties) Lock() {
 //Unlock access to properties
 func (p *MediaEndpoint1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-
-
-// GetUUID get UUID value
-func (a *MediaEndpoint1) GetUUID() (string, error) {
-	v, err := a.GetProperty("UUID")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-
-
-// GetCodec get Codec value
-func (a *MediaEndpoint1) GetCodec() (byte, error) {
-	v, err := a.GetProperty("Codec")
-	if err != nil {
-		return byte(0), err
-	}
-	return v.Value().(byte), nil
-}
-
-
-
-
-
-
-// GetCapabilities get Capabilities value
-func (a *MediaEndpoint1) GetCapabilities() ([]byte, error) {
-	v, err := a.GetProperty("Capabilities")
-	if err != nil {
-		return []byte{}, err
-	}
-	return v.Value().([]byte), nil
-}
-
-
-
-
-
-
-// GetDevice get Device value
-func (a *MediaEndpoint1) GetDevice() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Device")
-	if err != nil {
-		return dbus.ObjectPath(""), err
-	}
-	return v.Value().(dbus.ObjectPath), nil
 }
 
 
@@ -323,12 +220,6 @@ func (a *MediaEndpoint1) UnwatchProperties(ch chan *bluez.PropertyChanged) error
 SetConfiguration 
 			Set configuration for the transport.
 
-			For client role transport must be set with a server
-			endpoint oject which will be configured and the
-			properties must contain the following properties:
-
-				array{byte} Capabilities
-
 
 */
 func (a *MediaEndpoint1) SetConfiguration(transport dbus.ObjectPath, properties map[string]interface{}) error {
@@ -377,6 +268,7 @@ Release
 			cleanup tasks. There is no need to unregister the
 			endpoint, because when this method gets called it has
 			already been unregistered.
+
 
 
 */

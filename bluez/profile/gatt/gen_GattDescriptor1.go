@@ -61,11 +61,6 @@ type GattDescriptor1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	UUID 128-bit descriptor UUID.
-	*/
-	UUID string
-
-	/*
 	Characteristic Object path of the GATT characteristic the descriptor
 			belongs to.
 	*/
@@ -96,13 +91,9 @@ type GattDescriptor1Properties struct {
 	Flags []string
 
 	/*
-	Handle Characteristic handle. When available in the server it
-			would attempt to use to allocate into the database
-			which may fail, to auto allocate the value 0x0000
-			shall be used which will cause the allocated handle to
-			be set once registered.
+	UUID 128-bit descriptor UUID.
 	*/
-	Handle uint16
+	UUID string
 
 }
 
@@ -114,25 +105,6 @@ func (p *GattDescriptor1Properties) Lock() {
 //Unlock access to properties
 func (p *GattDescriptor1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-// SetUUID set UUID value
-func (a *GattDescriptor1) SetUUID(v string) error {
-	return a.SetProperty("UUID", v)
-}
-
-
-
-// GetUUID get UUID value
-func (a *GattDescriptor1) GetUUID() (string, error) {
-	v, err := a.GetProperty("UUID")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
 }
 
 
@@ -195,20 +167,20 @@ func (a *GattDescriptor1) GetFlags() ([]string, error) {
 
 
 
-// SetHandle set Handle value
-func (a *GattDescriptor1) SetHandle(v uint16) error {
-	return a.SetProperty("Handle", v)
+// SetUUID set UUID value
+func (a *GattDescriptor1) SetUUID(v string) error {
+	return a.SetProperty("UUID", v)
 }
 
 
 
-// GetHandle get Handle value
-func (a *GattDescriptor1) GetHandle() (uint16, error) {
-	v, err := a.GetProperty("Handle")
+// GetUUID get UUID value
+func (a *GattDescriptor1) GetUUID() (string, error) {
+	v, err := a.GetProperty("UUID")
 	if err != nil {
-		return uint16(0), err
+		return "", err
 	}
-	return v.Value().(uint16), nil
+	return v.Value().(string), nil
 }
 
 

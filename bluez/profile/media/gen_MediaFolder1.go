@@ -85,20 +85,6 @@ type MediaFolder1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Start Offset of the first item.
-
-			Default value: 0
-	*/
-	Start uint32
-
-	/*
-	End Offset of the last item.
-
-			Default value: NumbeOfItems
-	*/
-	End uint32
-
-	/*
 	Attributes Item properties that should be included in the list.
 
 			Possible Values:
@@ -131,6 +117,20 @@ Filters
 	*/
 	Name string
 
+	/*
+	Start Offset of the first item.
+
+			Default value: 0
+	*/
+	Start uint32
+
+	/*
+	End Offset of the last item.
+
+			Default value: NumbeOfItems
+	*/
+	End uint32
+
 }
 
 //Lock access to properties
@@ -141,44 +141,6 @@ func (p *MediaFolder1Properties) Lock() {
 //Unlock access to properties
 func (p *MediaFolder1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-// SetStart set Start value
-func (a *MediaFolder1) SetStart(v uint32) error {
-	return a.SetProperty("Start", v)
-}
-
-
-
-// GetStart get Start value
-func (a *MediaFolder1) GetStart() (uint32, error) {
-	v, err := a.GetProperty("Start")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
-}
-
-
-
-
-// SetEnd set End value
-func (a *MediaFolder1) SetEnd(v uint32) error {
-	return a.SetProperty("End", v)
-}
-
-
-
-// GetEnd get End value
-func (a *MediaFolder1) GetEnd() (uint32, error) {
-	v, err := a.GetProperty("End")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
 }
 
 
@@ -226,6 +188,44 @@ func (a *MediaFolder1) GetName() (string, error) {
 		return "", err
 	}
 	return v.Value().(string), nil
+}
+
+
+
+
+// SetStart set Start value
+func (a *MediaFolder1) SetStart(v uint32) error {
+	return a.SetProperty("Start", v)
+}
+
+
+
+// GetStart get Start value
+func (a *MediaFolder1) GetStart() (uint32, error) {
+	v, err := a.GetProperty("Start")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
+
+
+
+
+// SetEnd set End value
+func (a *MediaFolder1) SetEnd(v uint32) error {
+	return a.SetProperty("End", v)
+}
+
+
+
+// GetEnd get End value
+func (a *MediaFolder1) GetEnd() (uint32, error) {
+	v, err := a.GetProperty("End")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
 }
 
 
