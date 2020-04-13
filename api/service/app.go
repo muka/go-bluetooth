@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 
@@ -33,12 +34,21 @@ func RandomUUID() (string, error) {
 	return strings.ToUpper(UUID.String()), err
 }
 
+type AppOptions struct {
+	AdapterID         string
+	AgentCaps         string
+	AgentSetAsDefault bool
+}
+
 // Initialize a new bluetooth service (app)
-func NewApp(adapterID string) (*App, error) {
+func NewApp(options AppOptions) (*App, error) {
 
 	app := new(App)
 
-	app.adapterID = adapterID
+	if options.AdapterID == "" {
+		return nil, errors.New("options.AdapterID is required")
+	}
+	app.adapterID = options.AdapterID
 	app.services = make(map[dbus.ObjectPath]*Service)
 	app.path = dbus.ObjectPath(
 		fmt.Sprintf(
@@ -53,7 +63,11 @@ func NewApp(adapterID string) (*App, error) {
 	}
 
 	app.AgentCaps = agent.CapKeyboardDisplay
-	app.AgentSetAsDefault = true
+	if options.AgentCaps != "" {
+		app.AgentCaps = options.AgentCaps
+	}
+
+	app.AgentSetAsDefault = options.AgentSetAsDefault
 
 	appCounter += 1
 

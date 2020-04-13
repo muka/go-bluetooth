@@ -11,7 +11,7 @@ func createTestApp(t *testing.T) *App {
 
 	log.SetLevel(log.TraceLevel)
 
-	a, err := NewApp(api.GetDefaultAdapterID())
+	a, err := NewApp(AppOptions{AdapterID: api.GetDefaultAdapterID()})
 	if err != nil {
 		t.Fatal(err)
 	}

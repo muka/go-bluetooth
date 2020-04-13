@@ -25,7 +25,7 @@ bluez/checkout:
 service/bluetoothd/logs:
 	journalctl -u bluetooth -f
 
-service/bluetoothd/start: bluetoothd/stop
+service/bluetoothd/start: service/bluetoothd/stop
 	sudo bluetoothd -E -d -n -P hostname
 
 service/bluetoothd/stop:

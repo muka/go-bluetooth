@@ -29,9 +29,10 @@ func client(adapterID, hwaddr string) (err error) {
 	}
 
 	// do not reuse agent0 from service
-	// agent.NextAgentPath()
+	agent.NextAgentPath()
+
 	ag := agent.NewSimpleAgent()
-	err = agent.ExposeAgent(conn, ag, agent.CapKeyboardDisplay, true)
+	err = agent.ExposeAgent(conn, ag, agent.CapNoInputNoOutput, true)
 	if err != nil {
 		return fmt.Errorf("SimpleAgent: %s", err)
 	}
@@ -50,7 +51,7 @@ func client(adapterID, hwaddr string) (err error) {
 	}
 	go func() {
 		for propUpdate := range watchProps {
-			log.Debugf("property updated %s", propUpdate.Name)
+			log.Debugf("> property updated %s", propUpdate.Name)
 		}
 	}()
 
@@ -122,7 +123,7 @@ func connect(dev *device.Device1, ag *agent.SimpleAgent, adapterID string) error
 		return nil
 	}
 
-	if !props.Paired {
+	if !props.Paired || !props.Trusted {
 		log.Trace("Pairing device")
 
 		err := dev.Pair()

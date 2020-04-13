@@ -4,13 +4,19 @@ import (
 	"time"
 
 	"github.com/muka/go-bluetooth/api/service"
+	"github.com/muka/go-bluetooth/bluez/profile/agent"
 	"github.com/muka/go-bluetooth/bluez/profile/gatt"
 	log "github.com/sirupsen/logrus"
 )
 
 func serve(adapterID string) error {
 
-	a, err := service.NewApp(adapterID)
+	options := service.AppOptions{
+		AdapterID: adapterID,
+		AgentCaps: agent.CapNoInputNoOutput,
+	}
+
+	a, err := service.NewApp(options)
 	if err != nil {
 		return err
 	}
