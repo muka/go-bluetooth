@@ -68,12 +68,14 @@ docker/bluetoothd/init:
 	sudo adduser `id -nu` bluetooth || true
 	sudo ln -s `pwd`/src/bluetooth.conf /etc/dbus-1/system.d/
 
+docker/service/setup:
+	./bin/btmgmt power off
+	./bin/btmgmt le on
+	./bin/btmgmt bredr off
+	./bin/btmgmt power on
+
 docker/btmgmt:
-
-	docker run --name bluez_btmgmt \
-		${DOCKER_PARAMS} \
-		/bluez/tools/btmgmt
-
+	./bin/btmgmt
 
 docker/bluetoothd/build:
 	docker build ./env/bluez --build-arg BLUEZ_VERSION=${BLUEZ_VERSION} -t opny/bluez-${BLUEZ_VERSION}

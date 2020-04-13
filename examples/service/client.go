@@ -4,10 +4,8 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez/profile/adapter"
-	"github.com/muka/go-bluetooth/bluez/profile/agent"
 	"github.com/muka/go-bluetooth/bluez/profile/device"
 	log "github.com/sirupsen/logrus"
 )
@@ -22,15 +20,18 @@ func client(adapterID, hwaddr string) (err error) {
 	}
 
 	//Connect DBus System bus
-	conn, err := dbus.SystemBus()
-	if err != nil {
-		return err
-	}
-	ag := agent.NewSimpleAgent()
-	err = agent.ExposeAgent(conn, ag, agent.CapKeyboardDisplay, true)
-	if err != nil {
-		return fmt.Errorf("SimpleAgent: %s", err)
-	}
+	// conn, err := dbus.SystemBus()
+	// if err != nil {
+	// 	return err
+	// }
+
+	// NOTE: do not reuse agent0 from service
+	// agent.NextAgentPath()
+	// ag := agent.NewSimpleAgent()
+	// err = agent.ExposeAgent(conn, ag, agent.CapKeyboardDisplay, true)
+	// if err != nil {
+	// 	return fmt.Errorf("SimpleAgent: %s", err)
+	// }
 
 	dev, err := discover(a, hwaddr)
 	if err != nil {
@@ -40,23 +41,23 @@ func client(adapterID, hwaddr string) (err error) {
 		return errors.New("Device not found, is it advertising?")
 	}
 
-	// watchProps, err := dev.WatchProperties()
-	// if err != nil {
-	// 	return err
-	// }
-	//
-	// go func() {
-	// 	for propUpdate := range watchProps {
-	// 		log.Debugf("propUpdate %++v", propUpdate)
-	// 		// if propUpdate.Name == "Connected" {
-	// 		// 	log.Debug("----- Device connected -----")
-	// 		// 	retrieveServices(a, dev)
-	// 		// 	break
-	// 		// }
-	// 	}
-	// }()
+	watchProps, err := dev.WatchProperties()
+	if err != nil {
+		return err
+	}
 
-	err = connect(dev, ag, adapterID)
+	go func() {
+		for propUpdate := range watchProps {
+			log.Debugf("propUpdate %++v", propUpdate)
+			if propUpdate.Name == "Connected" {
+				log.Debug("----- Device connected -----")
+				retrieveServices(a, dev)
+				break
+			}
+		}
+	}()
+
+	err = connect(dev, adapterID)
 	if err != nil {
 		return err
 	}
@@ -108,7 +109,7 @@ func discover(a *adapter.Adapter1, hwaddr string) (*device.Device1, error) {
 	return nil, nil
 }
 
-func connect(dev *device.Device1, ag *agent.SimpleAgent, adapterID string) error {
+func connect(dev *device.Device1, adapterID string) error {
 
 	props, err := dev.GetProperties()
 	if err != nil {
@@ -131,8 +132,6 @@ func connect(dev *device.Device1, ag *agent.SimpleAgent, adapterID string) error
 		}
 
 		log.Info("Pair succeed, connecting...")
-		// agent.SetTrusted(adapterID, dev.Path())
-
 	}
 
 	log.Trace("Connecting device")

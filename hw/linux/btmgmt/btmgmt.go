@@ -9,6 +9,10 @@ import (
 	"github.com/muka/go-bluetooth/hw/linux/cmd"
 )
 
+const (
+	DefaultBinPath = "btmgmt"
+)
+
 //BtAdapter contains info about adapter from btmgmt
 type BtAdapter struct {
 	ID                string
@@ -124,17 +128,19 @@ func GetAdapters() ([]*BtAdapter, error) {
 
 // NewBtMgmt init a new BtMgmt command
 func NewBtMgmt(adapterID string) *BtMgmt {
-	return &BtMgmt{adapterID}
+	return &BtMgmt{adapterID, DefaultBinPath}
 }
 
-// BtMgmt an hciconfig command wrapper
+// BtMgmt btmgmt command wrapper
 type BtMgmt struct {
 	adapterID string
+	// BinPath configure the CLI path to btmgmt
+	BinPath string
 }
 
 // btmgmt cmd wrapper
 func (h *BtMgmt) cmd(args ...string) error {
-	cmdArgs := []string{"btmgmt", "--index", h.adapterID}
+	cmdArgs := []string{h.BinPath, "--index", h.adapterID}
 	cmdArgs = append(cmdArgs, args...)
 	_, err := cmd.Exec(cmdArgs...)
 	if err != nil {

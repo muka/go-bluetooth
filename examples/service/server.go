@@ -8,17 +8,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func Run(adapterID string, mode string, hwaddr string) error {
-
-	log.SetLevel(log.TraceLevel)
-
-	if mode == "client" {
-		return client(adapterID, hwaddr)
-	} else {
-		return serve(adapterID)
-	}
-}
-
 func serve(adapterID string) error {
 
 	a, err := service.NewApp(adapterID)

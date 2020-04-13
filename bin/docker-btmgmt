@@ -1,0 +1,3 @@
+#!/bin/sh
+docker run -it --name bluez_btmgmt --privileged --rm --net=host -v /dev:/dev -v /var/run/dbus:/var/run/dbus -v /sys/class/bluetooth:/sys/class/bluetooth -v /var/lib/bluetooth:/var/lib/bluetooth opny/bluez-5.54 /bluez/tools/btmgmt $@
+

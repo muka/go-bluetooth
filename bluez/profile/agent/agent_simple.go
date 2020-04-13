@@ -14,7 +14,7 @@ const agentBasePath = "/org/bluez/agent/simple%d"
 const SimpleAgentPinCode = "0000"
 const SimpleAgentPassKey uint32 = 1024
 
-func nextAgentPath() dbus.ObjectPath {
+func NextAgentPath() dbus.ObjectPath {
 	p := dbus.ObjectPath(fmt.Sprintf(agentBasePath, agentInstances))
 	agentInstances += 1
 	return p
@@ -23,7 +23,7 @@ func nextAgentPath() dbus.ObjectPath {
 // NewDefaultSimpleAgent return a SimpleAgent instance with default pincode and passcode
 func NewDefaultSimpleAgent() *SimpleAgent {
 	ag := &SimpleAgent{
-		path:    nextAgentPath(),
+		path:    NextAgentPath(),
 		passKey: SimpleAgentPassKey,
 		pinCode: SimpleAgentPinCode,
 	}
@@ -34,7 +34,7 @@ func NewDefaultSimpleAgent() *SimpleAgent {
 // NewSimpleAgent return a SimpleAgent instance
 func NewSimpleAgent() *SimpleAgent {
 	ag := &SimpleAgent{
-		path: nextAgentPath(),
+		path: NextAgentPath(),
 	}
 	return ag
 }
