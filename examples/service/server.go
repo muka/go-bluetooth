@@ -56,6 +56,7 @@ func serve(adapterID string) error {
 		log.Warnf("GOT READ REQUEST")
 		return []byte{42}, nil
 	}))
+
 	char1.OnWrite(service.CharWriteCallback(func(c *service.Char, value []byte) ([]byte, error) {
 		log.Warnf("GOT WRITE REQUEST")
 		return value, nil

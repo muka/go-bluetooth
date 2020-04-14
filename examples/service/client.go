@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/api"
@@ -37,12 +38,9 @@ func client(adapterID, hwaddr string) (err error) {
 		return fmt.Errorf("SimpleAgent: %s", err)
 	}
 
-	dev, err := discover(a, hwaddr)
+	dev, err := findDevice(a, hwaddr)
 	if err != nil {
-		return err
-	}
-	if dev == nil {
-		return errors.New("Device not found, is it advertising?")
+		return fmt.Errorf("findDevice: %s", err)
 	}
 
 	watchProps, err := dev.WatchProperties()
@@ -51,7 +49,7 @@ func client(adapterID, hwaddr string) (err error) {
 	}
 	go func() {
 		for propUpdate := range watchProps {
-			log.Debugf("> property updated %s", propUpdate.Name)
+			log.Debugf("--> updated %s=%v", propUpdate.Name, propUpdate.Value)
 		}
 	}()
 
@@ -64,6 +62,40 @@ func client(adapterID, hwaddr string) (err error) {
 
 	select {}
 	// return nil
+}
+
+func findDevice(a *adapter.Adapter1, hwaddr string) (*device.Device1, error) {
+	//
+	// devices, err := a.GetDevices()
+	// if err != nil {
+	// 	return nil, err
+	// }
+	//
+	// for _, dev := range devices {
+	// 	devProps, err := dev.GetProperties()
+	// 	if err != nil {
+	// 		log.Errorf("Failed to load dev props: %s", err)
+	// 		continue
+	// 	}
+	//
+	// 	log.Info(devProps.Address)
+	// 	if devProps.Address != hwaddr {
+	// 		continue
+	// 	}
+	//
+	// 	log.Infof("Found cached device Connected=%t Trusted=%t Paired=%t", devProps.Connected, devProps.Trusted, devProps.Paired)
+	// 	return dev, nil
+	// }
+
+	dev, err := discover(a, hwaddr)
+	if err != nil {
+		return nil, err
+	}
+	if dev == nil {
+		return nil, errors.New("Device not found, is it advertising?")
+	}
+
+	return dev, nil
 }
 
 func discover(a *adapter.Adapter1, hwaddr string) (*device.Device1, error) {
@@ -150,10 +182,16 @@ func connect(dev *device.Device1, ag *agent.SimpleAgent, adapterID string) error
 
 func retrieveServices(a *adapter.Adapter1, dev *device.Device1) error {
 
-	log.Debug("Exposed services")
+	log.Debug("Listing exposed services")
+
 	list, err := dev.GetAllServicesAndUUID()
 	if err != nil {
 		return err
+	}
+
+	if len(list) == 0 {
+		time.Sleep(time.Second * 2)
+		return retrieveServices(a, dev)
 	}
 
 	for _, servicePath := range list {

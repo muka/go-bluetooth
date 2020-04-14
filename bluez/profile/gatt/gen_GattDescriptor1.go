@@ -61,12 +61,6 @@ type GattDescriptor1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Characteristic Object path of the GATT characteristic the descriptor
-			belongs to.
-	*/
-	Characteristic dbus.ObjectPath
-
-	/*
 	Value The cached value of the descriptor. This property
 			gets updated only after a successful read request, upon
 			which a PropertiesChanged signal will be emitted.
@@ -91,9 +85,24 @@ type GattDescriptor1Properties struct {
 	Flags []string
 
 	/*
+	Handle Characteristic handle. When available in the server it
+			would attempt to use to allocate into the database
+			which may fail, to auto allocate the value 0x0000
+			shall be used which will cause the allocated handle to
+			be set once registered.
+	*/
+	Handle uint16
+
+	/*
 	UUID 128-bit descriptor UUID.
 	*/
 	UUID string
+
+	/*
+	Characteristic Object path of the GATT characteristic the descriptor
+			belongs to.
+	*/
+	Characteristic dbus.ObjectPath
 
 }
 
@@ -105,25 +114,6 @@ func (p *GattDescriptor1Properties) Lock() {
 //Unlock access to properties
 func (p *GattDescriptor1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-// SetCharacteristic set Characteristic value
-func (a *GattDescriptor1) SetCharacteristic(v dbus.ObjectPath) error {
-	return a.SetProperty("Characteristic", v)
-}
-
-
-
-// GetCharacteristic get Characteristic value
-func (a *GattDescriptor1) GetCharacteristic() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Characteristic")
-	if err != nil {
-		return dbus.ObjectPath(""), err
-	}
-	return v.Value().(dbus.ObjectPath), nil
 }
 
 
@@ -167,6 +157,25 @@ func (a *GattDescriptor1) GetFlags() ([]string, error) {
 
 
 
+// SetHandle set Handle value
+func (a *GattDescriptor1) SetHandle(v uint16) error {
+	return a.SetProperty("Handle", v)
+}
+
+
+
+// GetHandle get Handle value
+func (a *GattDescriptor1) GetHandle() (uint16, error) {
+	v, err := a.GetProperty("Handle")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
+
+
+
+
 // SetUUID set UUID value
 func (a *GattDescriptor1) SetUUID(v string) error {
 	return a.SetProperty("UUID", v)
@@ -181,6 +190,25 @@ func (a *GattDescriptor1) GetUUID() (string, error) {
 		return "", err
 	}
 	return v.Value().(string), nil
+}
+
+
+
+
+// SetCharacteristic set Characteristic value
+func (a *GattDescriptor1) SetCharacteristic(v dbus.ObjectPath) error {
+	return a.SetProperty("Characteristic", v)
+}
+
+
+
+// GetCharacteristic get Characteristic value
+func (a *GattDescriptor1) GetCharacteristic() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Characteristic")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
 }
 
 

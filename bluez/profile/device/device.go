@@ -34,6 +34,8 @@ func (d *Device1) GetCharacteristicsList() ([]dbus.ObjectPath, error) {
 
 		spath := string(path)
 
+		// log.Debugf("%s=%s", string(d.Path()), spath)
+
 		if !strings.HasPrefix(spath, string(d.Path())) {
 			continue
 		}
