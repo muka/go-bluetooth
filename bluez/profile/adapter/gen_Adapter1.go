@@ -83,20 +83,26 @@ type Adapter1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	DiscoverableTimeout The discoverable timeout in seconds. A value of zero
-			means that the timeout is disabled and it will stay in
-			discoverable/limited mode forever.
+	AddressType The Bluetooth  Address Type. For dual-mode and BR/EDR
+			only adapter this defaults to "public". Single mode LE
+			adapters may have either value. With privacy enabled
+			this contains type of Identity Address and not type of
+			address used for connection.
 
-			The default value for the discoverable timeout should
-			be 180 seconds (3 minutes).
+			Possible values:
+				"public" - Public address
+				"random" - Random address
 	*/
-	DiscoverableTimeout uint32
+	AddressType string
 
 	/*
-	UUIDs List of 128-bit UUIDs that represents the available
-			local services.
+	Name The Bluetooth system name (pretty hostname).
+
+			This property is either a static system default
+			or controlled by an external daemon providing
+			access to the pretty hostname configuration.
 	*/
-	UUIDs []string
+	Name string
 
 	/*
 	Alias The Bluetooth friendly name. This value can be
@@ -119,15 +125,6 @@ type Adapter1Properties struct {
 	Alias string
 
 	/*
-	Class The Bluetooth class of device.
-
-			This property represents the value that is either
-			automatically configured by DMI/ACPI information
-			or provided as static configuration.
-	*/
-	Class uint32
-
-	/*
 	Powered Switch an adapter on or off. This will also set the
 			appropriate connectable state of the controller.
 
@@ -136,6 +133,27 @@ type Adapter1Properties struct {
 			back to false.
 	*/
 	Powered bool
+
+	/*
+	Discoverable Switch an adapter to discoverable or non-discoverable
+			to either make it visible or hide it. This is a global
+			setting and should only be used by the settings
+			application.
+
+			If the DiscoverableTimeout is set to a non-zero
+			value then the system will set this value back to
+			false after the timer expired.
+
+			In case the adapter is switched off, setting this
+			value will fail.
+
+			When changing the Powered property the new state of
+			this property will be updated via a PropertiesChanged
+			signal.
+
+			For any new adapter this settings defaults to false.
+	*/
+	Discoverable bool
 
 	/*
 	Pairable Switch an adapter to pairable or non-pairable. This is
@@ -160,63 +178,45 @@ type Adapter1Properties struct {
 	PairableTimeout uint32
 
 	/*
+	Address The Bluetooth device address.
+	*/
+	Address string
+
+	/*
+	UUIDs List of 128-bit UUIDs that represents the available
+			local services.
+	*/
+	UUIDs []string
+
+	/*
 	Modalias Local Device ID information in modalias format
 			used by the kernel and udev.
 	*/
 	Modalias string
 
 	/*
-	Address The Bluetooth device address.
-	*/
-	Address string
-
-	/*
-	AddressType The Bluetooth  Address Type. For dual-mode and BR/EDR
-			only adapter this defaults to "public". Single mode LE
-			adapters may have either value. With privacy enabled
-			this contains type of Identity Address and not type of
-			address used for connection.
-
-			Possible values:
-				"public" - Public address
-				"random" - Random address
-	*/
-	AddressType string
-
-	/*
-	Name The Bluetooth system name (pretty hostname).
-
-			This property is either a static system default
-			or controlled by an external daemon providing
-			access to the pretty hostname configuration.
-	*/
-	Name string
-
-	/*
-	Discoverable Switch an adapter to discoverable or non-discoverable
-			to either make it visible or hide it. This is a global
-			setting and should only be used by the settings
-			application.
-
-			If the DiscoverableTimeout is set to a non-zero
-			value then the system will set this value back to
-			false after the timer expired.
-
-			In case the adapter is switched off, setting this
-			value will fail.
-
-			When changing the Powered property the new state of
-			this property will be updated via a PropertiesChanged
-			signal.
-
-			For any new adapter this settings defaults to false.
-	*/
-	Discoverable bool
-
-	/*
 	Discovering Indicates that a device discovery procedure is active.
 	*/
 	Discovering bool
+
+	/*
+	DiscoverableTimeout The discoverable timeout in seconds. A value of zero
+			means that the timeout is disabled and it will stay in
+			discoverable/limited mode forever.
+
+			The default value for the discoverable timeout should
+			be 180 seconds (3 minutes).
+	*/
+	DiscoverableTimeout uint32
+
+	/*
+	Class The Bluetooth class of device.
+
+			This property represents the value that is either
+			automatically configured by DMI/ACPI information
+			or provided as static configuration.
+	*/
+	Class uint32
 
 }
 
@@ -233,20 +233,15 @@ func (p *Adapter1Properties) Unlock() {
 
 
 
-// SetDiscoverableTimeout set DiscoverableTimeout value
-func (a *Adapter1) SetDiscoverableTimeout(v uint32) error {
-	return a.SetProperty("DiscoverableTimeout", v)
-}
 
 
-
-// GetDiscoverableTimeout get DiscoverableTimeout value
-func (a *Adapter1) GetDiscoverableTimeout() (uint32, error) {
-	v, err := a.GetProperty("DiscoverableTimeout")
+// GetAddressType get AddressType value
+func (a *Adapter1) GetAddressType() (string, error) {
+	v, err := a.GetProperty("AddressType")
 	if err != nil {
-		return uint32(0), err
+		return "", err
 	}
-	return v.Value().(uint32), nil
+	return v.Value().(string), nil
 }
 
 
@@ -254,13 +249,13 @@ func (a *Adapter1) GetDiscoverableTimeout() (uint32, error) {
 
 
 
-// GetUUIDs get UUIDs value
-func (a *Adapter1) GetUUIDs() ([]string, error) {
-	v, err := a.GetProperty("UUIDs")
+// GetName get Name value
+func (a *Adapter1) GetName() (string, error) {
+	v, err := a.GetProperty("Name")
 	if err != nil {
-		return []string{}, err
+		return "", err
 	}
-	return v.Value().([]string), nil
+	return v.Value().(string), nil
 }
 
 
@@ -285,20 +280,6 @@ func (a *Adapter1) GetAlias() (string, error) {
 
 
 
-
-
-// GetClass get Class value
-func (a *Adapter1) GetClass() (uint32, error) {
-	v, err := a.GetProperty("Class")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
-}
-
-
-
-
 // SetPowered set Powered value
 func (a *Adapter1) SetPowered(v bool) error {
 	return a.SetProperty("Powered", v)
@@ -309,6 +290,25 @@ func (a *Adapter1) SetPowered(v bool) error {
 // GetPowered get Powered value
 func (a *Adapter1) GetPowered() (bool, error) {
 	v, err := a.GetProperty("Powered")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+// SetDiscoverable set Discoverable value
+func (a *Adapter1) SetDiscoverable(v bool) error {
+	return a.SetProperty("Discoverable", v)
+}
+
+
+
+// GetDiscoverable get Discoverable value
+func (a *Adapter1) GetDiscoverable() (bool, error) {
+	v, err := a.GetProperty("Discoverable")
 	if err != nil {
 		return false, err
 	}
@@ -358,20 +358,6 @@ func (a *Adapter1) GetPairableTimeout() (uint32, error) {
 
 
 
-// GetModalias get Modalias value
-func (a *Adapter1) GetModalias() (string, error) {
-	v, err := a.GetProperty("Modalias")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-
-
 // GetAddress get Address value
 func (a *Adapter1) GetAddress() (string, error) {
 	v, err := a.GetProperty("Address")
@@ -386,46 +372,27 @@ func (a *Adapter1) GetAddress() (string, error) {
 
 
 
-// GetAddressType get AddressType value
-func (a *Adapter1) GetAddressType() (string, error) {
-	v, err := a.GetProperty("AddressType")
+// GetUUIDs get UUIDs value
+func (a *Adapter1) GetUUIDs() ([]string, error) {
+	v, err := a.GetProperty("UUIDs")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
+}
+
+
+
+
+
+
+// GetModalias get Modalias value
+func (a *Adapter1) GetModalias() (string, error) {
+	v, err := a.GetProperty("Modalias")
 	if err != nil {
 		return "", err
 	}
 	return v.Value().(string), nil
-}
-
-
-
-
-
-
-// GetName get Name value
-func (a *Adapter1) GetName() (string, error) {
-	v, err := a.GetProperty("Name")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-// SetDiscoverable set Discoverable value
-func (a *Adapter1) SetDiscoverable(v bool) error {
-	return a.SetProperty("Discoverable", v)
-}
-
-
-
-// GetDiscoverable get Discoverable value
-func (a *Adapter1) GetDiscoverable() (bool, error) {
-	v, err := a.GetProperty("Discoverable")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
 }
 
 
@@ -440,6 +407,39 @@ func (a *Adapter1) GetDiscovering() (bool, error) {
 		return false, err
 	}
 	return v.Value().(bool), nil
+}
+
+
+
+
+// SetDiscoverableTimeout set DiscoverableTimeout value
+func (a *Adapter1) SetDiscoverableTimeout(v uint32) error {
+	return a.SetProperty("DiscoverableTimeout", v)
+}
+
+
+
+// GetDiscoverableTimeout get DiscoverableTimeout value
+func (a *Adapter1) GetDiscoverableTimeout() (uint32, error) {
+	v, err := a.GetProperty("DiscoverableTimeout")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
+
+
+
+
+
+
+// GetClass get Class value
+func (a *Adapter1) GetClass() (uint32, error) {
+	v, err := a.GetProperty("Class")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
 }
 
 
@@ -714,27 +714,6 @@ SetDiscoveryFilter
 				When enabled PropertiesChanged signals will be
 				generated for either ManufacturerData and
 				ServiceData everytime they are discovered.
-
-			bool Discoverable (Default: false)
-
-				Make adapter discoverable while discovering,
-				if the adapter is already discoverable setting
-				this filter won't do anything.
-
-			string Pattern (Default: none)
-
-				Discover devices where the pattern matches
-				either the prefix of the address or
-				device name which is convenient way to limited
-				the number of device objects created during a
-				discovery.
-
-				When set disregards device discoverable flags.
-
-				Note: The pattern matching is ignored if there
-				are other client that don't set any pattern as
-				it work as a logical OR, also setting empty
-				string "" pattern will match any device found.
 
 			When discovery filter is set, Device objects will be
 			created as new devices with matching criteria are

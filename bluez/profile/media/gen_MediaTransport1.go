@@ -59,12 +59,6 @@ type MediaTransport1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Endpoint Endpoint object which the transport is associated
-			with.
-	*/
-	Endpoint dbus.ObjectPath
-
-	/*
 	Device Device object which the transport is connected to.
 	*/
 	Device dbus.ObjectPath
@@ -122,20 +116,6 @@ func (p *MediaTransport1Properties) Lock() {
 //Unlock access to properties
 func (p *MediaTransport1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-
-
-// GetEndpoint get Endpoint value
-func (a *MediaTransport1) GetEndpoint() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Endpoint")
-	if err != nil {
-		return dbus.ObjectPath(""), err
-	}
-	return v.Value().(dbus.ObjectPath), nil
 }
 
 
