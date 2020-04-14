@@ -32,7 +32,7 @@ func (app *App) NewService() (*Service, error) {
 
 	s.app = app
 	s.chars = make(map[dbus.ObjectPath]*Char)
-	s.path = dbus.ObjectPath(fmt.Sprintf("%s/service_%s", app.Path(), strings.Replace(uuid, "-", "_", -1)[:8]))
+	s.path = dbus.ObjectPath(fmt.Sprintf("%s/%s", app.Path(), strings.Replace(uuid, "-", "_", -1)[:8]))
 	s.Properties = NewGattService1Properties(uuid)
 
 	iprops, err := api.NewDBusProperties(s.App().DBusConn())
@@ -60,7 +60,7 @@ func (app *App) AddService(s *Service) error {
 		return err
 	}
 
-	// log.Tracef("Added GATT Service ID=%d %s", s.ID, s.Path())
+	log.Tracef("Added GATT Service ID=%d %s", s.ID, s.Path())
 
 	return nil
 }

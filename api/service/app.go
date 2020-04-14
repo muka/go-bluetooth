@@ -17,7 +17,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-var AppPath = "/org/bluez/%s/apps/app%d"
+var AppInterface = "go.bluetooth"
+var AppPath = "/%s/apps/%d"
 
 var UseRandomUUID = false
 
@@ -117,7 +118,7 @@ func (app *App) init() error {
 	app.conn = conn
 
 	_, err = conn.RequestName(
-		"org.bluez",
+		AppInterface,
 		dbus.NameFlagDoNotQueue&dbus.NameFlagReplaceExisting,
 	)
 	if err != nil {
@@ -130,6 +131,7 @@ func (app *App) init() error {
 	}
 	app.objectManager = om
 
+	log.Tracef("Expose %s (%s)", app.Path(), bluez.ObjectManagerInterface)
 	err = conn.Export(app.objectManager, app.Path(), bluez.ObjectManagerInterface)
 	if err != nil {
 		return err

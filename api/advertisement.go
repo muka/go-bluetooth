@@ -9,13 +9,14 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const baseAdvertismentPath = "/org/bluez/%s/apps/advertisement%d"
+// const baseAdvertismentPath = "/org/bluez/%s/apps/advertisement%d"
+const BaseAdvertismentPath = "/%s/advertisement/%d"
 
 var advertisingCount int = -1
 
 func nextAdvertismentPath(adapterID string) dbus.ObjectPath {
 	advertisingCount++
-	return dbus.ObjectPath(fmt.Sprintf(baseAdvertismentPath, adapterID, advertisingCount))
+	return dbus.ObjectPath(fmt.Sprintf(BaseAdvertismentPath, adapterID, advertisingCount))
 }
 
 func decreaseAdvertismentCounter() {

@@ -86,12 +86,14 @@ func (o *DBusObjectManager) GetManagedObjects() (map[dbus.ObjectPath]map[string]
 
 //AddObject add an object to the list
 func (o *DBusObjectManager) AddObject(path dbus.ObjectPath, val map[string]bluez.Properties) error {
+	log.Tracef("ObjectManager.AddObject: %s", path)
 	o.objects[path] = val
 	return o.SignalAdded(path)
 }
 
 //RemoveObject remove an object from the list
 func (o *DBusObjectManager) RemoveObject(path dbus.ObjectPath) error {
+	log.Tracef("ObjectManager.RemoveObject: %s", path)
 	if s, ok := o.objects[path]; ok {
 		delete(o.objects, path)
 		ifaces := make([]string, len(s))

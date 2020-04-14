@@ -103,6 +103,13 @@ func (s *Service) AddChar(char *Char) error {
 		return err
 	}
 
+	err = s.DBusObjectManager().AddObject(char.Path(), map[string]bluez.Properties{
+		char.Interface(): char.GetProperties(),
+	})
+	if err != nil {
+		return err
+	}
+
 	log.Tracef("Added GATT Characteristic ID=%d %s", char.ID, char.Path())
 
 	return nil

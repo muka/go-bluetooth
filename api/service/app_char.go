@@ -128,6 +128,13 @@ func (s *Char) AddDescr(descr *Descr) error {
 		return err
 	}
 
+	err = s.DBusObjectManager().AddObject(descr.Path(), map[string]bluez.Properties{
+		descr.Interface(): descr.GetProperties(),
+	})
+	if err != nil {
+		return err
+	}
+
 	s.descr[descr.Path()] = descr
 
 	log.Tracef("Added GATT Descriptor ID=%d %s", descr.ID, descr.Path())

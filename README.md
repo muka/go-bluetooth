@@ -60,9 +60,11 @@ In order to interact with DBus, propert configurations must be installed in the 
 The library is tested with
 
 - golang `1.14.1`
-- bluez bluetooth `v5.54`
+- bluez bluetooth `v5.50`, `v5.54`
 
 ### Development notes
+
+- Inspect an application ObjectManager ```dbus-send --system --print-reply --dest=go.bluetooth /hci0/apps/0 org.freedesktop.DBus.ObjectManager.GetManagedObjects```
 
 -   Give access to `hciconfig` to any user and avoid `sudo` (may have [security implications](https://www.insecure.ws/linux/getcap_setcap.html))
 
