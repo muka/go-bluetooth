@@ -12,8 +12,10 @@ import (
 func serve(adapterID string) error {
 
 	options := service.AppOptions{
-		AdapterID: adapterID,
-		AgentCaps: agent.CapNoInputNoOutput,
+		AdapterID:  adapterID,
+		AgentCaps:  agent.CapNoInputNoOutput,
+		UUIDSuffix: "-0000-1000-8000-00805F9B34FB",
+		UUID:       "1234",
 	}
 
 	a, err := service.NewApp(options)
@@ -33,12 +35,17 @@ func serve(adapterID string) error {
 		}
 	}
 
-	service1, err := a.NewService()
+	service1, err := a.NewService("2233")
 	if err != nil {
 		return err
 	}
 
-	char1, err := service1.NewChar()
+	err = a.AddService(service1)
+	if err != nil {
+		return err
+	}
+
+	char1, err := service1.NewChar("3344")
 	if err != nil {
 		return err
 	}
@@ -58,7 +65,12 @@ func serve(adapterID string) error {
 		return value, nil
 	}))
 
-	descr1, err := char1.NewDescr()
+	err = service1.AddChar(char1)
+	if err != nil {
+		return err
+	}
+
+	descr1, err := char1.NewDescr("4455")
 	if err != nil {
 		return err
 	}
@@ -78,16 +90,6 @@ func serve(adapterID string) error {
 	}))
 
 	err = char1.AddDescr(descr1)
-	if err != nil {
-		return err
-	}
-
-	err = service1.AddChar(char1)
-	if err != nil {
-		return err
-	}
-
-	err = a.AddService(service1)
 	if err != nil {
 		return err
 	}

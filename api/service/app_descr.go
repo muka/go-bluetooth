@@ -11,7 +11,7 @@ type DescrReadCallback func(c *Descr, options map[string]interface{}) ([]byte, e
 type DescrWriteCallback func(c *Descr, value []byte) ([]byte, error)
 
 type Descr struct {
-	ID   int
+	UUID string
 	app  *App
 	char *Char
 

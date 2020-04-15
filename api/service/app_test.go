@@ -11,22 +11,19 @@ func createTestApp(t *testing.T) *App {
 
 	log.SetLevel(log.TraceLevel)
 
-	a, err := NewApp(AppOptions{AdapterID: api.GetDefaultAdapterID()})
+	a, err := NewApp(AppOptions{
+		AdapterID: api.GetDefaultAdapterID(),
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	s1, err := a.NewService()
+	s1, err := a.NewService("2233")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	c1, err := s1.NewChar()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	err = s1.AddChar(c1)
+	c1, err := s1.NewChar("3344")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -39,12 +36,17 @@ func createTestApp(t *testing.T) *App {
 			return nil, nil
 		}))
 
-	d1, err := c1.NewDescr()
+	d1, err := c1.NewDescr("4455")
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	err = c1.AddDescr(d1)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	err = s1.AddChar(c1)
 	if err != nil {
 		t.Fatal(err)
 	}

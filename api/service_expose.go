@@ -72,9 +72,8 @@ func ExposeDBusService(s ExposedDBusService) (err error) {
 		},
 	}
 
-	intrsp := introspect.NewIntrospectable(node)
 	err = conn.Export(
-		intrsp,
+		introspect.NewIntrospectable(node),
 		s.Path(),
 		"org.freedesktop.DBus.Introspectable",
 	)
