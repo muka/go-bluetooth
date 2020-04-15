@@ -13,8 +13,10 @@ var PropertyTypes = map[string]map[string]string{
 		"ManufacturerData": "map[uint16]interface{}",
 	},
 	"org.bluez.GattCharacteristic1": map[string]string{
-		"Value":       "[]byte `dbus:\"emit\"`",
-		"Descriptors": "[]dbus.ObjectPath",
+		"Value":          "[]byte `dbus:\"emit\"`",
+		"Descriptors":    "[]dbus.ObjectPath",
+		"WriteAcquired":  "bool `dbus:\"ignore\"`",
+		"NotifyAcquired": "bool `dbus:\"ignore\"`",
 	},
 	"org.bluez.GattDescriptor1": map[string]string{
 		"Value":          "[]byte `dbus:\"emit\"`",

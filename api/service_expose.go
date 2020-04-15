@@ -54,6 +54,7 @@ func ExposeDBusService(s ExposedDBusService) (err error) {
 		return err
 	}
 
+	log.Tracef("Expose Properties interface (%s)", s.Path())
 	s.DBusProperties().Expose(s.Path())
 
 	node := &introspect.Node{

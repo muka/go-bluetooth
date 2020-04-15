@@ -37,10 +37,6 @@ func serve(adapterID string) error {
 	if err != nil {
 		return err
 	}
-	err = a.AddService(service1)
-	if err != nil {
-		return err
-	}
 
 	char1, err := service1.NewChar()
 	if err != nil {
@@ -62,11 +58,6 @@ func serve(adapterID string) error {
 		return value, nil
 	}))
 
-	err = service1.AddChar(char1)
-	if err != nil {
-		return err
-	}
-
 	descr1, err := char1.NewDescr()
 	if err != nil {
 		return err
@@ -87,6 +78,16 @@ func serve(adapterID string) error {
 	}))
 
 	err = char1.AddDescr(descr1)
+	if err != nil {
+		return err
+	}
+
+	err = service1.AddChar(char1)
+	if err != nil {
+		return err
+	}
+
+	err = a.AddService(service1)
 	if err != nil {
 		return err
 	}

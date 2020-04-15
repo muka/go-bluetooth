@@ -53,6 +53,9 @@ In order to interact with DBus, propert configurations must be installed in the 
 ```sh
   cd $GOPATH/src/github.com/muka/go-bluetooth
   make dev/dbus/install
+  # Add bluetooth group to own the DBus service
+  sudo addgroup bluetooth || true
+  sudo adduser `id -nu` bluetooth
 ```
 
 ## Requirements
@@ -64,7 +67,16 @@ The library is tested with
 
 ### Development notes
 
-- Inspect an application ObjectManager ```dbus-send --system --print-reply --dest=go.bluetooth /hci0/apps/0 org.freedesktop.DBus.ObjectManager.GetManagedObjects```
+- Inspect a service ObjectManager
+
+  ```dbus-send --system --print-reply --dest=go.bluetooth /hci0/apps/0 org.freedesktop.DBus.ObjectManager.GetManagedObjects
+  ```
+
+- Retrieve char properties
+
+  ```
+  dbus-send --system --print-reply --dest=go.bluetooth /hci0/apps/0/service000003e8/char0  org.freedesktop.DBus.Properties.GetAll string:org.bluez.GattCharacteristic1
+  ```
 
 -   Give access to `hciconfig` to any user and avoid `sudo` (may have [security implications](https://www.insecure.ws/linux/getcap_setcap.html))
 

@@ -47,6 +47,7 @@ func (s *Char) GetProperties() bluez.Properties {
 	}
 	s.Properties.Descriptors = descr
 	s.Properties.Service = s.Service().Path()
+
 	return s.Properties
 }
 
@@ -109,7 +110,7 @@ func (s *Char) NewDescr() (*Descr, error) {
 	descr.char = s
 	descr.Properties = NewGattDescriptor1Properties(uuid)
 	descr.path = dbus.ObjectPath(
-		fmt.Sprintf("%s/descr%d", s.Path(), len(s.GetDescr())),
+		fmt.Sprintf("%s/descriptor%d", s.Path(), len(s.GetDescr())),
 	)
 	iprops, err := api.NewDBusProperties(s.App().DBusConn())
 	if err != nil {

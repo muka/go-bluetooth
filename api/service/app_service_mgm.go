@@ -32,7 +32,7 @@ func (app *App) NewService() (*Service, error) {
 
 	s.app = app
 	s.chars = make(map[dbus.ObjectPath]*Char)
-	s.path = dbus.ObjectPath(fmt.Sprintf("%s/%s", app.Path(), strings.Replace(uuid, "-", "_", -1)[:8]))
+	s.path = dbus.ObjectPath(fmt.Sprintf("%s/service%s", app.Path(), strings.Replace(uuid, "-", "_", -1)[:8]))
 	s.Properties = NewGattService1Properties(uuid)
 
 	iprops, err := api.NewDBusProperties(s.App().DBusConn())

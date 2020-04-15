@@ -86,12 +86,6 @@ func (p *DBusProperties) Expose(path dbus.ObjectPath) {
 	}
 
 	p.instance = prop.New(p.conn, path, propsConfig)
-
-	// for _, v1 := range propsConfig {
-	// 	for k, v := range v1 {
-	// 		log.Tracef("Properties map: %s %++v", k, v)
-	// 	}
-	// }
 }
 
 //AddProperties add a property set

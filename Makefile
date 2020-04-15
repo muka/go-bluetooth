@@ -1,7 +1,7 @@
 
 .PHONY: gen
 
-BLUEZ_VERSION ?= 5.54
+BLUEZ_VERSION ?= 5.50
 FILTER ?=
 DEV_HOST ?= minion
 

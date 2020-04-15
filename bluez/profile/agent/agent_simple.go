@@ -10,12 +10,12 @@ import (
 
 var agentInstances = 0
 
-const agentBasePath = "/org/bluez/agent/simple%d"
+const AgentBasePath = "/agent/simple%d"
 const SimpleAgentPinCode = "0000"
 const SimpleAgentPassKey uint32 = 1024
 
 func NextAgentPath() dbus.ObjectPath {
-	p := dbus.ObjectPath(fmt.Sprintf(agentBasePath, agentInstances))
+	p := dbus.ObjectPath(fmt.Sprintf(AgentBasePath, agentInstances))
 	agentInstances += 1
 	return p
 }

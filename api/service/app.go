@@ -131,10 +131,42 @@ func (app *App) init() error {
 	}
 	app.objectManager = om
 
+	return err
+}
+
+func (app *App) GetAdapter() *adapter.Adapter1 {
+	return app.adapter
+}
+
+func (app *App) Run() (err error) {
+
 	log.Tracef("Expose %s (%s)", app.Path(), bluez.ObjectManagerInterface)
-	err = conn.Export(app.objectManager, app.Path(), bluez.ObjectManagerInterface)
+	err = app.conn.Export(app.objectManager, app.Path(), bluez.ObjectManagerInterface)
 	if err != nil {
 		return err
+	}
+
+	// Expose children services, chars and descriptors
+	children := []introspect.Node{}
+	for _, service := range app.GetServices() {
+		childPath := strings.ReplaceAll(string(service.Path()), string(app.Path())+"/", "")
+		children = append(children, introspect.Node{
+			Name: childPath,
+		})
+		// chars
+		for _, char := range service.GetChars() {
+			childPath := strings.ReplaceAll(string(char.Path()), string(app.Path())+"/", "")
+			children = append(children, introspect.Node{
+				Name: childPath,
+			})
+			// descrs
+			for _, descr := range char.GetDescr() {
+				childPath := strings.ReplaceAll(string(descr.Path()), string(app.Path())+"/", "")
+				children = append(children, introspect.Node{
+					Name: childPath,
+				})
+			}
+		}
 	}
 
 	node := &introspect.Node{
@@ -144,6 +176,7 @@ func (app *App) init() error {
 			//ObjectManager
 			bluez.ObjectManagerIntrospectData,
 		},
+		Children: children,
 	}
 
 	introspectable := introspect.NewIntrospectable(node)
@@ -152,15 +185,6 @@ func (app *App) init() error {
 		app.Path(),
 		"org.freedesktop.DBus.Introspectable",
 	)
-
-	return err
-}
-
-func (app *App) GetAdapter() *adapter.Adapter1 {
-	return app.adapter
-}
-
-func (app *App) Run() (err error) {
 
 	err = app.ExposeAgent(app.AgentCaps, app.AgentSetAsDefault)
 	if err != nil {
