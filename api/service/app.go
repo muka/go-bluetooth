@@ -17,7 +17,7 @@ import (
 )
 
 // AppInterface default namespace
-var AppInterface = "go.bluetooth"
+const AppInterface = "go.bluetooth"
 
 // AppPath default app path
 var AppPath = "/%s/apps/%d"
@@ -29,6 +29,7 @@ type AppOptions struct {
 	AdapterID         string
 	AgentCaps         string
 	AgentSetAsDefault bool
+	AppInterface      string
 	UUIDSuffix        string
 	UUID              string
 }
@@ -48,6 +49,9 @@ func NewApp(options AppOptions) (*App, error) {
 	}
 	if app.Options.UUID == "" {
 		app.Options.UUID = "1234"
+	}
+	if app.Options.AppInterface == "" {
+		app.Options.AppInterface = AppInterface
 	}
 
 	app.adapterID = app.Options.AdapterID
@@ -114,7 +118,7 @@ func (app *App) init() error {
 	app.conn = conn
 
 	_, err = conn.RequestName(
-		AppInterface,
+		app.Options.AppInterface,
 		dbus.NameFlagDoNotQueue&dbus.NameFlagReplaceExisting,
 	)
 	if err != nil {
