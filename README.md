@@ -1,10 +1,11 @@
+
 # go-bluetooth
 
 Go bluetooth API for Linux-based Bluez DBus interface.
 
 [![GoDoc](https://godoc.org/github.com/muka/go-bluetooth?status.svg)](https://godoc.org/github.com/muka/go-bluetooth)
 
-<img align="center" width="90" src="./gopher.png">
+<img style="float:right" align="center" width="90" src="./gopher.png">
 
 ## Features
 
@@ -19,6 +20,30 @@ High level features supported:
 - [x] Pairing and authentication support (via agent)
 - [x] Beaconing send & receive (iBeacon and Eddystone)
 
+## Running examples
+
+Examples are available in `_examples` folder.
+
+```sh
+cd _examples
+go run main.go
+# print available example commands
+# Example discovery
+go run main.go discovery
+```
+
+## Development setup
+
+1. Clone the repository
+
+  `git clone https://github.com/muka/go-bluetooth.git`
+
+1. Retrieve the bluetooth API and generate GO code
+
+  ```sh
+  make bluez/init bluez/checkout gen/clean gen/run
+  ```
+
 ## Code generation
 
 The code structure follow this pattern:
@@ -30,28 +55,14 @@ Use `make gen` to re-generate go sources. There is also a commodity bluez JSON f
 
 Generated code has `gen_` prefix. If an API file exists with the same filename but _without_ the prefix, generation will be skipped for that API.
 
-## Development setup
-
-1. Clone the repository
-
-  `git clone https://github.com/muka/go-bluetooth.git`
-
-1. Retrieve the bluetooth API and generate GO code
-
-  `make all`
-
-2. Run an example
-
-  `go-bluetooth discovery`
-
-The `examples/` folder offer an overview of the API.
 
 ## DBus configuration setup
 
 In order to interact with DBus, propert configurations must be installed in the system. For a development setup, the repository provides example configurations.
 
 ```sh
-  cd $GOPATH/src/github.com/muka/go-bluetooth
+  cd <go-bluetooth path>
+  # install dbus permissions configuration, may require a system restart
   make dev/dbus/install
   # Add bluetooth group to own the DBus service
   sudo addgroup bluetooth || true
