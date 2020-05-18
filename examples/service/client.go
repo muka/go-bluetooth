@@ -114,9 +114,9 @@ func discover(a *adapter.Adapter1, hwaddr string) (*device.Device1, error) {
 
 	for ev := range discovery {
 
-		dev, err1 := device.NewDevice1(ev.Path)
+		dev, err := device.NewDevice1(ev.Path)
 		if err != nil {
-			return nil, err1
+			return nil, err
 		}
 
 		if dev == nil || dev.Properties == nil {
