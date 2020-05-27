@@ -4,6 +4,7 @@ import (
 	"context"
 	"strings"
 
+	"github.com/godbus/dbus"
 	"github.com/muka/go-bluetooth/bluez/profile/advertising"
 	"github.com/muka/go-bluetooth/bluez/profile/device"
 )
@@ -92,13 +93,19 @@ func (b *Beacon) GetIBeacon() BeaconIBeacon {
 
 // GetFrames return the bytes content
 func (b *Beacon) GetFrames() []byte {
+	var data interface{}
 	if b.IsIBeacon() {
-		return b.props.ManufacturerData[appleBit].([]byte)
+		data = b.props.ManufacturerData[appleBit].([]byte)
+	} else {
+		data = b.props.ServiceData[eddystoneSrvcUid].([]byte)
 	}
-	return b.props.ServiceData[eddystoneSrvcUid].([]byte)
+	if dataBytes, ok := b.getBytesFromData(data); ok {
+		return dataBytes
+	}
+	return nil
 }
 
-// Load beacon inforamtion if available
+// Load beacon information if available
 func (b *Beacon) Parse() bool {
 
 	if b.Device != nil {
@@ -131,11 +138,11 @@ func (b *Beacon) parserIBeacon(manufacturerData map[uint16]interface{}) bool {
 		return false
 	}
 	if frames, ok := manufacturerData[appleBit]; ok {
-		// log.Debug("Found iBeacon")
-		// log.Debugf("iBeacon data: %d", frames)
 		b.Type = BeaconTypeIBeacon
-		b.iBeacon = b.ParseIBeacon(frames.([]byte))
-		return true
+		if frameBytes, ok := b.getBytesFromData(frames); ok {
+			b.iBeacon = b.ParseIBeacon(frameBytes)
+			return true
+		}
 	}
 	return false
 }
@@ -159,4 +166,16 @@ func (b *Beacon) parserEddystone(UUIDs []string, serviceData map[string]interfac
 		}
 	}
 	return false
+}
+
+func (b *Beacon) getBytesFromData(data interface{}) ([]byte, bool) {
+	if variant, ok := data.(dbus.Variant); ok {
+		if variantBytes, ok := variant.Value().([]byte); ok {
+			return variantBytes, true
+		}
+	} else if dataBytes, ok := data.([]byte); ok {
+		return dataBytes, true
+	}
+
+	return nil, false
 }
