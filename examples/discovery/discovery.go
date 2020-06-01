@@ -3,6 +3,8 @@ package discovery_example
 
 import (
 	"context"
+	"os"
+	"os/signal"
 
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/api/beacon"
@@ -63,7 +65,13 @@ func Run(adapterID string, onlyBeacon bool) error {
 
 	}()
 
-	select {}
+	ch := make(chan os.Signal)
+	signal.Notify(ch, os.Interrupt, os.Kill) // get notified of all OS signals
+
+	sig := <-ch
+	log.Infof("Received signal [%v]; shutting down...\n", sig)
+
+	return nil
 }
 
 func handleBeacon(dev *device.Device1) error {
