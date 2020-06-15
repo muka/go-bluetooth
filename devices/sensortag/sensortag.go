@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/godbus/dbus"
+	"github.com/godbus/dbus/v5"
 	"github.com/muka/go-bluetooth/bluez/profile/device"
 	"github.com/muka/go-bluetooth/bluez/profile/gatt"
 	log "github.com/sirupsen/logrus"

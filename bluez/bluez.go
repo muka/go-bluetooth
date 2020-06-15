@@ -1,6 +1,6 @@
 package bluez
 
-import "github.com/godbus/dbus/introspect"
+import "github.com/godbus/dbus/v5/introspect"
 
 const (
 	OrgBluezPath      = "/org/bluez"

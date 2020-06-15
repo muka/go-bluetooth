@@ -1,7 +1,7 @@
 package obex
 
 import (
-	"github.com/godbus/dbus"
+	"github.com/godbus/dbus/v5"
 	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/util"
 )

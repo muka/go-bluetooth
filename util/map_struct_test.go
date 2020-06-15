@@ -3,7 +3,7 @@ package util
 import (
 	"testing"
 
-	"github.com/godbus/dbus"
+	"github.com/godbus/dbus/v5"
 	log "github.com/sirupsen/logrus"
 	"github.com/stretchr/testify/assert"
 )
