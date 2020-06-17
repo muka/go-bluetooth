@@ -1,31 +1,16 @@
 package beacon
 
 import (
-	"encoding/binary"
-	"encoding/hex"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	eddystone "github.com/suapapa/go_eddystone"
 )
 
 const eddystoneSrvcUid = "FEAA"
 
-const (
-	frameTypeUID byte = 0x00
-	frameTypeURL byte = 0x10
-	frameTypeTLM byte = 0x20
-)
-
-type EddystoneFrame string
-
-const (
-	EddystoneFrameUID EddystoneFrame = "uid"
-	EddystoneFrameURL EddystoneFrame = "url"
-	EddystoneFrameTLM EddystoneFrame = "tlm"
-)
-
 type BeaconEddystone struct {
-	Frame             EddystoneFrame
+	Frame             eddystone.Header
 	CalibratedTxPower int
 	// eddystone-uid
 	UID         string
@@ -42,28 +27,24 @@ type BeaconEddystone struct {
 }
 
 func (b *Beacon) ParseEddystone(frames []byte) BeaconEddystone {
-
 	info := BeaconEddystone{}
+	frameHeader := eddystone.Header(frames[0])
 
-	switch frames[0] {
-	case frameTypeUID:
-		{
-			info.Frame = EddystoneFrameUID
-			parseEddystoneUID(&info, frames)
+	switch frameHeader {
+	case eddystone.UID:
+		info.Frame = frameHeader
+		parseEddystoneUID(&info, frames)
+	case eddystone.TLM:
+		info.Frame = frameHeader
+		parseEddystoneTLM(&info, frames)
+	case eddystone.URL:
+		info.Frame = frameHeader
+		err := parseEddystoneURL(&info, frames)
+		if err != nil {
+			log.Warn(err)
 		}
-	case frameTypeTLM:
-		{
-			info.Frame = EddystoneFrameTLM
-			parseEddystoneTLM(&info, frames)
-		}
-	case frameTypeURL:
-		{
-			info.Frame = EddystoneFrameURL
-			err := parseEddystoneURL(&info, frames)
-			if err != nil {
-				log.Warn(err)
-			}
-		}
+	case eddystone.EID:
+		// TODO
 
 	}
 
@@ -94,21 +75,11 @@ func (b *Beacon) ParseEddystone(frames []byte) BeaconEddystone {
 // 18	          RFU	Reserved for future use, must be0x00
 // 19	          RFU	Reserved for future use, must be0x00
 func parseEddystoneUID(info *BeaconEddystone, frames []byte) {
+	ns, instance, tx := eddystone.ParseUIDFrame(frames)
 
-	// 10 bytes length
-	uid := hex.EncodeToString(frames[2:12])
-	uid = strings.ToUpper(uid)
-
-	// 6 bytes length
-	iuid := hex.EncodeToString(frames[12:18])
-	iuid = strings.ToUpper(iuid)
-
-	// log.Debugf("%s - %s", uid, iuid)
-
-	info.CalibratedTxPower = int(frames[1] & 0xff)
-	info.UID = uid
-	info.InstanceUID = iuid
-
+	info.CalibratedTxPower = tx
+	info.UID = strings.ToUpper(ns)
+	info.InstanceUID = strings.ToUpper(instance)
 }
 
 // eddystone-tlm (plain)
@@ -129,13 +100,13 @@ func parseEddystoneUID(info *BeaconEddystone, frames []byte) {
 // 12	           SEC_CNT[2]
 // 13	           SEC_CNT[3]
 func parseEddystoneTLM(info *BeaconEddystone, frames []byte) {
+	batt, temp, advCnt, secCnt := eddystone.ParseTLMFrame(frames)
 
 	info.TLMVersion = int(frames[1] & 0xff)
-	info.TLMBatteryVoltage = bytesToUint16(frames[2:4])
-	info.TLMTemperature = fixTofloat32(bytesToUint16(frames[4:6]))
-	info.TLMAdvertisingPDU = binary.BigEndian.Uint32(frames[6:10])
-	info.TLMLastRebootedTime = binary.BigEndian.Uint32(frames[10:14])
-
+	info.TLMBatteryVoltage = batt
+	info.TLMTemperature = temp
+	info.TLMAdvertisingPDU = advCnt
+	info.TLMLastRebootedTime = secCnt
 }
 
 // Byte offset	Field	Description
@@ -170,15 +141,12 @@ func parseEddystoneTLM(info *BeaconEddystone, frames []byte) {
 // 14..32	   0x0e..0x20    Reserved for Future Use
 // 127..255	 0x7F..0xFF    Reserved for Future Use
 func parseEddystoneURL(info *BeaconEddystone, frames []byte) error {
-
-	txPower := byteToInt(frames[1])
-	info.CalibratedTxPower = txPower
-
-	url, err := decodeURL(frames[2], frames[3:])
+	url, tx, err := eddystone.ParseURLFrame(frames)
 	if err != nil {
 		return err
 	}
 
+	info.CalibratedTxPower = tx
 	info.URL = url
 
 	return nil

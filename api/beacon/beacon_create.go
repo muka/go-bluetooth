@@ -78,7 +78,6 @@ func appendEddystoneService(UUIDs []string) []string {
 
 // CreateEddystoneURL create an eddystone beacon frame with url
 func CreateEddystoneURL(url string, txPower int) (*Beacon, error) {
-
 	frames, err := eddystone.MakeURLFrame(url, txPower)
 	if err != nil {
 		return nil, err
@@ -102,7 +101,6 @@ func CreateEddystoneURL(url string, txPower int) (*Beacon, error) {
 
 // CreateEddystoneTLM create an eddystone beacon frame with tlm
 func CreateEddystoneTLM(batt uint16, temp float32, advCnt, secCnt uint32) (*Beacon, error) {
-
 	frames, err := eddystone.MakeTLMFrame(batt, temp, advCnt, secCnt)
 	if err != nil {
 		return nil, err
@@ -130,7 +128,6 @@ func CreateEddystoneTLM(batt uint16, temp float32, advCnt, secCnt uint32) (*Beac
 
 // CreateEddystoneUID create an eddystone beacon frame with uid
 func CreateEddystoneUID(namespace, instance string, txPwr int) (*Beacon, error) {
-
 	frames, err := eddystone.MakeUIDFrame(namespace, instance, txPwr)
 	if err != nil {
 		return nil, err
