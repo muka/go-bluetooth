@@ -192,7 +192,7 @@ func ApiTemplate(filename string, api *types.Api, apiGroup *types.ApiGroup) erro
 	}
 
 	if importDbus {
-		imports = append(imports, "github.com/godbus/dbus")
+		imports = append(imports, "github.com/godbus/dbus/v5")
 	}
 
 	api.Description = prepareDocs(api.Description, false, 0)

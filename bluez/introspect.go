@@ -1,6 +1,6 @@
 package bluez
 
-import "github.com/godbus/dbus/introspect"
+import "github.com/godbus/dbus/v5/introspect"
 
 // GattService1IntrospectDataString interface definition
 const GattService1IntrospectDataString = `

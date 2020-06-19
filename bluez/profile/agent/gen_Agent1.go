@@ -7,7 +7,7 @@ package agent
 import (
    "sync"
    "github.com/muka/go-bluetooth/bluez"
-   "github.com/godbus/dbus"
+   "github.com/godbus/dbus/v5"
 )
 
 var Agent1Interface = "org.bluez.Agent1"

@@ -1,7 +1,7 @@
 package bluez
 
 import (
-	"github.com/godbus/dbus"
+	"github.com/godbus/dbus/v5"
 )
 
 var objectManager *ObjectManager

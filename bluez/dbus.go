@@ -3,14 +3,14 @@ package bluez
 import (
 	"errors"
 
-	"github.com/godbus/dbus"
+	"github.com/godbus/dbus/v5"
 	log "github.com/sirupsen/logrus"
 )
 
 //Properties dbus serializable struct
 // Use struct tags to control how the field is handled by Properties interface
 // Example: field `dbus:writable,emit,myCallback`
-// See Prop in github.com/godbus/dbus/prop for configuration details
+// See Prop in github.com/godbus/dbus/v5/prop for configuration details
 // Options:
 // - writable: set the property as writable (Set will updated it). Omit for read-only
 // - emit|invalidates: emit PropertyChanged, invalidates emit without disclosing the value. Omit for read-only

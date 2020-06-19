@@ -7,7 +7,7 @@ package profile
 import (
    "sync"
    "github.com/muka/go-bluetooth/bluez"
-   "github.com/godbus/dbus"
+   "github.com/godbus/dbus/v5"
 )
 
 var Profile1Interface = "org.bluez.Profile1"

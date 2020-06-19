@@ -9,7 +9,7 @@ import (
    "github.com/muka/go-bluetooth/bluez"
    "github.com/muka/go-bluetooth/util"
    "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus"
+   "github.com/godbus/dbus/v5"
 )
 
 var Thermometer1Interface = "org.bluez.Thermometer1"

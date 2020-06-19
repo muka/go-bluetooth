@@ -1,9 +1,9 @@
 package api
 
 import (
-	"github.com/godbus/dbus"
-	"github.com/godbus/dbus/introspect"
-	"github.com/godbus/dbus/prop"
+	"github.com/godbus/dbus/v5"
+	"github.com/godbus/dbus/v5/introspect"
+	"github.com/godbus/dbus/v5/prop"
 	"github.com/muka/go-bluetooth/bluez"
 	log "github.com/sirupsen/logrus"
 )
