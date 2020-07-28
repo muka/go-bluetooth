@@ -59,100 +59,19 @@ type MediaPlayer1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	Scan Possible values: "off", "alltracks" or "group"
+	*/
+	Scan string
+
+	/*
 	Title Track title name
 	*/
 	Title string
 
 	/*
-	Artist Track artist name
-	*/
-	Artist string
-
-	/*
 	TrackNumber Track number
 	*/
 	TrackNumber uint32
-
-	/*
-	Searchable If present indicates the player can be searched using
-			MediaFolder interface.
-
-			Possible values:
-
-				True: Supported and active
-				False: Supported but inactive
-
-			Note: If supported but inactive clients can enable it
-			by using MediaFolder interface but it might interfere
-			in the playback of other players.
-	*/
-	Searchable bool
-
-	/*
-	Playlist Playlist object path.
-	*/
-	Playlist dbus.ObjectPath
-
-	/*
-	Equalizer Possible values: "off" or "on"
-	*/
-	Equalizer string
-
-	/*
-	Status Possible status: "playing", "stopped", "paused",
-					"forward-seek", "reverse-seek"
-					or "error"
-	*/
-	Status string
-
-	/*
-	Type Player type
-
-			Possible values:
-
-				"Audio"
-				"Video"
-				"Audio Broadcasting"
-				"Video Broadcasting"
-	*/
-	Type string
-
-	/*
-	Duration Track duration in milliseconds
-	*/
-	Duration uint32
-
-	/*
-	Device Device object path.
-	*/
-	Device dbus.ObjectPath
-
-	/*
-	Position Playback position in milliseconds. Changing the
-			position may generate additional events that will be
-			sent to the remote device. When position is 0 it means
-			the track is starting and when it's greater than or
-			equal to track's duration the track has ended. Note
-			that even if duration is not available in metadata it's
-			possible to signal its end by setting position to the
-			maximum uint32 value.
-	*/
-	Position uint32
-
-	/*
-	Album Track album name
-	*/
-	Album string
-
-	/*
-	NumberOfTracks Number of tracks in total
-	*/
-	NumberOfTracks uint32
-
-	/*
-	Name Player name
-	*/
-	Name string
 
 	/*
 	Browsable If present indicates the player can be browsed using
@@ -170,19 +89,113 @@ type MediaPlayer1Properties struct {
 	Browsable bool
 
 	/*
-	Shuffle Possible values: "off", "alltracks" or "group"
+	Searchable If present indicates the player can be searched using
+			MediaFolder interface.
+
+			Possible values:
+
+				True: Supported and active
+				False: Supported but inactive
+
+			Note: If supported but inactive clients can enable it
+			by using MediaFolder interface but it might interfere
+			in the playback of other players.
 	*/
-	Shuffle string
+	Searchable bool
 
 	/*
-	Scan Possible values: "off", "alltracks" or "group"
+	NumberOfTracks Number of tracks in total
 	*/
-	Scan string
+	NumberOfTracks uint32
+
+	/*
+	Type Player type
+
+			Possible values:
+
+				"Audio"
+				"Video"
+				"Audio Broadcasting"
+				"Video Broadcasting"
+	*/
+	Type string
+
+	/*
+	Playlist Playlist object path.
+	*/
+	Playlist dbus.ObjectPath
+
+	/*
+	Repeat Possible values: "off", "singletrack", "alltracks" or
+					"group"
+	*/
+	Repeat string
+
+	/*
+	Position Playback position in milliseconds. Changing the
+			position may generate additional events that will be
+			sent to the remote device. When position is 0 it means
+			the track is starting and when it's greater than or
+			equal to track's duration the track has ended. Note
+			that even if duration is not available in metadata it's
+			possible to signal its end by setting position to the
+			maximum uint32 value.
+	*/
+	Position uint32
+
+	/*
+	Track Track metadata.
+
+			Possible values:
+	*/
+	Track map[string]interface{}
+
+	/*
+	Album Track album name
+	*/
+	Album string
 
 	/*
 	Genre Track genre name
 	*/
 	Genre string
+
+	/*
+	Equalizer Possible values: "off" or "on"
+	*/
+	Equalizer string
+
+	/*
+	Status Possible status: "playing", "stopped", "paused",
+					"forward-seek", "reverse-seek"
+					or "error"
+	*/
+	Status string
+
+	/*
+	Artist Track artist name
+	*/
+	Artist string
+
+	/*
+	Shuffle Possible values: "off", "alltracks" or "group"
+	*/
+	Shuffle string
+
+	/*
+	Duration Track duration in milliseconds
+	*/
+	Duration uint32
+
+	/*
+	Device Device object path.
+	*/
+	Device dbus.ObjectPath
+
+	/*
+	Name Player name
+	*/
+	Name string
 
 	/*
 	Subtype Player subtype
@@ -193,19 +206,6 @@ type MediaPlayer1Properties struct {
 				"Podcast"
 	*/
 	Subtype string
-
-	/*
-	Repeat Possible values: "off", "singletrack", "alltracks" or
-					"group"
-	*/
-	Repeat string
-
-	/*
-	Track Track metadata.
-
-			Possible values:
-	*/
-	Track map[string]interface{}
 
 }
 
@@ -222,6 +222,25 @@ func (p *MediaPlayer1Properties) Unlock() {
 
 
 
+// SetScan set Scan value
+func (a *MediaPlayer1) SetScan(v string) error {
+	return a.SetProperty("Scan", v)
+}
+
+
+
+// GetScan get Scan value
+func (a *MediaPlayer1) GetScan() (string, error) {
+	v, err := a.GetProperty("Scan")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
 // SetTitle set Title value
 func (a *MediaPlayer1) SetTitle(v string) error {
 	return a.SetProperty("Title", v)
@@ -232,25 +251,6 @@ func (a *MediaPlayer1) SetTitle(v string) error {
 // GetTitle get Title value
 func (a *MediaPlayer1) GetTitle() (string, error) {
 	v, err := a.GetProperty("Title")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-// SetArtist set Artist value
-func (a *MediaPlayer1) SetArtist(v string) error {
-	return a.SetProperty("Artist", v)
-}
-
-
-
-// GetArtist get Artist value
-func (a *MediaPlayer1) GetArtist() (string, error) {
-	v, err := a.GetProperty("Artist")
 	if err != nil {
 		return "", err
 	}
@@ -281,6 +281,20 @@ func (a *MediaPlayer1) GetTrackNumber() (uint32, error) {
 
 
 
+// GetBrowsable get Browsable value
+func (a *MediaPlayer1) GetBrowsable() (bool, error) {
+	v, err := a.GetProperty("Browsable")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+
+
 // GetSearchable get Searchable value
 func (a *MediaPlayer1) GetSearchable() (bool, error) {
 	v, err := a.GetProperty("Searchable")
@@ -288,6 +302,39 @@ func (a *MediaPlayer1) GetSearchable() (bool, error) {
 		return false, err
 	}
 	return v.Value().(bool), nil
+}
+
+
+
+
+// SetNumberOfTracks set NumberOfTracks value
+func (a *MediaPlayer1) SetNumberOfTracks(v uint32) error {
+	return a.SetProperty("NumberOfTracks", v)
+}
+
+
+
+// GetNumberOfTracks get NumberOfTracks value
+func (a *MediaPlayer1) GetNumberOfTracks() (uint32, error) {
+	v, err := a.GetProperty("NumberOfTracks")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
+
+
+
+
+
+
+// GetType get Type value
+func (a *MediaPlayer1) GetType() (string, error) {
+	v, err := a.GetProperty("Type")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 
@@ -307,6 +354,91 @@ func (a *MediaPlayer1) GetPlaylist() (dbus.ObjectPath, error) {
 		return dbus.ObjectPath(""), err
 	}
 	return v.Value().(dbus.ObjectPath), nil
+}
+
+
+
+
+// SetRepeat set Repeat value
+func (a *MediaPlayer1) SetRepeat(v string) error {
+	return a.SetProperty("Repeat", v)
+}
+
+
+
+// GetRepeat get Repeat value
+func (a *MediaPlayer1) GetRepeat() (string, error) {
+	v, err := a.GetProperty("Repeat")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+
+
+// GetPosition get Position value
+func (a *MediaPlayer1) GetPosition() (uint32, error) {
+	v, err := a.GetProperty("Position")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
+
+
+
+
+
+
+// GetTrack get Track value
+func (a *MediaPlayer1) GetTrack() (map[string]interface{}, error) {
+	v, err := a.GetProperty("Track")
+	if err != nil {
+		return map[string]interface{}{}, err
+	}
+	return v.Value().(map[string]interface{}), nil
+}
+
+
+
+
+// SetAlbum set Album value
+func (a *MediaPlayer1) SetAlbum(v string) error {
+	return a.SetProperty("Album", v)
+}
+
+
+
+// GetAlbum get Album value
+func (a *MediaPlayer1) GetAlbum() (string, error) {
+	v, err := a.GetProperty("Album")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+// SetGenre set Genre value
+func (a *MediaPlayer1) SetGenre(v string) error {
+	return a.SetProperty("Genre", v)
+}
+
+
+
+// GetGenre get Genre value
+func (a *MediaPlayer1) GetGenre() (string, error) {
+	v, err := a.GetProperty("Genre")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 
@@ -345,11 +477,35 @@ func (a *MediaPlayer1) GetStatus() (string, error) {
 
 
 
+// SetArtist set Artist value
+func (a *MediaPlayer1) SetArtist(v string) error {
+	return a.SetProperty("Artist", v)
+}
 
 
-// GetType get Type value
-func (a *MediaPlayer1) GetType() (string, error) {
-	v, err := a.GetProperty("Type")
+
+// GetArtist get Artist value
+func (a *MediaPlayer1) GetArtist() (string, error) {
+	v, err := a.GetProperty("Artist")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+// SetShuffle set Shuffle value
+func (a *MediaPlayer1) SetShuffle(v string) error {
+	return a.SetProperty("Shuffle", v)
+}
+
+
+
+// GetShuffle get Shuffle value
+func (a *MediaPlayer1) GetShuffle() (string, error) {
+	v, err := a.GetProperty("Shuffle")
 	if err != nil {
 		return "", err
 	}
@@ -394,132 +550,9 @@ func (a *MediaPlayer1) GetDevice() (dbus.ObjectPath, error) {
 
 
 
-// GetPosition get Position value
-func (a *MediaPlayer1) GetPosition() (uint32, error) {
-	v, err := a.GetProperty("Position")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
-}
-
-
-
-
-// SetAlbum set Album value
-func (a *MediaPlayer1) SetAlbum(v string) error {
-	return a.SetProperty("Album", v)
-}
-
-
-
-// GetAlbum get Album value
-func (a *MediaPlayer1) GetAlbum() (string, error) {
-	v, err := a.GetProperty("Album")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-// SetNumberOfTracks set NumberOfTracks value
-func (a *MediaPlayer1) SetNumberOfTracks(v uint32) error {
-	return a.SetProperty("NumberOfTracks", v)
-}
-
-
-
-// GetNumberOfTracks get NumberOfTracks value
-func (a *MediaPlayer1) GetNumberOfTracks() (uint32, error) {
-	v, err := a.GetProperty("NumberOfTracks")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
-}
-
-
-
-
-
-
 // GetName get Name value
 func (a *MediaPlayer1) GetName() (string, error) {
 	v, err := a.GetProperty("Name")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-
-
-// GetBrowsable get Browsable value
-func (a *MediaPlayer1) GetBrowsable() (bool, error) {
-	v, err := a.GetProperty("Browsable")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-// SetShuffle set Shuffle value
-func (a *MediaPlayer1) SetShuffle(v string) error {
-	return a.SetProperty("Shuffle", v)
-}
-
-
-
-// GetShuffle get Shuffle value
-func (a *MediaPlayer1) GetShuffle() (string, error) {
-	v, err := a.GetProperty("Shuffle")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-// SetScan set Scan value
-func (a *MediaPlayer1) SetScan(v string) error {
-	return a.SetProperty("Scan", v)
-}
-
-
-
-// GetScan get Scan value
-func (a *MediaPlayer1) GetScan() (string, error) {
-	v, err := a.GetProperty("Scan")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-// SetGenre set Genre value
-func (a *MediaPlayer1) SetGenre(v string) error {
-	return a.SetProperty("Genre", v)
-}
-
-
-
-// GetGenre get Genre value
-func (a *MediaPlayer1) GetGenre() (string, error) {
-	v, err := a.GetProperty("Genre")
 	if err != nil {
 		return "", err
 	}
@@ -538,39 +571,6 @@ func (a *MediaPlayer1) GetSubtype() (string, error) {
 		return "", err
 	}
 	return v.Value().(string), nil
-}
-
-
-
-
-// SetRepeat set Repeat value
-func (a *MediaPlayer1) SetRepeat(v string) error {
-	return a.SetProperty("Repeat", v)
-}
-
-
-
-// GetRepeat get Repeat value
-func (a *MediaPlayer1) GetRepeat() (string, error) {
-	v, err := a.GetProperty("Repeat")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-
-
-// GetTrack get Track value
-func (a *MediaPlayer1) GetTrack() (map[string]interface{}, error) {
-	v, err := a.GetProperty("Track")
-	if err != nil {
-		return map[string]interface{}{}, err
-	}
-	return v.Value().(map[string]interface{}), nil
 }
 
 

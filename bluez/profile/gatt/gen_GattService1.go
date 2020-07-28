@@ -66,22 +66,6 @@ type GattService1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Includes Array of object paths representing the included
-			services of this service.
-	*/
-	Includes []dbus.ObjectPath `dbus:"omitEmpty"`
-
-	/*
-	IsService 
-	*/
-	IsService bool `dbus:"ignore"`
-
-	/*
-	Characteristics 
-	*/
-	Characteristics []dbus.ObjectPath `dbus:"emit"`
-
-	/*
 	UUID 128-bit service UUID.
 	*/
 	UUID string
@@ -99,6 +83,31 @@ type GattService1Properties struct {
 	*/
 	Device dbus.ObjectPath `dbus:"ignore=IsService"`
 
+	/*
+	Includes Array of object paths representing the included
+			services of this service.
+	*/
+	Includes []dbus.ObjectPath `dbus:"omitEmpty"`
+
+	/*
+	Handle Service handle. When available in the server it
+			would attempt to use to allocate into the database
+			which may fail, to auto allocate the value 0x0000
+			shall be used which will cause the allocated handle to
+			be set once registered.
+	*/
+	Handle uint16
+
+	/*
+	Characteristics 
+	*/
+	Characteristics []dbus.ObjectPath `dbus:"emit"`
+
+	/*
+	IsService 
+	*/
+	IsService bool `dbus:"ignore"`
+
 }
 
 //Lock access to properties
@@ -109,63 +118,6 @@ func (p *GattService1Properties) Lock() {
 //Unlock access to properties
 func (p *GattService1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-// SetIncludes set Includes value
-func (a *GattService1) SetIncludes(v []dbus.ObjectPath) error {
-	return a.SetProperty("Includes", v)
-}
-
-
-
-// GetIncludes get Includes value
-func (a *GattService1) GetIncludes() ([]dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Includes")
-	if err != nil {
-		return []dbus.ObjectPath{}, err
-	}
-	return v.Value().([]dbus.ObjectPath), nil
-}
-
-
-
-
-// SetIsService set IsService value
-func (a *GattService1) SetIsService(v bool) error {
-	return a.SetProperty("IsService", v)
-}
-
-
-
-// GetIsService get IsService value
-func (a *GattService1) GetIsService() (bool, error) {
-	v, err := a.GetProperty("IsService")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-// SetCharacteristics set Characteristics value
-func (a *GattService1) SetCharacteristics(v []dbus.ObjectPath) error {
-	return a.SetProperty("Characteristics", v)
-}
-
-
-
-// GetCharacteristics get Characteristics value
-func (a *GattService1) GetCharacteristics() ([]dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Characteristics")
-	if err != nil {
-		return []dbus.ObjectPath{}, err
-	}
-	return v.Value().([]dbus.ObjectPath), nil
 }
 
 
@@ -223,6 +175,82 @@ func (a *GattService1) GetDevice() (dbus.ObjectPath, error) {
 		return dbus.ObjectPath(""), err
 	}
 	return v.Value().(dbus.ObjectPath), nil
+}
+
+
+
+
+// SetIncludes set Includes value
+func (a *GattService1) SetIncludes(v []dbus.ObjectPath) error {
+	return a.SetProperty("Includes", v)
+}
+
+
+
+// GetIncludes get Includes value
+func (a *GattService1) GetIncludes() ([]dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Includes")
+	if err != nil {
+		return []dbus.ObjectPath{}, err
+	}
+	return v.Value().([]dbus.ObjectPath), nil
+}
+
+
+
+
+// SetHandle set Handle value
+func (a *GattService1) SetHandle(v uint16) error {
+	return a.SetProperty("Handle", v)
+}
+
+
+
+// GetHandle get Handle value
+func (a *GattService1) GetHandle() (uint16, error) {
+	v, err := a.GetProperty("Handle")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
+
+
+
+
+// SetCharacteristics set Characteristics value
+func (a *GattService1) SetCharacteristics(v []dbus.ObjectPath) error {
+	return a.SetProperty("Characteristics", v)
+}
+
+
+
+// GetCharacteristics get Characteristics value
+func (a *GattService1) GetCharacteristics() ([]dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Characteristics")
+	if err != nil {
+		return []dbus.ObjectPath{}, err
+	}
+	return v.Value().([]dbus.ObjectPath), nil
+}
+
+
+
+
+// SetIsService set IsService value
+func (a *GattService1) SetIsService(v bool) error {
+	return a.SetProperty("IsService", v)
+}
+
+
+
+// GetIsService get IsService value
+func (a *GattService1) GetIsService() (bool, error) {
+	v, err := a.GetProperty("IsService")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
 }
 
 

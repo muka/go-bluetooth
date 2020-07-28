@@ -85,6 +85,11 @@ type MediaFolder1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	NumberOfItems Number of items in the folder
+	*/
+	NumberOfItems uint32
+
+	/*
 	Name Folder name:
 
 			Possible values:
@@ -126,11 +131,6 @@ Filters
 	*/
 	Attributes []string
 
-	/*
-	NumberOfItems Number of items in the folder
-	*/
-	NumberOfItems uint32
-
 }
 
 //Lock access to properties
@@ -141,6 +141,20 @@ func (p *MediaFolder1Properties) Lock() {
 //Unlock access to properties
 func (p *MediaFolder1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+
+
+// GetNumberOfItems get NumberOfItems value
+func (a *MediaFolder1) GetNumberOfItems() (uint32, error) {
+	v, err := a.GetProperty("NumberOfItems")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
 }
 
 
@@ -212,20 +226,6 @@ func (a *MediaFolder1) GetAttributes() ([]string, error) {
 		return []string{}, err
 	}
 	return v.Value().([]string), nil
-}
-
-
-
-
-
-
-// GetNumberOfItems get NumberOfItems value
-func (a *MediaFolder1) GetNumberOfItems() (uint32, error) {
-	v, err := a.GetProperty("NumberOfItems")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
 }
 
 
