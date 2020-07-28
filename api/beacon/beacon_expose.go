@@ -14,6 +14,10 @@ func (b *Beacon) Expose(adapterID string, timeout uint16) (func(), error) {
 	if b.Name != "" {
 		props.LocalName = b.Name
 	}
+
+	b.props.Includes = nil
+	b.props.ManufacturerData = nil
+
 	// Duration is set to 2sec by default
 	// Not sure if duration can be mapped to interval.
 	// props.Duration = 1

@@ -138,7 +138,6 @@ func CreateEddystoneUID(namespace, instance string, txPwr int) (*Beacon, error) 
 		return nil, err
 	}
 
-	b.props.AddServiceUUID(eddystoneSrvcUid)
 	b.props.AddServiceData(eddystoneSrvcUid, []byte(frames))
 
 	b.Type = BeaconTypeEddystone

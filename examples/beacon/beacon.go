@@ -8,7 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func Run(beaconType, adapterID string) error {
+func Run(beaconType, eddystoneBeaconType, adapterID string) error {
 
 	var b *beacon.Beacon
 	if beaconType == "ibeacon" {
@@ -18,11 +18,23 @@ func Run(beaconType, adapterID string) error {
 		}
 		b = b1
 	} else {
-		b1, err := beacon.CreateEddystoneURL("https://bit.ly/2OCrFK2", 99)
-		if err != nil {
-			return err
+
+		if eddystoneBeaconType == "URL" {
+			log.Infof("Exposing eddystone URL")
+			b1, err := beacon.CreateEddystoneURL("https://bit.ly/2OCrFK2", 99)
+			if err != nil {
+				return err
+			}
+			b = b1
+		} else {
+			// UID
+			log.Infof("Exposing eddystone UID")
+			b1, err := beacon.CreateEddystoneUID("AAAAAAAAAABBBBBBBBBB", "123456123456", -59)
+			if err != nil {
+				return err
+			}
+			b = b1
 		}
-		b = b1
 	}
 
 	// A timeout of 0 cause an immediate timeout and advertisement deregistration

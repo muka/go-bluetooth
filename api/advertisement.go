@@ -10,7 +10,7 @@ import (
 )
 
 // const baseAdvertismentPath = "/org/bluez/%s/apps/advertisement%d"
-const BaseAdvertismentPath = "/%s/advertisement/%d"
+const BaseAdvertismentPath = "/go_bluetooth/%s/advertisement/%d"
 
 var advertisingCount int = -1
 

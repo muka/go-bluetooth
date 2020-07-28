@@ -34,7 +34,13 @@ var beaconCmd = &cobra.Command{
 			failArg("type: ibeacon or eddystone")
 		}
 
-		fail(beacon_example.Run(args[0], adapterID))
+		var beaconType string = "URL"
+		if len(args) == 2 {
+			beaconType = args[1]
+		}
+
+		fail(beacon_example.Run(args[0], beaconType, adapterID))
+
 	},
 }
 
