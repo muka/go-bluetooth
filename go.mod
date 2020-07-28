@@ -8,6 +8,7 @@ require (
 	github.com/godbus/dbus/v5 v5.0.3
 	github.com/konsorten/go-windows-terminal-sequences v1.0.2 // indirect
 	github.com/kr/pretty v0.1.0 // indirect
+	github.com/muka/go-bluetooth/_examples v0.0.0-20200619025933-f6113f7141c5 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.5.0
 	github.com/stretchr/testify v1.5.1
