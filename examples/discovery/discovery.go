@@ -58,10 +58,12 @@ func Run(adapterID string, onlyBeacon bool) error {
 
 			log.Infof("name=%s addr=%s rssi=%d", dev.Properties.Name, dev.Properties.Address, dev.Properties.RSSI)
 
-			err = handleBeacon(dev)
-			if err != nil {
-				log.Errorf("%s: %s", ev.Path, err)
-			}
+			go func(ev *adapter.DeviceDiscovered) {
+				err = handleBeacon(dev)
+				if err != nil {
+					log.Errorf("%s: %s", ev.Path, err)
+				}
+			}(ev)
 		}
 
 	}()

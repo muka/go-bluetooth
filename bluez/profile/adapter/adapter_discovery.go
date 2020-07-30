@@ -31,14 +31,12 @@ func (a *Adapter1) OnDeviceDiscovered() (chan *DeviceDiscovered, func(), error) 
 	}
 
 	var (
-		ch   = make(chan *DeviceDiscovered)
-		done = make(chan struct{})
+		ch = make(chan *DeviceDiscovered)
 	)
 
 	go func() {
-		defer func() { done <- struct{}{} }()
-
 		for v := range signal {
+
 			if v == nil {
 				return
 			}
@@ -73,7 +71,13 @@ func (a *Adapter1) OnDeviceDiscovered() (chan *DeviceDiscovered, func(), error) 
 					continue
 				}
 				log.Tracef("Added device %s", path)
+
+				if ch == nil {
+					return
+				}
+
 				ch <- &DeviceDiscovered{path, op}
+
 			}
 
 		}
@@ -81,8 +85,9 @@ func (a *Adapter1) OnDeviceDiscovered() (chan *DeviceDiscovered, func(), error) 
 
 	cancel := func() {
 		omSignalCancel()
-		<-done
 		close(ch)
+		ch = nil
+		log.Trace("OnDeviceDiscovered: cancel() called")
 	}
 
 	return ch, cancel, nil
