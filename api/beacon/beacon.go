@@ -142,7 +142,7 @@ func (b *Beacon) parserIBeacon(manufacturerData map[uint16]interface{}) bool {
 			if len(frameBytes) < 22 {
 				return false
 			}
-			
+
 			b.Type = BeaconTypeIBeacon
 			b.iBeacon = b.ParseIBeacon(frameBytes)
 			return true
