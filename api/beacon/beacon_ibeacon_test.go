@@ -45,3 +45,28 @@ func TestParseIBeacon(t *testing.T) {
 	assert.Equal(t, string(beacon.Type), string(BeaconTypeIBeacon))
 	assert.IsType(t, BeaconIBeacon{}, beacon.GetIBeacon())
 }
+
+func TestParseInvalidIBeacon(t *testing.T) {
+	log.SetLevel(log.DebugLevel)
+
+	dev := &device.Device1{
+		Properties: &device.Device1Properties{
+			Name: "test_ibeacon",
+			ManufacturerData: map[uint16]interface{}{
+				// this is an invalid package
+				appleBit: []byte{16, 5, 1, 24, 128, 123, 77},
+			},
+		},
+	}
+
+	beacon, err := NewBeacon(dev)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	isBeacon := beacon.Parse()
+
+	assert.False(t, isBeacon)
+	assert.False(t, beacon.IsIBeacon())
+	assert.Equal(t, string(beacon.Type), "")
+}
