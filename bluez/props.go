@@ -92,13 +92,14 @@ func WatchProperties(wprop WatchableClient) (chan *PropertyChanged, error) {
 }
 
 func UnwatchProperties(wprop WatchableClient, ch chan *PropertyChanged) error {
-	ch <- nil
-	close(ch)
 	if wprop.GetWatchPropertiesChannel() != nil {
+		wprop.GetWatchPropertiesChannel() <- nil
 		err := wprop.Client().Unregister(wprop.Path(), PropertiesInterface, wprop.GetWatchPropertiesChannel())
 		if err != nil {
 			return err
 		}
 	}
+	ch <- nil
+	close(ch)
 	return nil
 }
