@@ -138,8 +138,12 @@ func (b *Beacon) parserIBeacon(manufacturerData map[uint16]interface{}) bool {
 		return false
 	}
 	if frames, ok := manufacturerData[appleBit]; ok {
-		b.Type = BeaconTypeIBeacon
 		if frameBytes, ok := b.getBytesFromData(frames); ok {
+			if len(frameBytes) < 22 {
+				return false
+			}
+
+			b.Type = BeaconTypeIBeacon
 			b.iBeacon = b.ParseIBeacon(frameBytes)
 			return true
 		}
