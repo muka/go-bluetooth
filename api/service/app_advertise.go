@@ -16,6 +16,11 @@ func (app *App) Advertise(timeout uint32) (func(), error) {
 	adv.Timeout = uint16(timeout)
 	adv.Duration = uint16(timeout)
 
+	serviceUUIDs := []string{}
+	for serviceUUID := range app.GetServices() {
+		serviceUUIDs = append(serviceUUIDs, string(serviceUUID))
+	}
+
 	cancel, err := api.ExposeAdvertisement(app.adapterID, adv, timeout)
 	return cancel, err
 }

@@ -85,7 +85,9 @@ func (a *Adapter1) OnDeviceDiscovered() (chan *DeviceDiscovered, func(), error) 
 
 	cancel := func() {
 		omSignalCancel()
-		close(ch)
+		if ch != nil {
+			close(ch)
+		}
 		ch = nil
 		log.Trace("OnDeviceDiscovered: cancel() called")
 	}
