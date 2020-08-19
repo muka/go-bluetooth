@@ -80,7 +80,7 @@ func (s *Service) NewChar(uuid string) (*Char, error) {
 	char.app = s.App()
 	char.service = s
 	char.descr = make(map[dbus.ObjectPath]*Descr)
-	char.Properties = NewGattCharacteristic1Properties(uuid)
+	char.Properties = NewGattCharacteristic1Properties(char.UUID)
 
 	iprops, err := api.NewDBusProperties(s.App().DBusConn())
 	if err != nil {
@@ -107,12 +107,21 @@ func (s *Service) AddChar(char *Char) error {
 		return err
 	}
 
+	// update OM service rapresentation also
+	err = s.DBusObjectManager().AddObject(s.Path(), map[string]bluez.Properties{
+		s.Interface(): s.GetProperties(),
+	})
+	if err != nil {
+		return err
+	}
+
 	log.Tracef("Added GATT Characteristic UUID=%s %s", char.UUID, char.Path())
 
 	err = s.App().ExportTree()
 	return err
 }
 
+// RemoveChar remove a characteristic from the service
 func (s *Service) RemoveChar(char *Char) error {
 	// todo unregister properties
 	if _, ok := s.chars[char.Path()]; !ok {
@@ -128,6 +137,14 @@ func (s *Service) RemoveChar(char *Char) error {
 
 	// remove the char from the three
 	err := s.DBusObjectManager().RemoveObject(s.Path())
+	if err != nil {
+		return err
+	}
+
+	// update OM service rapresentation also
+	err = s.DBusObjectManager().AddObject(s.Path(), map[string]bluez.Properties{
+		s.Interface(): s.GetProperties(),
+	})
 	if err != nil {
 		return err
 	}

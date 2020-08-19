@@ -22,7 +22,7 @@ func (app *App) NewService(uuid string) (*Service, error) {
 	s.app = app
 	s.chars = make(map[dbus.ObjectPath]*Char)
 	s.path = dbus.ObjectPath(fmt.Sprintf("%s/service%s", app.Path(), strings.Replace(s.UUID, "-", "_", -1)[:8]))
-	s.Properties = NewGattService1Properties(uuid)
+	s.Properties = NewGattService1Properties(s.UUID)
 
 	iprops, err := api.NewDBusProperties(s.App().DBusConn())
 	if err != nil {

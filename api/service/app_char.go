@@ -118,13 +118,15 @@ func (s *Char) NewDescr(uuid string) (*Descr, error) {
 	return descr, nil
 }
 
-// Add descr to dbus
+// AddDescr Add descr to dbus
 func (s *Char) AddDescr(descr *Descr) error {
 
 	err := api.ExposeDBusService(descr)
 	if err != nil {
 		return err
 	}
+
+	s.descr[descr.Path()] = descr
 
 	err = s.DBusObjectManager().AddObject(descr.Path(), map[string]bluez.Properties{
 		descr.Interface(): descr.GetProperties(),
@@ -133,7 +135,13 @@ func (s *Char) AddDescr(descr *Descr) error {
 		return err
 	}
 
-	s.descr[descr.Path()] = descr
+	// update OM char too
+	err = s.DBusObjectManager().AddObject(s.Path(), map[string]bluez.Properties{
+		s.Interface(): s.GetProperties(),
+	})
+	if err != nil {
+		return err
+	}
 
 	log.Tracef("Added GATT Descriptor UUID=%s %s", descr.UUID, descr.Path())
 

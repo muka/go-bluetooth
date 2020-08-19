@@ -80,7 +80,7 @@ func (o *DBusObjectManager) GetManagedObjects() (map[dbus.ObjectPath]map[string]
 			}
 		}
 	}
-
+	log.Tracef("ObjectManager.GetManagedObjects \n %v", props)
 	return props, nil
 }
 
