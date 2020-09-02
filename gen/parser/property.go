@@ -52,31 +52,49 @@ func (g *PropertyParser) Parse(raw []byte) (*types.Property, error) {
 
 	for _, f := range flagList {
 
+		// track server-only flags for gatt API
+		if strings.Contains(f, "Server Only") {
+			flags = append(flags, types.FlagServerOnly)
+		}
+
 		// int16 Handle [read-write, optional] (Server Only)
 		if strings.Contains(f, "]") {
 			f = strings.Split(f, "]")[0]
 		}
 
-		var flag types.Flag
-		switch f {
-		case "readonly":
-			{
+		f = strings.Trim(f, " []")
+		if f != "" {
+			var flag types.Flag = 0
+			switch f {
+			case "readonly":
+			case "read-only":
 				flag = types.FlagReadOnly
-			}
-		case "readwrite":
-			{
+				break
+			case "writeonly":
+			case "write-only":
+				flag = types.FlagWriteOnly
+				break
+			case "readwrite":
+			case "read-write":
+			case "read/write":
 				flag = types.FlagReadWrite
-			}
-		case "experimental":
-			{
+				break
+			case "experimental":
+			case "Experimental":
 				flag = types.FlagExperimental
+				break
+			case "optional":
+				flag = types.FlagOptional
+				break
+			default:
+				log.Warnf("Unknown flag %s", f)
+				break
+			}
+
+			if flag > 0 {
+				flags = append(flags, flag)
 			}
 		}
-
-		if flag > 0 {
-			flags = append(flags, flag)
-		}
-
 	}
 
 	docs := string(matches2[0][4])
@@ -88,6 +106,7 @@ func (g *PropertyParser) Parse(raw []byte) (*types.Property, error) {
 	if strings.Contains(name, "optional") {
 		name = strings.Replace(name, " (optional)", "", -1)
 		docs = "(optional) " + docs
+		flags = append(flags, types.FlagOptional)
 	}
 
 	name = strings.Replace(name, " \t\n", "", -1)

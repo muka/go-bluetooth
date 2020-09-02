@@ -2,6 +2,7 @@ package generator
 
 import (
 	"fmt"
+	"os"
 	"regexp"
 	"strings"
 	"text/template"
@@ -9,10 +10,22 @@ import (
 	"github.com/muka/go-bluetooth/gen/types"
 )
 
-var TplPath = "./gen/generator/tpl/%s.go.tpl"
+var TplPath = "gen/generator/tpl/%s.go.tpl"
+
+func getBaseDir() string {
+	baseDir := os.Getenv("BASEDIR")
+	if baseDir == "" {
+		baseDir = "."
+	}
+	return baseDir
+}
+
+func getTplPath() string {
+	return fmt.Sprintf("%s/%s", getBaseDir(), TplPath)
+}
 
 func loadtpl(name string) *template.Template {
-	return template.Must(template.ParseFiles(fmt.Sprintf(TplPath, name)))
+	return template.Must(template.ParseFiles(fmt.Sprintf(getTplPath(), name)))
 }
 
 func toType(t string) string {

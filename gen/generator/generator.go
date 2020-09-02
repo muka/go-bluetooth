@@ -44,6 +44,10 @@ func Generate(bluezApi gen.BluezAPI, outDir string, debug bool, forceOverwrite b
 
 	for _, apiGroup := range apiGroups {
 
+		if apiGroup == nil {
+			continue
+		}
+
 		apiName := getApiPackage(apiGroup)
 		dirpath := path.Join(outDir, apiName)
 		err := util.Mkdir(dirpath)
@@ -66,6 +70,10 @@ func Generate(bluezApi gen.BluezAPI, outDir string, debug bool, forceOverwrite b
 		}
 
 		for _, api := range apiGroup.Api {
+
+			if api == nil {
+				continue
+			}
 
 			pts := strings.Split(api.Interface, ".")
 			apiBaseName := pts[len(pts)-1]
