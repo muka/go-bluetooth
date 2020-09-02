@@ -59,22 +59,6 @@ type PhonebookAccess1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	DatabaseIdentifier 128 bits persistent database identifier.
-
-			Possible values: 32-character hexadecimal such
-			as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
-	*/
-	DatabaseIdentifier string
-
-	/*
-	PrimaryCounter 128 bits primary version counter.
-
-			Possible values: 32-character hexadecimal such
-			as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
-	*/
-	PrimaryCounter string
-
-	/*
 	SecondaryCounter 128 bits secondary version counter.
 
 			Possible values: 32-character hexadecimal such
@@ -95,6 +79,22 @@ type PhonebookAccess1Properties struct {
 	*/
 	Folder string
 
+	/*
+	DatabaseIdentifier 128 bits persistent database identifier.
+
+			Possible values: 32-character hexadecimal such
+			as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
+	*/
+	DatabaseIdentifier string
+
+	/*
+	PrimaryCounter 128 bits primary version counter.
+
+			Possible values: 32-character hexadecimal such
+			as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
+	*/
+	PrimaryCounter string
+
 }
 
 //Lock access to properties
@@ -105,44 +105,6 @@ func (p *PhonebookAccess1Properties) Lock() {
 //Unlock access to properties
 func (p *PhonebookAccess1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-// SetDatabaseIdentifier set DatabaseIdentifier value
-func (a *PhonebookAccess1) SetDatabaseIdentifier(v string) error {
-	return a.SetProperty("DatabaseIdentifier", v)
-}
-
-
-
-// GetDatabaseIdentifier get DatabaseIdentifier value
-func (a *PhonebookAccess1) GetDatabaseIdentifier() (string, error) {
-	v, err := a.GetProperty("DatabaseIdentifier")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-// SetPrimaryCounter set PrimaryCounter value
-func (a *PhonebookAccess1) SetPrimaryCounter(v string) error {
-	return a.SetProperty("PrimaryCounter", v)
-}
-
-
-
-// GetPrimaryCounter get PrimaryCounter value
-func (a *PhonebookAccess1) GetPrimaryCounter() (string, error) {
-	v, err := a.GetProperty("PrimaryCounter")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
 }
 
 
@@ -196,6 +158,44 @@ func (a *PhonebookAccess1) SetFolder(v string) error {
 // GetFolder get Folder value
 func (a *PhonebookAccess1) GetFolder() (string, error) {
 	v, err := a.GetProperty("Folder")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+// SetDatabaseIdentifier set DatabaseIdentifier value
+func (a *PhonebookAccess1) SetDatabaseIdentifier(v string) error {
+	return a.SetProperty("DatabaseIdentifier", v)
+}
+
+
+
+// GetDatabaseIdentifier get DatabaseIdentifier value
+func (a *PhonebookAccess1) GetDatabaseIdentifier() (string, error) {
+	v, err := a.GetProperty("DatabaseIdentifier")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+// SetPrimaryCounter set PrimaryCounter value
+func (a *PhonebookAccess1) SetPrimaryCounter(v string) error {
+	return a.SetProperty("PrimaryCounter", v)
+}
+
+
+
+// GetPrimaryCounter get PrimaryCounter value
+func (a *PhonebookAccess1) GetPrimaryCounter() (string, error) {
+	v, err := a.GetProperty("PrimaryCounter")
 	if err != nil {
 		return "", err
 	}

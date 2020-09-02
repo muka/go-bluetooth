@@ -11,6 +11,10 @@ var typesMap = map[string]string{
 	"array{string vcard, string name}": "[]map[string]string",
 	// obex
 	"object, dict": "dbus.ObjectPath, map[string]interface{}",
+	// obext List
+	"array{object, dict}": "[]map[dbus.ObjectPath]map[string]interface{}",
+	// gatt AcquireWrite
+	"fd, uint16": "dbus.UnixFD, uint16",
 }
 
 //MapType map a raw type literal otherwise difficult to parse

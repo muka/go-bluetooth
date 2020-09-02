@@ -61,24 +61,6 @@ type GattDescriptor1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	UUID 128-bit descriptor UUID.
-	*/
-	UUID string
-
-	/*
-	Characteristic Object path of the GATT characteristic the descriptor
-			belongs to.
-	*/
-	Characteristic dbus.ObjectPath
-
-	/*
-	Value The cached value of the descriptor. This property
-			gets updated only after a successful read request, upon
-			which a PropertiesChanged signal will be emitted.
-	*/
-	Value []byte `dbus:"emit"`
-
-	/*
 	Flags Defines how the descriptor value can be used.
 
 			Possible values:
@@ -104,6 +86,24 @@ type GattDescriptor1Properties struct {
 	*/
 	Handle uint16
 
+	/*
+	UUID 128-bit descriptor UUID.
+	*/
+	UUID string
+
+	/*
+	Characteristic Object path of the GATT characteristic the descriptor
+			belongs to.
+	*/
+	Characteristic dbus.ObjectPath
+
+	/*
+	Value The cached value of the descriptor. This property
+			gets updated only after a successful read request, upon
+			which a PropertiesChanged signal will be emitted.
+	*/
+	Value []byte `dbus:"emit"`
+
 }
 
 //Lock access to properties
@@ -114,6 +114,39 @@ func (p *GattDescriptor1Properties) Lock() {
 //Unlock access to properties
 func (p *GattDescriptor1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+
+
+// GetFlags get Flags value
+func (a *GattDescriptor1) GetFlags() ([]string, error) {
+	v, err := a.GetProperty("Flags")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
+}
+
+
+
+
+// SetHandle set Handle value
+func (a *GattDescriptor1) SetHandle(v uint16) error {
+	return a.SetProperty("Handle", v)
+}
+
+
+
+// GetHandle get Handle value
+func (a *GattDescriptor1) GetHandle() (uint16, error) {
+	v, err := a.GetProperty("Handle")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
 }
 
 
@@ -156,39 +189,6 @@ func (a *GattDescriptor1) GetValue() ([]byte, error) {
 		return []byte{}, err
 	}
 	return v.Value().([]byte), nil
-}
-
-
-
-
-
-
-// GetFlags get Flags value
-func (a *GattDescriptor1) GetFlags() ([]string, error) {
-	v, err := a.GetProperty("Flags")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
-}
-
-
-
-
-// SetHandle set Handle value
-func (a *GattDescriptor1) SetHandle(v uint16) error {
-	return a.SetProperty("Handle", v)
-}
-
-
-
-// GetHandle get Handle value
-func (a *GattDescriptor1) GetHandle() (uint16, error) {
-	v, err := a.GetProperty("Handle")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
 }
 
 

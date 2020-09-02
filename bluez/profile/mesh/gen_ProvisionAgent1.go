@@ -60,12 +60,6 @@ type ProvisionAgent1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	URI Uniform Resource Identifier points to out-of-band (OOB)
-		information (e.g., a public key)
-	*/
-	URI string
-
-	/*
 	Capabilities An array of strings with the following allowed values:
 			"blink"
 			"beep"
@@ -99,6 +93,12 @@ type ProvisionAgent1Properties struct {
 	*/
 	OutOfBandInfo []string
 
+	/*
+	URI Uniform Resource Identifier points to out-of-band (OOB)
+		information (e.g., a public key)
+	*/
+	URI string
+
 }
 
 //Lock access to properties
@@ -109,20 +109,6 @@ func (p *ProvisionAgent1Properties) Lock() {
 //Unlock access to properties
 func (p *ProvisionAgent1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-
-
-// GetURI get URI value
-func (a *ProvisionAgent1) GetURI() (string, error) {
-	v, err := a.GetProperty("URI")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
 }
 
 
@@ -151,6 +137,20 @@ func (a *ProvisionAgent1) GetOutOfBandInfo() ([]string, error) {
 		return []string{}, err
 	}
 	return v.Value().([]string), nil
+}
+
+
+
+
+
+
+// GetURI get URI value
+func (a *ProvisionAgent1) GetURI() (string, error) {
+	v, err := a.GetProperty("URI")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 

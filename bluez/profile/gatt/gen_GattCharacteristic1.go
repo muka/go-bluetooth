@@ -62,46 +62,9 @@ type GattCharacteristic1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	NotifyAcquired True, if this characteristic has been acquired by any
-			client using AcquireNotify.
-
-			For client this properties is ommited in case 'notify'
-			flag is not set.
-
-			For server the presence of this property indicates
-			that AcquireNotify is supported.
-	*/
-	NotifyAcquired bool `dbus:"ignore"`
-
-	/*
-	Notifying True, if notifications or indications on this
-			characteristic are currently enabled.
-	*/
-	Notifying bool
-
-	/*
 	UUID 128-bit characteristic UUID.
 	*/
 	UUID string
-
-	/*
-	Service Object path of the GATT service the characteristic
-			belongs to.
-	*/
-	Service dbus.ObjectPath
-
-	/*
-	Value The cached value of the characteristic. This property
-			gets updated only after a successful read request and
-			when a notification or indication is received, upon
-			which a PropertiesChanged signal will be emitted.
-	*/
-	Value []byte `dbus:"emit"`
-
-	/*
-	Descriptors 
-	*/
-	Descriptors []dbus.ObjectPath
 
 	/*
 	WriteAcquired True, if this characteristic has been acquired by any
@@ -114,6 +77,18 @@ type GattCharacteristic1Properties struct {
 			that AcquireWrite is supported.
 	*/
 	WriteAcquired bool `dbus:"ignore"`
+
+	/*
+	NotifyAcquired True, if this characteristic has been acquired by any
+			client using AcquireNotify.
+
+			For client this properties is ommited in case 'notify'
+			flag is not set.
+
+			For server the presence of this property indicates
+			that AcquireNotify is supported.
+	*/
+	NotifyAcquired bool `dbus:"ignore"`
 
 	/*
 	Flags Defines how the characteristic value can be used. See
@@ -150,6 +125,31 @@ type GattCharacteristic1Properties struct {
 	*/
 	Handle uint16
 
+	/*
+	Descriptors 
+	*/
+	Descriptors []dbus.ObjectPath
+
+	/*
+	Service Object path of the GATT service the characteristic
+			belongs to.
+	*/
+	Service dbus.ObjectPath
+
+	/*
+	Value The cached value of the characteristic. This property
+			gets updated only after a successful read request and
+			when a notification or indication is received, upon
+			which a PropertiesChanged signal will be emitted.
+	*/
+	Value []byte `dbus:"emit"`
+
+	/*
+	Notifying True, if notifications or indications on this
+			characteristic are currently enabled.
+	*/
+	Notifying bool
+
 }
 
 //Lock access to properties
@@ -160,34 +160,6 @@ func (p *GattCharacteristic1Properties) Lock() {
 //Unlock access to properties
 func (p *GattCharacteristic1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-
-
-// GetNotifyAcquired get NotifyAcquired value
-func (a *GattCharacteristic1) GetNotifyAcquired() (bool, error) {
-	v, err := a.GetProperty("NotifyAcquired")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-
-
-// GetNotifying get Notifying value
-func (a *GattCharacteristic1) GetNotifying() (bool, error) {
-	v, err := a.GetProperty("Notifying")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
 }
 
 
@@ -209,56 +181,23 @@ func (a *GattCharacteristic1) GetUUID() (string, error) {
 
 
 
-// GetService get Service value
-func (a *GattCharacteristic1) GetService() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Service")
-	if err != nil {
-		return dbus.ObjectPath(""), err
-	}
-	return v.Value().(dbus.ObjectPath), nil
-}
-
-
-
-
-
-
-// GetValue get Value value
-func (a *GattCharacteristic1) GetValue() ([]byte, error) {
-	v, err := a.GetProperty("Value")
-	if err != nil {
-		return []byte{}, err
-	}
-	return v.Value().([]byte), nil
-}
-
-
-
-
-// SetDescriptors set Descriptors value
-func (a *GattCharacteristic1) SetDescriptors(v []dbus.ObjectPath) error {
-	return a.SetProperty("Descriptors", v)
-}
-
-
-
-// GetDescriptors get Descriptors value
-func (a *GattCharacteristic1) GetDescriptors() ([]dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Descriptors")
-	if err != nil {
-		return []dbus.ObjectPath{}, err
-	}
-	return v.Value().([]dbus.ObjectPath), nil
-}
-
-
-
-
-
-
 // GetWriteAcquired get WriteAcquired value
 func (a *GattCharacteristic1) GetWriteAcquired() (bool, error) {
 	v, err := a.GetProperty("WriteAcquired")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+
+
+// GetNotifyAcquired get NotifyAcquired value
+func (a *GattCharacteristic1) GetNotifyAcquired() (bool, error) {
+	v, err := a.GetProperty("NotifyAcquired")
 	if err != nil {
 		return false, err
 	}
@@ -296,6 +235,67 @@ func (a *GattCharacteristic1) GetHandle() (uint16, error) {
 		return uint16(0), err
 	}
 	return v.Value().(uint16), nil
+}
+
+
+
+
+// SetDescriptors set Descriptors value
+func (a *GattCharacteristic1) SetDescriptors(v []dbus.ObjectPath) error {
+	return a.SetProperty("Descriptors", v)
+}
+
+
+
+// GetDescriptors get Descriptors value
+func (a *GattCharacteristic1) GetDescriptors() ([]dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Descriptors")
+	if err != nil {
+		return []dbus.ObjectPath{}, err
+	}
+	return v.Value().([]dbus.ObjectPath), nil
+}
+
+
+
+
+
+
+// GetService get Service value
+func (a *GattCharacteristic1) GetService() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Service")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
+}
+
+
+
+
+
+
+// GetValue get Value value
+func (a *GattCharacteristic1) GetValue() ([]byte, error) {
+	v, err := a.GetProperty("Value")
+	if err != nil {
+		return []byte{}, err
+	}
+	return v.Value().([]byte), nil
+}
+
+
+
+
+
+
+// GetNotifying get Notifying value
+func (a *GattCharacteristic1) GetNotifying() (bool, error) {
+	v, err := a.GetProperty("Notifying")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
 }
 
 
@@ -519,11 +519,12 @@ AcquireWrite 			Acquire file descriptor and MTU for writing. Only
 					 org.bluez.Error.NotSupported
 
 */
-func (a *GattCharacteristic1) AcquireWrite(options map[string]interface{}) (fd,, error) {
+func (a *GattCharacteristic1) AcquireWrite(options map[string]interface{}) (dbus.UnixFD, uint16, error) {
 	
-	var val0 fd,
-	err := a.client.Call("AcquireWrite", 0, options).Store(&val0)
-	return val0, err	
+	var val0 dbus.UnixFD
+  var val1 uint16
+	err := a.client.Call("AcquireWrite", 0, options).Store(&val0, &val1)
+	return val0, val1, err	
 }
 
 /*
@@ -555,11 +556,12 @@ AcquireNotify 			Acquire file descriptor and MTU for notify. Only
 					 org.bluez.Error.NotSupported
 
 */
-func (a *GattCharacteristic1) AcquireNotify(options map[string]interface{}) (fd,, error) {
+func (a *GattCharacteristic1) AcquireNotify(options map[string]interface{}) (dbus.UnixFD, uint16, error) {
 	
-	var val0 fd,
-	err := a.client.Call("AcquireNotify", 0, options).Store(&val0)
-	return val0, err	
+	var val0 dbus.UnixFD
+  var val1 uint16
+	err := a.client.Call("AcquireNotify", 0, options).Store(&val0, &val1)
+	return val0, val1, err	
 }
 
 /*

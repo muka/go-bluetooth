@@ -313,9 +313,9 @@ ListMessages 			Returns an array containing the messages found in the
 					 org.bluez.obex.Error.Failed
 
 */
-func (a *MessageAccess1) ListMessages(folder string, filter map[string]interface{}) (array{object,, error) {
+func (a *MessageAccess1) ListMessages(folder string, filter map[string]interface{}) ([]map[dbus.ObjectPath]map[string]interface{}, error) {
 	
-	var val0 array{object,
+	var val0 []map[dbus.ObjectPath]map[string]interface{}
 	err := a.client.Call("ListMessages", 0, folder, filter).Store(&val0)
 	return val0, err	
 }

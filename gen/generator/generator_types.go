@@ -46,7 +46,7 @@ func toType(t string) string {
 
 func listCastType(typedef string) string {
 	// handle multiple items eg. byte, uint16
-	if strings.Contains(typedef, ",") && typedef[:5] != "array" {
+	if strings.Contains(typedef, ", ") && typedef[:5] != "array" {
 		parts := strings.Split(typedef, ", ")
 		defs := make([]string, 0)
 		for _, part := range parts {
