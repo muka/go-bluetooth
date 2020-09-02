@@ -41,8 +41,17 @@ func ErrorsTemplate(filename string, apis []*types.ApiGroup) error {
 
 	errors := []string{}
 	for _, apiGroup := range apis {
+		if apiGroup == nil {
+			continue
+		}
 		for _, api := range apiGroup.Api {
+			if api == nil {
+				continue
+			}
 			for _, method := range api.Methods {
+				if method == nil {
+					continue
+				}
 				for _, err := range method.Errors {
 					errors = appendIfMissing(errors, err)
 				}

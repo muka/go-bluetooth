@@ -10,7 +10,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// NewMethodParser
+// NewMethodParser init a MethodParser
 func NewMethodParser(debug bool) MethodParser {
 	return MethodParser{
 		model: new(types.Method),
@@ -18,17 +18,19 @@ func NewMethodParser(debug bool) MethodParser {
 	}
 }
 
+//MethodParser wrap a parsable method
 type MethodParser struct {
 	model *types.Method
 	debug bool
 }
 
+//Parse a method text
 func (g *MethodParser) Parse(raw []byte) (*types.Method, error) {
 
 	var err error = nil
 	method := g.model
 
-	re := regexp.MustCompile(`[\t]{1,}(.*?) ?(\w+)\(([^)]*)\) ?(.*?)\n((?s).+)`)
+	re := regexp.MustCompile(`[\t]{1,}(.*?)(?: |\n\t{2,})(\w+)\(([^)]*)\) ?(.*?)\n((?s).+)`)
 	matches1 := re.FindAllSubmatch(raw, -1)
 
 	for _, matches2 := range matches1 {
@@ -39,6 +41,7 @@ func (g *MethodParser) Parse(raw []byte) (*types.Method, error) {
 		}
 
 		rtype = strings.Trim(rtype, " \t")
+
 		for _, srtype := range strings.Split(rtype, ",") {
 			if len(strings.Split(strings.Trim(srtype, " "), " ")) > 2 {
 				// log.Warnf("****** %s | %s", strings.Trim(srtype, " "), strings.Split(strings.Trim(srtype, " "), " "))
