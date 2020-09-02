@@ -146,6 +146,11 @@ func (p *MediaFolder1Properties) Unlock() {
 
 
 
+// SetNumberOfItems set NumberOfItems value
+func (a *MediaFolder1) SetNumberOfItems(v uint32) error {
+	return a.SetProperty("NumberOfItems", v)
+}
+
 
 
 // GetNumberOfItems get NumberOfItems value
@@ -159,6 +164,11 @@ func (a *MediaFolder1) GetNumberOfItems() (uint32, error) {
 
 
 
+
+// SetName set Name value
+func (a *MediaFolder1) SetName(v string) error {
+	return a.SetProperty("Name", v)
+}
 
 
 
@@ -374,15 +384,11 @@ func (a *MediaFolder1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 
 
 /*
-Search 
-			Return a folder object containing the search result.
-
+Search 			Return a folder object containing the search result.
 			To list the items found use the folder object returned
 			and pass to ChangeFolder.
-
 			Possible Errors: org.bluez.Error.NotSupported
 					 org.bluez.Error.Failed
-
 
 */
 func (a *MediaFolder1) Search(value string, filter map[string]interface{}) (dbus.ObjectPath, error) {
@@ -393,36 +399,28 @@ func (a *MediaFolder1) Search(value string, filter map[string]interface{}) (dbus
 }
 
 /*
-ListItems 
-			Return a list of items found
-
+ListItems 			Return a list of items found
 			Possible Errors: org.bluez.Error.InvalidArguments
 					 org.bluez.Error.NotSupported
 					 org.bluez.Error.Failed
 
-
 */
-func (a *MediaFolder1) ListItems(filter map[string]interface{}) ([]dbus.ObjectPath, string, error) {
+func (a *MediaFolder1) ListItems(filter map[string]interface{}) (array{objects,, error) {
 	
-	var val0 []dbus.ObjectPath
-  var val1 string
-	err := a.client.Call("ListItems", 0, filter).Store(&val0, &val1)
-	return val0, val1, err	
+	var val0 array{objects,
+	err := a.client.Call("ListItems", 0, filter).Store(&val0)
+	return val0, err	
 }
 
 /*
-ChangeFolder 
-			Change current folder.
-
+ChangeFolder 			Change current folder.
 			Note: By changing folder the items of previous folder
 			might be destroyed and have to be listed again, the
 			exception is NowPlaying folder which should be always
 			present while the player is active.
-
 			Possible Errors: org.bluez.Error.InvalidArguments
 					 org.bluez.Error.NotSupported
 					 org.bluez.Error.Failed
-
 
 */
 func (a *MediaFolder1) ChangeFolder(folder dbus.ObjectPath) error {

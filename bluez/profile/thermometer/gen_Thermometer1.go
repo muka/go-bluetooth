@@ -101,6 +101,11 @@ func (p *Thermometer1Properties) Unlock() {
 
 
 
+// SetIntermediate set Intermediate value
+func (a *Thermometer1) SetIntermediate(v bool) error {
+	return a.SetProperty("Intermediate", v)
+}
+
 
 
 // GetIntermediate get Intermediate value
@@ -134,6 +139,11 @@ func (a *Thermometer1) GetInterval() (uint16, error) {
 
 
 
+// SetMaximum set Maximum value
+func (a *Thermometer1) SetMaximum(v uint16) error {
+	return a.SetProperty("Maximum", v)
+}
+
 
 
 // GetMaximum get Maximum value
@@ -147,6 +157,11 @@ func (a *Thermometer1) GetMaximum() (uint16, error) {
 
 
 
+
+// SetMinimum set Minimum value
+func (a *Thermometer1) SetMinimum(v uint16) error {
+	return a.SetProperty("Minimum", v)
+}
 
 
 

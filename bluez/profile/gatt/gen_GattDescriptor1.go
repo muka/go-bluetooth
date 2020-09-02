@@ -119,11 +119,6 @@ func (p *GattDescriptor1Properties) Unlock() {
 
 
 
-// SetUUID set UUID value
-func (a *GattDescriptor1) SetUUID(v string) error {
-	return a.SetProperty("UUID", v)
-}
-
 
 
 // GetUUID get UUID value
@@ -137,11 +132,6 @@ func (a *GattDescriptor1) GetUUID() (string, error) {
 
 
 
-
-// SetCharacteristic set Characteristic value
-func (a *GattDescriptor1) SetCharacteristic(v dbus.ObjectPath) error {
-	return a.SetProperty("Characteristic", v)
-}
 
 
 
@@ -157,11 +147,6 @@ func (a *GattDescriptor1) GetCharacteristic() (dbus.ObjectPath, error) {
 
 
 
-// SetValue set Value value
-func (a *GattDescriptor1) SetValue(v []byte) error {
-	return a.SetProperty("Value", v)
-}
-
 
 
 // GetValue get Value value
@@ -175,11 +160,6 @@ func (a *GattDescriptor1) GetValue() ([]byte, error) {
 
 
 
-
-// SetFlags set Flags value
-func (a *GattDescriptor1) SetFlags(v []string) error {
-	return a.SetProperty("Flags", v)
-}
 
 
 
@@ -357,21 +337,17 @@ func (a *GattDescriptor1) UnwatchProperties(ch chan *bluez.PropertyChanged) erro
 
 
 /*
-ReadValue 
-			Issues a request to read the value of the
+ReadValue 			Issues a request to read the value of the
 			characteristic and returns the value if the
 			operation was successful.
-
 			Possible options: "offset": Start offset
 					  "device": Device path (Server only)
 					  "link": Link type (Server only)
-
 			Possible Errors: org.bluez.Error.Failed
 					 org.bluez.Error.InProgress
 					 org.bluez.Error.NotPermitted
 					 org.bluez.Error.NotAuthorized
 					 org.bluez.Error.NotSupported
-
 
 */
 func (a *GattDescriptor1) ReadValue(flags map[string]interface{}) ([]byte, error) {
@@ -382,24 +358,20 @@ func (a *GattDescriptor1) ReadValue(flags map[string]interface{}) ([]byte, error
 }
 
 /*
-WriteValue 
-			Issues a request to write the value of the
+WriteValue 			Issues a request to write the value of the
 			characteristic.
-
 			Possible options: "offset": Start offset
 					  "device": Device path (Server only)
 					  "link": Link type (Server only)
 					  "prepare-authorize": boolean Is prepare
 							       authorization
 							       request
-
 			Possible Errors: org.bluez.Error.Failed
 					 org.bluez.Error.InProgress
 					 org.bluez.Error.NotPermitted
 					 org.bluez.Error.InvalidValueLength
 					 org.bluez.Error.NotAuthorized
 					 org.bluez.Error.NotSupported
-
 
 */
 func (a *GattDescriptor1) WriteValue(value []byte, flags map[string]interface{}) error {

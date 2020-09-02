@@ -59,6 +59,12 @@ type HealthChannel1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	Type The quality of service of the data channel. ("reliable"
+			or "streaming")
+	*/
+	Type string
+
+	/*
 	Device Identifies the Remote Device that is connected with.
 			Maps with a HealthDevice object.
 	*/
@@ -70,12 +76,6 @@ type HealthChannel1Properties struct {
 			data type).
 	*/
 	Application dbus.ObjectPath
-
-	/*
-	Type The quality of service of the data channel. ("reliable"
-			or "streaming")
-	*/
-	Type string
 
 }
 
@@ -92,6 +92,30 @@ func (p *HealthChannel1Properties) Unlock() {
 
 
 
+// SetType set Type value
+func (a *HealthChannel1) SetType(v string) error {
+	return a.SetProperty("Type", v)
+}
+
+
+
+// GetType get Type value
+func (a *HealthChannel1) GetType() (string, error) {
+	v, err := a.GetProperty("Type")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+// SetDevice set Device value
+func (a *HealthChannel1) SetDevice(v dbus.ObjectPath) error {
+	return a.SetProperty("Device", v)
+}
+
 
 
 // GetDevice get Device value
@@ -106,6 +130,11 @@ func (a *HealthChannel1) GetDevice() (dbus.ObjectPath, error) {
 
 
 
+// SetApplication set Application value
+func (a *HealthChannel1) SetApplication(v dbus.ObjectPath) error {
+	return a.SetProperty("Application", v)
+}
+
 
 
 // GetApplication get Application value
@@ -115,20 +144,6 @@ func (a *HealthChannel1) GetApplication() (dbus.ObjectPath, error) {
 		return dbus.ObjectPath(""), err
 	}
 	return v.Value().(dbus.ObjectPath), nil
-}
-
-
-
-
-
-
-// GetType get Type value
-func (a *HealthChannel1) GetType() (string, error) {
-	v, err := a.GetProperty("Type")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
 }
 
 
@@ -277,14 +292,11 @@ func (a *HealthChannel1) UnwatchProperties(ch chan *bluez.PropertyChanged) error
 
 
 /*
-Acquire 
-			Returns the file descriptor for this data channel. If
+Acquire 			Returns the file descriptor for this data channel. If
 			the data channel is not connected it will also
 			reconnect.
-
 			Possible Errors: org.bluez.Error.NotConnected
 					 org.bluez.Error.NotAllowed
-
 
 */
 func (a *HealthChannel1) Acquire() (dbus.UnixFD, error) {
@@ -295,25 +307,15 @@ func (a *HealthChannel1) Acquire() (dbus.UnixFD, error) {
 }
 
 /*
-Release 
+Release 			Releases the fd. Application should also need to
+			close() it.
+			Possible Errors: org.bluez.Error.NotAcquired
+					 org.bluez.Error.NotAllowed
 
 */
 func (a *HealthChannel1) Release() error {
 	
 	return a.client.Call("Release", 0, ).Store()
-	
-}
-
-/*
-close 
-			Possible Errors: org.bluez.Error.NotAcquired
-					 org.bluez.Error.NotAllowed
-
-
-*/
-func (a *HealthChannel1) close() error {
-	
-	return a.client.Call("close", 0, ).Store()
 	
 }
 

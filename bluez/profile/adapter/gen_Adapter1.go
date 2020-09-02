@@ -83,9 +83,33 @@ type Adapter1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	DiscoverableTimeout The discoverable timeout in seconds. A value of zero
+			means that the timeout is disabled and it will stay in
+			discoverable/limited mode forever.
+
+			The default value for the discoverable timeout should
+			be 180 seconds (3 minutes).
+	*/
+	DiscoverableTimeout uint32
+
+	/*
+	Discovering Indicates that a device discovery procedure is active.
+	*/
+	Discovering bool
+
+	/*
 	Address The Bluetooth device address.
 	*/
 	Address string
+
+	/*
+	Name The Bluetooth system name (pretty hostname).
+
+			This property is either a static system default
+			or controlled by an external daemon providing
+			access to the pretty hostname configuration.
+	*/
+	Name string
 
 	/*
 	Alias The Bluetooth friendly name. This value can be
@@ -108,13 +132,25 @@ type Adapter1Properties struct {
 	Alias string
 
 	/*
-	Class The Bluetooth class of device.
+	Discoverable Switch an adapter to discoverable or non-discoverable
+			to either make it visible or hide it. This is a global
+			setting and should only be used by the settings
+			application.
 
-			This property represents the value that is either
-			automatically configured by DMI/ACPI information
-			or provided as static configuration.
+			If the DiscoverableTimeout is set to a non-zero
+			value then the system will set this value back to
+			false after the timer expired.
+
+			In case the adapter is switched off, setting this
+			value will fail.
+
+			When changing the Powered property the new state of
+			this property will be updated via a PropertiesChanged
+			signal.
+
+			For any new adapter this settings defaults to false.
 	*/
-	Class uint32
+	Discoverable bool
 
 	/*
 	Pairable Switch an adapter to pairable or non-pairable. This is
@@ -139,6 +175,18 @@ type Adapter1Properties struct {
 	PairableTimeout uint32
 
 	/*
+	UUIDs List of 128-bit UUIDs that represents the available
+			local services.
+	*/
+	UUIDs []string
+
+	/*
+	Modalias Local Device ID information in modalias format
+			used by the kernel and udev.
+	*/
+	Modalias string
+
+	/*
 	AddressType The Bluetooth  Address Type. For dual-mode and BR/EDR
 			only adapter this defaults to "public". Single mode LE
 			adapters may have either value. With privacy enabled
@@ -152,13 +200,13 @@ type Adapter1Properties struct {
 	AddressType string
 
 	/*
-	Name The Bluetooth system name (pretty hostname).
+	Class The Bluetooth class of device.
 
-			This property is either a static system default
-			or controlled by an external daemon providing
-			access to the pretty hostname configuration.
+			This property represents the value that is either
+			automatically configured by DMI/ACPI information
+			or provided as static configuration.
 	*/
-	Name string
+	Class uint32
 
 	/*
 	Powered Switch an adapter on or off. This will also set the
@@ -169,54 +217,6 @@ type Adapter1Properties struct {
 			back to false.
 	*/
 	Powered bool
-
-	/*
-	Discoverable Switch an adapter to discoverable or non-discoverable
-			to either make it visible or hide it. This is a global
-			setting and should only be used by the settings
-			application.
-
-			If the DiscoverableTimeout is set to a non-zero
-			value then the system will set this value back to
-			false after the timer expired.
-
-			In case the adapter is switched off, setting this
-			value will fail.
-
-			When changing the Powered property the new state of
-			this property will be updated via a PropertiesChanged
-			signal.
-
-			For any new adapter this settings defaults to false.
-	*/
-	Discoverable bool
-
-	/*
-	DiscoverableTimeout The discoverable timeout in seconds. A value of zero
-			means that the timeout is disabled and it will stay in
-			discoverable/limited mode forever.
-
-			The default value for the discoverable timeout should
-			be 180 seconds (3 minutes).
-	*/
-	DiscoverableTimeout uint32
-
-	/*
-	Discovering Indicates that a device discovery procedure is active.
-	*/
-	Discovering bool
-
-	/*
-	UUIDs List of 128-bit UUIDs that represents the available
-			local services.
-	*/
-	UUIDs []string
-
-	/*
-	Modalias Local Device ID information in modalias format
-			used by the kernel and udev.
-	*/
-	Modalias string
 
 }
 
@@ -233,11 +233,73 @@ func (p *Adapter1Properties) Unlock() {
 
 
 
+// SetDiscoverableTimeout set DiscoverableTimeout value
+func (a *Adapter1) SetDiscoverableTimeout(v uint32) error {
+	return a.SetProperty("DiscoverableTimeout", v)
+}
+
+
+
+// GetDiscoverableTimeout get DiscoverableTimeout value
+func (a *Adapter1) GetDiscoverableTimeout() (uint32, error) {
+	v, err := a.GetProperty("DiscoverableTimeout")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
+
+
+
+
+// SetDiscovering set Discovering value
+func (a *Adapter1) SetDiscovering(v bool) error {
+	return a.SetProperty("Discovering", v)
+}
+
+
+
+// GetDiscovering get Discovering value
+func (a *Adapter1) GetDiscovering() (bool, error) {
+	v, err := a.GetProperty("Discovering")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+// SetAddress set Address value
+func (a *Adapter1) SetAddress(v string) error {
+	return a.SetProperty("Address", v)
+}
+
 
 
 // GetAddress get Address value
 func (a *Adapter1) GetAddress() (string, error) {
 	v, err := a.GetProperty("Address")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+// SetName set Name value
+func (a *Adapter1) SetName(v string) error {
+	return a.SetProperty("Name", v)
+}
+
+
+
+// GetName get Name value
+func (a *Adapter1) GetName() (string, error) {
+	v, err := a.GetProperty("Name")
 	if err != nil {
 		return "", err
 	}
@@ -266,15 +328,20 @@ func (a *Adapter1) GetAlias() (string, error) {
 
 
 
+// SetDiscoverable set Discoverable value
+func (a *Adapter1) SetDiscoverable(v bool) error {
+	return a.SetProperty("Discoverable", v)
+}
 
 
-// GetClass get Class value
-func (a *Adapter1) GetClass() (uint32, error) {
-	v, err := a.GetProperty("Class")
+
+// GetDiscoverable get Discoverable value
+func (a *Adapter1) GetDiscoverable() (bool, error) {
+	v, err := a.GetProperty("Discoverable")
 	if err != nil {
-		return uint32(0), err
+		return false, err
 	}
-	return v.Value().(uint32), nil
+	return v.Value().(bool), nil
 }
 
 
@@ -318,6 +385,49 @@ func (a *Adapter1) GetPairableTimeout() (uint32, error) {
 
 
 
+// SetUUIDs set UUIDs value
+func (a *Adapter1) SetUUIDs(v []string) error {
+	return a.SetProperty("UUIDs", v)
+}
+
+
+
+// GetUUIDs get UUIDs value
+func (a *Adapter1) GetUUIDs() ([]string, error) {
+	v, err := a.GetProperty("UUIDs")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
+}
+
+
+
+
+// SetModalias set Modalias value
+func (a *Adapter1) SetModalias(v string) error {
+	return a.SetProperty("Modalias", v)
+}
+
+
+
+// GetModalias get Modalias value
+func (a *Adapter1) GetModalias() (string, error) {
+	v, err := a.GetProperty("Modalias")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+// SetAddressType set AddressType value
+func (a *Adapter1) SetAddressType(v string) error {
+	return a.SetProperty("AddressType", v)
+}
+
 
 
 // GetAddressType get AddressType value
@@ -332,15 +442,20 @@ func (a *Adapter1) GetAddressType() (string, error) {
 
 
 
+// SetClass set Class value
+func (a *Adapter1) SetClass(v uint32) error {
+	return a.SetProperty("Class", v)
+}
 
 
-// GetName get Name value
-func (a *Adapter1) GetName() (string, error) {
-	v, err := a.GetProperty("Name")
+
+// GetClass get Class value
+func (a *Adapter1) GetClass() (uint32, error) {
+	v, err := a.GetProperty("Class")
 	if err != nil {
-		return "", err
+		return uint32(0), err
 	}
-	return v.Value().(string), nil
+	return v.Value().(uint32), nil
 }
 
 
@@ -360,86 +475,6 @@ func (a *Adapter1) GetPowered() (bool, error) {
 		return false, err
 	}
 	return v.Value().(bool), nil
-}
-
-
-
-
-// SetDiscoverable set Discoverable value
-func (a *Adapter1) SetDiscoverable(v bool) error {
-	return a.SetProperty("Discoverable", v)
-}
-
-
-
-// GetDiscoverable get Discoverable value
-func (a *Adapter1) GetDiscoverable() (bool, error) {
-	v, err := a.GetProperty("Discoverable")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-// SetDiscoverableTimeout set DiscoverableTimeout value
-func (a *Adapter1) SetDiscoverableTimeout(v uint32) error {
-	return a.SetProperty("DiscoverableTimeout", v)
-}
-
-
-
-// GetDiscoverableTimeout get DiscoverableTimeout value
-func (a *Adapter1) GetDiscoverableTimeout() (uint32, error) {
-	v, err := a.GetProperty("DiscoverableTimeout")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
-}
-
-
-
-
-
-
-// GetDiscovering get Discovering value
-func (a *Adapter1) GetDiscovering() (bool, error) {
-	v, err := a.GetProperty("Discovering")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-
-
-// GetUUIDs get UUIDs value
-func (a *Adapter1) GetUUIDs() ([]string, error) {
-	v, err := a.GetProperty("UUIDs")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
-}
-
-
-
-
-
-
-// GetModalias get Modalias value
-func (a *Adapter1) GetModalias() (string, error) {
-	v, err := a.GetProperty("Modalias")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
 }
 
 
@@ -588,20 +623,15 @@ func (a *Adapter1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 
 
 /*
-StartDiscovery 
-			This method starts the device discovery session. This
+StartDiscovery 			This method starts the device discovery session. This
 			includes an inquiry procedure and remote device name
 			resolving. Use StopDiscovery to release the sessions
 			acquired.
-
 			This process will start creating Device objects as
 			new devices are discovered.
-
 			During discovery RSSI delta-threshold is imposed.
-
 			Possible errors: org.bluez.Error.NotReady
 					 org.bluez.Error.Failed
-
 
 */
 func (a *Adapter1) StartDiscovery() error {
@@ -611,18 +641,14 @@ func (a *Adapter1) StartDiscovery() error {
 }
 
 /*
-StopDiscovery 
-			This method will cancel any previous StartDiscovery
+StopDiscovery 			This method will cancel any previous StartDiscovery
 			transaction.
-
 			Note that a discovery procedure is shared between all
 			discovery sessions thus calling StopDiscovery will only
 			release a single session.
-
 			Possible errors: org.bluez.Error.NotReady
 					 org.bluez.Error.Failed
 					 org.bluez.Error.NotAuthorized
-
 
 */
 func (a *Adapter1) StopDiscovery() error {
@@ -632,13 +658,10 @@ func (a *Adapter1) StopDiscovery() error {
 }
 
 /*
-RemoveDevice 
-			This removes the remote device object at the given
+RemoveDevice 			This removes the remote device object at the given
 			path. It will remove also the pairing information.
-
 			Possible errors: org.bluez.Error.InvalidArguments
 					 org.bluez.Error.Failed
-
 
 */
 func (a *Adapter1) RemoveDevice(device dbus.ObjectPath) error {
@@ -648,19 +671,14 @@ func (a *Adapter1) RemoveDevice(device dbus.ObjectPath) error {
 }
 
 /*
-SetDiscoveryFilter 
-			This method sets the device discovery filter for the
+SetDiscoveryFilter 			This method sets the device discovery filter for the
 			caller. When this method is called with no filter
 			parameter, filter is removed.
-
 			Parameters that may be set in the filter dictionary
 			include the following:
-
 			array{string} UUIDs
-
 				Filter by service UUIDs, empty means match
 				_any_ UUID.
-
 				When a remote device is found that advertises
 				any UUID from UUIDs, it will be reported if:
 				- Pathloss and RSSI are both empty.
@@ -669,83 +687,62 @@ SetDiscoveryFilter
 				  Pathloss param.
 				- only RSSI param is set, and received RSSI is
 				  higher than RSSI param.
-
 			int16 RSSI
-
 				RSSI threshold value.
-
 				PropertiesChanged signals will be emitted
 				for already existing Device objects, with
 				updated RSSI value. If one or more discovery
 				filters have been set, the RSSI delta-threshold,
 				that is imposed by StartDiscovery by default,
 				will not be applied.
-
 			uint16 Pathloss
-
 				Pathloss threshold value.
-
 				PropertiesChanged signals will be emitted
 				for already existing Device objects, with
 				updated Pathloss value.
-
 			string Transport (Default "auto")
-
 				Transport parameter determines the type of
 				scan.
-
 				Possible values:
 					"auto"	- interleaved scan
 					"bredr"	- BR/EDR inquiry
 					"le"	- LE scan only
-
 				If "le" or "bredr" Transport is requested,
 				and the controller doesn't support it,
 				org.bluez.Error.Failed error will be returned.
 				If "auto" transport is requested, scan will use
 				LE, BREDR, or both, depending on what's
 				currently enabled on the controller.
-
 			bool DuplicateData (Default: true)
-
 				Disables duplicate detection of advertisement
 				data.
-
 				When enabled PropertiesChanged signals will be
 				generated for either ManufacturerData and
 				ServiceData everytime they are discovered.
-
 			bool Discoverable (Default: false)
-
 				Make adapter discoverable while discovering,
 				if the adapter is already discoverable setting
 				this filter won't do anything.
-
 			When discovery filter is set, Device objects will be
 			created as new devices with matching criteria are
 			discovered regardless of they are connectable or
 			discoverable which enables listening to
 			non-connectable and non-discoverable devices.
-
 			When multiple clients call SetDiscoveryFilter, their
 			filters are internally merged, and notifications about
 			new devices are sent to all clients. Therefore, each
 			client must check that device updates actually match
 			its filter.
-
 			When SetDiscoveryFilter is called multiple times by the
 			same client, last filter passed will be active for
 			given client.
-
 			SetDiscoveryFilter can be called before StartDiscovery.
 			It is useful when client will create first discovery
 			session, to ensure that proper scan will be started
 			right after call to StartDiscovery.
-
 			Possible errors: org.bluez.Error.NotReady
 					 org.bluez.Error.NotSupported
 					 org.bluez.Error.Failed
-
 
 */
 func (a *Adapter1) SetDiscoveryFilter(filter map[string]interface{}) error {
@@ -755,12 +752,9 @@ func (a *Adapter1) SetDiscoveryFilter(filter map[string]interface{}) error {
 }
 
 /*
-GetDiscoveryFilters 
-			Return available filters that can be given to
+GetDiscoveryFilters 			Return available filters that can be given to
 			SetDiscoveryFilter.
-
 			Possible errors: None
-
 
 */
 func (a *Adapter1) GetDiscoveryFilters() ([]string, error) {
@@ -771,8 +765,7 @@ func (a *Adapter1) GetDiscoveryFilters() ([]string, error) {
 }
 
 /*
-ConnectDevice 
-			This method connects to device without need of
+ConnectDevice 			This method connects to device without need of
 			performing General Discovery. Connection mechanism is
 			similar to Connect method from Device1 interface with
 			exception that this method returns success when physical
@@ -782,32 +775,24 @@ ConnectDevice
 			Connect on Device1 after this call. If connection was
 			successful this method returns object path to created
 			device object.
-
 			Parameters that may be set in the filter dictionary
 			include the following:
-
 			string Address
-
 				The Bluetooth device address of the remote
 				device. This parameter is mandatory.
-
 			string AddressType
-
 				The Bluetooth device Address Type. This is
 				address type that should be used for initial
 				connection. If this parameter is not present
 				BR/EDR device is created.
-
 				Possible values:
 					"public" - Public address
 					"random" - Random address
-
 			Possible errors: org.bluez.Error.InvalidArguments
 					 org.bluez.Error.AlreadyExists
 					 org.bluez.Error.NotSupported
 					 org.bluez.Error.NotReady
 					 org.bluez.Error.Failed
-
 
 */
 func (a *Adapter1) ConnectDevice(properties map[string]interface{}) (dbus.ObjectPath, error) {

@@ -84,11 +84,6 @@ func (p *GattProfile1Properties) Unlock() {
 
 
 
-// SetUUIDs set UUIDs value
-func (a *GattProfile1) SetUUIDs(v []string) error {
-	return a.SetProperty("UUIDs", v)
-}
-
 
 
 // GetUUIDs get UUIDs value
@@ -246,13 +241,11 @@ func (a *GattProfile1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 
 
 /*
-Release 
-			This method gets called when the service daemon
+Release 			This method gets called when the service daemon
 			unregisters the profile. The profile can use it to
 			do cleanup tasks. There is no need to unregister the
 			profile, because when this method gets called it has
 			already been unregistered.
-
 
 */
 func (a *GattProfile1) Release() error {

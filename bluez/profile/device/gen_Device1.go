@@ -59,9 +59,10 @@ type Device1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Class The Bluetooth class of device of the remote device.
+	UUIDs List of 128-bit UUIDs that represents the available
+			remote services.
 	*/
-	Class uint32
+	UUIDs []string
 
 	/*
 	Blocked If set to true any incoming connections from the
@@ -70,6 +71,75 @@ type Device1Properties struct {
 			be probed as long as the device is blocked.
 	*/
 	Blocked bool
+
+	/*
+	Adapter The object path of the adapter the device belongs to.
+	*/
+	Adapter dbus.ObjectPath
+
+	/*
+	Modalias Remote Device ID information in modalias format
+			used by the kernel and udev.
+	*/
+	Modalias string
+
+	/*
+	Address The Bluetooth device address of the remote device.
+	*/
+	Address string
+
+	/*
+	Connected Indicates if the remote device is currently connected.
+			A PropertiesChanged signal indicate changes to this
+			status.
+	*/
+	Connected bool
+
+	/*
+	Trusted Indicates if the remote is seen as trusted. This
+			setting can be changed by the application.
+	*/
+	Trusted bool
+
+	/*
+	AdvertisingFlags The Advertising Data Flags of the remote device.
+	*/
+	AdvertisingFlags []byte
+
+	/*
+	RSSI Received Signal Strength Indicator of the remote
+			device (inquiry or advertising).
+	*/
+	RSSI int16
+
+	/*
+	ManufacturerData Manufacturer specific advertisement data. Keys are
+			16 bits Manufacturer ID followed by its byte array
+			value.
+	*/
+	ManufacturerData map[uint16]interface{}
+
+	/*
+	ServicesResolved Indicate whether or not service discovery has been
+			resolved.
+	*/
+	ServicesResolved bool
+
+	/*
+	Icon Proposed icon name according to the freedesktop.org
+			icon naming specification.
+	*/
+	Icon string
+
+	/*
+	Class The Bluetooth class of device of the remote device.
+	*/
+	Class uint32
+
+	/*
+	Paired Indicates if the remote device is paired.
+	*/
+	Paired bool
 
 	/*
 	Alias The name alias for the remote device. The alias can
@@ -86,62 +156,16 @@ type Device1Properties struct {
 	Alias string
 
 	/*
-	Adapter The object path of the adapter the device belongs to.
+	LegacyPairing Set to true if the device only supports the pre-2.1
+			pairing mechanism. This property is useful during
+			device discovery to anticipate whether legacy or
+			simple pairing will occur if pairing is initiated.
+
+			Note that this property can exhibit false-positives
+			in the case of Bluetooth 2.1 (or newer) devices that
+			have disabled Extended Inquiry Response support.
 	*/
-	Adapter dbus.ObjectPath
-
-	/*
-	Modalias Remote Device ID information in modalias format
-			used by the kernel and udev.
-	*/
-	Modalias string
-
-	/*
-	RSSI Received Signal Strength Indicator of the remote
-			device (inquiry or advertising).
-	*/
-	RSSI int16
-
-	/*
-	Name The Bluetooth remote name. This value can not be
-			changed. Use the Alias property instead.
-
-			This value is only present for completeness. It is
-			better to always use the Alias property when
-			displaying the devices name.
-
-			If the Alias property is unset, it will reflect
-			this value which makes it more convenient.
-	*/
-	Name string
-
-	/*
-	Icon Proposed icon name according to the freedesktop.org
-			icon naming specification.
-	*/
-	Icon string
-
-	/*
-	Appearance External appearance of device, as found on GAP service.
-	*/
-	Appearance uint16
-
-	/*
-	UUIDs List of 128-bit UUIDs that represents the available
-			remote services.
-	*/
-	UUIDs []string
-
-	/*
-	Paired Indicates if the remote device is paired.
-	*/
-	Paired bool
-
-	/*
-	Trusted Indicates if the remote is seen as trusted. This
-			setting can be changed by the application.
-	*/
-	Trusted bool
+	LegacyPairing bool
 
 	/*
 	AdvertisingData The Advertising Data of the remote device. Keys are
@@ -175,58 +199,34 @@ type Device1Properties struct {
 	AddressType string
 
 	/*
+	Name The Bluetooth remote name. This value can not be
+			changed. Use the Alias property instead.
+
+			This value is only present for completeness. It is
+			better to always use the Alias property when
+			displaying the devices name.
+
+			If the Alias property is unset, it will reflect
+			this value which makes it more convenient.
+	*/
+	Name string
+
+	/*
+	Appearance External appearance of device, as found on GAP service.
+	*/
+	Appearance uint16
+
+	/*
 	TxPower Advertised transmitted power level (inquiry or
 			advertising).
 	*/
 	TxPower int16
 
 	/*
-	ManufacturerData Manufacturer specific advertisement data. Keys are
-			16 bits Manufacturer ID followed by its byte array
-			value.
-	*/
-	ManufacturerData map[uint16]interface{}
-
-	/*
 	ServiceData Service advertisement data. Keys are the UUIDs in
 			string format followed by its byte array value.
 	*/
 	ServiceData map[string]interface{}
-
-	/*
-	AdvertisingFlags The Advertising Data Flags of the remote device.
-	*/
-	AdvertisingFlags []byte
-
-	/*
-	LegacyPairing Set to true if the device only supports the pre-2.1
-			pairing mechanism. This property is useful during
-			device discovery to anticipate whether legacy or
-			simple pairing will occur if pairing is initiated.
-
-			Note that this property can exhibit false-positives
-			in the case of Bluetooth 2.1 (or newer) devices that
-			have disabled Extended Inquiry Response support.
-	*/
-	LegacyPairing bool
-
-	/*
-	Connected Indicates if the remote device is currently connected.
-			A PropertiesChanged signal indicate changes to this
-			status.
-	*/
-	Connected bool
-
-	/*
-	ServicesResolved Indicate whether or not service discovery has been
-			resolved.
-	*/
-	ServicesResolved bool
-
-	/*
-	Address The Bluetooth device address of the remote device.
-	*/
-	Address string
 
 }
 
@@ -243,15 +243,20 @@ func (p *Device1Properties) Unlock() {
 
 
 
+// SetUUIDs set UUIDs value
+func (a *Device1) SetUUIDs(v []string) error {
+	return a.SetProperty("UUIDs", v)
+}
 
 
-// GetClass get Class value
-func (a *Device1) GetClass() (uint32, error) {
-	v, err := a.GetProperty("Class")
+
+// GetUUIDs get UUIDs value
+func (a *Device1) GetUUIDs() ([]string, error) {
+	v, err := a.GetProperty("UUIDs")
 	if err != nil {
-		return uint32(0), err
+		return []string{}, err
 	}
-	return v.Value().(uint32), nil
+	return v.Value().([]string), nil
 }
 
 
@@ -276,24 +281,10 @@ func (a *Device1) GetBlocked() (bool, error) {
 
 
 
-// SetAlias set Alias value
-func (a *Device1) SetAlias(v string) error {
-	return a.SetProperty("Alias", v)
+// SetAdapter set Adapter value
+func (a *Device1) SetAdapter(v dbus.ObjectPath) error {
+	return a.SetProperty("Adapter", v)
 }
-
-
-
-// GetAlias get Alias value
-func (a *Device1) GetAlias() (string, error) {
-	v, err := a.GetProperty("Alias")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
 
 
 
@@ -309,6 +300,11 @@ func (a *Device1) GetAdapter() (dbus.ObjectPath, error) {
 
 
 
+// SetModalias set Modalias value
+func (a *Device1) SetModalias(v string) error {
+	return a.SetProperty("Modalias", v)
+}
+
 
 
 // GetModalias get Modalias value
@@ -323,25 +319,16 @@ func (a *Device1) GetModalias() (string, error) {
 
 
 
-
-
-// GetRSSI get RSSI value
-func (a *Device1) GetRSSI() (int16, error) {
-	v, err := a.GetProperty("RSSI")
-	if err != nil {
-		return int16(0), err
-	}
-	return v.Value().(int16), nil
+// SetAddress set Address value
+func (a *Device1) SetAddress(v string) error {
+	return a.SetProperty("Address", v)
 }
 
 
 
-
-
-
-// GetName get Name value
-func (a *Device1) GetName() (string, error) {
-	v, err := a.GetProperty("Name")
+// GetAddress get Address value
+func (a *Device1) GetAddress() (string, error) {
+	v, err := a.GetProperty("Address")
 	if err != nil {
 		return "", err
 	}
@@ -351,53 +338,16 @@ func (a *Device1) GetName() (string, error) {
 
 
 
-
-
-// GetIcon get Icon value
-func (a *Device1) GetIcon() (string, error) {
-	v, err := a.GetProperty("Icon")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
+// SetConnected set Connected value
+func (a *Device1) SetConnected(v bool) error {
+	return a.SetProperty("Connected", v)
 }
 
 
 
-
-
-
-// GetAppearance get Appearance value
-func (a *Device1) GetAppearance() (uint16, error) {
-	v, err := a.GetProperty("Appearance")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
-}
-
-
-
-
-
-
-// GetUUIDs get UUIDs value
-func (a *Device1) GetUUIDs() ([]string, error) {
-	v, err := a.GetProperty("UUIDs")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
-}
-
-
-
-
-
-
-// GetPaired get Paired value
-func (a *Device1) GetPaired() (bool, error) {
-	v, err := a.GetProperty("Paired")
+// GetConnected get Connected value
+func (a *Device1) GetConnected() (bool, error) {
+	v, err := a.GetProperty("Connected")
 	if err != nil {
 		return false, err
 	}
@@ -426,75 +376,10 @@ func (a *Device1) GetTrusted() (bool, error) {
 
 
 
-
-
-// GetAdvertisingData get AdvertisingData value
-func (a *Device1) GetAdvertisingData() (map[string]interface{}, error) {
-	v, err := a.GetProperty("AdvertisingData")
-	if err != nil {
-		return map[string]interface{}{}, err
-	}
-	return v.Value().(map[string]interface{}), nil
+// SetAdvertisingFlags set AdvertisingFlags value
+func (a *Device1) SetAdvertisingFlags(v []byte) error {
+	return a.SetProperty("AdvertisingFlags", v)
 }
-
-
-
-
-
-
-// GetAddressType get AddressType value
-func (a *Device1) GetAddressType() (string, error) {
-	v, err := a.GetProperty("AddressType")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-
-
-// GetTxPower get TxPower value
-func (a *Device1) GetTxPower() (int16, error) {
-	v, err := a.GetProperty("TxPower")
-	if err != nil {
-		return int16(0), err
-	}
-	return v.Value().(int16), nil
-}
-
-
-
-
-
-
-// GetManufacturerData get ManufacturerData value
-func (a *Device1) GetManufacturerData() (map[string]interface{}, error) {
-	v, err := a.GetProperty("ManufacturerData")
-	if err != nil {
-		return map[string]interface{}{}, err
-	}
-	return v.Value().(map[string]interface{}), nil
-}
-
-
-
-
-
-
-// GetServiceData get ServiceData value
-func (a *Device1) GetServiceData() (map[string]interface{}, error) {
-	v, err := a.GetProperty("ServiceData")
-	if err != nil {
-		return map[string]interface{}{}, err
-	}
-	return v.Value().(map[string]interface{}), nil
-}
-
-
-
 
 
 
@@ -510,33 +395,48 @@ func (a *Device1) GetAdvertisingFlags() ([]byte, error) {
 
 
 
+// SetRSSI set RSSI value
+func (a *Device1) SetRSSI(v int16) error {
+	return a.SetProperty("RSSI", v)
+}
 
 
-// GetLegacyPairing get LegacyPairing value
-func (a *Device1) GetLegacyPairing() (bool, error) {
-	v, err := a.GetProperty("LegacyPairing")
+
+// GetRSSI get RSSI value
+func (a *Device1) GetRSSI() (int16, error) {
+	v, err := a.GetProperty("RSSI")
 	if err != nil {
-		return false, err
+		return int16(0), err
 	}
-	return v.Value().(bool), nil
+	return v.Value().(int16), nil
 }
 
 
 
 
-
-
-// GetConnected get Connected value
-func (a *Device1) GetConnected() (bool, error) {
-	v, err := a.GetProperty("Connected")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
+// SetManufacturerData set ManufacturerData value
+func (a *Device1) SetManufacturerData(v map[string]interface{}) error {
+	return a.SetProperty("ManufacturerData", v)
 }
 
 
 
+// GetManufacturerData get ManufacturerData value
+func (a *Device1) GetManufacturerData() (map[string]interface{}, error) {
+	v, err := a.GetProperty("ManufacturerData")
+	if err != nil {
+		return map[string]interface{}{}, err
+	}
+	return v.Value().(map[string]interface{}), nil
+}
+
+
+
+
+// SetServicesResolved set ServicesResolved value
+func (a *Device1) SetServicesResolved(v bool) error {
+	return a.SetProperty("ServicesResolved", v)
+}
 
 
 
@@ -552,15 +452,210 @@ func (a *Device1) GetServicesResolved() (bool, error) {
 
 
 
+// SetIcon set Icon value
+func (a *Device1) SetIcon(v string) error {
+	return a.SetProperty("Icon", v)
+}
 
 
-// GetAddress get Address value
-func (a *Device1) GetAddress() (string, error) {
-	v, err := a.GetProperty("Address")
+
+// GetIcon get Icon value
+func (a *Device1) GetIcon() (string, error) {
+	v, err := a.GetProperty("Icon")
 	if err != nil {
 		return "", err
 	}
 	return v.Value().(string), nil
+}
+
+
+
+
+// SetClass set Class value
+func (a *Device1) SetClass(v uint32) error {
+	return a.SetProperty("Class", v)
+}
+
+
+
+// GetClass get Class value
+func (a *Device1) GetClass() (uint32, error) {
+	v, err := a.GetProperty("Class")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
+
+
+
+
+// SetPaired set Paired value
+func (a *Device1) SetPaired(v bool) error {
+	return a.SetProperty("Paired", v)
+}
+
+
+
+// GetPaired get Paired value
+func (a *Device1) GetPaired() (bool, error) {
+	v, err := a.GetProperty("Paired")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+// SetAlias set Alias value
+func (a *Device1) SetAlias(v string) error {
+	return a.SetProperty("Alias", v)
+}
+
+
+
+// GetAlias get Alias value
+func (a *Device1) GetAlias() (string, error) {
+	v, err := a.GetProperty("Alias")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+// SetLegacyPairing set LegacyPairing value
+func (a *Device1) SetLegacyPairing(v bool) error {
+	return a.SetProperty("LegacyPairing", v)
+}
+
+
+
+// GetLegacyPairing get LegacyPairing value
+func (a *Device1) GetLegacyPairing() (bool, error) {
+	v, err := a.GetProperty("LegacyPairing")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+// SetAdvertisingData set AdvertisingData value
+func (a *Device1) SetAdvertisingData(v map[string]interface{}) error {
+	return a.SetProperty("AdvertisingData", v)
+}
+
+
+
+// GetAdvertisingData get AdvertisingData value
+func (a *Device1) GetAdvertisingData() (map[string]interface{}, error) {
+	v, err := a.GetProperty("AdvertisingData")
+	if err != nil {
+		return map[string]interface{}{}, err
+	}
+	return v.Value().(map[string]interface{}), nil
+}
+
+
+
+
+// SetAddressType set AddressType value
+func (a *Device1) SetAddressType(v string) error {
+	return a.SetProperty("AddressType", v)
+}
+
+
+
+// GetAddressType get AddressType value
+func (a *Device1) GetAddressType() (string, error) {
+	v, err := a.GetProperty("AddressType")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+// SetName set Name value
+func (a *Device1) SetName(v string) error {
+	return a.SetProperty("Name", v)
+}
+
+
+
+// GetName get Name value
+func (a *Device1) GetName() (string, error) {
+	v, err := a.GetProperty("Name")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+// SetAppearance set Appearance value
+func (a *Device1) SetAppearance(v uint16) error {
+	return a.SetProperty("Appearance", v)
+}
+
+
+
+// GetAppearance get Appearance value
+func (a *Device1) GetAppearance() (uint16, error) {
+	v, err := a.GetProperty("Appearance")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
+
+
+
+
+// SetTxPower set TxPower value
+func (a *Device1) SetTxPower(v int16) error {
+	return a.SetProperty("TxPower", v)
+}
+
+
+
+// GetTxPower get TxPower value
+func (a *Device1) GetTxPower() (int16, error) {
+	v, err := a.GetProperty("TxPower")
+	if err != nil {
+		return int16(0), err
+	}
+	return v.Value().(int16), nil
+}
+
+
+
+
+// SetServiceData set ServiceData value
+func (a *Device1) SetServiceData(v map[string]interface{}) error {
+	return a.SetProperty("ServiceData", v)
+}
+
+
+
+// GetServiceData get ServiceData value
+func (a *Device1) GetServiceData() (map[string]interface{}, error) {
+	v, err := a.GetProperty("ServiceData")
+	if err != nil {
+		return map[string]interface{}{}, err
+	}
+	return v.Value().(map[string]interface{}), nil
 }
 
 
@@ -709,36 +804,28 @@ func (a *Device1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 
 
 /*
-Connect 
-			This is a generic method to connect any profiles
+Connect 			This is a generic method to connect any profiles
 			the remote device supports that can be connected
 			to and have been flagged as auto-connectable on
 			our side. If only subset of profiles is already
 			connected it will try to connect currently disconnected
 			ones.
-
 			If at least one profile was connected successfully this
 			method will indicate success.
-
 			For dual-mode devices only one bearer is connected at
 			time, the conditions are in the following order:
-
 				1. Connect the disconnected bearer if already
 				connected.
-
 				2. Connect first the bonded bearer. If no
 				bearers are bonded or both are skip and check
 				latest seen bearer.
-
 				3. Connect last seen bearer, in case the
 				timestamps are the same BR/EDR takes
 				precedence.
-
 			Possible errors: org.bluez.Error.NotReady
 					 org.bluez.Error.Failed
 					 org.bluez.Error.InProgress
 					 org.bluez.Error.AlreadyConnected
-
 
 */
 func (a *Device1) Connect() error {
@@ -748,23 +835,17 @@ func (a *Device1) Connect() error {
 }
 
 /*
-Disconnect 
-			This method gracefully disconnects all connected
+Disconnect 			This method gracefully disconnects all connected
 			profiles and then terminates low-level ACL connection.
-
 			ACL connection will be terminated even if some profiles
 			were not disconnected properly e.g. due to misbehaving
 			device.
-
 			This method can be also used to cancel a preceding
 			Connect call before a reply to it has been received.
-
 			For non-trusted devices connected over LE bearer calling
 			this method will disable incoming connections until
 			Connect method is called again.
-
 			Possible errors: org.bluez.Error.NotConnected
-
 
 */
 func (a *Device1) Disconnect() error {
@@ -774,17 +855,14 @@ func (a *Device1) Disconnect() error {
 }
 
 /*
-ConnectProfile 
-			This method connects a specific profile of this
+ConnectProfile 			This method connects a specific profile of this
 			device. The UUID provided is the remote service
 			UUID for the profile.
-
 			Possible errors: org.bluez.Error.Failed
 					 org.bluez.Error.InProgress
 					 org.bluez.Error.InvalidArguments
 					 org.bluez.Error.NotAvailable
 					 org.bluez.Error.NotReady
-
 
 */
 func (a *Device1) ConnectProfile(uuid string) error {
@@ -794,20 +872,16 @@ func (a *Device1) ConnectProfile(uuid string) error {
 }
 
 /*
-DisconnectProfile 
-			This method disconnects a specific profile of
+DisconnectProfile 			This method disconnects a specific profile of
 			this device. The profile needs to be registered
 			client profile.
-
 			There is no connection tracking for a profile, so
 			as long as the profile is registered this will always
 			succeed.
-
 			Possible errors: org.bluez.Error.Failed
 					 org.bluez.Error.InProgress
 					 org.bluez.Error.InvalidArguments
 					 org.bluez.Error.NotSupported
-
 
 */
 func (a *Device1) DisconnectProfile(uuid string) error {
@@ -817,8 +891,26 @@ func (a *Device1) DisconnectProfile(uuid string) error {
 }
 
 /*
-Pair 
-			This method will connect to the remote device,
+Pair 			This method will connect to the remote device,
+			initiate pairing and then retrieve all SDP records
+			(or GATT primary services).
+			If the application has registered its own agent,
+			then that specific agent will be used. Otherwise
+			it will use the default agent.
+			Only for applications like a pairing wizard it
+			would make sense to have its own agent. In almost
+			all other cases the default agent will handle
+			this just fine.
+			In case there is no application agent and also
+			no default agent present, this method will fail.
+			Possible errors: org.bluez.Error.InvalidArguments
+					 org.bluez.Error.Failed
+					 org.bluez.Error.AlreadyExists
+					 org.bluez.Error.AuthenticationCanceled
+					 org.bluez.Error.AuthenticationFailed
+					 org.bluez.Error.AuthenticationRejected
+					 org.bluez.Error.AuthenticationTimeout
+					 org.bluez.Error.ConnectionAttemptFailed
 
 */
 func (a *Device1) Pair() error {
@@ -828,13 +920,10 @@ func (a *Device1) Pair() error {
 }
 
 /*
-CancelPairing 
-			This method can be used to cancel a pairing
+CancelPairing 			This method can be used to cancel a pairing
 			operation initiated by the Pair method.
-
 			Possible errors: org.bluez.Error.DoesNotExist
 					 org.bluez.Error.Failed
-
 
 */
 func (a *Device1) CancelPairing() error {

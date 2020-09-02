@@ -216,11 +216,10 @@ func (a *ThermometerManager1) UnwatchProperties(ch chan *bluez.PropertyChanged) 
 
 
 /*
-RegisterWatcher 
-			Registers a watcher to monitor scanned measurements.
+RegisterWatcher 			Registers a watcher to monitor scanned measurements.
 			This agent will be notified about final temperature
 			measurements.
-
+			Possible Errors: org.bluez.Error.InvalidArguments
 
 */
 func (a *ThermometerManager1) RegisterWatcher(agent dbus.ObjectPath) error {
@@ -230,7 +229,7 @@ func (a *ThermometerManager1) RegisterWatcher(agent dbus.ObjectPath) error {
 }
 
 /*
-UnregisterWatcher 
+UnregisterWatcher 			Unregisters a watcher.
 
 */
 func (a *ThermometerManager1) UnregisterWatcher(agent dbus.ObjectPath) error {
@@ -240,11 +239,10 @@ func (a *ThermometerManager1) UnregisterWatcher(agent dbus.ObjectPath) error {
 }
 
 /*
-EnableIntermediateMeasurement 
-			Enables intermediate measurement notifications
+EnableIntermediateMeasurement 			Enables intermediate measurement notifications
 			for this agent. Intermediate measurements will
 			be enabled only for thermometers which support it.
-
+			Possible Errors: org.bluez.Error.InvalidArguments
 
 */
 func (a *ThermometerManager1) EnableIntermediateMeasurement(agent dbus.ObjectPath) error {
@@ -254,15 +252,12 @@ func (a *ThermometerManager1) EnableIntermediateMeasurement(agent dbus.ObjectPat
 }
 
 /*
-DisableIntermediateMeasurement 
-			Disables intermediate measurement notifications
+DisableIntermediateMeasurement 			Disables intermediate measurement notifications
 			for this agent. It will disable notifications in
 			thermometers when the last agent removes the
 			watcher for intermediate measurements.
-
 			Possible Errors: org.bluez.Error.InvalidArguments
 					org.bluez.Error.NotFound
-
 
 */
 func (a *ThermometerManager1) DisableIntermediateMeasurement(agent dbus.ObjectPath) error {

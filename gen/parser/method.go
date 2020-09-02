@@ -30,7 +30,7 @@ func (g *MethodParser) Parse(raw []byte) (*types.Method, error) {
 	var err error = nil
 	method := g.model
 
-	re := regexp.MustCompile(`[\t]{1,}(.*?)(?: |\n\t{2,})(\w+)\(([^)]*)\) ?(.*?)\n((?s).+)`)
+	re := regexp.MustCompile(`[\t]{1,}(.*?)(?: |\n\t{2,})?(\w+)\(([^)]*)\) ?(.*?)\n((?s).+)`)
 	matches1 := re.FindAllSubmatch(raw, -1)
 
 	for _, matches2 := range matches1 {

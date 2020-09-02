@@ -78,6 +78,11 @@ func (p *SimAccess1Properties) Unlock() {
 
 
 
+// SetConnected set Connected value
+func (a *SimAccess1) SetConnected(v bool) error {
+	return a.SetProperty("Connected", v)
+}
+
 
 
 // GetConnected get Connected value
@@ -235,11 +240,8 @@ func (a *SimAccess1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 
 
 /*
-Disconnect 
-			Disconnects SAP client from the server.
-
+Disconnect 			Disconnects SAP client from the server.
 			Possible errors: org.bluez.Error.Failed
-
 
 */
 func (a *SimAccess1) Disconnect() error {
