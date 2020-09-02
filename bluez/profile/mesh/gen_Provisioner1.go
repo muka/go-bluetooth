@@ -219,6 +219,24 @@ func (a *Provisioner1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 /*
 ScanResult 
 		The method is called from the bluetooth-meshd daemon when a
+		unique UUID has been seen during UnprovisionedScan() for
+		unprovsioned devices.
+
+		The rssi parameter is a signed, normalized measurement of the
+		signal strength of the recieved unprovisioned beacon.
+
+		The data parameter is a variable length byte array, that may
+		have 1, 2 or 3 distinct fields contained in it including the 16
+		byte remote device UUID (always), a 32 bit mask of OOB
+		authentication flags (optional), and a 32 bit URI hash (if URI
+		bit set in OOB mask). Whether these fields exist or not is a
+		decision of the remote device.
+
+		If a beacon with a UUID that has already been reported is
+		recieved by the daemon, it will be silently discarded unless it
+		was recieved at a higher rssi power level.
+
+
 
 */
 func (a *Provisioner1) ScanResult(rssi int16, data []byte) error {
@@ -256,16 +274,8 @@ func (a *Provisioner1) RequestProvData(count uint8) (uint16 net_index, uint16 un
 /*
 AddNodeComplete 
 		This method is called when the node provisioning initiated
+		by an AddNode() method call successfully completed.
 
-*/
-func (a *Provisioner1) AddNodeComplete(uuid []byte, unicast uint16, count uint8) error {
-	
-	return a.client.Call("AddNodeComplete", 0, uuid, unicast, count).Store()
-	
-}
-
-/*
-AddNode 
 		The unicast parameter is the primary address that has been
 		assigned to the new node, and the address of it's config server.
 
@@ -277,25 +287,17 @@ AddNode
 
 
 */
-func (a *Provisioner1) AddNode() (by an, error) {
+func (a *Provisioner1) AddNodeComplete(uuid []byte, unicast uint16, count uint8) error {
 	
-	var val0 by an
-	err := a.client.Call("AddNode", 0, ).Store(&val0)
-	return val0, err	
+	return a.client.Call("AddNodeComplete", 0, uuid, unicast, count).Store()
+	
 }
 
 /*
 AddNodeFailed 
-
-*/
-func (a *Provisioner1) AddNodeFailed(uuid []byte, reason string) error {
-	
-	return a.client.Call("AddNodeFailed", 0, uuid, reason).Store()
-	
-}
-
-/*
-AddNode 		proceeded before failing, some cleanup of cached data may be
+		This method is called when the node provisioning initiated by
+		AddNode() has failed. Depending on how far Provisioning
+		proceeded before failing, some cleanup of cached data may be
 		required.
 
 		The reason parameter identifies the reason for provisioning
@@ -306,9 +308,9 @@ AddNode 		proceeded before failing, some cleanup of cached data may be
 
 
 */
-func (a *Provisioner1) AddNode() error {
+func (a *Provisioner1) AddNodeFailed(uuid []byte, reason string) error {
 	
-	return a.client.Call("AddNode", 0, ).Store()
+	return a.client.Call("AddNodeFailed", 0, uuid, reason).Store()
 	
 }
 

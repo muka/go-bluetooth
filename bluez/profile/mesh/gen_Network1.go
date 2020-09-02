@@ -272,18 +272,89 @@ Attach
 
 		The token parameter is a 64-bit number that has been assigned to
 		the application when it first got provisioned/joined mesh
+		network, i.e. upon receiving JoinComplete() method. The daemon
+		uses the token to verify whether the application is authorized
+		to assume the mesh node identity.
+
+		In case of success, the method call returns mesh node object
+		(see Mesh Node Hierarchy section) and current configuration
+		settings. The return value of configuration parameter is an
+		array, where each entry is a structure that contains element
+		configuration. The element configuration structure is organized
+		as follows:
+
+		byte
+
+			Element index, identifies the element to which this
+			configuration entry pertains.
+
+		array{struct}
+
+			Models array where each entry is a structure with the
+			following members:
+
+			uint16
+
+				Either a SIG Model Identifier or, if Vendor key
+				is present in model configuration dictionary, a
+				16-bit vendor-assigned Model Identifier
+
+			dict
+
+				A dictionary that contains model configuration
+				with the following keys defined:
+
+				array{uint16} Bindings
+
+					Indices of application keys bound to the
+					model
+
+				uint32 PublicationPeriod
+
+					Model publication period in milliseconds
+
+				uint16 Vendor
+
+					A 16-bit Company ID as defined by the
+					Bluetooth SIG
+
+				array{variant} Subscriptions
+
+					Addresses the model is subscribed to.
+
+					Each address is provided either as
+					uint16 for group addresses, or
+					as array{byte} for virtual labels.
+
+		PossibleErrors:
+			org.bluez.mesh.Error.InvalidArguments
+			org.bluez.mesh.Error.NotFound,
+			org.bluez.mesh.Error.AlreadyExists,
+			org.bluez.mesh.Error.Failed
+
 
 */
-func (a *Network1) Attach(app_root dbus.ObjectPath, token uint64) error {
+func (a *Network1) Attach(app_root dbus.ObjectPath, token uint64) (object node, array{byte, array{(uint16, dict)}} configuration
+, error) {
 	
-	return a.client.Call("Attach", 0, app_root, token).Store()
-	
+	var val0 object node
+  var val1 array{byte
+  var val2 array{(uint16
+  var val3 dict)}} configuration
+
+	err := a.client.Call("Attach", 0, app_root, token).Store(&val0, &val1, &val2, &val3)
+	return val0, val1, val2, val3, err	
 }
 
 /*
 Leave 
 		This removes the configuration information about the mesh node
 		identified by the 64-bit token parameter. The token parameter
+		has been obtained as a result of successful Join() method call.
+
+		PossibleErrors:
+			org.bluez.mesh.Error.InvalidArguments
+
 
 */
 func (a *Network1) Leave(token uint64) error {
@@ -315,17 +386,10 @@ CreateNetwork
 
 		The returned token must be preserved by the application in
 		order to authenticate itself to the mesh daemon and attach to
+		the network as a mesh node by calling Attach() method or
+		permanently remove the identity of the mesh node by calling
+		Leave() method.
 
-*/
-func (a *Network1) CreateNetwork(app_root dbus.ObjectPath, uuid []byte) (uint64 token, error) {
-	
-	var val0 uint64 token
-	err := a.client.Call("CreateNetwork", 0, app_root, uuid).Store(&val0)
-	return val0, err	
-}
-
-/*
-Leave 
 		The other information the bluetooth-meshd daemon will preserve
 		about the initial node, is to give it the initial primary
 		unicast address (0x0001), and create and assign a net_key as the
@@ -337,10 +401,11 @@ Leave
 
 
 */
-func (a *Network1) Leave() error {
+func (a *Network1) CreateNetwork(app_root dbus.ObjectPath, uuid []byte) (uint64 token, error) {
 	
-	return a.client.Call("Leave", 0, ).Store()
-	
+	var val0 uint64 token
+	err := a.client.Call("CreateNetwork", 0, app_root, uuid).Store(&val0)
+	return val0, err	
 }
 
 /*
@@ -387,17 +452,10 @@ Import
 
 		The returned token must be preserved by the application in
 		order to authenticate itself to the mesh daemon and attach to
+		the network as a mesh node by calling Attach() method or
+		permanently remove the identity of the mesh node by calling
+		Leave() method.
 
-*/
-func (a *Network1) Import(app_root dbus.ObjectPath, uuid []byte, dev_key []byte, net_key []byte, net_index uint16, flags map[string]interface{}, iv_index uint32, unicast uint16) (uint64 token, error) {
-	
-	var val0 uint64 token
-	err := a.client.Call("Import", 0, app_root, uuid, dev_key, net_key, net_index, flags, iv_index, unicast).Store(&val0)
-	return val0, err	
-}
-
-/*
-Leave 
 		PossibleErrors:
 			org.bluez.mesh.Error.InvalidArguments,
 			org.bluez.mesh.Error.AlreadyExists,
@@ -406,9 +464,10 @@ Leave
 
 
 */
-func (a *Network1) Leave() error {
+func (a *Network1) Import(app_root dbus.ObjectPath, uuid []byte, dev_key []byte, net_key []byte, net_index uint16, flags map[string]interface{}, iv_index uint32, unicast uint16) (uint64 token, error) {
 	
-	return a.client.Call("Leave", 0, ).Store()
-	
+	var val0 uint64 token
+	err := a.client.Call("Import", 0, app_root, uuid, dev_key, net_key, net_index, flags, iv_index, unicast).Store(&val0)
+	return val0, err	
 }
 

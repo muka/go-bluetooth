@@ -59,6 +59,26 @@ type Node1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	SequenceNumber This property may be read at any time to determine the
+		sequence number.
+	*/
+	SequenceNumber uint32
+
+	/*
+	LowPower Indicates support for operating in Low Power node mode
+	*/
+	LowPower bool
+
+	/*
+	Relay Indicates support for relaying messages
+
+	If a key is absent from the dictionary, the feature is not supported.
+	Otherwise, true means that the feature is enabled and false means that
+	the feature is disabled.
+	*/
+	Relay bool
+
+	/*
 	Beacon This property indicates whether the periodic beaconing is
 		enabled (true) or disabled (false).
 
@@ -78,41 +98,9 @@ type Node1Properties struct {
 	IvIndex uint32
 
 	/*
-	Proxy Indicates support for GATT proxy
-	*/
-	Proxy bool
-
-	/*
-	Relay Indicates support for relaying messages
-
-	If a key is absent from the dictionary, the feature is not supported.
-	Otherwise, true means that the feature is enabled and false means that
-	the feature is disabled.
-	*/
-	Relay bool
-
-	/*
-	LowPower Indicates support for operating in Low Power node mode
-	*/
-	LowPower bool
-
-	/*
-	SecondsSinceLastHeard This property may be read at any time to determine the number of
-		seconds since mesh network layer traffic was last detected on
-		this node's network.
-	*/
-	SecondsSinceLastHeard uint32
-
-	/*
 	Addresses This property contains unicast addresses of node's elements.
 	*/
 	Addresses []uint16
-
-	/*
-	SequenceNumber This property may be read at any time to determine the
-		sequence number.
-	*/
-	SequenceNumber uint32
 
 	/*
 	Features The dictionary that contains information about feature support.
@@ -125,6 +113,18 @@ type Node1Properties struct {
 			Low Power node
 	*/
 	Friend bool
+
+	/*
+	Proxy Indicates support for GATT proxy
+	*/
+	Proxy bool
+
+	/*
+	SecondsSinceLastHeard This property may be read at any time to determine the number of
+		seconds since mesh network layer traffic was last detected on
+		this node's network.
+	*/
+	SecondsSinceLastHeard uint32
 
 }
 
@@ -141,35 +141,11 @@ func (p *Node1Properties) Unlock() {
 
 
 
-// SetBeacon set Beacon value
-func (a *Node1) SetBeacon(v bool) error {
-	return a.SetProperty("Beacon", v)
-}
 
 
-
-// GetBeacon get Beacon value
-func (a *Node1) GetBeacon() (bool, error) {
-	v, err := a.GetProperty("Beacon")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-// SetIvIndex set IvIndex value
-func (a *Node1) SetIvIndex(v uint32) error {
-	return a.SetProperty("IvIndex", v)
-}
-
-
-
-// GetIvIndex get IvIndex value
-func (a *Node1) GetIvIndex() (uint32, error) {
-	v, err := a.GetProperty("IvIndex")
+// GetSequenceNumber get SequenceNumber value
+func (a *Node1) GetSequenceNumber() (uint32, error) {
+	v, err := a.GetProperty("SequenceNumber")
 	if err != nil {
 		return uint32(0), err
 	}
@@ -179,16 +155,16 @@ func (a *Node1) GetIvIndex() (uint32, error) {
 
 
 
-// SetProxy set Proxy value
-func (a *Node1) SetProxy(v bool) error {
-	return a.SetProperty("Proxy", v)
+// SetLowPower set LowPower value
+func (a *Node1) SetLowPower(v bool) error {
+	return a.SetProperty("LowPower", v)
 }
 
 
 
-// GetProxy get Proxy value
-func (a *Node1) GetProxy() (bool, error) {
-	v, err := a.GetProperty("Proxy")
+// GetLowPower get LowPower value
+func (a *Node1) GetLowPower() (bool, error) {
+	v, err := a.GetProperty("LowPower")
 	if err != nil {
 		return false, err
 	}
@@ -217,16 +193,11 @@ func (a *Node1) GetRelay() (bool, error) {
 
 
 
-// SetLowPower set LowPower value
-func (a *Node1) SetLowPower(v bool) error {
-	return a.SetProperty("LowPower", v)
-}
 
 
-
-// GetLowPower get LowPower value
-func (a *Node1) GetLowPower() (bool, error) {
-	v, err := a.GetProperty("LowPower")
+// GetBeacon get Beacon value
+func (a *Node1) GetBeacon() (bool, error) {
+	v, err := a.GetProperty("Beacon")
 	if err != nil {
 		return false, err
 	}
@@ -236,16 +207,11 @@ func (a *Node1) GetLowPower() (bool, error) {
 
 
 
-// SetSecondsSinceLastHeard set SecondsSinceLastHeard value
-func (a *Node1) SetSecondsSinceLastHeard(v uint32) error {
-	return a.SetProperty("SecondsSinceLastHeard", v)
-}
 
 
-
-// GetSecondsSinceLastHeard get SecondsSinceLastHeard value
-func (a *Node1) GetSecondsSinceLastHeard() (uint32, error) {
-	v, err := a.GetProperty("SecondsSinceLastHeard")
+// GetIvIndex get IvIndex value
+func (a *Node1) GetIvIndex() (uint32, error) {
+	v, err := a.GetProperty("IvIndex")
 	if err != nil {
 		return uint32(0), err
 	}
@@ -254,11 +220,6 @@ func (a *Node1) GetSecondsSinceLastHeard() (uint32, error) {
 
 
 
-
-// SetAddresses set Addresses value
-func (a *Node1) SetAddresses(v []uint16) error {
-	return a.SetProperty("Addresses", v)
-}
 
 
 
@@ -273,30 +234,6 @@ func (a *Node1) GetAddresses() ([]uint16, error) {
 
 
 
-
-// SetSequenceNumber set SequenceNumber value
-func (a *Node1) SetSequenceNumber(v uint32) error {
-	return a.SetProperty("SequenceNumber", v)
-}
-
-
-
-// GetSequenceNumber get SequenceNumber value
-func (a *Node1) GetSequenceNumber() (uint32, error) {
-	v, err := a.GetProperty("SequenceNumber")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
-}
-
-
-
-
-// SetFeatures set Features value
-func (a *Node1) SetFeatures(v map[string]interface{}) error {
-	return a.SetProperty("Features", v)
-}
 
 
 
@@ -326,6 +263,39 @@ func (a *Node1) GetFriend() (bool, error) {
 		return false, err
 	}
 	return v.Value().(bool), nil
+}
+
+
+
+
+// SetProxy set Proxy value
+func (a *Node1) SetProxy(v bool) error {
+	return a.SetProperty("Proxy", v)
+}
+
+
+
+// GetProxy get Proxy value
+func (a *Node1) GetProxy() (bool, error) {
+	v, err := a.GetProperty("Proxy")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+
+
+// GetSecondsSinceLastHeard get SecondsSinceLastHeard value
+func (a *Node1) GetSecondsSinceLastHeard() (uint32, error) {
+	v, err := a.GetProperty("SecondsSinceLastHeard")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
 }
 
 
@@ -670,65 +640,6 @@ VendorPublish
 		Possible errors:
 			org.bluez.mesh.Error.DoesNotExist
 			org.bluez.mesh.Error.InvalidArguments
-
-Properties:
-	dict Features [read-only]
-
-		The dictionary that contains information about feature support.
-		The following keys are defined:
-
-		boolean Friend
-
-			Indicates the ability to establish a friendship with a
-			Low Power node
-
-		boolean LowPower
-
-			Indicates support for operating in Low Power node mode
-
-		boolean Proxy
-
-			Indicates support for GATT proxy
-
-		boolean Relay
-			Indicates support for relaying messages
-
-	If a key is absent from the dictionary, the feature is not supported.
-	Otherwise, true means that the feature is enabled and false means that
-	the feature is disabled.
-
-	boolean Beacon [read-only]
-
-		This property indicates whether the periodic beaconing is
-		enabled (true) or disabled (false).
-
-	uint8 BeaconFlags [read-only]
-
-		This property may be read at any time to determine the flag
-		field setting on sent and received beacons of the primary
-		network key.
-
-	uint32 IvIndex [read-only]
-
-		This property may be read at any time to determine the IV_Index
-		that the current network is on. This information is only useful
-		for provisioning.
-
-	uint32 SecondsSinceLastHeard [read-only]
-
-		This property may be read at any time to determine the number of
-		seconds since mesh network layer traffic was last detected on
-		this node's network.
-
-	array{uint16} Addresses [read-only]
-
-		This property contains unicast addresses of node's elements.
-
-	uint32 SequenceNumber [read-only]
-
-		This property may be read at any time to determine the
-		sequence number.
-
 
 */
 func (a *Node1) VendorPublish(element_path dbus.ObjectPath, vendor uint16, model_id uint16, data []byte) error {

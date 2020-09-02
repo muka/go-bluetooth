@@ -114,11 +114,6 @@ func (p *ProvisionAgent1Properties) Unlock() {
 
 
 
-// SetCapabilities set Capabilities value
-func (a *ProvisionAgent1) SetCapabilities(v []string) error {
-	return a.SetProperty("Capabilities", v)
-}
-
 
 
 // GetCapabilities get Capabilities value
@@ -133,11 +128,6 @@ func (a *ProvisionAgent1) GetCapabilities() ([]string, error) {
 
 
 
-// SetOutOfBandInfo set OutOfBandInfo value
-func (a *ProvisionAgent1) SetOutOfBandInfo(v []string) error {
-	return a.SetProperty("OutOfBandInfo", v)
-}
-
 
 
 // GetOutOfBandInfo get OutOfBandInfo value
@@ -151,11 +141,6 @@ func (a *ProvisionAgent1) GetOutOfBandInfo() ([]string, error) {
 
 
 
-
-// SetURI set URI value
-func (a *ProvisionAgent1) SetURI(v string) error {
-	return a.SetProperty("URI", v)
-}
 
 
 
@@ -456,44 +441,6 @@ Cancel
 		Agent Requests. When called, any pending user input should be
 		canceled, and any display requests removed.
 
-
-Properties:
-	array{string} Capabilities [read-only]
-
-		An array of strings with the following allowed values:
-			"blink"
-			"beep"
-			"vibrate"
-			"out-numeric"
-			"out-alpha"
-			"push"
-			"twist"
-			"in-numeric"
-			"in-alpha"
-			"static-oob"
-			"public-oob"
-
-	array{string} OutOfBandInfo [read-only, optional]
-
-		Indicates availability of OOB data. An array of strings with the
-		following allowed values:
-			"other"
-			"uri"
-			"machine-code-2d"
-			"bar-code"
-			"nfc"
-			"number"
-			"string"
-			"on-box"
-			"in-box"
-			"on-paper",
-			"in-manual"
-			"on-device"
-
-	string URI [read-only, optional]
-
-		Uniform Resource Identifier points to out-of-band (OOB)
-		information (e.g., a public key)
 
 */
 func (a *ProvisionAgent1) Cancel() error {

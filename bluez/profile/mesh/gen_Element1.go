@@ -94,11 +94,6 @@ func (p *Element1Properties) Unlock() {
 
 
 
-// SetModels set Models value
-func (a *Element1) SetModels(v []uint16) error {
-	return a.SetProperty("Models", v)
-}
-
 
 
 // GetModels get Models value
@@ -113,11 +108,6 @@ func (a *Element1) GetModels() ([]uint16, error) {
 
 
 
-// SetVendorModels set VendorModels value
-func (a *Element1) SetVendorModels(v []uint16) error {
-	return a.SetProperty("VendorModels", v)
-}
-
 
 
 // GetVendorModels get VendorModels value
@@ -131,11 +121,6 @@ func (a *Element1) GetVendorModels() ([]uint16, error) {
 
 
 
-
-// SetLocation set Location value
-func (a *Element1) SetLocation(v uint16) error {
-	return a.SetProperty("Location", v)
-}
 
 
 
@@ -387,15 +372,6 @@ UpdateModelConfiguration
 
 			Each address is provided either as uint16 for group
 			addresses, or as array{byte} for virtual labels.
-
-Properties:
-	uint8 Index [read-only]
-
-		Element index. It is required that the application follows
-		sequential numbering scheme for the elements, starting with 0.
-
-	array{uint16} Models [read-only]
-
 
 */
 func (a *Element1) UpdateModelConfiguration(model_id uint16, config map[string]interface{}) error {
