@@ -428,11 +428,13 @@ Acquire 			Acquire transport file descriptor and the MTU for read
 					 org.bluez.Error.Failed
 
 */
-func (a *MediaTransport1) Acquire() (fd,, error) {
+func (a *MediaTransport1) Acquire() (dbus.UnixFD, uint16, uint16, error) {
 	
-	var val0 fd,
-	err := a.client.Call("Acquire", 0, ).Store(&val0)
-	return val0, err	
+	var val0 dbus.UnixFD
+  var val1 uint16
+  var val2 uint16
+	err := a.client.Call("Acquire", 0, ).Store(&val0, &val1, &val2)
+	return val0, val1, val2, err	
 }
 
 /*
@@ -446,11 +448,13 @@ TryAcquire 			Acquire transport file descriptor only if the transport
 					 org.bluez.Error.NotAvailable
 
 */
-func (a *MediaTransport1) TryAcquire() (fd,, error) {
+func (a *MediaTransport1) TryAcquire() (dbus.UnixFD, uint16, uint16, error) {
 	
-	var val0 fd,
-	err := a.client.Call("TryAcquire", 0, ).Store(&val0)
-	return val0, err	
+	var val0 dbus.UnixFD
+  var val1 uint16
+  var val2 uint16
+	err := a.client.Call("TryAcquire", 0, ).Store(&val0, &val1, &val2)
+	return val0, val1, val2, err	
 }
 
 /*

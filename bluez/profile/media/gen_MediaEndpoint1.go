@@ -84,6 +84,17 @@ type MediaEndpoint1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	Capabilities Capabilities blob, it is used as it is so the size and
+			byte order must match.
+	*/
+	Capabilities []byte
+
+	/*
+	Device Device object which the endpoint is belongs to.
+	*/
+	Device dbus.ObjectPath
+
+	/*
 	UUID UUID of the profile which the endpoint is for.
 	*/
 	UUID string
@@ -95,17 +106,6 @@ type MediaEndpoint1Properties struct {
 	*/
 	Codec byte
 
-	/*
-	Capabilities Capabilities blob, it is used as it is so the size and
-			byte order must match.
-	*/
-	Capabilities []byte
-
-	/*
-	Device Device object which the endpoint is belongs to.
-	*/
-	Device dbus.ObjectPath
-
 }
 
 //Lock access to properties
@@ -116,44 +116,6 @@ func (p *MediaEndpoint1Properties) Lock() {
 //Unlock access to properties
 func (p *MediaEndpoint1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-// SetUUID set UUID value
-func (a *MediaEndpoint1) SetUUID(v string) error {
-	return a.SetProperty("UUID", v)
-}
-
-
-
-// GetUUID get UUID value
-func (a *MediaEndpoint1) GetUUID() (string, error) {
-	v, err := a.GetProperty("UUID")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-// SetCodec set Codec value
-func (a *MediaEndpoint1) SetCodec(v byte) error {
-	return a.SetProperty("Codec", v)
-}
-
-
-
-// GetCodec get Codec value
-func (a *MediaEndpoint1) GetCodec() (byte, error) {
-	v, err := a.GetProperty("Codec")
-	if err != nil {
-		return byte(0), err
-	}
-	return v.Value().(byte), nil
 }
 
 
@@ -192,6 +154,44 @@ func (a *MediaEndpoint1) GetDevice() (dbus.ObjectPath, error) {
 		return dbus.ObjectPath(""), err
 	}
 	return v.Value().(dbus.ObjectPath), nil
+}
+
+
+
+
+// SetUUID set UUID value
+func (a *MediaEndpoint1) SetUUID(v string) error {
+	return a.SetProperty("UUID", v)
+}
+
+
+
+// GetUUID get UUID value
+func (a *MediaEndpoint1) GetUUID() (string, error) {
+	v, err := a.GetProperty("UUID")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+// SetCodec set Codec value
+func (a *MediaEndpoint1) SetCodec(v byte) error {
+	return a.SetProperty("Codec", v)
+}
+
+
+
+// GetCodec get Codec value
+func (a *MediaEndpoint1) GetCodec() (byte, error) {
+	v, err := a.GetProperty("Codec")
+	if err != nil {
+		return byte(0), err
+	}
+	return v.Value().(byte), nil
 }
 
 
