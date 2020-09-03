@@ -3,6 +3,7 @@ package gen
 import (
 	"strings"
 
+	"github.com/muka/go-bluetooth/gen/filters"
 	"github.com/muka/go-bluetooth/gen/parser"
 	"github.com/muka/go-bluetooth/gen/types"
 	"github.com/muka/go-bluetooth/gen/util"
@@ -10,7 +11,7 @@ import (
 )
 
 // Parse bluez DBus API docs
-func Parse(docsDir string, filters []string, debug bool) (BluezAPI, error) {
+func Parse(docsDir string, filtersList []filters.Filter, debug bool) (BluezAPI, error) {
 	files, err := util.ListFiles(docsDir)
 	if err != nil {
 		return BluezAPI{}, err
@@ -19,13 +20,16 @@ func Parse(docsDir string, filters []string, debug bool) (BluezAPI, error) {
 	for _, file := range files {
 
 		keep := true
-		if len(filters) > 0 {
+		if len(filtersList) > 0 {
 			keep = false
-			for _, filter := range filters {
-				if strings.Contains(file, filter) {
+			for _, filter1 := range filtersList {
+				if filter1.Context != filters.FilterFile {
+					continue
+				}
+				if strings.Contains(file, filter1.Value) {
 					keep = true
 					if debug {
-						log.Debugf("[filter %s] Keep %s", filter, file)
+						log.Debugf("[filter %s] Keep %s", filter1.Value, file)
 					}
 					break
 				}
@@ -36,7 +40,7 @@ func Parse(docsDir string, filters []string, debug bool) (BluezAPI, error) {
 			continue
 		}
 
-		apiGroupParser := parser.NewApiGroupParser(debug)
+		apiGroupParser := parser.NewApiGroupParser(debug, filtersList)
 		apiGroup, err := apiGroupParser.Parse(file)
 		if err != nil {
 			log.Errorf("Failed to load %s, skipped", file)

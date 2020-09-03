@@ -306,18 +306,14 @@ func (a *GattManager1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 
 
 /*
-RegisterApplication 
-			Registers a local GATT services hierarchy as described
+RegisterApplication 			Registers a local GATT services hierarchy as described
 			above (GATT Server) and/or GATT profiles (GATT Client).
-
 			The application object path together with the D-Bus
 			system bus connection ID define the identification of
 			the application registering a GATT based
 			service or profile.
-
 			Possible errors: org.bluez.Error.InvalidArguments
 					 org.bluez.Error.AlreadyExists
-
 
 */
 func (a *GattManager1) RegisterApplication(application dbus.ObjectPath, options map[string]interface{}) error {
@@ -327,12 +323,10 @@ func (a *GattManager1) RegisterApplication(application dbus.ObjectPath, options 
 }
 
 /*
-UnregisterApplication 
-			This unregisters the services that has been
+UnregisterApplication 			This unregisters the services that has been
 			previously registered. The object path parameter
 			must match the same value that has been used
 			on registration.
-
 			Possible errors: org.bluez.Error.InvalidArguments
 					 org.bluez.Error.DoesNotExist
 

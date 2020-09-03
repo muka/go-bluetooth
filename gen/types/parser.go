@@ -28,10 +28,12 @@ type Api struct {
 type Flag int
 
 const (
-	FlagReadOnly     Flag = 1
-	FlagWriteOnly    Flag = 2
-	FlagReadWrite    Flag = 3
-	FlagExperimental Flag = 4
+	FlagReadOnly Flag = iota + 1
+	FlagWriteOnly
+	FlagReadWrite
+	FlagExperimental
+	FlagOptional
+	FlagServerOnly
 )
 
 type Arg struct {
@@ -69,11 +71,36 @@ type Property struct {
 func (p *Property) String() string {
 	flags := []string{}
 	for _, flag := range p.Flags {
-		flags = append(flags, string(flag))
+		flagLabel := ""
+		switch flag {
+		case FlagReadOnly:
+			flagLabel = "readonly"
+			break
+		case FlagWriteOnly:
+			flagLabel = "writeonly"
+			break
+		case FlagReadWrite:
+			flagLabel = "readwrite"
+			break
+		case FlagExperimental:
+			flagLabel = "experimental"
+			break
+		case FlagOptional:
+			flagLabel = "optional"
+			break
+		case FlagServerOnly:
+			flagLabel = "server-only"
+			break
+		}
+		if flagLabel != "" {
+			flags = append(flags, flagLabel)
+		}
 	}
+
 	flagsStr := ""
 	if len(flags) > 0 {
 		flagsStr = fmt.Sprintf("[%s]", strings.Join(flags, ", "))
 	}
+
 	return fmt.Sprintf("%s %s %s", p.Type, p.Name, flagsStr)
 }

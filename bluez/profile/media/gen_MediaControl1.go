@@ -107,6 +107,11 @@ func (p *MediaControl1Properties) Unlock() {
 
 
 
+// SetConnected set Connected value
+func (a *MediaControl1) SetConnected(v bool) error {
+	return a.SetProperty("Connected", v)
+}
+
 
 
 // GetConnected get Connected value
@@ -120,6 +125,11 @@ func (a *MediaControl1) GetConnected() (bool, error) {
 
 
 
+
+// SetPlayer set Player value
+func (a *MediaControl1) SetPlayer(v dbus.ObjectPath) error {
+	return a.SetProperty("Player", v)
+}
 
 
 
@@ -278,9 +288,7 @@ func (a *MediaControl1) UnwatchProperties(ch chan *bluez.PropertyChanged) error 
 
 
 /*
-Play 
-			Resume playback.
-
+Play 			Resume playback.
 
 */
 func (a *MediaControl1) Play() error {
@@ -290,9 +298,7 @@ func (a *MediaControl1) Play() error {
 }
 
 /*
-Pause 
-			Pause playback.
-
+Pause 			Pause playback.
 
 */
 func (a *MediaControl1) Pause() error {
@@ -302,9 +308,7 @@ func (a *MediaControl1) Pause() error {
 }
 
 /*
-Stop 
-			Stop playback.
-
+Stop 			Stop playback.
 
 */
 func (a *MediaControl1) Stop() error {
@@ -314,9 +318,7 @@ func (a *MediaControl1) Stop() error {
 }
 
 /*
-Next 
-			Next item.
-
+Next 			Next item.
 
 */
 func (a *MediaControl1) Next() error {
@@ -326,9 +328,7 @@ func (a *MediaControl1) Next() error {
 }
 
 /*
-Previous 
-			Previous item.
-
+Previous 			Previous item.
 
 */
 func (a *MediaControl1) Previous() error {
@@ -338,9 +338,7 @@ func (a *MediaControl1) Previous() error {
 }
 
 /*
-VolumeUp 
-			Adjust remote volume one step up
-
+VolumeUp 			Adjust remote volume one step up
 
 */
 func (a *MediaControl1) VolumeUp() error {
@@ -350,9 +348,7 @@ func (a *MediaControl1) VolumeUp() error {
 }
 
 /*
-VolumeDown 
-			Adjust remote volume one step down
-
+VolumeDown 			Adjust remote volume one step down
 
 */
 func (a *MediaControl1) VolumeDown() error {
@@ -362,10 +358,8 @@ func (a *MediaControl1) VolumeDown() error {
 }
 
 /*
-FastForward 
-			Fast forward playback, this action is only stopped
+FastForward 			Fast forward playback, this action is only stopped
 			when another method in this interface is called.
-
 
 */
 func (a *MediaControl1) FastForward() error {
@@ -375,19 +369,8 @@ func (a *MediaControl1) FastForward() error {
 }
 
 /*
-Rewind 
-			Rewind playback, this action is only stopped
+Rewind 			Rewind playback, this action is only stopped
 			when another method in this interface is called.
-
-Properties
-
-		boolean Connected [readonly]
-
-		object Player [readonly, optional]
-
-			Addressed Player object path.
-
-
 
 */
 func (a *MediaControl1) Rewind() error {

@@ -123,11 +123,6 @@ func (p *GattService1Properties) Unlock() {
 
 
 
-// SetUUID set UUID value
-func (a *GattService1) SetUUID(v string) error {
-	return a.SetProperty("UUID", v)
-}
-
 
 
 // GetUUID get UUID value
@@ -141,11 +136,6 @@ func (a *GattService1) GetUUID() (string, error) {
 
 
 
-
-// SetPrimary set Primary value
-func (a *GattService1) SetPrimary(v bool) error {
-	return a.SetProperty("Primary", v)
-}
 
 
 
@@ -161,11 +151,6 @@ func (a *GattService1) GetPrimary() (bool, error) {
 
 
 
-// SetDevice set Device value
-func (a *GattService1) SetDevice(v dbus.ObjectPath) error {
-	return a.SetProperty("Device", v)
-}
-
 
 
 // GetDevice get Device value
@@ -179,11 +164,6 @@ func (a *GattService1) GetDevice() (dbus.ObjectPath, error) {
 
 
 
-
-// SetIncludes set Includes value
-func (a *GattService1) SetIncludes(v []dbus.ObjectPath) error {
-	return a.SetProperty("Includes", v)
-}
 
 
 

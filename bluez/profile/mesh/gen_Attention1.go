@@ -217,16 +217,12 @@ func (a *Attention1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 
 
 /*
-SetTimer 
-		The element_index parameter is the element's index within the
+SetTimer 		The element_index parameter is the element's index within the
 		node where the health server model is hosted.
-
 		The time parameter indicates how many seconds the attention
 		state shall be on.
-
 		PossibleErrors:
 			org.bluez.mesh.Error.NotSupported
-
 
 */
 func (a *Attention1) SetTimer(element_index uint8, time uint16) error {
@@ -236,17 +232,12 @@ func (a *Attention1) SetTimer(element_index uint8, time uint16) error {
 }
 
 /*
-GetTimer 
-		The element parameter is the unicast address within the node
+GetTimer 		The element parameter is the unicast address within the node
 		where the health server model is hosted.
-
 		Returns the number of seconds for how long the attention action
 		remains staying on.
-
 		PossibleErrors:
 			org.bluez.mesh.Error.NotSupported
-
-
 
 */
 func (a *Attention1) GetTimer(element uint16) (uint16, error) {

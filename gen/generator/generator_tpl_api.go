@@ -59,6 +59,9 @@ func ApiTemplate(filename string, api *types.Api, apiGroup *types.ApiGroup) erro
 		prop.Property.Docs = prepareDocs(p.Docs, true, 2)
 		prop.Property.Type = castType(p.Type)
 		prop.RawType = getRawType(prop.Property.Type)
+
+		// log.Debugf("RAWTYPE %s %s = %s", api.Interface, prop.Name, prop.Property.Type)
+
 		prop.RawTypeInitializer = getRawTypeInitializer(prop.Property.Type)
 		propsList[prop.Name] = &prop
 	}
@@ -118,9 +121,10 @@ func ApiTemplate(filename string, api *types.Api, apiGroup *types.ApiGroup) erro
 		args := []string{}
 		params := []string{}
 		for _, a := range m.Args {
-			arg := a.Name + " " + castType(a.Type)
+			argName := renameReserved(a.Name)
+			arg := fmt.Sprintf("%s %s", argName, castType(a.Type))
 			args = append(args, arg)
-			params = append(params, a.Name)
+			params = append(params, argName)
 		}
 
 		mm := types.MethodDoc{

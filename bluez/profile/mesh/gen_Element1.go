@@ -60,24 +60,24 @@ type Element1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Models An array of SIG Model Identifiers. The array may be empty.
-	*/
-	Models []uint16
-
-	/*
 	VendorModels An array of pairs (vendor, model ID): vendor is a 16-bit
 		Bluetooth-assigned Company ID as defined by Bluetooth SIG.
 		model ID is a 16-bit vendor-assigned Model Identifier
 
 		The array may be empty.
 	*/
-	VendorModels array{(uint16, uint16)}
+	VendorModels []map[uint16]uint16
 
 	/*
 	Location Location descriptor as defined in the GATT Bluetooth Namespace
 		Descriptors section of the Bluetooth SIG Assigned Numbers
 	*/
 	Location uint16
+
+	/*
+	Models An array of SIG Model Identifiers. The array may be empty.
+	*/
+	Models []uint16
 
 }
 
@@ -94,48 +94,19 @@ func (p *Element1Properties) Unlock() {
 
 
 
-// SetModels set Models value
-func (a *Element1) SetModels(v []uint16) error {
-	return a.SetProperty("Models", v)
-}
-
-
-
-// GetModels get Models value
-func (a *Element1) GetModels() ([]uint16, error) {
-	v, err := a.GetProperty("Models")
-	if err != nil {
-		return []uint16{}, err
-	}
-	return v.Value().([]uint16), nil
-}
-
-
-
-
-// SetVendorModels set VendorModels value
-func (a *Element1) SetVendorModels(v []uint16) error {
-	return a.SetProperty("VendorModels", v)
-}
-
 
 
 // GetVendorModels get VendorModels value
-func (a *Element1) GetVendorModels() ([]uint16, error) {
+func (a *Element1) GetVendorModels() ([]map[uint16]uint16, error) {
 	v, err := a.GetProperty("VendorModels")
 	if err != nil {
-		return []uint16{}, err
+		return []map[uint16]uint16{}, err
 	}
-	return v.Value().([]uint16), nil
+	return v.Value().([]map[uint16]uint16), nil
 }
 
 
 
-
-// SetLocation set Location value
-func (a *Element1) SetLocation(v uint16) error {
-	return a.SetProperty("Location", v)
-}
 
 
 
@@ -146,6 +117,20 @@ func (a *Element1) GetLocation() (uint16, error) {
 		return uint16(0), err
 	}
 	return v.Value().(uint16), nil
+}
+
+
+
+
+
+
+// GetModels get Models value
+func (a *Element1) GetModels() ([]uint16, error) {
+	v, err := a.GetProperty("Models")
+	if err != nil {
+		return []uint16{}, err
+	}
+	return v.Value().([]uint16), nil
 }
 
 
@@ -294,60 +279,44 @@ func (a *Element1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 
 
 /*
-MessageReceived 
-		This method is called by bluetooth-meshd daemon when a message
+MessageReceived 		This method is called by bluetooth-meshd daemon when a message
 		arrives addressed to the application.
-
 		The source parameter is unicast address of the remote
 		node-element that sent the message.
-
 		The key_index parameter indicates which application key has been
 		used to decode the incoming message. The same key_index should
 		be used by the application when sending a response to this
 		message (in case a response is expected).
-
 		The destination parameter contains the destination address of
 		received message. Underlying variant types are:
-
 		uint16
-
 			Destination is an unicast address, or a well known
 			group address
-
 		array{byte}
-
 			Destination is a virtual address label
-
 		The data parameter is the incoming message.
 
-
 */
-func (a *Element1) MessageReceived(source uint16, key_index uint16, destination variant, data []byte) error {
+func (a *Element1) MessageReceived(source uint16, key_index uint16, destination dbus.Variant, data []byte) error {
 	
 	return a.client.Call("MessageReceived", 0, source, key_index, destination, data).Store()
 	
 }
 
 /*
-DevKeyMessageReceived 
-		This method is called by meshd daemon when a message arrives
+DevKeyMessageReceived 		This method is called by meshd daemon when a message arrives
 		addressed to the application, which was sent with the remote
 		node's device key.
-
 		The source parameter is unicast address of the remote
 		node-element that sent the message.
-
 		The remote parameter if true indicates that the device key
 		used to decrypt the message was from the sender. False
 		indicates that the local nodes device key was used, and the
 		message has permissions to modify local states.
-
 		The net_index parameter indicates what subnet the message was
 		received on, and if a response is required, the same subnet
 		must be used to send the response.
-
 		The data parameter is the incoming message.
-
 
 */
 func (a *Element1) DevKeyMessageReceived(source uint16, remote bool, net_index uint16, data []byte) error {
@@ -357,45 +326,24 @@ func (a *Element1) DevKeyMessageReceived(source uint16, remote bool, net_index u
 }
 
 /*
-UpdateModelConfiguration 
-		This method is called by bluetooth-meshd daemon when a model's
+UpdateModelConfiguration 		This method is called by bluetooth-meshd daemon when a model's
 		configuration is updated.
-
 		The model_id parameter contains BT SIG Model Identifier or, if
 		Vendor key is present in config dictionary, a 16-bit
 		vendor-assigned Model Identifier.
-
 		The config parameter is a dictionary with the following keys
 		defined:
-
 		array{uint16} Bindings
-
 			Indices of application keys bound to the model
-
 		uint32 PublicationPeriod
-
 			Model publication period in milliseconds
-
 		uint16 Vendor
-
 			A 16-bit Bluetooth-assigned Company Identifier of the
 			vendor as defined by Bluetooth SIG
-
 		array{variant} Subscriptions
-
 			Addresses the model is subscribed to.
-
 			Each address is provided either as uint16 for group
 			addresses, or as array{byte} for virtual labels.
-
-Properties:
-	uint8 Index [read-only]
-
-		Element index. It is required that the application follows
-		sequential numbering scheme for the elements, starting with 0.
-
-	array{uint16} Models [read-only]
-
 
 */
 func (a *Element1) UpdateModelConfiguration(model_id uint16, config map[string]interface{}) error {

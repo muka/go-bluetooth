@@ -5,7 +5,7 @@ Go bluetooth API for Linux-based Bluez DBus interface.
 
 [![GoDoc](https://godoc.org/github.com/muka/go-bluetooth?status.svg)](https://godoc.org/github.com/muka/go-bluetooth)
 
-<img style="float:right" align="center" width="90" src="./gopher.png">
+<img style="float:right" align="center" width="70" src="./gopher.png">
 
 ## Features
 
@@ -19,6 +19,7 @@ High level features supported:
 - [x] Expose bluetooth service from go code [*unstable*]
 - [x] Pairing and authentication support (via agent)
 - [x] Beaconing send & receive (iBeacon and Eddystone)
+- [x] Mesh API support (since v5.53)
 
 ## Running examples
 
@@ -54,20 +55,6 @@ The code structure follow this pattern:
 Use `make gen` to re-generate go sources. There is also a commodity bluez JSON file available in the root folder for reference.
 
 Generated code has `gen_` prefix. If an API file exists with the same filename but _without_ the prefix, generation will be skipped for that API.
-
-
-## DBus configuration setup
-
-In order to interact with DBus, propert configurations must be installed in the system. For a development setup, the repository provides example configurations.
-
-```sh
-  cd <go-bluetooth path>
-  # install dbus permissions configuration, may require a system restart
-  make dev/dbus/install
-  # Add bluetooth group to own the DBus service
-  sudo addgroup bluetooth || true
-  sudo adduser `id -nu` bluetooth
-```
 
 ## Requirements
 

@@ -78,6 +78,11 @@ func (p *Battery1Properties) Unlock() {
 
 
 
+// SetPercentage set Percentage value
+func (a *Battery1) SetPercentage(v byte) error {
+	return a.SetProperty("Percentage", v)
+}
+
 
 
 // GetPercentage get Percentage value

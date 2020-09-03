@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/muka/go-bluetooth/gen"
+	"github.com/muka/go-bluetooth/gen/filters"
 	"github.com/muka/go-bluetooth/gen/util"
 	"github.com/stretchr/testify/assert"
 )
@@ -14,7 +15,7 @@ func TestGenerate(t *testing.T) {
 	TplPath = "../../gen/generator/tpl/%s.go.tpl"
 	outdir := "../../test/out"
 
-	bluezApi, err := gen.Parse("../../src/bluez/doc", []string{}, false)
+	bluezApi, err := gen.Parse("../../src/bluez/doc", []filters.Filter{}, false)
 	if err != nil {
 		t.Fatal(err)
 	}

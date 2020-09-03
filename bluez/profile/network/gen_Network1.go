@@ -88,6 +88,11 @@ func (p *Network1Properties) Unlock() {
 
 
 
+// SetConnected set Connected value
+func (a *Network1) SetConnected(v bool) error {
+	return a.SetProperty("Connected", v)
+}
+
 
 
 // GetConnected get Connected value
@@ -102,6 +107,11 @@ func (a *Network1) GetConnected() (bool, error) {
 
 
 
+// SetInterface set Interface value
+func (a *Network1) SetInterface(v string) error {
+	return a.SetProperty("Interface", v)
+}
+
 
 
 // GetInterface get Interface value
@@ -115,6 +125,11 @@ func (a *Network1) GetInterface() (string, error) {
 
 
 
+
+// SetUUID set UUID value
+func (a *Network1) SetUUID(v string) error {
+	return a.SetProperty("UUID", v)
+}
 
 
 
@@ -273,16 +288,17 @@ func (a *Network1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 
 
 /*
-Connect 
-			Connect to the network device and return the network
+Connect 			Connect to the network device and return the network
 			interface name. Examples of the interface name are
 			bnep0, bnep1 etc.
-
 			uuid can be either one of "gn", "panu" or "nap" (case
 			insensitive) or a traditional string representation of
 			UUID or a hexadecimal number.
-
 			The connection will be closed and network device
+			released either upon calling Disconnect() or when
+			the client disappears from the message bus.
+			Possible errors: org.bluez.Error.AlreadyConnected
+					 org.bluez.Error.ConnectionAttemptFailed
 
 */
 func (a *Network1) Connect(uuid string) (string, error) {
@@ -293,14 +309,10 @@ func (a *Network1) Connect(uuid string) (string, error) {
 }
 
 /*
-Disconnect 
-			Disconnect from the network device.
-
+Disconnect 			Disconnect from the network device.
 			To abort a connection attempt in case of errors or
 			timeouts in the client it is fine to call this method.
-
 			Possible errors: org.bluez.Error.Failed
-
 
 */
 func (a *Network1) Disconnect() error {

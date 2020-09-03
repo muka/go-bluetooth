@@ -60,6 +60,11 @@ type Application1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	CRPL A 16-bit minimum number of replay protection list entries
+	*/
+	CRPL uint16
+
+	/*
 	CompanyID A 16-bit Bluetooth-assigned Company Identifier of the vendor as
 		defined by Bluetooth SIG
 	*/
@@ -74,11 +79,6 @@ type Application1Properties struct {
 	VersionID A 16-bit vendor-assigned product version identifier
 	*/
 	VersionID uint16
-
-	/*
-	CRPL A 16-bit minimum number of replay protection list entries
-	*/
-	CRPL uint16
 
 }
 
@@ -95,10 +95,19 @@ func (p *Application1Properties) Unlock() {
 
 
 
-// SetCompanyID set CompanyID value
-func (a *Application1) SetCompanyID(v uint16) error {
-	return a.SetProperty("CompanyID", v)
+
+
+// GetCRPL get CRPL value
+func (a *Application1) GetCRPL() (uint16, error) {
+	v, err := a.GetProperty("CRPL")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
 }
+
+
+
 
 
 
@@ -114,11 +123,6 @@ func (a *Application1) GetCompanyID() (uint16, error) {
 
 
 
-// SetProductID set ProductID value
-func (a *Application1) SetProductID(v uint16) error {
-	return a.SetProperty("ProductID", v)
-}
-
 
 
 // GetProductID get ProductID value
@@ -133,35 +137,11 @@ func (a *Application1) GetProductID() (uint16, error) {
 
 
 
-// SetVersionID set VersionID value
-func (a *Application1) SetVersionID(v uint16) error {
-	return a.SetProperty("VersionID", v)
-}
-
 
 
 // GetVersionID get VersionID value
 func (a *Application1) GetVersionID() (uint16, error) {
 	v, err := a.GetProperty("VersionID")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
-}
-
-
-
-
-// SetCRPL set CRPL value
-func (a *Application1) SetCRPL(v uint16) error {
-	return a.SetProperty("CRPL", v)
-}
-
-
-
-// GetCRPL get CRPL value
-func (a *Application1) GetCRPL() (uint16, error) {
-	v, err := a.GetProperty("CRPL")
 	if err != nil {
 		return uint16(0), err
 	}
@@ -314,8 +294,14 @@ func (a *Application1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 
 
 /*
-JoinComplete 
-		This method is called when the node provisioning initiated
+JoinComplete 		This method is called when the node provisioning initiated
+		by a Join() method call successfully completed.
+		The token parameter serves as a unique identifier of the
+		particular node. The token must be preserved by the application
+		in order to authenticate itself to the mesh daemon and attach to
+		the network as a mesh node by calling Attach() method or
+		permanently remove the identity of the mesh node by calling
+		Leave() method.
 
 */
 func (a *Application1) JoinComplete(token uint64) error {
@@ -325,70 +311,17 @@ func (a *Application1) JoinComplete(token uint64) error {
 }
 
 /*
-Join 
-		The token parameter serves as a unique identifier of the
-		particular node. The token must be preserved by the application
-		in order to authenticate itself to the mesh daemon and attach to
-
-*/
-func (a *Application1) Join() (by a, error) {
-	
-	var val0 by a
-	err := a.client.Call("Join", 0, ).Store(&val0)
-	return val0, err	
-}
-
-/*
-Leave 
-
-*/
-func (a *Application1) Leave() error {
-	
-	return a.client.Call("Leave", 0, ).Store()
-	
-}
-
-/*
-JoinFailed 
-
-*/
-func (a *Application1) JoinFailed(reason string) error {
-	
-	return a.client.Call("JoinFailed", 0, reason).Store()
-	
-}
-
-/*
-Join 
+JoinFailed 		This method is called when the node provisioning initiated by
+		Join() has failed.
 		The reason parameter identifies the reason for provisioning
 		failure. The defined values are: "timeout", "bad-pdu",
 		"confirmation-failed", "out-of-resources", "decryption-error",
 		"unexpected-error", "cannot-assign-addresses".
 
-Properties:
-	uint16 CompanyID [read-only]
-
-		A 16-bit Bluetooth-assigned Company Identifier of the vendor as
-		defined by Bluetooth SIG
-
-	uint16 ProductID [read-only]
-
-		A 16-bit vendor-assigned product identifier
-
-	uint16 VersionID [read-only]
-
-		A 16-bit vendor-assigned product version identifier
-
-	uint16 CRPL [read-only, optional]
-
-		A 16-bit minimum number of replay protection list entries
-
-
-
 */
-func (a *Application1) Join() error {
+func (a *Application1) JoinFailed(reason string) error {
 	
-	return a.client.Call("Join", 0, ).Store()
+	return a.client.Call("JoinFailed", 0, reason).Store()
 	
 }
 

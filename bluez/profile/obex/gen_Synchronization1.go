@@ -216,20 +216,16 @@ func (a *Synchronization1) UnwatchProperties(ch chan *bluez.PropertyChanged) err
 
 
 /*
-SetLocation 
-			Set the phonebook object store location for other
+SetLocation 			Set the phonebook object store location for other
 			operations. Should be called before all the other
 			operations.
-
 			location: Where the phonebook is stored, possible
 			values:
 				"int" ( "internal" which is default )
 				"sim1"
 				"sim2"
 				......
-
 			Possible errors: org.bluez.obex.Error.InvalidArguments
-
 
 */
 func (a *Synchronization1) SetLocation(location string) error {
@@ -239,23 +235,17 @@ func (a *Synchronization1) SetLocation(location string) error {
 }
 
 /*
-GetPhonebook 
-			Retrieve an entire Phonebook Object store from remote
+GetPhonebook 			Retrieve an entire Phonebook Object store from remote
 			device, and stores it in a local file.
-
 			If an empty target file is given, a name will be
 			automatically calculated for the temporary file.
-
 			The returned path represents the newly created transfer,
 			which should be used to find out if the content has been
 			successfully transferred or if the operation fails.
-
 			The properties of this transfer are also returned along
 			with the object path, to avoid a call to GetProperties.
-
 			Possible errors: org.bluez.obex.Error.InvalidArguments
 					 org.bluez.obex.Error.Failed
-
 
 */
 func (a *Synchronization1) GetPhonebook(targetfile string) (dbus.ObjectPath, map[string]interface{}, error) {
@@ -267,20 +257,14 @@ func (a *Synchronization1) GetPhonebook(targetfile string) (dbus.ObjectPath, map
 }
 
 /*
-PutPhonebook 
-			Send an entire Phonebook Object store to remote device.
-
+PutPhonebook 			Send an entire Phonebook Object store to remote device.
 			The returned path represents the newly created transfer,
 			which should be used to find out if the content has been
 			successfully transferred or if the operation fails.
-
 			The properties of this transfer are also returned along
 			with the object path, to avoid a call to GetProperties.
-
 			Possible errors: org.bluez.obex.Error.InvalidArguments
 					 org.bluez.obex.Error.Failed
-
-
 
 */
 func (a *Synchronization1) PutPhonebook(sourcefile string) (dbus.ObjectPath, map[string]interface{}, error) {

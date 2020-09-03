@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"regexp"
 
+	"github.com/muka/go-bluetooth/gen/filters"
 	"github.com/muka/go-bluetooth/gen/types"
 	"github.com/muka/go-bluetooth/gen/util"
 
@@ -12,14 +13,16 @@ import (
 )
 
 type ApiGroupParser struct {
-	model *types.ApiGroup
-	debug bool
+	model  *types.ApiGroup
+	debug  bool
+	filter []filters.Filter
 }
 
 // NewApiGroupParser parser for ApiGroup
-func NewApiGroupParser(debug bool) ApiGroupParser {
+func NewApiGroupParser(debug bool, filtersList []filters.Filter) ApiGroupParser {
 	apiGroupParser := ApiGroupParser{
-		debug: debug,
+		debug:  debug,
+		filter: filtersList,
 		model: &types.ApiGroup{
 			Api: make([]*types.Api, 0),
 		},
@@ -103,7 +106,7 @@ func (g *ApiGroupParser) Parse(srcFile string) (*types.ApiGroup, error) {
 	}
 
 	for _, slice := range slices {
-		apiParser := NewApiParser(g.debug)
+		apiParser := NewApiParser(g.debug, g.filter)
 		api, err := apiParser.Parse(slice)
 		if err != nil {
 			return apiGroup, err
@@ -115,7 +118,7 @@ func (g *ApiGroupParser) Parse(srcFile string) (*types.ApiGroup, error) {
 }
 
 func (g *ApiParser) parseApi(raw []byte) (*types.Api, error) {
-	apiParser := NewApiParser(g.debug)
+	apiParser := NewApiParser(g.debug, g.filter)
 	return apiParser.Parse(raw)
 }
 

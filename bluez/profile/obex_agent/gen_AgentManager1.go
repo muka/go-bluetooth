@@ -216,13 +216,10 @@ func (a *AgentManager1) UnwatchProperties(ch chan *bluez.PropertyChanged) error 
 
 
 /*
-RegisterAgent 
-			Register an agent to request authorization of
+RegisterAgent 			Register an agent to request authorization of
 			the user to accept/reject objects. Object push
 			service needs to authorize each received object.
-
 			Possible errors: org.bluez.obex.Error.AlreadyExists
-
 
 */
 func (a *AgentManager1) RegisterAgent(agent dbus.ObjectPath) error {
@@ -232,14 +229,10 @@ func (a *AgentManager1) RegisterAgent(agent dbus.ObjectPath) error {
 }
 
 /*
-UnregisterAgent 
-			This unregisters the agent that has been previously
+UnregisterAgent 			This unregisters the agent that has been previously
 			registered. The object path parameter must match the
 			same value that has been used on registration.
-
 			Possible errors: org.bluez.obex.Error.DoesNotExist
-
-
 
 */
 func (a *AgentManager1) UnregisterAgent(agent dbus.ObjectPath) error {

@@ -61,24 +61,6 @@ type GattDescriptor1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	UUID 128-bit descriptor UUID.
-	*/
-	UUID string
-
-	/*
-	Characteristic Object path of the GATT characteristic the descriptor
-			belongs to.
-	*/
-	Characteristic dbus.ObjectPath
-
-	/*
-	Value The cached value of the descriptor. This property
-			gets updated only after a successful read request, upon
-			which a PropertiesChanged signal will be emitted.
-	*/
-	Value []byte `dbus:"emit"`
-
-	/*
 	Flags Defines how the descriptor value can be used.
 
 			Possible values:
@@ -104,6 +86,24 @@ type GattDescriptor1Properties struct {
 	*/
 	Handle uint16
 
+	/*
+	UUID 128-bit descriptor UUID.
+	*/
+	UUID string
+
+	/*
+	Characteristic Object path of the GATT characteristic the descriptor
+			belongs to.
+	*/
+	Characteristic dbus.ObjectPath
+
+	/*
+	Value The cached value of the descriptor. This property
+			gets updated only after a successful read request, upon
+			which a PropertiesChanged signal will be emitted.
+	*/
+	Value []byte `dbus:"emit"`
+
 }
 
 //Lock access to properties
@@ -118,68 +118,6 @@ func (p *GattDescriptor1Properties) Unlock() {
 
 
 
-
-// SetUUID set UUID value
-func (a *GattDescriptor1) SetUUID(v string) error {
-	return a.SetProperty("UUID", v)
-}
-
-
-
-// GetUUID get UUID value
-func (a *GattDescriptor1) GetUUID() (string, error) {
-	v, err := a.GetProperty("UUID")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-// SetCharacteristic set Characteristic value
-func (a *GattDescriptor1) SetCharacteristic(v dbus.ObjectPath) error {
-	return a.SetProperty("Characteristic", v)
-}
-
-
-
-// GetCharacteristic get Characteristic value
-func (a *GattDescriptor1) GetCharacteristic() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Characteristic")
-	if err != nil {
-		return dbus.ObjectPath(""), err
-	}
-	return v.Value().(dbus.ObjectPath), nil
-}
-
-
-
-
-// SetValue set Value value
-func (a *GattDescriptor1) SetValue(v []byte) error {
-	return a.SetProperty("Value", v)
-}
-
-
-
-// GetValue get Value value
-func (a *GattDescriptor1) GetValue() ([]byte, error) {
-	v, err := a.GetProperty("Value")
-	if err != nil {
-		return []byte{}, err
-	}
-	return v.Value().([]byte), nil
-}
-
-
-
-
-// SetFlags set Flags value
-func (a *GattDescriptor1) SetFlags(v []string) error {
-	return a.SetProperty("Flags", v)
-}
 
 
 
@@ -209,6 +147,48 @@ func (a *GattDescriptor1) GetHandle() (uint16, error) {
 		return uint16(0), err
 	}
 	return v.Value().(uint16), nil
+}
+
+
+
+
+
+
+// GetUUID get UUID value
+func (a *GattDescriptor1) GetUUID() (string, error) {
+	v, err := a.GetProperty("UUID")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+
+
+// GetCharacteristic get Characteristic value
+func (a *GattDescriptor1) GetCharacteristic() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Characteristic")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
+}
+
+
+
+
+
+
+// GetValue get Value value
+func (a *GattDescriptor1) GetValue() ([]byte, error) {
+	v, err := a.GetProperty("Value")
+	if err != nil {
+		return []byte{}, err
+	}
+	return v.Value().([]byte), nil
 }
 
 
@@ -357,21 +337,17 @@ func (a *GattDescriptor1) UnwatchProperties(ch chan *bluez.PropertyChanged) erro
 
 
 /*
-ReadValue 
-			Issues a request to read the value of the
+ReadValue 			Issues a request to read the value of the
 			characteristic and returns the value if the
 			operation was successful.
-
 			Possible options: "offset": Start offset
 					  "device": Device path (Server only)
 					  "link": Link type (Server only)
-
 			Possible Errors: org.bluez.Error.Failed
 					 org.bluez.Error.InProgress
 					 org.bluez.Error.NotPermitted
 					 org.bluez.Error.NotAuthorized
 					 org.bluez.Error.NotSupported
-
 
 */
 func (a *GattDescriptor1) ReadValue(flags map[string]interface{}) ([]byte, error) {
@@ -382,24 +358,20 @@ func (a *GattDescriptor1) ReadValue(flags map[string]interface{}) ([]byte, error
 }
 
 /*
-WriteValue 
-			Issues a request to write the value of the
+WriteValue 			Issues a request to write the value of the
 			characteristic.
-
 			Possible options: "offset": Start offset
 					  "device": Device path (Server only)
 					  "link": Link type (Server only)
 					  "prepare-authorize": boolean Is prepare
 							       authorization
 							       request
-
 			Possible Errors: org.bluez.Error.Failed
 					 org.bluez.Error.InProgress
 					 org.bluez.Error.NotPermitted
 					 org.bluez.Error.InvalidValueLength
 					 org.bluez.Error.NotAuthorized
 					 org.bluez.Error.NotSupported
-
 
 */
 func (a *GattDescriptor1) WriteValue(value []byte, flags map[string]interface{}) error {
