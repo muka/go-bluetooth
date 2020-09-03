@@ -3,15 +3,14 @@
 
 BLUEZ_VERSION ?= 5.53
 FILTER ?=
-DEV_HOST ?= minion
 
 DOCKER_PARAMS :=  --privileged -it --rm \
-									--net=host \
-								  -v /dev:/dev \
-									-v /var/run/dbus:/var/run/dbus \
-									-v /sys/class/bluetooth:/sys/class/bluetooth \
-									-v /var/lib/bluetooth:/var/lib/bluetooth \
-									opny/bluez-${BLUEZ_VERSION}
+	--net=host \
+	-v /dev:/dev \
+	-v /var/run/dbus:/var/run/dbus \
+	-v /sys/class/bluetooth:/sys/class/bluetooth \
+	-v /var/lib/bluetooth:/var/lib/bluetooth \
+	opny/bluez-${BLUEZ_VERSION}
 
 all: bluez/checkout gen/clean gen/run
 
@@ -39,35 +38,11 @@ gen/run: bluez/checkout
 
 gen: gen/run
 
-test/api:
-	sudo go test github.com/muka/go-bluetooth/api
-
 build: gen
 	CGO_ENABLED=0 go build -o go-bluetooth ./main.go
 
-dev/dbus/install: dev/dbus/link dev/dbus/reload
-
-dev/dbus/link:
-	sudo ln -s `pwd`/env/dbus/dbus-go-bluetooth-dev.conf /etc/dbus-1/system.d/
-	sudo ln -s `pwd`/env/dbus/dbus-go-bluetooth-service.conf /etc/dbus-1/system.d/
-
-dev/dbus/reload:
-	dbus-send --system --type=method_call \
-		--dest=org.freedesktop.DBus / org.freedesktop.DBus.ReloadConfig
-
 dev/kill:
 	ssh ${DEV_HOST} "killall go-bluetooth" || true
-
-dev/exec: dev/kill
-	ssh ${DEV_HOST} "~/go-bluetooth service server --adapterID hci0"
-
-dev/run: dev/cp dev/exec
-
-dev/cp: build dev/kill
-	scp go-bluetooth ${DEV_HOST}:~/
-
-dev/logs:
-	ssh ${DEV_HOST} "journalctl -u bluetooth.service -f"
 
 docker/bluetoothd/init:
 	sudo addgroup bluetooth || true
