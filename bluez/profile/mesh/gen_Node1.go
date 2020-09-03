@@ -65,18 +65,21 @@ type Node1Properties struct {
 	Features map[string]interface{}
 
 	/*
-	LowPower Indicates support for operating in Low Power node mode
+	Friend Indicates the ability to establish a friendship with a
+			Low Power node
 	*/
-	LowPower bool
+	Friend bool
 
 	/*
-	Relay Indicates support for relaying messages
-
-	If a key is absent from the dictionary, the feature is not supported.
-	Otherwise, true means that the feature is enabled and false means that
-	the feature is disabled.
+	Addresses This property contains unicast addresses of node's elements.
 	*/
-	Relay bool
+	Addresses []uint16
+
+	/*
+	SequenceNumber This property may be read at any time to determine the
+		sequence number.
+	*/
+	SequenceNumber uint32
 
 	/*
 	IvIndex This property may be read at any time to determine the IV_Index
@@ -93,20 +96,23 @@ type Node1Properties struct {
 	SecondsSinceLastHeard uint32
 
 	/*
-	Addresses This property contains unicast addresses of node's elements.
+	LowPower Indicates support for operating in Low Power node mode
 	*/
-	Addresses []uint16
-
-	/*
-	Friend Indicates the ability to establish a friendship with a
-			Low Power node
-	*/
-	Friend bool
+	LowPower bool
 
 	/*
 	Proxy Indicates support for GATT proxy
 	*/
 	Proxy bool
+
+	/*
+	Relay Indicates support for relaying messages
+
+	If a key is absent from the dictionary, the feature is not supported.
+	Otherwise, true means that the feature is enabled and false means that
+	the feature is disabled.
+	*/
+	Relay bool
 
 	/*
 	Beacon This property indicates whether the periodic beaconing is
@@ -119,12 +125,6 @@ type Node1Properties struct {
 		network key.
 	*/
 	Beacon bool
-
-	/*
-	SequenceNumber This property may be read at any time to determine the
-		sequence number.
-	*/
-	SequenceNumber uint32
 
 }
 
@@ -155,16 +155,16 @@ func (a *Node1) GetFeatures() (map[string]interface{}, error) {
 
 
 
-// SetLowPower set LowPower value
-func (a *Node1) SetLowPower(v bool) error {
-	return a.SetProperty("LowPower", v)
+// SetFriend set Friend value
+func (a *Node1) SetFriend(v bool) error {
+	return a.SetProperty("Friend", v)
 }
 
 
 
-// GetLowPower get LowPower value
-func (a *Node1) GetLowPower() (bool, error) {
-	v, err := a.GetProperty("LowPower")
+// GetFriend get Friend value
+func (a *Node1) GetFriend() (bool, error) {
+	v, err := a.GetProperty("Friend")
 	if err != nil {
 		return false, err
 	}
@@ -174,20 +174,29 @@ func (a *Node1) GetLowPower() (bool, error) {
 
 
 
-// SetRelay set Relay value
-func (a *Node1) SetRelay(v bool) error {
-	return a.SetProperty("Relay", v)
+
+
+// GetAddresses get Addresses value
+func (a *Node1) GetAddresses() ([]uint16, error) {
+	v, err := a.GetProperty("Addresses")
+	if err != nil {
+		return []uint16{}, err
+	}
+	return v.Value().([]uint16), nil
 }
 
 
 
-// GetRelay get Relay value
-func (a *Node1) GetRelay() (bool, error) {
-	v, err := a.GetProperty("Relay")
+
+
+
+// GetSequenceNumber get SequenceNumber value
+func (a *Node1) GetSequenceNumber() (uint32, error) {
+	v, err := a.GetProperty("SequenceNumber")
 	if err != nil {
-		return false, err
+		return uint32(0), err
 	}
-	return v.Value().(bool), nil
+	return v.Value().(uint32), nil
 }
 
 
@@ -221,30 +230,16 @@ func (a *Node1) GetSecondsSinceLastHeard() (uint32, error) {
 
 
 
-
-
-// GetAddresses get Addresses value
-func (a *Node1) GetAddresses() ([]uint16, error) {
-	v, err := a.GetProperty("Addresses")
-	if err != nil {
-		return []uint16{}, err
-	}
-	return v.Value().([]uint16), nil
+// SetLowPower set LowPower value
+func (a *Node1) SetLowPower(v bool) error {
+	return a.SetProperty("LowPower", v)
 }
 
 
 
-
-// SetFriend set Friend value
-func (a *Node1) SetFriend(v bool) error {
-	return a.SetProperty("Friend", v)
-}
-
-
-
-// GetFriend get Friend value
-func (a *Node1) GetFriend() (bool, error) {
-	v, err := a.GetProperty("Friend")
+// GetLowPower get LowPower value
+func (a *Node1) GetLowPower() (bool, error) {
+	v, err := a.GetProperty("LowPower")
 	if err != nil {
 		return false, err
 	}
@@ -273,11 +268,16 @@ func (a *Node1) GetProxy() (bool, error) {
 
 
 
+// SetRelay set Relay value
+func (a *Node1) SetRelay(v bool) error {
+	return a.SetProperty("Relay", v)
+}
 
 
-// GetBeacon get Beacon value
-func (a *Node1) GetBeacon() (bool, error) {
-	v, err := a.GetProperty("Beacon")
+
+// GetRelay get Relay value
+func (a *Node1) GetRelay() (bool, error) {
+	v, err := a.GetProperty("Relay")
 	if err != nil {
 		return false, err
 	}
@@ -289,13 +289,13 @@ func (a *Node1) GetBeacon() (bool, error) {
 
 
 
-// GetSequenceNumber get SequenceNumber value
-func (a *Node1) GetSequenceNumber() (uint32, error) {
-	v, err := a.GetProperty("SequenceNumber")
+// GetBeacon get Beacon value
+func (a *Node1) GetBeacon() (bool, error) {
+	v, err := a.GetProperty("Beacon")
 	if err != nil {
-		return uint32(0), err
+		return false, err
 	}
-	return v.Value().(uint32), nil
+	return v.Value().(bool), nil
 }
 
 

@@ -60,6 +60,11 @@ type Application1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	VersionID A 16-bit vendor-assigned product version identifier
+	*/
+	VersionID uint16
+
+	/*
 	CRPL A 16-bit minimum number of replay protection list entries
 	*/
 	CRPL uint16
@@ -75,11 +80,6 @@ type Application1Properties struct {
 	*/
 	ProductID uint16
 
-	/*
-	VersionID A 16-bit vendor-assigned product version identifier
-	*/
-	VersionID uint16
-
 }
 
 //Lock access to properties
@@ -90,6 +90,20 @@ func (p *Application1Properties) Lock() {
 //Unlock access to properties
 func (p *Application1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+
+
+// GetVersionID get VersionID value
+func (a *Application1) GetVersionID() (uint16, error) {
+	v, err := a.GetProperty("VersionID")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
 }
 
 
@@ -128,20 +142,6 @@ func (a *Application1) GetCompanyID() (uint16, error) {
 // GetProductID get ProductID value
 func (a *Application1) GetProductID() (uint16, error) {
 	v, err := a.GetProperty("ProductID")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
-}
-
-
-
-
-
-
-// GetVersionID get VersionID value
-func (a *Application1) GetVersionID() (uint16, error) {
-	v, err := a.GetProperty("VersionID")
 	if err != nil {
 		return uint16(0), err
 	}

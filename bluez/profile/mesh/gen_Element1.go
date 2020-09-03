@@ -66,7 +66,7 @@ type Element1Properties struct {
 
 		The array may be empty.
 	*/
-	VendorModels []map[uint16]uint16
+	VendorModels []VendorItem
 
 	/*
 	Location Location descriptor as defined in the GATT Bluetooth Namespace
@@ -97,12 +97,12 @@ func (p *Element1Properties) Unlock() {
 
 
 // GetVendorModels get VendorModels value
-func (a *Element1) GetVendorModels() ([]map[uint16]uint16, error) {
+func (a *Element1) GetVendorModels() ([]VendorItem, error) {
 	v, err := a.GetProperty("VendorModels")
 	if err != nil {
-		return []map[uint16]uint16{}, err
+		return []VendorItem{}, err
 	}
-	return v.Value().([]map[uint16]uint16), nil
+	return v.Value().([]VendorItem), nil
 }
 
 

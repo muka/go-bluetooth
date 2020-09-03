@@ -1,20 +1,20 @@
 package override
 
 var typesMap = map[string]string{
-	// mesh Network1.Attach()
-	// object node, array{byte, array{(uint16, dict)}} configuration
-	"object node, array{byte, array{(uint16, dict)}} configuration": "dbus.ObjectPath, []map[byte][]map[uint16]map[string]interface{}",
-	// mesh Element1
-	// array{(uint16, uint16)}
-	"array{(uint16, uint16)}": "[]map[uint16]uint16",
-	// obex org.bluez.obex.PhonebookAccess1.List
-	"array{string vcard, string name}": "[]map[string]string",
-	// obex
+	//mesh-api object node, array{byte, array{(uint16, dict)}} configuration Attach(object app_root, uint64 token)
+	"object node, array{byte, array{(uint16, dict)}} configuration": "dbus.ObjectPath, []ConfigurationItem",
+	// mesh-api array{(uint16, uint16)} VendorModels [read-only]
+	"array{(uint16, uint16)}": "[]VendorItem",
+	// obex-api array{string vcard, string name} List(dict filters)
+	"array{string vcard, string name}": "[]VCardItem",
+	// obex-api
 	"object, dict": "dbus.ObjectPath, map[string]interface{}",
-	// obext List
-	"array{object, dict}": "[]map[dbus.ObjectPath]map[string]interface{}",
+	// obex-api array{object, dict} ListMessages(string folder, dict filter)
+	"array{object, dict}": "[]Message",
 	// gatt AcquireWrite
 	"fd, uint16": "dbus.UnixFD, uint16",
+	// media-api array{objects, properties} ListItems(dict filter)
+	"array{objects, properties}": "[]MediaItem",
 }
 
 //MapType map a raw type literal otherwise difficult to parse

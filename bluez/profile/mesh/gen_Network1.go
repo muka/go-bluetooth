@@ -306,10 +306,10 @@ Attach 		This is the first method that an application must call to get
 			org.bluez.mesh.Error.Failed
 
 */
-func (a *Network1) Attach(app_root dbus.ObjectPath, token uint64) (dbus.ObjectPath, []map[byte][]map[uint16]map[string]interface{}, error) {
+func (a *Network1) Attach(app_root dbus.ObjectPath, token uint64) (dbus.ObjectPath, []ConfigurationItem, error) {
 	
 	var val0 dbus.ObjectPath
-  var val1 []map[byte][]map[uint16]map[string]interface{}
+  var val1 []ConfigurationItem
 	err := a.client.Call("Attach", 0, app_root, token).Store(&val0, &val1)
 	return val0, val1, err	
 }

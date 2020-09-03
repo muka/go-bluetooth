@@ -59,11 +59,6 @@ type PhonebookAccess1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Folder Current folder.
-	*/
-	Folder string
-
-	/*
 	DatabaseIdentifier 128 bits persistent database identifier.
 
 			Possible values: 32-character hexadecimal such
@@ -95,6 +90,11 @@ type PhonebookAccess1Properties struct {
 	*/
 	FixedImageSize bool
 
+	/*
+	Folder Current folder.
+	*/
+	Folder string
+
 }
 
 //Lock access to properties
@@ -105,25 +105,6 @@ func (p *PhonebookAccess1Properties) Lock() {
 //Unlock access to properties
 func (p *PhonebookAccess1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-// SetFolder set Folder value
-func (a *PhonebookAccess1) SetFolder(v string) error {
-	return a.SetProperty("Folder", v)
-}
-
-
-
-// GetFolder get Folder value
-func (a *PhonebookAccess1) GetFolder() (string, error) {
-	v, err := a.GetProperty("Folder")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
 }
 
 
@@ -200,6 +181,25 @@ func (a *PhonebookAccess1) GetFixedImageSize() (bool, error) {
 		return false, err
 	}
 	return v.Value().(bool), nil
+}
+
+
+
+
+// SetFolder set Folder value
+func (a *PhonebookAccess1) SetFolder(v string) error {
+	return a.SetProperty("Folder", v)
+}
+
+
+
+// GetFolder get Folder value
+func (a *PhonebookAccess1) GetFolder() (string, error) {
+	v, err := a.GetProperty("Folder")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 
@@ -409,9 +409,9 @@ List 			Return an array of vcard-listing data where every entry
 					 org.bluez.obex.Forbidden
 
 */
-func (a *PhonebookAccess1) List(filters map[string]interface{}) ([]map[string]string, error) {
+func (a *PhonebookAccess1) List(filters map[string]interface{}) ([]VCardItem, error) {
 	
-	var val0 []map[string]string
+	var val0 []VCardItem
 	err := a.client.Call("List", 0, filters).Store(&val0)
 	return val0, err	
 }
@@ -455,9 +455,9 @@ Search 			Search for entries matching the given condition and
 					 org.bluez.obex.Error.Failed
 
 */
-func (a *PhonebookAccess1) Search(field string, value string, filters map[string]interface{}) ([]map[string]string, error) {
+func (a *PhonebookAccess1) Search(field string, value string, filters map[string]interface{}) ([]VCardItem, error) {
 	
-	var val0 []map[string]string
+	var val0 []VCardItem
 	err := a.client.Call("Search", 0, field, value, filters).Store(&val0)
 	return val0, err	
 }

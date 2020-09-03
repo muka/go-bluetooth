@@ -59,33 +59,6 @@ type MediaTransport1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Delay Optional. Transport delay in 1/10 of millisecond, this
-			property is only writeable when the transport was
-			acquired by the sender.
-	*/
-	Delay uint16
-
-	/*
-	Volume Optional. Indicates volume level of the transport,
-			this property is only writeable when the transport was
-			acquired by the sender.
-
-			Possible Values: 0-127
-	*/
-	Volume uint16
-
-	/*
-	Endpoint Endpoint object which the transport is associated
-			with.
-	*/
-	Endpoint dbus.ObjectPath
-
-	/*
-	Device Device object which the transport is connected to.
-	*/
-	Device dbus.ObjectPath
-
-	/*
 	UUID UUID of the profile which the transport is for.
 	*/
 	UUID string
@@ -112,6 +85,33 @@ type MediaTransport1Properties struct {
 	*/
 	State string
 
+	/*
+	Delay Optional. Transport delay in 1/10 of millisecond, this
+			property is only writeable when the transport was
+			acquired by the sender.
+	*/
+	Delay uint16
+
+	/*
+	Volume Optional. Indicates volume level of the transport,
+			this property is only writeable when the transport was
+			acquired by the sender.
+
+			Possible Values: 0-127
+	*/
+	Volume uint16
+
+	/*
+	Endpoint Endpoint object which the transport is associated
+			with.
+	*/
+	Endpoint dbus.ObjectPath
+
+	/*
+	Device Device object which the transport is connected to.
+	*/
+	Device dbus.ObjectPath
+
 }
 
 //Lock access to properties
@@ -122,82 +122,6 @@ func (p *MediaTransport1Properties) Lock() {
 //Unlock access to properties
 func (p *MediaTransport1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-// SetDelay set Delay value
-func (a *MediaTransport1) SetDelay(v uint16) error {
-	return a.SetProperty("Delay", v)
-}
-
-
-
-// GetDelay get Delay value
-func (a *MediaTransport1) GetDelay() (uint16, error) {
-	v, err := a.GetProperty("Delay")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
-}
-
-
-
-
-// SetVolume set Volume value
-func (a *MediaTransport1) SetVolume(v uint16) error {
-	return a.SetProperty("Volume", v)
-}
-
-
-
-// GetVolume get Volume value
-func (a *MediaTransport1) GetVolume() (uint16, error) {
-	v, err := a.GetProperty("Volume")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
-}
-
-
-
-
-// SetEndpoint set Endpoint value
-func (a *MediaTransport1) SetEndpoint(v dbus.ObjectPath) error {
-	return a.SetProperty("Endpoint", v)
-}
-
-
-
-// GetEndpoint get Endpoint value
-func (a *MediaTransport1) GetEndpoint() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Endpoint")
-	if err != nil {
-		return dbus.ObjectPath(""), err
-	}
-	return v.Value().(dbus.ObjectPath), nil
-}
-
-
-
-
-// SetDevice set Device value
-func (a *MediaTransport1) SetDevice(v dbus.ObjectPath) error {
-	return a.SetProperty("Device", v)
-}
-
-
-
-// GetDevice get Device value
-func (a *MediaTransport1) GetDevice() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Device")
-	if err != nil {
-		return dbus.ObjectPath(""), err
-	}
-	return v.Value().(dbus.ObjectPath), nil
 }
 
 
@@ -274,6 +198,82 @@ func (a *MediaTransport1) GetState() (string, error) {
 		return "", err
 	}
 	return v.Value().(string), nil
+}
+
+
+
+
+// SetDelay set Delay value
+func (a *MediaTransport1) SetDelay(v uint16) error {
+	return a.SetProperty("Delay", v)
+}
+
+
+
+// GetDelay get Delay value
+func (a *MediaTransport1) GetDelay() (uint16, error) {
+	v, err := a.GetProperty("Delay")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
+
+
+
+
+// SetVolume set Volume value
+func (a *MediaTransport1) SetVolume(v uint16) error {
+	return a.SetProperty("Volume", v)
+}
+
+
+
+// GetVolume get Volume value
+func (a *MediaTransport1) GetVolume() (uint16, error) {
+	v, err := a.GetProperty("Volume")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
+
+
+
+
+// SetEndpoint set Endpoint value
+func (a *MediaTransport1) SetEndpoint(v dbus.ObjectPath) error {
+	return a.SetProperty("Endpoint", v)
+}
+
+
+
+// GetEndpoint get Endpoint value
+func (a *MediaTransport1) GetEndpoint() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Endpoint")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
+}
+
+
+
+
+// SetDevice set Device value
+func (a *MediaTransport1) SetDevice(v dbus.ObjectPath) error {
+	return a.SetProperty("Device", v)
+}
+
+
+
+// GetDevice get Device value
+func (a *MediaTransport1) GetDevice() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Device")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
 }
 
 

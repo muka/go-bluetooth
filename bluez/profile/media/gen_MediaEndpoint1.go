@@ -84,17 +84,6 @@ type MediaEndpoint1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Capabilities Capabilities blob, it is used as it is so the size and
-			byte order must match.
-	*/
-	Capabilities []byte
-
-	/*
-	Device Device object which the endpoint is belongs to.
-	*/
-	Device dbus.ObjectPath
-
-	/*
 	UUID UUID of the profile which the endpoint is for.
 	*/
 	UUID string
@@ -106,6 +95,17 @@ type MediaEndpoint1Properties struct {
 	*/
 	Codec byte
 
+	/*
+	Capabilities Capabilities blob, it is used as it is so the size and
+			byte order must match.
+	*/
+	Capabilities []byte
+
+	/*
+	Device Device object which the endpoint is belongs to.
+	*/
+	Device dbus.ObjectPath
+
 }
 
 //Lock access to properties
@@ -116,44 +116,6 @@ func (p *MediaEndpoint1Properties) Lock() {
 //Unlock access to properties
 func (p *MediaEndpoint1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-// SetCapabilities set Capabilities value
-func (a *MediaEndpoint1) SetCapabilities(v []byte) error {
-	return a.SetProperty("Capabilities", v)
-}
-
-
-
-// GetCapabilities get Capabilities value
-func (a *MediaEndpoint1) GetCapabilities() ([]byte, error) {
-	v, err := a.GetProperty("Capabilities")
-	if err != nil {
-		return []byte{}, err
-	}
-	return v.Value().([]byte), nil
-}
-
-
-
-
-// SetDevice set Device value
-func (a *MediaEndpoint1) SetDevice(v dbus.ObjectPath) error {
-	return a.SetProperty("Device", v)
-}
-
-
-
-// GetDevice get Device value
-func (a *MediaEndpoint1) GetDevice() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Device")
-	if err != nil {
-		return dbus.ObjectPath(""), err
-	}
-	return v.Value().(dbus.ObjectPath), nil
 }
 
 
@@ -192,6 +154,44 @@ func (a *MediaEndpoint1) GetCodec() (byte, error) {
 		return byte(0), err
 	}
 	return v.Value().(byte), nil
+}
+
+
+
+
+// SetCapabilities set Capabilities value
+func (a *MediaEndpoint1) SetCapabilities(v []byte) error {
+	return a.SetProperty("Capabilities", v)
+}
+
+
+
+// GetCapabilities get Capabilities value
+func (a *MediaEndpoint1) GetCapabilities() ([]byte, error) {
+	v, err := a.GetProperty("Capabilities")
+	if err != nil {
+		return []byte{}, err
+	}
+	return v.Value().([]byte), nil
+}
+
+
+
+
+// SetDevice set Device value
+func (a *MediaEndpoint1) SetDevice(v dbus.ObjectPath) error {
+	return a.SetProperty("Device", v)
+}
+
+
+
+// GetDevice get Device value
+func (a *MediaEndpoint1) GetDevice() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Device")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
 }
 
 
