@@ -83,14 +83,14 @@ type MediaControl1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Connected 
-	*/
-	Connected bool
-
-	/*
 	Player Addressed Player object path.
 	*/
 	Player dbus.ObjectPath
+
+	/*
+	Connected 
+	*/
+	Connected bool
 
 }
 
@@ -102,25 +102,6 @@ func (p *MediaControl1Properties) Lock() {
 //Unlock access to properties
 func (p *MediaControl1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-// SetConnected set Connected value
-func (a *MediaControl1) SetConnected(v bool) error {
-	return a.SetProperty("Connected", v)
-}
-
-
-
-// GetConnected get Connected value
-func (a *MediaControl1) GetConnected() (bool, error) {
-	v, err := a.GetProperty("Connected")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
 }
 
 
@@ -140,6 +121,25 @@ func (a *MediaControl1) GetPlayer() (dbus.ObjectPath, error) {
 		return dbus.ObjectPath(""), err
 	}
 	return v.Value().(dbus.ObjectPath), nil
+}
+
+
+
+
+// SetConnected set Connected value
+func (a *MediaControl1) SetConnected(v bool) error {
+	return a.SetProperty("Connected", v)
+}
+
+
+
+// GetConnected get Connected value
+func (a *MediaControl1) GetConnected() (bool, error) {
+	v, err := a.GetProperty("Connected")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
 }
 
 

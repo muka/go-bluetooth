@@ -83,13 +83,13 @@ type Adapter1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Name The Bluetooth system name (pretty hostname).
+	Class The Bluetooth class of device.
 
-			This property is either a static system default
-			or controlled by an external daemon providing
-			access to the pretty hostname configuration.
+			This property represents the value that is either
+			automatically configured by DMI/ACPI information
+			or provided as static configuration.
 	*/
-	Name string
+	Class uint32
 
 	/*
 	Powered Switch an adapter on or off. This will also set the
@@ -155,9 +155,29 @@ type Adapter1Properties struct {
 	DiscoverableTimeout uint32
 
 	/*
+	Discovering Indicates that a device discovery procedure is active.
+	*/
+	Discovering bool
+
+	/*
 	Address The Bluetooth device address.
 	*/
 	Address string
+
+	/*
+	UUIDs List of 128-bit UUIDs that represents the available
+			local services.
+	*/
+	UUIDs []string
+
+	/*
+	Name The Bluetooth system name (pretty hostname).
+
+			This property is either a static system default
+			or controlled by an external daemon providing
+			access to the pretty hostname configuration.
+	*/
+	Name string
 
 	/*
 	Alias The Bluetooth friendly name. This value can be
@@ -178,26 +198,6 @@ type Adapter1Properties struct {
 			resort.
 	*/
 	Alias string
-
-	/*
-	Class The Bluetooth class of device.
-
-			This property represents the value that is either
-			automatically configured by DMI/ACPI information
-			or provided as static configuration.
-	*/
-	Class uint32
-
-	/*
-	Discovering Indicates that a device discovery procedure is active.
-	*/
-	Discovering bool
-
-	/*
-	UUIDs List of 128-bit UUIDs that represents the available
-			local services.
-	*/
-	UUIDs []string
 
 	/*
 	Modalias Local Device ID information in modalias format
@@ -233,20 +233,20 @@ func (p *Adapter1Properties) Unlock() {
 
 
 
-// SetName set Name value
-func (a *Adapter1) SetName(v string) error {
-	return a.SetProperty("Name", v)
+// SetClass set Class value
+func (a *Adapter1) SetClass(v uint32) error {
+	return a.SetProperty("Class", v)
 }
 
 
 
-// GetName get Name value
-func (a *Adapter1) GetName() (string, error) {
-	v, err := a.GetProperty("Name")
+// GetClass get Class value
+func (a *Adapter1) GetClass() (uint32, error) {
+	v, err := a.GetProperty("Class")
 	if err != nil {
-		return "", err
+		return uint32(0), err
 	}
-	return v.Value().(string), nil
+	return v.Value().(uint32), nil
 }
 
 
@@ -347,6 +347,25 @@ func (a *Adapter1) GetDiscoverableTimeout() (uint32, error) {
 
 
 
+// SetDiscovering set Discovering value
+func (a *Adapter1) SetDiscovering(v bool) error {
+	return a.SetProperty("Discovering", v)
+}
+
+
+
+// GetDiscovering get Discovering value
+func (a *Adapter1) GetDiscovering() (bool, error) {
+	v, err := a.GetProperty("Discovering")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
 // SetAddress set Address value
 func (a *Adapter1) SetAddress(v string) error {
 	return a.SetProperty("Address", v)
@@ -357,6 +376,44 @@ func (a *Adapter1) SetAddress(v string) error {
 // GetAddress get Address value
 func (a *Adapter1) GetAddress() (string, error) {
 	v, err := a.GetProperty("Address")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+// SetUUIDs set UUIDs value
+func (a *Adapter1) SetUUIDs(v []string) error {
+	return a.SetProperty("UUIDs", v)
+}
+
+
+
+// GetUUIDs get UUIDs value
+func (a *Adapter1) GetUUIDs() ([]string, error) {
+	v, err := a.GetProperty("UUIDs")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
+}
+
+
+
+
+// SetName set Name value
+func (a *Adapter1) SetName(v string) error {
+	return a.SetProperty("Name", v)
+}
+
+
+
+// GetName get Name value
+func (a *Adapter1) GetName() (string, error) {
+	v, err := a.GetProperty("Name")
 	if err != nil {
 		return "", err
 	}
@@ -380,63 +437,6 @@ func (a *Adapter1) GetAlias() (string, error) {
 		return "", err
 	}
 	return v.Value().(string), nil
-}
-
-
-
-
-// SetClass set Class value
-func (a *Adapter1) SetClass(v uint32) error {
-	return a.SetProperty("Class", v)
-}
-
-
-
-// GetClass get Class value
-func (a *Adapter1) GetClass() (uint32, error) {
-	v, err := a.GetProperty("Class")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
-}
-
-
-
-
-// SetDiscovering set Discovering value
-func (a *Adapter1) SetDiscovering(v bool) error {
-	return a.SetProperty("Discovering", v)
-}
-
-
-
-// GetDiscovering get Discovering value
-func (a *Adapter1) GetDiscovering() (bool, error) {
-	v, err := a.GetProperty("Discovering")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-// SetUUIDs set UUIDs value
-func (a *Adapter1) SetUUIDs(v []string) error {
-	return a.SetProperty("UUIDs", v)
-}
-
-
-
-// GetUUIDs get UUIDs value
-func (a *Adapter1) GetUUIDs() ([]string, error) {
-	v, err := a.GetProperty("UUIDs")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
 }
 
 
@@ -723,6 +723,17 @@ SetDiscoveryFilter 			This method sets the device discovery filter for the
 				Make adapter discoverable while discovering,
 				if the adapter is already discoverable setting
 				this filter won't do anything.
+			string Pattern (Default: none)
+				Discover devices where the pattern matches
+				either the prefix of the address or
+				device name which is convenient way to limited
+				the number of device objects created during a
+				discovery.
+				When set disregards device discoverable flags.
+				Note: The pattern matching is ignored if there
+				are other client that don't set any pattern as
+				it work as a logical OR, also setting empty
+				string "" pattern will match any device found.
 			When discovery filter is set, Device objects will be
 			created as new devices with matching criteria are
 			discovered regardless of they are connectable or

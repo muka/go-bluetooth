@@ -15,6 +15,8 @@ var typesMap = map[string]string{
 	"fd, uint16": "dbus.UnixFD, uint16",
 	// media-api array{objects, properties} ListItems(dict filter)
 	"array{objects, properties}": "[]MediaItem",
+	// media-api fd, uint16, uint16 Acquire()
+	"fd, uint16, uint16": "dbus.UnixFD, uint16, uint16",
 }
 
 //MapType map a raw type literal otherwise difficult to parse

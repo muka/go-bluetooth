@@ -59,33 +59,6 @@ type MediaTransport1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	UUID UUID of the profile which the transport is for.
-	*/
-	UUID string
-
-	/*
-	Codec Assigned number of codec that the transport support.
-			The values should match the profile specification which
-			is indicated by the UUID.
-	*/
-	Codec byte
-
-	/*
-	Configuration Configuration blob, it is used as it is so the size and
-			byte order must match.
-	*/
-	Configuration []byte
-
-	/*
-	State Indicates the state of the transport. Possible
-			values are:
-				"idle": not streaming
-				"pending": streaming but not acquired
-				"active": streaming and acquired
-	*/
-	State string
-
-	/*
 	Delay Optional. Transport delay in 1/10 of millisecond, this
 			property is only writeable when the transport was
 			acquired by the sender.
@@ -112,6 +85,33 @@ type MediaTransport1Properties struct {
 	*/
 	Device dbus.ObjectPath
 
+	/*
+	UUID UUID of the profile which the transport is for.
+	*/
+	UUID string
+
+	/*
+	Codec Assigned number of codec that the transport support.
+			The values should match the profile specification which
+			is indicated by the UUID.
+	*/
+	Codec byte
+
+	/*
+	Configuration Configuration blob, it is used as it is so the size and
+			byte order must match.
+	*/
+	Configuration []byte
+
+	/*
+	State Indicates the state of the transport. Possible
+			values are:
+				"idle": not streaming
+				"pending": streaming but not acquired
+				"active": streaming and acquired
+	*/
+	State string
+
 }
 
 //Lock access to properties
@@ -122,82 +122,6 @@ func (p *MediaTransport1Properties) Lock() {
 //Unlock access to properties
 func (p *MediaTransport1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-// SetUUID set UUID value
-func (a *MediaTransport1) SetUUID(v string) error {
-	return a.SetProperty("UUID", v)
-}
-
-
-
-// GetUUID get UUID value
-func (a *MediaTransport1) GetUUID() (string, error) {
-	v, err := a.GetProperty("UUID")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-// SetCodec set Codec value
-func (a *MediaTransport1) SetCodec(v byte) error {
-	return a.SetProperty("Codec", v)
-}
-
-
-
-// GetCodec get Codec value
-func (a *MediaTransport1) GetCodec() (byte, error) {
-	v, err := a.GetProperty("Codec")
-	if err != nil {
-		return byte(0), err
-	}
-	return v.Value().(byte), nil
-}
-
-
-
-
-// SetConfiguration set Configuration value
-func (a *MediaTransport1) SetConfiguration(v []byte) error {
-	return a.SetProperty("Configuration", v)
-}
-
-
-
-// GetConfiguration get Configuration value
-func (a *MediaTransport1) GetConfiguration() ([]byte, error) {
-	v, err := a.GetProperty("Configuration")
-	if err != nil {
-		return []byte{}, err
-	}
-	return v.Value().([]byte), nil
-}
-
-
-
-
-// SetState set State value
-func (a *MediaTransport1) SetState(v string) error {
-	return a.SetProperty("State", v)
-}
-
-
-
-// GetState get State value
-func (a *MediaTransport1) GetState() (string, error) {
-	v, err := a.GetProperty("State")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
 }
 
 
@@ -274,6 +198,82 @@ func (a *MediaTransport1) GetDevice() (dbus.ObjectPath, error) {
 		return dbus.ObjectPath(""), err
 	}
 	return v.Value().(dbus.ObjectPath), nil
+}
+
+
+
+
+// SetUUID set UUID value
+func (a *MediaTransport1) SetUUID(v string) error {
+	return a.SetProperty("UUID", v)
+}
+
+
+
+// GetUUID get UUID value
+func (a *MediaTransport1) GetUUID() (string, error) {
+	v, err := a.GetProperty("UUID")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+// SetCodec set Codec value
+func (a *MediaTransport1) SetCodec(v byte) error {
+	return a.SetProperty("Codec", v)
+}
+
+
+
+// GetCodec get Codec value
+func (a *MediaTransport1) GetCodec() (byte, error) {
+	v, err := a.GetProperty("Codec")
+	if err != nil {
+		return byte(0), err
+	}
+	return v.Value().(byte), nil
+}
+
+
+
+
+// SetConfiguration set Configuration value
+func (a *MediaTransport1) SetConfiguration(v []byte) error {
+	return a.SetProperty("Configuration", v)
+}
+
+
+
+// GetConfiguration get Configuration value
+func (a *MediaTransport1) GetConfiguration() ([]byte, error) {
+	v, err := a.GetProperty("Configuration")
+	if err != nil {
+		return []byte{}, err
+	}
+	return v.Value().([]byte), nil
+}
+
+
+
+
+// SetState set State value
+func (a *MediaTransport1) SetState(v string) error {
+	return a.SetProperty("State", v)
+}
+
+
+
+// GetState get State value
+func (a *MediaTransport1) GetState() (string, error) {
+	v, err := a.GetProperty("State")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 
@@ -428,11 +428,13 @@ Acquire 			Acquire transport file descriptor and the MTU for read
 					 org.bluez.Error.Failed
 
 */
-func (a *MediaTransport1) Acquire() (fd,, error) {
+func (a *MediaTransport1) Acquire() (dbus.UnixFD, uint16, uint16, error) {
 	
-	var val0 fd,
-	err := a.client.Call("Acquire", 0, ).Store(&val0)
-	return val0, err	
+	var val0 dbus.UnixFD
+  var val1 uint16
+  var val2 uint16
+	err := a.client.Call("Acquire", 0, ).Store(&val0, &val1, &val2)
+	return val0, val1, val2, err	
 }
 
 /*
@@ -446,11 +448,13 @@ TryAcquire 			Acquire transport file descriptor only if the transport
 					 org.bluez.Error.NotAvailable
 
 */
-func (a *MediaTransport1) TryAcquire() (fd,, error) {
+func (a *MediaTransport1) TryAcquire() (dbus.UnixFD, uint16, uint16, error) {
 	
-	var val0 fd,
-	err := a.client.Call("TryAcquire", 0, ).Store(&val0)
-	return val0, err	
+	var val0 dbus.UnixFD
+  var val1 uint16
+  var val2 uint16
+	err := a.client.Call("TryAcquire", 0, ).Store(&val0, &val1, &val2)
+	return val0, val1, val2, err	
 }
 
 /*

@@ -60,6 +60,11 @@ type Element1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	Models An array of SIG Model Identifiers. The array may be empty.
+	*/
+	Models []uint16
+
+	/*
 	VendorModels An array of pairs (vendor, model ID): vendor is a 16-bit
 		Bluetooth-assigned Company ID as defined by Bluetooth SIG.
 		model ID is a 16-bit vendor-assigned Model Identifier
@@ -74,11 +79,6 @@ type Element1Properties struct {
 	*/
 	Location uint16
 
-	/*
-	Models An array of SIG Model Identifiers. The array may be empty.
-	*/
-	Models []uint16
-
 }
 
 //Lock access to properties
@@ -89,6 +89,20 @@ func (p *Element1Properties) Lock() {
 //Unlock access to properties
 func (p *Element1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+
+
+// GetModels get Models value
+func (a *Element1) GetModels() ([]uint16, error) {
+	v, err := a.GetProperty("Models")
+	if err != nil {
+		return []uint16{}, err
+	}
+	return v.Value().([]uint16), nil
 }
 
 
@@ -117,20 +131,6 @@ func (a *Element1) GetLocation() (uint16, error) {
 		return uint16(0), err
 	}
 	return v.Value().(uint16), nil
-}
-
-
-
-
-
-
-// GetModels get Models value
-func (a *Element1) GetModels() ([]uint16, error) {
-	v, err := a.GetProperty("Models")
-	if err != nil {
-		return []uint16{}, err
-	}
-	return v.Value().([]uint16), nil
 }
 
 

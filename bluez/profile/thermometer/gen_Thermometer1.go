@@ -59,6 +59,12 @@ type Thermometer1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	Minimum (optional) Defines the minimum value allowed for the interval
+			between periodic measurements.
+	*/
+	Minimum uint16
+
+	/*
 	Intermediate True if the thermometer supports intermediate
 			measurement notifications.
 	*/
@@ -80,12 +86,6 @@ type Thermometer1Properties struct {
 	*/
 	Maximum uint16
 
-	/*
-	Minimum (optional) Defines the minimum value allowed for the interval
-			between periodic measurements.
-	*/
-	Minimum uint16
-
 }
 
 //Lock access to properties
@@ -96,6 +96,25 @@ func (p *Thermometer1Properties) Lock() {
 //Unlock access to properties
 func (p *Thermometer1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+// SetMinimum set Minimum value
+func (a *Thermometer1) SetMinimum(v uint16) error {
+	return a.SetProperty("Minimum", v)
+}
+
+
+
+// GetMinimum get Minimum value
+func (a *Thermometer1) GetMinimum() (uint16, error) {
+	v, err := a.GetProperty("Minimum")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
 }
 
 
@@ -149,25 +168,6 @@ func (a *Thermometer1) SetMaximum(v uint16) error {
 // GetMaximum get Maximum value
 func (a *Thermometer1) GetMaximum() (uint16, error) {
 	v, err := a.GetProperty("Maximum")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
-}
-
-
-
-
-// SetMinimum set Minimum value
-func (a *Thermometer1) SetMinimum(v uint16) error {
-	return a.SetProperty("Minimum", v)
-}
-
-
-
-// GetMinimum get Minimum value
-func (a *Thermometer1) GetMinimum() (uint16, error) {
-	v, err := a.GetProperty("Minimum")
 	if err != nil {
 		return uint16(0), err
 	}

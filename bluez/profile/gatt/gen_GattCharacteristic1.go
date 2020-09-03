@@ -62,17 +62,44 @@ type GattCharacteristic1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	UUID 128-bit characteristic UUID.
-	*/
-	UUID string
-
-	/*
 	Value The cached value of the characteristic. This property
 			gets updated only after a successful read request and
 			when a notification or indication is received, upon
 			which a PropertiesChanged signal will be emitted.
 	*/
 	Value []byte `dbus:"emit"`
+
+	/*
+	Handle Characteristic handle. When available in the server it
+			would attempt to use to allocate into the database
+			which may fail, to auto allocate the value 0x0000
+			shall be used which will cause the allocated handle to
+			be set once registered.
+	*/
+	Handle uint16
+
+	/*
+	Descriptors 
+	*/
+	Descriptors []dbus.ObjectPath
+
+	/*
+	Service Object path of the GATT service the characteristic
+			belongs to.
+	*/
+	Service dbus.ObjectPath
+
+	/*
+	WriteAcquired True, if this characteristic has been acquired by any
+			client using AcquireWrite.
+
+			For client properties is ommited in case
+			'write-without-response' flag is not set.
+
+			For server the presence of this property indicates
+			that AcquireWrite is supported.
+	*/
+	WriteAcquired bool `dbus:"ignore"`
 
 	/*
 	NotifyAcquired True, if this characteristic has been acquired by any
@@ -119,36 +146,9 @@ type GattCharacteristic1Properties struct {
 	Flags []string
 
 	/*
-	Descriptors 
+	UUID 128-bit characteristic UUID.
 	*/
-	Descriptors []dbus.ObjectPath
-
-	/*
-	Service Object path of the GATT service the characteristic
-			belongs to.
-	*/
-	Service dbus.ObjectPath
-
-	/*
-	WriteAcquired True, if this characteristic has been acquired by any
-			client using AcquireWrite.
-
-			For client properties is ommited in case
-			'write-without-response' flag is not set.
-
-			For server the presence of this property indicates
-			that AcquireWrite is supported.
-	*/
-	WriteAcquired bool `dbus:"ignore"`
-
-	/*
-	Handle Characteristic handle. When available in the server it
-			would attempt to use to allocate into the database
-			which may fail, to auto allocate the value 0x0000
-			shall be used which will cause the allocated handle to
-			be set once registered.
-	*/
-	Handle uint16
+	UUID string
 
 }
 
@@ -160,20 +160,6 @@ func (p *GattCharacteristic1Properties) Lock() {
 //Unlock access to properties
 func (p *GattCharacteristic1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-
-
-// GetUUID get UUID value
-func (a *GattCharacteristic1) GetUUID() (string, error) {
-	v, err := a.GetProperty("UUID")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
 }
 
 
@@ -193,43 +179,20 @@ func (a *GattCharacteristic1) GetValue() ([]byte, error) {
 
 
 
-
-
-// GetNotifyAcquired get NotifyAcquired value
-func (a *GattCharacteristic1) GetNotifyAcquired() (bool, error) {
-	v, err := a.GetProperty("NotifyAcquired")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
+// SetHandle set Handle value
+func (a *GattCharacteristic1) SetHandle(v uint16) error {
+	return a.SetProperty("Handle", v)
 }
 
 
 
-
-
-
-// GetNotifying get Notifying value
-func (a *GattCharacteristic1) GetNotifying() (bool, error) {
-	v, err := a.GetProperty("Notifying")
+// GetHandle get Handle value
+func (a *GattCharacteristic1) GetHandle() (uint16, error) {
+	v, err := a.GetProperty("Handle")
 	if err != nil {
-		return false, err
+		return uint16(0), err
 	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-
-
-// GetFlags get Flags value
-func (a *GattCharacteristic1) GetFlags() ([]string, error) {
-	v, err := a.GetProperty("Flags")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
+	return v.Value().(uint16), nil
 }
 
 
@@ -282,20 +245,57 @@ func (a *GattCharacteristic1) GetWriteAcquired() (bool, error) {
 
 
 
-// SetHandle set Handle value
-func (a *GattCharacteristic1) SetHandle(v uint16) error {
-	return a.SetProperty("Handle", v)
+
+
+// GetNotifyAcquired get NotifyAcquired value
+func (a *GattCharacteristic1) GetNotifyAcquired() (bool, error) {
+	v, err := a.GetProperty("NotifyAcquired")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
 }
 
 
 
-// GetHandle get Handle value
-func (a *GattCharacteristic1) GetHandle() (uint16, error) {
-	v, err := a.GetProperty("Handle")
+
+
+
+// GetNotifying get Notifying value
+func (a *GattCharacteristic1) GetNotifying() (bool, error) {
+	v, err := a.GetProperty("Notifying")
 	if err != nil {
-		return uint16(0), err
+		return false, err
 	}
-	return v.Value().(uint16), nil
+	return v.Value().(bool), nil
+}
+
+
+
+
+
+
+// GetFlags get Flags value
+func (a *GattCharacteristic1) GetFlags() ([]string, error) {
+	v, err := a.GetProperty("Flags")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
+}
+
+
+
+
+
+
+// GetUUID get UUID value
+func (a *GattCharacteristic1) GetUUID() (string, error) {
+	v, err := a.GetProperty("UUID")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 
