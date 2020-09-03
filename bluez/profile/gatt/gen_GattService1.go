@@ -66,6 +66,24 @@ type GattService1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	UUID 128-bit service UUID.
+	*/
+	UUID string
+
+	/*
+	Primary Indicates whether or not this GATT service is a
+			primary service. If false, the service is secondary.
+	*/
+	Primary bool
+
+	/*
+	Device Object path of the Bluetooth device the service
+			belongs to. Only present on services from remote
+			devices.
+	*/
+	Device dbus.ObjectPath `dbus:"ignore=IsService"`
+
+	/*
 	Includes Array of object paths representing the included
 			services of this service.
 	*/
@@ -90,24 +108,6 @@ type GattService1Properties struct {
 	*/
 	IsService bool `dbus:"ignore"`
 
-	/*
-	UUID 128-bit service UUID.
-	*/
-	UUID string
-
-	/*
-	Primary Indicates whether or not this GATT service is a
-			primary service. If false, the service is secondary.
-	*/
-	Primary bool
-
-	/*
-	Device Object path of the Bluetooth device the service
-			belongs to. Only present on services from remote
-			devices.
-	*/
-	Device dbus.ObjectPath `dbus:"ignore=IsService"`
-
 }
 
 //Lock access to properties
@@ -118,6 +118,48 @@ func (p *GattService1Properties) Lock() {
 //Unlock access to properties
 func (p *GattService1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+
+
+// GetUUID get UUID value
+func (a *GattService1) GetUUID() (string, error) {
+	v, err := a.GetProperty("UUID")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+
+
+// GetPrimary get Primary value
+func (a *GattService1) GetPrimary() (bool, error) {
+	v, err := a.GetProperty("Primary")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+
+
+// GetDevice get Device value
+func (a *GattService1) GetDevice() (dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Device")
+	if err != nil {
+		return dbus.ObjectPath(""), err
+	}
+	return v.Value().(dbus.ObjectPath), nil
 }
 
 
@@ -189,48 +231,6 @@ func (a *GattService1) GetIsService() (bool, error) {
 		return false, err
 	}
 	return v.Value().(bool), nil
-}
-
-
-
-
-
-
-// GetUUID get UUID value
-func (a *GattService1) GetUUID() (string, error) {
-	v, err := a.GetProperty("UUID")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-
-
-// GetPrimary get Primary value
-func (a *GattService1) GetPrimary() (bool, error) {
-	v, err := a.GetProperty("Primary")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-
-
-// GetDevice get Device value
-func (a *GattService1) GetDevice() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Device")
-	if err != nil {
-		return dbus.ObjectPath(""), err
-	}
-	return v.Value().(dbus.ObjectPath), nil
 }
 
 

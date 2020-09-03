@@ -59,6 +59,13 @@ type MediaTransport1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	Delay Optional. Transport delay in 1/10 of millisecond, this
+			property is only writeable when the transport was
+			acquired by the sender.
+	*/
+	Delay uint16
+
+	/*
 	Volume Optional. Indicates volume level of the transport,
 			this property is only writeable when the transport was
 			acquired by the sender.
@@ -105,13 +112,6 @@ type MediaTransport1Properties struct {
 	*/
 	State string
 
-	/*
-	Delay Optional. Transport delay in 1/10 of millisecond, this
-			property is only writeable when the transport was
-			acquired by the sender.
-	*/
-	Delay uint16
-
 }
 
 //Lock access to properties
@@ -122,6 +122,25 @@ func (p *MediaTransport1Properties) Lock() {
 //Unlock access to properties
 func (p *MediaTransport1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+// SetDelay set Delay value
+func (a *MediaTransport1) SetDelay(v uint16) error {
+	return a.SetProperty("Delay", v)
+}
+
+
+
+// GetDelay get Delay value
+func (a *MediaTransport1) GetDelay() (uint16, error) {
+	v, err := a.GetProperty("Delay")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
 }
 
 
@@ -255,25 +274,6 @@ func (a *MediaTransport1) GetState() (string, error) {
 		return "", err
 	}
 	return v.Value().(string), nil
-}
-
-
-
-
-// SetDelay set Delay value
-func (a *MediaTransport1) SetDelay(v uint16) error {
-	return a.SetProperty("Delay", v)
-}
-
-
-
-// GetDelay get Delay value
-func (a *MediaTransport1) GetDelay() (uint16, error) {
-	v, err := a.GetProperty("Delay")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
 }
 
 

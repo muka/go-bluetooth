@@ -59,38 +59,6 @@ type Node1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Friend Indicates the ability to establish a friendship with a
-			Low Power node
-	*/
-	Friend bool
-
-	/*
-	Relay Indicates support for relaying messages
-
-	If a key is absent from the dictionary, the feature is not supported.
-	Otherwise, true means that the feature is enabled and false means that
-	the feature is disabled.
-	*/
-	Relay bool
-
-	/*
-	Beacon This property indicates whether the periodic beaconing is
-		enabled (true) or disabled (false).
-
-	uint8 BeaconFlags [read-only]
-
-		This property may be read at any time to determine the flag
-		field setting on sent and received beacons of the primary
-		network key.
-	*/
-	Beacon bool
-
-	/*
-	Addresses This property contains unicast addresses of node's elements.
-	*/
-	Addresses []uint16
-
-	/*
 	Features The dictionary that contains information about feature support.
 		The following keys are defined:
 	*/
@@ -102,9 +70,13 @@ type Node1Properties struct {
 	LowPower bool
 
 	/*
-	Proxy Indicates support for GATT proxy
+	Relay Indicates support for relaying messages
+
+	If a key is absent from the dictionary, the feature is not supported.
+	Otherwise, true means that the feature is enabled and false means that
+	the feature is disabled.
 	*/
-	Proxy bool
+	Relay bool
 
 	/*
 	IvIndex This property may be read at any time to determine the IV_Index
@@ -119,6 +91,34 @@ type Node1Properties struct {
 		this node's network.
 	*/
 	SecondsSinceLastHeard uint32
+
+	/*
+	Addresses This property contains unicast addresses of node's elements.
+	*/
+	Addresses []uint16
+
+	/*
+	Friend Indicates the ability to establish a friendship with a
+			Low Power node
+	*/
+	Friend bool
+
+	/*
+	Proxy Indicates support for GATT proxy
+	*/
+	Proxy bool
+
+	/*
+	Beacon This property indicates whether the periodic beaconing is
+		enabled (true) or disabled (false).
+
+	uint8 BeaconFlags [read-only]
+
+		This property may be read at any time to determine the flag
+		field setting on sent and received beacons of the primary
+		network key.
+	*/
+	Beacon bool
 
 	/*
 	SequenceNumber This property may be read at any time to determine the
@@ -136,72 +136,6 @@ func (p *Node1Properties) Lock() {
 //Unlock access to properties
 func (p *Node1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-// SetFriend set Friend value
-func (a *Node1) SetFriend(v bool) error {
-	return a.SetProperty("Friend", v)
-}
-
-
-
-// GetFriend get Friend value
-func (a *Node1) GetFriend() (bool, error) {
-	v, err := a.GetProperty("Friend")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-// SetRelay set Relay value
-func (a *Node1) SetRelay(v bool) error {
-	return a.SetProperty("Relay", v)
-}
-
-
-
-// GetRelay get Relay value
-func (a *Node1) GetRelay() (bool, error) {
-	v, err := a.GetProperty("Relay")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-
-
-// GetBeacon get Beacon value
-func (a *Node1) GetBeacon() (bool, error) {
-	v, err := a.GetProperty("Beacon")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-
-
-// GetAddresses get Addresses value
-func (a *Node1) GetAddresses() ([]uint16, error) {
-	v, err := a.GetProperty("Addresses")
-	if err != nil {
-		return []uint16{}, err
-	}
-	return v.Value().([]uint16), nil
 }
 
 
@@ -240,16 +174,16 @@ func (a *Node1) GetLowPower() (bool, error) {
 
 
 
-// SetProxy set Proxy value
-func (a *Node1) SetProxy(v bool) error {
-	return a.SetProperty("Proxy", v)
+// SetRelay set Relay value
+func (a *Node1) SetRelay(v bool) error {
+	return a.SetProperty("Relay", v)
 }
 
 
 
-// GetProxy get Proxy value
-func (a *Node1) GetProxy() (bool, error) {
-	v, err := a.GetProperty("Proxy")
+// GetRelay get Relay value
+func (a *Node1) GetRelay() (bool, error) {
+	v, err := a.GetProperty("Relay")
 	if err != nil {
 		return false, err
 	}
@@ -282,6 +216,72 @@ func (a *Node1) GetSecondsSinceLastHeard() (uint32, error) {
 		return uint32(0), err
 	}
 	return v.Value().(uint32), nil
+}
+
+
+
+
+
+
+// GetAddresses get Addresses value
+func (a *Node1) GetAddresses() ([]uint16, error) {
+	v, err := a.GetProperty("Addresses")
+	if err != nil {
+		return []uint16{}, err
+	}
+	return v.Value().([]uint16), nil
+}
+
+
+
+
+// SetFriend set Friend value
+func (a *Node1) SetFriend(v bool) error {
+	return a.SetProperty("Friend", v)
+}
+
+
+
+// GetFriend get Friend value
+func (a *Node1) GetFriend() (bool, error) {
+	v, err := a.GetProperty("Friend")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+// SetProxy set Proxy value
+func (a *Node1) SetProxy(v bool) error {
+	return a.SetProperty("Proxy", v)
+}
+
+
+
+// GetProxy get Proxy value
+func (a *Node1) GetProxy() (bool, error) {
+	v, err := a.GetProperty("Proxy")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+
+
+// GetBeacon get Beacon value
+func (a *Node1) GetBeacon() (bool, error) {
+	v, err := a.GetProperty("Beacon")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
 }
 
 
