@@ -313,7 +313,7 @@ PrivateKey 		This method is called during provisioning if the Provisioner
 */
 func (a *ProvisionAgent1) PrivateKey() ([]byte, error) {
 	
-	var val0 []byte
+	 val0 := []byte{}
 	err := a.client.Call("PrivateKey", 0, ).Store(&val0)
 	return val0, err	
 }
@@ -332,7 +332,7 @@ PublicKey 		This method is called during provisioning if the local device is
 */
 func (a *ProvisionAgent1) PublicKey() ([]byte, error) {
 	
-	var val0 []byte
+	 val0 := []byte{}
 	err := a.client.Call("PublicKey", 0, ).Store(&val0)
 	return val0, err	
 }
@@ -409,7 +409,7 @@ PromptStatic 		This method is called when the Daemon requires a 16 octet byte
 */
 func (a *ProvisionAgent1) PromptStatic(type1 string) ([]byte, error) {
 	
-	var val0 []byte
+	 val0 := []byte{}
 	err := a.client.Call("PromptStatic", 0, type1).Store(&val0)
 	return val0, err	
 }

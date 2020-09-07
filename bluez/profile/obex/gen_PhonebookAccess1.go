@@ -59,6 +59,14 @@ type PhonebookAccess1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	FixedImageSize Indicate support for fixed image size.
+
+			Possible values: True if image is JPEG 300x300 pixels
+			otherwise False.
+	*/
+	FixedImageSize bool
+
+	/*
 	Folder Current folder.
 	*/
 	Folder string
@@ -87,14 +95,6 @@ type PhonebookAccess1Properties struct {
 	*/
 	SecondaryCounter string
 
-	/*
-	FixedImageSize Indicate support for fixed image size.
-
-			Possible values: True if image is JPEG 300x300 pixels
-			otherwise False.
-	*/
-	FixedImageSize bool
-
 }
 
 //Lock access to properties
@@ -105,6 +105,25 @@ func (p *PhonebookAccess1Properties) Lock() {
 //Unlock access to properties
 func (p *PhonebookAccess1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+// SetFixedImageSize set FixedImageSize value
+func (a *PhonebookAccess1) SetFixedImageSize(v bool) error {
+	return a.SetProperty("FixedImageSize", v)
+}
+
+
+
+// GetFixedImageSize get FixedImageSize value
+func (a *PhonebookAccess1) GetFixedImageSize() (bool, error) {
+	v, err := a.GetProperty("FixedImageSize")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
 }
 
 
@@ -181,25 +200,6 @@ func (a *PhonebookAccess1) GetSecondaryCounter() (string, error) {
 		return "", err
 	}
 	return v.Value().(string), nil
-}
-
-
-
-
-// SetFixedImageSize set FixedImageSize value
-func (a *PhonebookAccess1) SetFixedImageSize(v bool) error {
-	return a.SetProperty("FixedImageSize", v)
-}
-
-
-
-// GetFixedImageSize get FixedImageSize value
-func (a *PhonebookAccess1) GetFixedImageSize() (bool, error) {
-	v, err := a.GetProperty("FixedImageSize")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
 }
 
 
@@ -411,7 +411,7 @@ List 			Return an array of vcard-listing data where every entry
 */
 func (a *PhonebookAccess1) List(filters map[string]interface{}) ([]VCardItem, error) {
 	
-	var val0 []VCardItem
+	 val0 := []VCardItem{}
 	err := a.client.Call("List", 0, filters).Store(&val0)
 	return val0, err	
 }
@@ -457,7 +457,7 @@ Search 			Search for entries matching the given condition and
 */
 func (a *PhonebookAccess1) Search(field string, value string, filters map[string]interface{}) ([]VCardItem, error) {
 	
-	var val0 []VCardItem
+	 val0 := []VCardItem{}
 	err := a.client.Call("Search", 0, field, value, filters).Store(&val0)
 	return val0, err	
 }
@@ -498,7 +498,7 @@ ListFilterFields 			Return All Available fields that can be used in Fields
 */
 func (a *PhonebookAccess1) ListFilterFields() ([]string, error) {
 	
-	var val0 []string
+	 val0 := []string{}
 	err := a.client.Call("ListFilterFields", 0, ).Store(&val0)
 	return val0, err	
 }

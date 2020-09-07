@@ -240,7 +240,7 @@ ListFolders 			Returns a dictionary containing information about
 */
 func (a *MessageAccess1) ListFolders(filter map[string]interface{}) ([]map[string]interface{}, error) {
 	
-	var val0 []map[string]interface{}
+	 val0 := []map[string]interface{}{}
 	err := a.client.Call("ListFolders", 0, filter).Store(&val0)
 	return val0, err	
 }
@@ -253,7 +253,7 @@ ListFilterFields 			Return all available fields that can be used in Fields
 */
 func (a *MessageAccess1) ListFilterFields() ([]string, error) {
 	
-	var val0 []string
+	 val0 := []string{}
 	err := a.client.Call("ListFilterFields", 0, ).Store(&val0)
 	return val0, err	
 }
@@ -315,7 +315,7 @@ ListMessages 			Returns an array containing the messages found in the
 */
 func (a *MessageAccess1) ListMessages(folder string, filter map[string]interface{}) ([]Message, error) {
 	
-	var val0 []Message
+	 val0 := []Message{}
 	err := a.client.Call("ListMessages", 0, folder, filter).Store(&val0)
 	return val0, err	
 }

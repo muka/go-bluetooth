@@ -159,16 +159,17 @@ func ApiTemplate(filename string, api *types.Api, apiGroup *types.ApiGroup) erro
 			list := []string{}
 			for i, returnType := range returnTypes {
 
-				// objInitialization1 := ""
-				// objInitialization2 := ""
-				// if strings.Contains(returnType, "[]") {
-				// 	objInitialization1 = "="
-				// 	objInitialization2 = "{}"
-				// }
-
 				varName := fmt.Sprintf("val%d", i)
+				varDeclaration := "var"
+
+				// handle array
+				if strings.HasPrefix(returnType, "[]") {
+					varDeclaration = ""
+					returnType = fmt.Sprintf(":= %s{}", returnType)
+				}
+
 				// def := fmt.Sprintf("var %s %s %s%s", varName, objInitialization1, returnType, objInitialization2)
-				def := fmt.Sprintf("var %s %s", varName, returnType)
+				def := fmt.Sprintf("%s %s %s", varDeclaration, varName, returnType)
 				ref := "&" + varName
 
 				defs = append(defs, def)

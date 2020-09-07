@@ -14,7 +14,7 @@ var typesMap = map[string]string{
 	// gatt AcquireWrite
 	"fd, uint16": "dbus.UnixFD, uint16",
 	// media-api array{objects, properties} ListItems(dict filter)
-	"array{objects, properties}": "[]MediaItem",
+	"array{objects, properties}": "[]Item",
 	// media-api fd, uint16, uint16 Acquire()
 	"fd, uint16, uint16": "dbus.UnixFD, uint16, uint16",
 }

@@ -257,7 +257,7 @@ ListFolder 			Returns a dictionary containing information about
 */
 func (a *FileTransfer) ListFolder() ([]map[string]interface{}, error) {
 	
-	var val0 []map[string]interface{}
+	 val0 := []map[string]interface{}{}
 	err := a.client.Call("ListFolder", 0, ).Store(&val0)
 	return val0, err	
 }

@@ -84,12 +84,6 @@ type MediaEndpoint1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Capabilities Capabilities blob, it is used as it is so the size and
-			byte order must match.
-	*/
-	Capabilities []byte
-
-	/*
 	Device Device object which the endpoint is belongs to.
 	*/
 	Device dbus.ObjectPath
@@ -106,6 +100,12 @@ type MediaEndpoint1Properties struct {
 	*/
 	Codec byte
 
+	/*
+	Capabilities Capabilities blob, it is used as it is so the size and
+			byte order must match.
+	*/
+	Capabilities []byte
+
 }
 
 //Lock access to properties
@@ -116,25 +116,6 @@ func (p *MediaEndpoint1Properties) Lock() {
 //Unlock access to properties
 func (p *MediaEndpoint1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-// SetCapabilities set Capabilities value
-func (a *MediaEndpoint1) SetCapabilities(v []byte) error {
-	return a.SetProperty("Capabilities", v)
-}
-
-
-
-// GetCapabilities get Capabilities value
-func (a *MediaEndpoint1) GetCapabilities() ([]byte, error) {
-	v, err := a.GetProperty("Capabilities")
-	if err != nil {
-		return []byte{}, err
-	}
-	return v.Value().([]byte), nil
 }
 
 
@@ -192,6 +173,25 @@ func (a *MediaEndpoint1) GetCodec() (byte, error) {
 		return byte(0), err
 	}
 	return v.Value().(byte), nil
+}
+
+
+
+
+// SetCapabilities set Capabilities value
+func (a *MediaEndpoint1) SetCapabilities(v []byte) error {
+	return a.SetProperty("Capabilities", v)
+}
+
+
+
+// GetCapabilities get Capabilities value
+func (a *MediaEndpoint1) GetCapabilities() ([]byte, error) {
+	v, err := a.GetProperty("Capabilities")
+	if err != nil {
+		return []byte{}, err
+	}
+	return v.Value().([]byte), nil
 }
 
 
@@ -365,7 +365,7 @@ SelectConfiguration 			Select preferable configuration from the supported
 */
 func (a *MediaEndpoint1) SelectConfiguration(capabilities []byte) ([]byte, error) {
 	
-	var val0 []byte
+	 val0 := []byte{}
 	err := a.client.Call("SelectConfiguration", 0, capabilities).Store(&val0)
 	return val0, err	
 }
