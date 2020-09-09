@@ -68,12 +68,6 @@ type MediaTransport1Properties struct {
 	Volume uint16
 
 	/*
-	Endpoint Endpoint object which the transport is associated
-			with.
-	*/
-	Endpoint dbus.ObjectPath
-
-	/*
 	Device Device object which the transport is connected to.
 	*/
 	Device dbus.ObjectPath
@@ -141,25 +135,6 @@ func (a *MediaTransport1) GetVolume() (uint16, error) {
 		return uint16(0), err
 	}
 	return v.Value().(uint16), nil
-}
-
-
-
-
-// SetEndpoint set Endpoint value
-func (a *MediaTransport1) SetEndpoint(v dbus.ObjectPath) error {
-	return a.SetProperty("Endpoint", v)
-}
-
-
-
-// GetEndpoint get Endpoint value
-func (a *MediaTransport1) GetEndpoint() (dbus.ObjectPath, error) {
-	v, err := a.GetProperty("Endpoint")
-	if err != nil {
-		return dbus.ObjectPath(""), err
-	}
-	return v.Value().(dbus.ObjectPath), nil
 }
 
 

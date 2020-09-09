@@ -283,34 +283,3 @@ func (a *Media1) UnregisterPlayer(player dbus.ObjectPath) error {
 	
 }
 
-/*
-RegisterApplication 			Register endpoints an player objects within root
-			object which must implement ObjectManager.
-			The application object path together with the D-Bus
-			system bus connection ID define the identification of
-			the application.
-			Possible errors: org.bluez.Error.InvalidArguments
-					 org.bluez.Error.AlreadyExists
-
-*/
-func (a *Media1) RegisterApplication(root dbus.ObjectPath, options map[string]interface{}) error {
-	
-	return a.client.Call("RegisterApplication", 0, root, options).Store()
-	
-}
-
-/*
-UnregisterApplication 			This unregisters the services that has been
-			previously registered. The object path parameter
-			must match the same value that has been used
-			on registration.
-			Possible errors: org.bluez.Error.InvalidArguments
-					 org.bluez.Error.DoesNotExist
-
-*/
-func (a *Media1) UnregisterApplication(application dbus.ObjectPath) error {
-	
-	return a.client.Call("UnregisterApplication", 0, application).Store()
-	
-}
-
