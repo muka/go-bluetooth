@@ -36,6 +36,14 @@ func Generate(bluezApi gen.BluezAPI, outDir string, debug bool, forceOverwrite b
 		}
 	}
 
+	versionFile := path.Join(outDir, "gen_version.go")
+	if forceOverwrite || !util.Exists(versionFile) {
+		err = VersionTemplate(versionFile, bluezApi.Version)
+		if err != nil {
+			return err
+		}
+	}
+
 	// filename = filepath.Join(outDir, "interfaces.go")
 	// err = InterfacesTemplate(filename, apiGroups)
 	// if err != nil {
