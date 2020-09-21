@@ -67,7 +67,8 @@ The library is tested with
 
 - Inspect a service ObjectManager
 
-  ```dbus-send --system --print-reply --dest=go.bluetooth /hci0/apps/0 org.freedesktop.DBus.ObjectManager.GetManagedObjects
+  ```shell
+  dbus-send --system --print-reply --dest=go.bluetooth /hci0/apps/0 org.freedesktop.DBus.ObjectManager.GetManagedObjects
   ```
 
 - Retrieve char properties
