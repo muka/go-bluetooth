@@ -2,18 +2,16 @@
 
 package mesh
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var ProvisionAgent1Interface = "org.bluez.mesh.ProvisionAgent1"
-
 
 // NewProvisionAgent1 create a new instance of ProvisionAgent1
 //
@@ -30,28 +28,25 @@ func NewProvisionAgent1(servicePath string, objectPath dbus.ObjectPath) (*Provis
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(ProvisionAgent1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 ProvisionAgent1 Provisioning Agent Hierarchy
 
 */
 type ProvisionAgent1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*ProvisionAgent1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *ProvisionAgent1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
@@ -60,45 +55,44 @@ type ProvisionAgent1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Capabilities An array of strings with the following allowed values:
-			"blink"
-			"beep"
-			"vibrate"
-			"out-numeric"
-			"out-alpha"
-			"push"
-			"twist"
-			"in-numeric"
-			"in-alpha"
-			"static-oob"
-			"public-oob"
+		Capabilities An array of strings with the following allowed values:
+				"blink"
+				"beep"
+				"vibrate"
+				"out-numeric"
+				"out-alpha"
+				"push"
+				"twist"
+				"in-numeric"
+				"in-alpha"
+				"static-oob"
+				"public-oob"
 	*/
 	Capabilities []string
 
 	/*
-	OutOfBandInfo Indicates availability of OOB data. An array of strings with the
-		following allowed values:
-			"other"
-			"uri"
-			"machine-code-2d"
-			"bar-code"
-			"nfc"
-			"number"
-			"string"
-			"on-box"
-			"in-box"
-			"on-paper",
-			"in-manual"
-			"on-device"
+		OutOfBandInfo Indicates availability of OOB data. An array of strings with the
+			following allowed values:
+				"other"
+				"uri"
+				"machine-code-2d"
+				"bar-code"
+				"nfc"
+				"number"
+				"string"
+				"on-box"
+				"in-box"
+				"on-paper",
+				"in-manual"
+				"on-device"
 	*/
 	OutOfBandInfo []string
 
 	/*
-	URI Uniform Resource Identifier points to out-of-band (OOB)
-		information (e.g., a public key)
+		URI Uniform Resource Identifier points to out-of-band (OOB)
+			information (e.g., a public key)
 	*/
 	URI string
-
 }
 
 //Lock access to properties
@@ -111,11 +105,6 @@ func (p *ProvisionAgent1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
-
-
-
 // GetCapabilities get Capabilities value
 func (a *ProvisionAgent1) GetCapabilities() ([]string, error) {
 	v, err := a.GetProperty("Capabilities")
@@ -124,11 +113,6 @@ func (a *ProvisionAgent1) GetCapabilities() ([]string, error) {
 	}
 	return v.Value().([]string), nil
 }
-
-
-
-
-
 
 // GetOutOfBandInfo get OutOfBandInfo value
 func (a *ProvisionAgent1) GetOutOfBandInfo() ([]string, error) {
@@ -139,11 +123,6 @@ func (a *ProvisionAgent1) GetOutOfBandInfo() ([]string, error) {
 	return v.Value().([]string), nil
 }
 
-
-
-
-
-
 // GetURI get URI value
 func (a *ProvisionAgent1) GetURI() (string, error) {
 	v, err := a.GetProperty("URI")
@@ -153,13 +132,9 @@ func (a *ProvisionAgent1) GetURI() (string, error) {
 	return v.Value().(string), nil
 }
 
-
-
 // Close the connection
 func (a *ProvisionAgent1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -208,7 +183,6 @@ func (a *ProvisionAgent1) GetObjectManagerSignal() (chan *dbus.Signal, func(), e
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a ProvisionAgent1Properties to map
 func (a *ProvisionAgent1Properties) ToMap() (map[string]interface{}, error) {
@@ -295,9 +269,6 @@ func (a *ProvisionAgent1) UnwatchProperties(ch chan *bluez.PropertyChanged) erro
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 PrivateKey 		This method is called during provisioning if the Provisioner
 		has requested Out-Of-Band ECC key exchange. The Private key is
@@ -312,10 +283,9 @@ PrivateKey 		This method is called during provisioning if the Provisioner
 
 */
 func (a *ProvisionAgent1) PrivateKey() ([]byte, error) {
-	
-	 val0 := []byte{}
-	err := a.client.Call("PrivateKey", 0, ).Store(&val0)
-	return val0, err	
+	val0 := []byte{}
+	err := a.client.Call("PrivateKey", 0).Store(&val0)
+	return val0, err
 }
 
 /*
@@ -331,10 +301,9 @@ PublicKey 		This method is called during provisioning if the local device is
 
 */
 func (a *ProvisionAgent1) PublicKey() ([]byte, error) {
-	
-	 val0 := []byte{}
-	err := a.client.Call("PublicKey", 0, ).Store(&val0)
-	return val0, err	
+	val0 := []byte{}
+	err := a.client.Call("PublicKey", 0).Store(&val0)
+	return val0, err
 }
 
 /*
@@ -344,9 +313,7 @@ DisplayString 		This method is called when the Daemon has something important
 
 */
 func (a *ProvisionAgent1) DisplayString(value string) error {
-	
 	return a.client.Call("DisplayString", 0, value).Store()
-	
 }
 
 /*
@@ -366,9 +333,7 @@ DisplayNumeric 		This method is called when the Daemon has something important
 
 */
 func (a *ProvisionAgent1) DisplayNumeric(type1 string, number uint32) error {
-	
 	return a.client.Call("DisplayNumeric", 0, type1, number).Store()
-	
 }
 
 /*
@@ -387,10 +352,9 @@ PromptNumeric 		This method is called when the Daemon requests the user to
 
 */
 func (a *ProvisionAgent1) PromptNumeric(type1 string) (uint32, error) {
-	
 	var val0 uint32
 	err := a.client.Call("PromptNumeric", 0, type1).Store(&val0)
-	return val0, err	
+	return val0, err
 }
 
 /*
@@ -408,10 +372,9 @@ PromptStatic 		This method is called when the Daemon requires a 16 octet byte
 
 */
 func (a *ProvisionAgent1) PromptStatic(type1 string) ([]byte, error) {
-	
-	 val0 := []byte{}
+	val0 := []byte{}
 	err := a.client.Call("PromptStatic", 0, type1).Store(&val0)
-	return val0, err	
+	return val0, err
 }
 
 /*
@@ -421,8 +384,5 @@ Cancel 		This method gets called by the daemon to cancel any existing
 
 */
 func (a *ProvisionAgent1) Cancel() error {
-	
-	return a.client.Call("Cancel", 0, ).Store()
-	
+	return a.client.Call("Cancel", 0).Store()
 }
-

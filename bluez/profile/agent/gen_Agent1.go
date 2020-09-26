@@ -2,16 +2,14 @@
 
 package agent
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
 )
 
 var Agent1Interface = "org.bluez.Agent1"
-
 
 // NewAgent1 create a new instance of Agent1
 //
@@ -28,28 +26,25 @@ func NewAgent1(servicePath string, objectPath dbus.ObjectPath) (*Agent1, error) 
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	return a, nil
 }
-
 
 /*
 Agent1 Agent hierarchy
 
 */
 type Agent1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*Agent1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *Agent1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
 // Agent1Properties contains the exposed properties of an interface
 type Agent1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
 }
 
 //Lock access to properties
@@ -62,11 +57,8 @@ func (p *Agent1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
 // Close the connection
 func (a *Agent1) Close() {
-	
 	a.client.Disconnect()
 }
 
@@ -116,9 +108,6 @@ func (a *Agent1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
 	return a.objectManagerSignal, cancel, nil
 }
 
-
-
-
 /*
 Release 			This method gets called when the service daemon
 			unregisters the agent. An agent can use it to do
@@ -128,9 +117,7 @@ Release 			This method gets called when the service daemon
 
 */
 func (a *Agent1) Release() error {
-	
-	return a.client.Call("Release", 0, ).Store()
-	
+	return a.client.Call("Release", 0).Store()
 }
 
 /*
@@ -143,10 +130,9 @@ RequestPinCode 			This method gets called when the service daemon
 
 */
 func (a *Agent1) RequestPinCode(device dbus.ObjectPath) (string, error) {
-	
 	var val0 string
 	err := a.client.Call("RequestPinCode", 0, device).Store(&val0)
-	return val0, err	
+	return val0, err
 }
 
 /*
@@ -169,9 +155,7 @@ DisplayPinCode 			This method gets called when the service daemon
 
 */
 func (a *Agent1) DisplayPinCode(device dbus.ObjectPath, pincode string) error {
-	
 	return a.client.Call("DisplayPinCode", 0, device, pincode).Store()
-	
 }
 
 /*
@@ -184,10 +168,9 @@ RequestPasskey 			This method gets called when the service daemon
 
 */
 func (a *Agent1) RequestPasskey(device dbus.ObjectPath) (uint32, error) {
-	
 	var val0 uint32
 	err := a.client.Call("RequestPasskey", 0, device).Store(&val0)
-	return val0, err	
+	return val0, err
 }
 
 /*
@@ -206,9 +189,7 @@ DisplayPasskey 			This method gets called when the service daemon
 
 */
 func (a *Agent1) DisplayPasskey(device dbus.ObjectPath, passkey uint32, entered uint16) error {
-	
 	return a.client.Call("DisplayPasskey", 0, device, passkey, entered).Store()
-	
 }
 
 /*
@@ -224,9 +205,7 @@ RequestConfirmation 			This method gets called when the service daemon
 
 */
 func (a *Agent1) RequestConfirmation(device dbus.ObjectPath, passkey uint32) error {
-	
 	return a.client.Call("RequestConfirmation", 0, device, passkey).Store()
-	
 }
 
 /*
@@ -242,9 +221,7 @@ RequestAuthorization 			This method gets called to request the user to
 
 */
 func (a *Agent1) RequestAuthorization(device dbus.ObjectPath) error {
-	
 	return a.client.Call("RequestAuthorization", 0, device).Store()
-	
 }
 
 /*
@@ -255,9 +232,7 @@ AuthorizeService 			This method gets called when the service daemon
 
 */
 func (a *Agent1) AuthorizeService(device dbus.ObjectPath, uuid string) error {
-	
 	return a.client.Call("AuthorizeService", 0, device, uuid).Store()
-	
 }
 
 /*
@@ -266,8 +241,5 @@ Cancel 			This method gets called to indicate that the agent
 
 */
 func (a *Agent1) Cancel() error {
-	
-	return a.client.Call("Cancel", 0, ).Store()
-	
+	return a.client.Call("Cancel", 0).Store()
 }
-

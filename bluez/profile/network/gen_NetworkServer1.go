@@ -2,18 +2,16 @@
 
 package network
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var NetworkServer1Interface = "org.bluez.NetworkServer1"
-
 
 // NewNetworkServer1 create a new instance of NetworkServer1
 //
@@ -29,35 +27,31 @@ func NewNetworkServer1(objectPath dbus.ObjectPath) (*NetworkServer1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(NetworkServer1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 NetworkServer1 Network server hierarchy
 
 */
 type NetworkServer1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*NetworkServer1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *NetworkServer1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
 // NetworkServer1Properties contains the exposed properties of an interface
 type NetworkServer1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
 }
 
 //Lock access to properties
@@ -70,13 +64,9 @@ func (p *NetworkServer1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
 // Close the connection
 func (a *NetworkServer1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -125,7 +115,6 @@ func (a *NetworkServer1) GetObjectManagerSignal() (chan *dbus.Signal, func(), er
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a NetworkServer1Properties to map
 func (a *NetworkServer1Properties) ToMap() (map[string]interface{}, error) {
@@ -212,9 +201,6 @@ func (a *NetworkServer1) UnwatchProperties(ch chan *bluez.PropertyChanged) error
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 Register 			Register server for the provided UUID. Every new
 			connection to this server will be added the bridge
@@ -227,9 +213,7 @@ Register 			Register server for the provided UUID. Every new
 
 */
 func (a *NetworkServer1) Register(uuid string, bridge string) error {
-	
 	return a.client.Call("Register", 0, uuid, bridge).Store()
-	
 }
 
 /*
@@ -239,8 +223,5 @@ Unregister 			Unregister the server for provided UUID.
 
 */
 func (a *NetworkServer1) Unregister(uuid string) error {
-	
 	return a.client.Call("Unregister", 0, uuid).Store()
-	
 }
-

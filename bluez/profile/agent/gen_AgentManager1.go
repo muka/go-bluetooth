@@ -2,16 +2,14 @@
 
 package agent
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
 )
 
 var AgentManager1Interface = "org.bluez.AgentManager1"
-
 
 // NewAgentManager1 create a new instance of AgentManager1
 //
@@ -27,28 +25,25 @@ func NewAgentManager1() (*AgentManager1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	return a, nil
 }
-
 
 /*
 AgentManager1 Agent Manager hierarchy
 
 */
 type AgentManager1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*AgentManager1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *AgentManager1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
 // AgentManager1Properties contains the exposed properties of an interface
 type AgentManager1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
 }
 
 //Lock access to properties
@@ -61,11 +56,8 @@ func (p *AgentManager1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
 // Close the connection
 func (a *AgentManager1) Close() {
-	
 	a.client.Disconnect()
 }
 
@@ -115,9 +107,6 @@ func (a *AgentManager1) GetObjectManagerSignal() (chan *dbus.Signal, func(), err
 	return a.objectManagerSignal, cancel, nil
 }
 
-
-
-
 /*
 RegisterAgent 			This registers an agent handler.
 			The object path defines the path of the agent
@@ -145,9 +134,7 @@ RegisterAgent 			This registers an agent handler.
 
 */
 func (a *AgentManager1) RegisterAgent(agent dbus.ObjectPath, capability string) error {
-	
 	return a.client.Call("RegisterAgent", 0, agent, capability).Store()
-	
 }
 
 /*
@@ -158,9 +145,7 @@ UnregisterAgent 			This unregisters the agent that has been previously
 
 */
 func (a *AgentManager1) UnregisterAgent(agent dbus.ObjectPath) error {
-	
 	return a.client.Call("UnregisterAgent", 0, agent).Store()
-	
 }
 
 /*
@@ -173,8 +158,5 @@ RequestDefaultAgent 			This requests is to make the application agent
 
 */
 func (a *AgentManager1) RequestDefaultAgent(agent dbus.ObjectPath) error {
-	
 	return a.client.Call("RequestDefaultAgent", 0, agent).Store()
-	
 }
-

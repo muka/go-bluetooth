@@ -2,18 +2,16 @@
 
 package network
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var Network1Interface = "org.bluez.Network1"
-
 
 // NewNetwork1 create a new instance of Network1
 //
@@ -29,28 +27,25 @@ func NewNetwork1(objectPath dbus.ObjectPath) (*Network1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(Network1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 Network1 Network hierarchy
 
 */
 type Network1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*Network1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *Network1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
@@ -59,20 +54,19 @@ type Network1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Connected Indicates if the device is connected.
+		Connected Indicates if the device is connected.
 	*/
 	Connected bool
 
 	/*
-	Interface Indicates the network interface name when available.
+		Interface Indicates the network interface name when available.
 	*/
 	Interface string
 
 	/*
-	UUID Indicates the connection role when available.
+		UUID Indicates the connection role when available.
 	*/
 	UUID string
-
 }
 
 //Lock access to properties
@@ -85,15 +79,10 @@ func (p *Network1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
-
 // SetConnected set Connected value
 func (a *Network1) SetConnected(v bool) error {
 	return a.SetProperty("Connected", v)
 }
-
-
 
 // GetConnected get Connected value
 func (a *Network1) GetConnected() (bool, error) {
@@ -104,15 +93,10 @@ func (a *Network1) GetConnected() (bool, error) {
 	return v.Value().(bool), nil
 }
 
-
-
-
 // SetInterface set Interface value
 func (a *Network1) SetInterface(v string) error {
 	return a.SetProperty("Interface", v)
 }
-
-
 
 // GetInterface get Interface value
 func (a *Network1) GetInterface() (string, error) {
@@ -123,15 +107,10 @@ func (a *Network1) GetInterface() (string, error) {
 	return v.Value().(string), nil
 }
 
-
-
-
 // SetUUID set UUID value
 func (a *Network1) SetUUID(v string) error {
 	return a.SetProperty("UUID", v)
 }
-
-
 
 // GetUUID get UUID value
 func (a *Network1) GetUUID() (string, error) {
@@ -142,13 +121,9 @@ func (a *Network1) GetUUID() (string, error) {
 	return v.Value().(string), nil
 }
 
-
-
 // Close the connection
 func (a *Network1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -197,7 +172,6 @@ func (a *Network1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a Network1Properties to map
 func (a *Network1Properties) ToMap() (map[string]interface{}, error) {
@@ -284,9 +258,6 @@ func (a *Network1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 Connect 			Connect to the network device and return the network
 			interface name. Examples of the interface name are
@@ -302,10 +273,9 @@ Connect 			Connect to the network device and return the network
 
 */
 func (a *Network1) Connect(uuid string) (string, error) {
-	
 	var val0 string
 	err := a.client.Call("Connect", 0, uuid).Store(&val0)
-	return val0, err	
+	return val0, err
 }
 
 /*
@@ -316,8 +286,5 @@ Disconnect 			Disconnect from the network device.
 
 */
 func (a *Network1) Disconnect() error {
-	
-	return a.client.Call("Disconnect", 0, ).Store()
-	
+	return a.client.Call("Disconnect", 0).Store()
 }
-

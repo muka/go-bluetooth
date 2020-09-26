@@ -2,18 +2,16 @@
 
 package media
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var MediaFolder1Interface = "org.bluez.MediaFolder1"
-
 
 // NewMediaFolder1 create a new instance of MediaFolder1
 //
@@ -30,14 +28,12 @@ func NewMediaFolder1(servicePath string, objectPath dbus.ObjectPath) (*MediaFold
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(MediaFolder1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
 
@@ -55,28 +51,25 @@ func NewMediaFolder1Controller(objectPath dbus.ObjectPath) (*MediaFolder1, error
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(MediaFolder1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 MediaFolder1 MediaFolder1 hierarchy
 
 */
 type MediaFolder1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*MediaFolder1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *MediaFolder1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
@@ -85,52 +78,51 @@ type MediaFolder1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Attributes Item properties that should be included in the list.
+		Attributes Item properties that should be included in the list.
 
-			Possible Values:
+				Possible Values:
 
-				"title", "artist", "album", "genre",
-				"number-of-tracks", "number", "duration"
+					"title", "artist", "album", "genre",
+					"number-of-tracks", "number", "duration"
 
-			Default Value: All
+				Default Value: All
 	*/
 	Attributes []string
 
 	/*
-	End Offset of the last item.
+		End Offset of the last item.
 
-			Default value: NumbeOfItems
+				Default value: NumbeOfItems
 	*/
 	End uint32
 
 	/*
-	Name Folder name:
+			Name Folder name:
 
-			Possible values:
-				"/Filesystem/...": Filesystem scope
-				"/NowPlaying/...": NowPlaying scope
+					Possible values:
+						"/Filesystem/...": Filesystem scope
+						"/NowPlaying/...": NowPlaying scope
 
-			Note: /NowPlaying folder might not be listed if player
-			is stopped, folders created by Search are virtual so
-			once another Search is perform or the folder is
-			changed using ChangeFolder it will no longer be listed.
+					Note: /NowPlaying folder might not be listed if player
+					is stopped, folders created by Search are virtual so
+					once another Search is perform or the folder is
+					changed using ChangeFolder it will no longer be listed.
 
-Filters
+		Filters
 	*/
 	Name string
 
 	/*
-	NumberOfItems Number of items in the folder
+		NumberOfItems Number of items in the folder
 	*/
 	NumberOfItems uint32
 
 	/*
-	Start Offset of the first item.
+		Start Offset of the first item.
 
-			Default value: 0
+				Default value: 0
 	*/
 	Start uint32
-
 }
 
 //Lock access to properties
@@ -143,15 +135,10 @@ func (p *MediaFolder1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
-
 // SetAttributes set Attributes value
 func (a *MediaFolder1) SetAttributes(v []string) error {
 	return a.SetProperty("Attributes", v)
 }
-
-
 
 // GetAttributes get Attributes value
 func (a *MediaFolder1) GetAttributes() ([]string, error) {
@@ -162,15 +149,10 @@ func (a *MediaFolder1) GetAttributes() ([]string, error) {
 	return v.Value().([]string), nil
 }
 
-
-
-
 // SetEnd set End value
 func (a *MediaFolder1) SetEnd(v uint32) error {
 	return a.SetProperty("End", v)
 }
-
-
 
 // GetEnd get End value
 func (a *MediaFolder1) GetEnd() (uint32, error) {
@@ -181,15 +163,10 @@ func (a *MediaFolder1) GetEnd() (uint32, error) {
 	return v.Value().(uint32), nil
 }
 
-
-
-
 // SetName set Name value
 func (a *MediaFolder1) SetName(v string) error {
 	return a.SetProperty("Name", v)
 }
-
-
 
 // GetName get Name value
 func (a *MediaFolder1) GetName() (string, error) {
@@ -200,15 +177,10 @@ func (a *MediaFolder1) GetName() (string, error) {
 	return v.Value().(string), nil
 }
 
-
-
-
 // SetNumberOfItems set NumberOfItems value
 func (a *MediaFolder1) SetNumberOfItems(v uint32) error {
 	return a.SetProperty("NumberOfItems", v)
 }
-
-
 
 // GetNumberOfItems get NumberOfItems value
 func (a *MediaFolder1) GetNumberOfItems() (uint32, error) {
@@ -219,15 +191,10 @@ func (a *MediaFolder1) GetNumberOfItems() (uint32, error) {
 	return v.Value().(uint32), nil
 }
 
-
-
-
 // SetStart set Start value
 func (a *MediaFolder1) SetStart(v uint32) error {
 	return a.SetProperty("Start", v)
 }
-
-
 
 // GetStart get Start value
 func (a *MediaFolder1) GetStart() (uint32, error) {
@@ -238,13 +205,9 @@ func (a *MediaFolder1) GetStart() (uint32, error) {
 	return v.Value().(uint32), nil
 }
 
-
-
 // Close the connection
 func (a *MediaFolder1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -293,7 +256,6 @@ func (a *MediaFolder1) GetObjectManagerSignal() (chan *dbus.Signal, func(), erro
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a MediaFolder1Properties to map
 func (a *MediaFolder1Properties) ToMap() (map[string]interface{}, error) {
@@ -380,9 +342,6 @@ func (a *MediaFolder1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 Search 			Return a folder object containing the search result.
 			To list the items found use the folder object returned
@@ -392,10 +351,9 @@ Search 			Return a folder object containing the search result.
 
 */
 func (a *MediaFolder1) Search(value string, filter map[string]interface{}) (dbus.ObjectPath, error) {
-	
 	var val0 dbus.ObjectPath
 	err := a.client.Call("Search", 0, value, filter).Store(&val0)
-	return val0, err	
+	return val0, err
 }
 
 /*
@@ -406,10 +364,9 @@ ListItems 			Return a list of items found
 
 */
 func (a *MediaFolder1) ListItems(filter map[string]interface{}) ([]Item, error) {
-	
-	 val0 := []Item{}
+	val0 := []Item{}
 	err := a.client.Call("ListItems", 0, filter).Store(&val0)
-	return val0, err	
+	return val0, err
 }
 
 /*
@@ -424,8 +381,5 @@ ChangeFolder 			Change current folder.
 
 */
 func (a *MediaFolder1) ChangeFolder(folder dbus.ObjectPath) error {
-	
 	return a.client.Call("ChangeFolder", 0, folder).Store()
-	
 }
-

@@ -15,6 +15,7 @@ package main
 
 import (
 	"errors"
+	"flag"
 	"fmt"
 	"runtime"
 	"time"
@@ -36,14 +37,9 @@ func runWatchPropertiesTestIteration(char *gatt.GattCharacteristic1) (int, error
 	}
 
 	go func() {
-		for {
-			select {
-			case e := <-ch:
-				if e == nil {
-					return
-				} else {
-					// fmt.Printf("e: %v\n", e)
-				}
+		for e := range ch {
+			if e == nil {
+				return
 			}
 		}
 	}()
@@ -67,30 +63,34 @@ func runWatchPropertiesTestIteration(char *gatt.GattCharacteristic1) (int, error
 }
 
 func main() {
+	hciName := flag.String("hci", "hci1", "Name of your HCI device")
+	devMac := flag.String("mac", "CA:AF:FE:00:BE:EF", "MAC of the device to connect for test")
+	charUUID := flag.String("uuid", "76494b4a-305c-4368-aa02-923b1b709333", "UUID characteristic which notifies")
+	flag.Parse()
 
-	// Name of your HCI device
-	hciName := "hci1"
-	// MAC of the device to connect for test
-	devMac := "CA:AF:FE:00:BE:EF"
-	// UUID of characteristic which notifies
-	charUUID := "76494b4a-305c-4368-aa02-923b1b709333"
-	a, err := api.GetAdapter(hciName)
+	a, err := api.GetAdapter(*hciName)
 	if err != nil {
 		panic(err)
 	}
 
 	fmt.Println("Starting scan")
-	a.StartDiscovery()
+	err = a.StartDiscovery()
+	if err != nil {
+		panic(err)
+	}
 	time.Sleep(2 * time.Second)
-	a.StopDiscovery()
+	err = a.StopDiscovery()
+	if err != nil {
+		panic(err)
+	}
 	fmt.Println("Scan finished")
 
-	dev, err := a.GetDeviceByAddress(devMac)
+	dev, err := a.GetDeviceByAddress(*devMac)
 	if err != nil {
 		panic(err)
 	}
 	if dev == nil {
-		msg := fmt.Sprintf("Device %s not found. Cannot connect\n", devMac)
+		msg := fmt.Sprintf("Device %s not found. Cannot connect\n", *devMac)
 		panic(errors.New(msg))
 	}
 
@@ -100,7 +100,10 @@ func main() {
 		panic(err)
 	}
 
-	char, err := dev.GetCharByUUID(charUUID)
+	char, err := dev.GetCharByUUID(*charUUID)
+	if err != nil {
+		panic("search device failed: " + err.Error())
+	}
 
 	// Run test iterations
 	iterCount := 100

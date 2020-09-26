@@ -2,18 +2,16 @@
 
 package obex_agent
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var Agent1Interface = "org.bluez.obex.Agent1"
-
 
 // NewAgent1 create a new instance of Agent1
 //
@@ -30,35 +28,31 @@ func NewAgent1(servicePath string, objectPath dbus.ObjectPath) (*Agent1, error) 
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(Agent1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 Agent1 Agent hierarchy
 
 */
 type Agent1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*Agent1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *Agent1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
 // Agent1Properties contains the exposed properties of an interface
 type Agent1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
 }
 
 //Lock access to properties
@@ -71,13 +65,9 @@ func (p *Agent1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
 // Close the connection
 func (a *Agent1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -126,7 +116,6 @@ func (a *Agent1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a Agent1Properties to map
 func (a *Agent1Properties) ToMap() (map[string]interface{}, error) {
@@ -213,9 +202,6 @@ func (a *Agent1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 Release 			This method gets called when the service daemon
 			unregisters the agent. An agent can use it to do
@@ -225,9 +211,7 @@ Release 			This method gets called when the service daemon
 
 */
 func (a *Agent1) Release() error {
-	
-	return a.client.Call("Release", 0, ).Store()
-	
+	return a.client.Call("Release", 0).Store()
 }
 
 /*
@@ -242,10 +226,9 @@ AuthorizePush 			This method gets called when the service daemon
 
 */
 func (a *Agent1) AuthorizePush(transfer dbus.ObjectPath) (string, error) {
-	
 	var val0 string
 	err := a.client.Call("AuthorizePush", 0, transfer).Store(&val0)
-	return val0, err	
+	return val0, err
 }
 
 /*
@@ -255,8 +238,5 @@ Cancel 			This method gets called to indicate that the agent
 
 */
 func (a *Agent1) Cancel() error {
-	
-	return a.client.Call("Cancel", 0, ).Store()
-	
+	return a.client.Call("Cancel", 0).Store()
 }
-

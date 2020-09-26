@@ -2,18 +2,16 @@
 
 package sap
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var SimAccess1Interface = "org.bluez.SimAccess1"
-
 
 // NewSimAccess1 create a new instance of SimAccess1
 //
@@ -29,28 +27,25 @@ func NewSimAccess1(objectPath dbus.ObjectPath) (*SimAccess1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(SimAccess1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 SimAccess1 Sim Access Profile hierarchy
 
 */
 type SimAccess1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*SimAccess1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *SimAccess1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
@@ -59,10 +54,9 @@ type SimAccess1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Connected Indicates if SAP client is connected to the server.
+		Connected Indicates if SAP client is connected to the server.
 	*/
 	Connected bool
-
 }
 
 //Lock access to properties
@@ -75,15 +69,10 @@ func (p *SimAccess1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
-
 // SetConnected set Connected value
 func (a *SimAccess1) SetConnected(v bool) error {
 	return a.SetProperty("Connected", v)
 }
-
-
 
 // GetConnected get Connected value
 func (a *SimAccess1) GetConnected() (bool, error) {
@@ -94,13 +83,9 @@ func (a *SimAccess1) GetConnected() (bool, error) {
 	return v.Value().(bool), nil
 }
 
-
-
 // Close the connection
 func (a *SimAccess1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -149,7 +134,6 @@ func (a *SimAccess1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error)
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a SimAccess1Properties to map
 func (a *SimAccess1Properties) ToMap() (map[string]interface{}, error) {
@@ -236,17 +220,11 @@ func (a *SimAccess1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 Disconnect 			Disconnects SAP client from the server.
 			Possible errors: org.bluez.Error.Failed
 
 */
 func (a *SimAccess1) Disconnect() error {
-	
-	return a.client.Call("Disconnect", 0, ).Store()
-	
+	return a.client.Call("Disconnect", 0).Store()
 }
-

@@ -2,18 +2,16 @@
 
 package mesh
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var Provisioner1Interface = "org.bluez.mesh.Provisioner1"
-
 
 // NewProvisioner1 create a new instance of Provisioner1
 //
@@ -30,35 +28,31 @@ func NewProvisioner1(servicePath string, objectPath dbus.ObjectPath) (*Provision
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(Provisioner1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 Provisioner1 Mesh Provisioner Hierarchy
 
 */
 type Provisioner1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*Provisioner1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *Provisioner1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
 // Provisioner1Properties contains the exposed properties of an interface
 type Provisioner1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
 }
 
 //Lock access to properties
@@ -71,13 +65,9 @@ func (p *Provisioner1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
 // Close the connection
 func (a *Provisioner1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -126,7 +116,6 @@ func (a *Provisioner1) GetObjectManagerSignal() (chan *dbus.Signal, func(), erro
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a Provisioner1Properties to map
 func (a *Provisioner1Properties) ToMap() (map[string]interface{}, error) {
@@ -213,9 +202,6 @@ func (a *Provisioner1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 ScanResult 		The method is called from the bluetooth-meshd daemon when a
 		unique UUID has been seen during UnprovisionedScan() for
@@ -237,9 +223,7 @@ ScanResult 		The method is called from the bluetooth-meshd daemon when a
 
 */
 func (a *Provisioner1) ScanResult(rssi int16, data []byte, options map[string]interface{}) error {
-	
 	return a.client.Call("ScanResult", 0, rssi, data, options).Store()
-	
 }
 
 /*
@@ -256,10 +240,9 @@ RequestProvData 		This method is implemented by a Provisioner capable applicatio
 
 */
 func (a *Provisioner1) RequestProvData(count uint8) (uint16, error) {
-	
 	var val0 uint16
 	err := a.client.Call("RequestProvData", 0, count).Store(&val0)
-	return val0, err	
+	return val0, err
 }
 
 /*
@@ -274,9 +257,7 @@ AddNodeComplete 		This method is called when the node provisioning initiated
 
 */
 func (a *Provisioner1) AddNodeComplete(uuid []byte, unicast uint16, count uint8) error {
-	
 	return a.client.Call("AddNodeComplete", 0, uuid, unicast, count).Store()
-	
 }
 
 /*
@@ -292,8 +273,5 @@ AddNodeFailed 		This method is called when the node provisioning initiated by
 
 */
 func (a *Provisioner1) AddNodeFailed(uuid []byte, reason string) error {
-	
 	return a.client.Call("AddNodeFailed", 0, uuid, reason).Store()
-	
 }
-

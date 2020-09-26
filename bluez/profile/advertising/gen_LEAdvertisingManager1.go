@@ -2,19 +2,17 @@
 
 package advertising
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
-   "fmt"
+	"fmt"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var LEAdvertisingManager1Interface = "org.bluez.LEAdvertisingManager1"
-
 
 // NewLEAdvertisingManager1 create a new instance of LEAdvertisingManager1
 //
@@ -30,14 +28,12 @@ func NewLEAdvertisingManager1(objectPath dbus.ObjectPath) (*LEAdvertisingManager
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(LEAdvertisingManager1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
 
@@ -53,17 +49,14 @@ func NewLEAdvertisingManager1FromAdapterID(adapterID string) (*LEAdvertisingMana
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(LEAdvertisingManager1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 LEAdvertisingManager1 LE Advertising Manager hierarchy
@@ -74,11 +67,11 @@ follow the API for LE Advertisement Data described above.
 
 */
 type LEAdvertisingManager1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*LEAdvertisingManager1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *LEAdvertisingManager1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
@@ -87,35 +80,34 @@ type LEAdvertisingManager1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	ActiveInstances Number of active advertising instances.
+		ActiveInstances Number of active advertising instances.
 	*/
 	ActiveInstances byte
 
 	/*
-	SupportedIncludes List of supported system includes.
+		SupportedIncludes List of supported system includes.
 
-			Possible values: "tx-power"
-					 "appearance"
-					 "local-name"
+				Possible values: "tx-power"
+						 "appearance"
+						 "local-name"
 	*/
 	SupportedIncludes []string
 
 	/*
-	SupportedInstances Number of available advertising instances.
+		SupportedInstances Number of available advertising instances.
 	*/
 	SupportedInstances byte
 
 	/*
-	SupportedSecondaryChannels List of supported Secondary channels. Secondary
-			channels can be used to advertise with the
-			corresponding PHY.
+		SupportedSecondaryChannels List of supported Secondary channels. Secondary
+				channels can be used to advertise with the
+				corresponding PHY.
 
-			Possible values: "1M"
-					 "2M"
-					 "Coded"
+				Possible values: "1M"
+						 "2M"
+						 "Coded"
 	*/
 	SupportedSecondaryChannels []string
-
 }
 
 //Lock access to properties
@@ -128,15 +120,10 @@ func (p *LEAdvertisingManager1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
-
 // SetActiveInstances set ActiveInstances value
 func (a *LEAdvertisingManager1) SetActiveInstances(v byte) error {
 	return a.SetProperty("ActiveInstances", v)
 }
-
-
 
 // GetActiveInstances get ActiveInstances value
 func (a *LEAdvertisingManager1) GetActiveInstances() (byte, error) {
@@ -147,15 +134,10 @@ func (a *LEAdvertisingManager1) GetActiveInstances() (byte, error) {
 	return v.Value().(byte), nil
 }
 
-
-
-
 // SetSupportedIncludes set SupportedIncludes value
 func (a *LEAdvertisingManager1) SetSupportedIncludes(v []string) error {
 	return a.SetProperty("SupportedIncludes", v)
 }
-
-
 
 // GetSupportedIncludes get SupportedIncludes value
 func (a *LEAdvertisingManager1) GetSupportedIncludes() ([]string, error) {
@@ -166,15 +148,10 @@ func (a *LEAdvertisingManager1) GetSupportedIncludes() ([]string, error) {
 	return v.Value().([]string), nil
 }
 
-
-
-
 // SetSupportedInstances set SupportedInstances value
 func (a *LEAdvertisingManager1) SetSupportedInstances(v byte) error {
 	return a.SetProperty("SupportedInstances", v)
 }
-
-
 
 // GetSupportedInstances get SupportedInstances value
 func (a *LEAdvertisingManager1) GetSupportedInstances() (byte, error) {
@@ -185,15 +162,10 @@ func (a *LEAdvertisingManager1) GetSupportedInstances() (byte, error) {
 	return v.Value().(byte), nil
 }
 
-
-
-
 // SetSupportedSecondaryChannels set SupportedSecondaryChannels value
 func (a *LEAdvertisingManager1) SetSupportedSecondaryChannels(v []string) error {
 	return a.SetProperty("SupportedSecondaryChannels", v)
 }
-
-
 
 // GetSupportedSecondaryChannels get SupportedSecondaryChannels value
 func (a *LEAdvertisingManager1) GetSupportedSecondaryChannels() ([]string, error) {
@@ -204,13 +176,9 @@ func (a *LEAdvertisingManager1) GetSupportedSecondaryChannels() ([]string, error
 	return v.Value().([]string), nil
 }
 
-
-
 // Close the connection
 func (a *LEAdvertisingManager1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -259,7 +227,6 @@ func (a *LEAdvertisingManager1) GetObjectManagerSignal() (chan *dbus.Signal, fun
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a LEAdvertisingManager1Properties to map
 func (a *LEAdvertisingManager1Properties) ToMap() (map[string]interface{}, error) {
@@ -346,9 +313,6 @@ func (a *LEAdvertisingManager1) UnwatchProperties(ch chan *bluez.PropertyChanged
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 RegisterAdvertisement 			Registers an advertisement object to be sent over the LE
 			Advertising channel.  The service must be exported
@@ -370,9 +334,7 @@ RegisterAdvertisement 			Registers an advertisement object to be sent over the L
 
 */
 func (a *LEAdvertisingManager1) RegisterAdvertisement(advertisement dbus.ObjectPath, options map[string]interface{}) error {
-	
 	return a.client.Call("RegisterAdvertisement", 0, advertisement, options).Store()
-	
 }
 
 /*
@@ -384,8 +346,5 @@ UnregisterAdvertisement 			This unregisters an advertisement that has been
 
 */
 func (a *LEAdvertisingManager1) UnregisterAdvertisement(advertisement dbus.ObjectPath) error {
-	
 	return a.client.Call("UnregisterAdvertisement", 0, advertisement).Store()
-	
 }
-

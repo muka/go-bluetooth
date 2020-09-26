@@ -2,16 +2,14 @@
 
 package profile
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
 )
 
 var ProfileManager1Interface = "org.bluez.ProfileManager1"
-
 
 // NewProfileManager1 create a new instance of ProfileManager1
 //
@@ -27,28 +25,25 @@ func NewProfileManager1() (*ProfileManager1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	return a, nil
 }
-
 
 /*
 ProfileManager1 Profile Manager hierarchy
 
 */
 type ProfileManager1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*ProfileManager1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *ProfileManager1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
 // ProfileManager1Properties contains the exposed properties of an interface
 type ProfileManager1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
 }
 
 //Lock access to properties
@@ -61,11 +56,8 @@ func (p *ProfileManager1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
 // Close the connection
 func (a *ProfileManager1) Close() {
-	
 	a.client.Disconnect()
 }
 
@@ -114,9 +106,6 @@ func (a *ProfileManager1) GetObjectManagerSignal() (chan *dbus.Signal, func(), e
 
 	return a.objectManagerSignal, cancel, nil
 }
-
-
-
 
 /*
 RegisterProfile 			This registers a profile implementation.
@@ -188,9 +177,7 @@ RegisterProfile 			This registers a profile implementation.
 
 */
 func (a *ProfileManager1) RegisterProfile(profile dbus.ObjectPath, uuid string, options map[string]interface{}) error {
-	
 	return a.client.Call("RegisterProfile", 0, profile, uuid, options).Store()
-	
 }
 
 /*
@@ -201,8 +188,5 @@ UnregisterProfile 			This unregisters the profile that has been previously
 
 */
 func (a *ProfileManager1) UnregisterProfile(profile dbus.ObjectPath) error {
-	
 	return a.client.Call("UnregisterProfile", 0, profile).Store()
-	
 }
-

@@ -2,18 +2,16 @@
 
 package health
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var HealthChannel1Interface = "org.bluez.HealthChannel1"
-
 
 // NewHealthChannel1 create a new instance of HealthChannel1
 //
@@ -29,28 +27,25 @@ func NewHealthChannel1(objectPath dbus.ObjectPath) (*HealthChannel1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(HealthChannel1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 HealthChannel1 HealthChannel hierarchy
 
 */
 type HealthChannel1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*HealthChannel1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *HealthChannel1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
@@ -59,24 +54,23 @@ type HealthChannel1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Application Identifies the HealthApplication to which this channel
-			is related to (which indirectly defines its role and
-			data type).
+		Application Identifies the HealthApplication to which this channel
+				is related to (which indirectly defines its role and
+				data type).
 	*/
 	Application dbus.ObjectPath
 
 	/*
-	Device Identifies the Remote Device that is connected with.
-			Maps with a HealthDevice object.
+		Device Identifies the Remote Device that is connected with.
+				Maps with a HealthDevice object.
 	*/
 	Device dbus.ObjectPath
 
 	/*
-	Type The quality of service of the data channel. ("reliable"
-			or "streaming")
+		Type The quality of service of the data channel. ("reliable"
+				or "streaming")
 	*/
 	Type string
-
 }
 
 //Lock access to properties
@@ -89,15 +83,10 @@ func (p *HealthChannel1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
-
 // SetApplication set Application value
 func (a *HealthChannel1) SetApplication(v dbus.ObjectPath) error {
 	return a.SetProperty("Application", v)
 }
-
-
 
 // GetApplication get Application value
 func (a *HealthChannel1) GetApplication() (dbus.ObjectPath, error) {
@@ -108,15 +97,10 @@ func (a *HealthChannel1) GetApplication() (dbus.ObjectPath, error) {
 	return v.Value().(dbus.ObjectPath), nil
 }
 
-
-
-
 // SetDevice set Device value
 func (a *HealthChannel1) SetDevice(v dbus.ObjectPath) error {
 	return a.SetProperty("Device", v)
 }
-
-
 
 // GetDevice get Device value
 func (a *HealthChannel1) GetDevice() (dbus.ObjectPath, error) {
@@ -127,15 +111,10 @@ func (a *HealthChannel1) GetDevice() (dbus.ObjectPath, error) {
 	return v.Value().(dbus.ObjectPath), nil
 }
 
-
-
-
 // SetType set Type value
 func (a *HealthChannel1) SetType(v string) error {
 	return a.SetProperty("Type", v)
 }
-
-
 
 // GetType get Type value
 func (a *HealthChannel1) GetType() (string, error) {
@@ -146,13 +125,9 @@ func (a *HealthChannel1) GetType() (string, error) {
 	return v.Value().(string), nil
 }
 
-
-
 // Close the connection
 func (a *HealthChannel1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -201,7 +176,6 @@ func (a *HealthChannel1) GetObjectManagerSignal() (chan *dbus.Signal, func(), er
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a HealthChannel1Properties to map
 func (a *HealthChannel1Properties) ToMap() (map[string]interface{}, error) {
@@ -288,9 +262,6 @@ func (a *HealthChannel1) UnwatchProperties(ch chan *bluez.PropertyChanged) error
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 Acquire 			Returns the file descriptor for this data channel. If
 			the data channel is not connected it will also
@@ -300,10 +271,9 @@ Acquire 			Returns the file descriptor for this data channel. If
 
 */
 func (a *HealthChannel1) Acquire() (dbus.UnixFD, error) {
-	
 	var val0 dbus.UnixFD
-	err := a.client.Call("Acquire", 0, ).Store(&val0)
-	return val0, err	
+	err := a.client.Call("Acquire", 0).Store(&val0)
+	return val0, err
 }
 
 /*
@@ -314,8 +284,5 @@ Release 			Releases the fd. Application should also need to
 
 */
 func (a *HealthChannel1) Release() error {
-	
-	return a.client.Call("Release", 0, ).Store()
-	
+	return a.client.Call("Release", 0).Store()
 }
-

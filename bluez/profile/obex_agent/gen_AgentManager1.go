@@ -2,18 +2,16 @@
 
 package obex_agent
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var AgentManager1Interface = "org.bluez.obex.AgentManager1"
-
 
 // NewAgentManager1 create a new instance of AgentManager1
 //
@@ -29,35 +27,31 @@ func NewAgentManager1() (*AgentManager1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(AgentManager1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 AgentManager1 Agent Manager hierarchy
 
 */
 type AgentManager1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*AgentManager1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *AgentManager1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
 // AgentManager1Properties contains the exposed properties of an interface
 type AgentManager1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
 }
 
 //Lock access to properties
@@ -70,13 +64,9 @@ func (p *AgentManager1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
 // Close the connection
 func (a *AgentManager1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -125,7 +115,6 @@ func (a *AgentManager1) GetObjectManagerSignal() (chan *dbus.Signal, func(), err
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a AgentManager1Properties to map
 func (a *AgentManager1Properties) ToMap() (map[string]interface{}, error) {
@@ -212,9 +201,6 @@ func (a *AgentManager1) UnwatchProperties(ch chan *bluez.PropertyChanged) error 
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 RegisterAgent 			Register an agent to request authorization of
 			the user to accept/reject objects. Object push
@@ -223,9 +209,7 @@ RegisterAgent 			Register an agent to request authorization of
 
 */
 func (a *AgentManager1) RegisterAgent(agent dbus.ObjectPath) error {
-	
 	return a.client.Call("RegisterAgent", 0, agent).Store()
-	
 }
 
 /*
@@ -236,8 +220,5 @@ UnregisterAgent 			This unregisters the agent that has been previously
 
 */
 func (a *AgentManager1) UnregisterAgent(agent dbus.ObjectPath) error {
-	
 	return a.client.Call("UnregisterAgent", 0, agent).Store()
-	
 }
-

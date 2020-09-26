@@ -2,18 +2,16 @@
 
 package mesh
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var Network1Interface = "org.bluez.mesh.Network1"
-
 
 // NewNetwork1 create a new instance of Network1
 //
@@ -29,35 +27,31 @@ func NewNetwork1() (*Network1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(Network1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 Network1 Mesh Network Hierarchy
 
 */
 type Network1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*Network1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *Network1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
 // Network1Properties contains the exposed properties of an interface
 type Network1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
 }
 
 //Lock access to properties
@@ -70,13 +64,9 @@ func (p *Network1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
 // Close the connection
 func (a *Network1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -125,7 +115,6 @@ func (a *Network1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a Network1Properties to map
 func (a *Network1Properties) ToMap() (map[string]interface{}, error) {
@@ -212,9 +201,6 @@ func (a *Network1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 Join 		This is the first method that an application has to call to
 		become a provisioned node on a mesh network. The call will
@@ -241,18 +227,14 @@ Join 		This is the first method that an application has to call to
 
 */
 func (a *Network1) Join(app_root dbus.ObjectPath, uuid []byte) error {
-	
 	return a.client.Call("Join", 0, app_root, uuid).Store()
-	
 }
 
 /*
-Cancel 
+Cancel
 */
 func (a *Network1) Cancel() error {
-	
-	return a.client.Call("Cancel", 0, ).Store()
-	
+	return a.client.Call("Cancel", 0).Store()
 }
 
 /*
@@ -311,11 +293,10 @@ Attach 		This is the first method that an application must call to get
 
 */
 func (a *Network1) Attach(app_root dbus.ObjectPath, token uint64) (dbus.ObjectPath, []ConfigurationItem, error) {
-	
 	var val0 dbus.ObjectPath
-   val1 := []ConfigurationItem{}
+	val1 := []ConfigurationItem{}
 	err := a.client.Call("Attach", 0, app_root, token).Store(&val0, &val1)
-	return val0, val1, err	
+	return val0, val1, err
 }
 
 /*
@@ -329,9 +310,7 @@ Leave 		This removes the configuration information about the mesh node
 
 */
 func (a *Network1) Leave(token uint64) error {
-	
 	return a.client.Call("Leave", 0, token).Store()
-	
 }
 
 /*
@@ -364,9 +343,7 @@ CreateNetwork 		This is the first method that an application calls to become
 
 */
 func (a *Network1) CreateNetwork(app_root dbus.ObjectPath, uuid []byte) error {
-	
 	return a.client.Call("CreateNetwork", 0, app_root, uuid).Store()
-	
 }
 
 /*
@@ -408,8 +385,5 @@ Import 		This method creates a local mesh node based on node
 
 */
 func (a *Network1) Import(app_root dbus.ObjectPath, uuid []byte, dev_key []byte, net_key []byte, net_index uint16, flags map[string]interface{}, iv_index uint32, unicast uint16) error {
-	
 	return a.client.Call("Import", 0, app_root, uuid, dev_key, net_key, net_index, flags, iv_index, unicast).Store()
-	
 }
-

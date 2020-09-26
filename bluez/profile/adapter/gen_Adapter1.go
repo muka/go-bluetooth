@@ -2,19 +2,17 @@
 
 package adapter
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
-   "fmt"
+	"fmt"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var Adapter1Interface = "org.bluez.Adapter1"
-
 
 // NewAdapter1 create a new instance of Adapter1
 //
@@ -30,14 +28,12 @@ func NewAdapter1(objectPath dbus.ObjectPath) (*Adapter1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(Adapter1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
 
@@ -53,28 +49,25 @@ func NewAdapter1FromAdapterID(adapterID string) (*Adapter1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(Adapter1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 Adapter1 Adapter hierarchy
 
 */
 type Adapter1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*Adapter1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *Adapter1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
@@ -83,150 +76,149 @@ type Adapter1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Address The Bluetooth device address.
+		Address The Bluetooth device address.
 	*/
 	Address string
 
 	/*
-	AddressType The Bluetooth  Address Type. For dual-mode and BR/EDR
-			only adapter this defaults to "public". Single mode LE
-			adapters may have either value. With privacy enabled
-			this contains type of Identity Address and not type of
-			address used for connection.
+		AddressType The Bluetooth  Address Type. For dual-mode and BR/EDR
+				only adapter this defaults to "public". Single mode LE
+				adapters may have either value. With privacy enabled
+				this contains type of Identity Address and not type of
+				address used for connection.
 
-			Possible values:
-				"public" - Public address
-				"random" - Random address
+				Possible values:
+					"public" - Public address
+					"random" - Random address
 	*/
 	AddressType string
 
 	/*
-	Alias The Bluetooth friendly name. This value can be
-			changed.
+		Alias The Bluetooth friendly name. This value can be
+				changed.
 
-			In case no alias is set, it will return the system
-			provided name. Setting an empty string as alias will
-			convert it back to the system provided name.
+				In case no alias is set, it will return the system
+				provided name. Setting an empty string as alias will
+				convert it back to the system provided name.
 
-			When resetting the alias with an empty string, the
-			property will default back to system name.
+				When resetting the alias with an empty string, the
+				property will default back to system name.
 
-			On a well configured system, this property never
-			needs to be changed since it defaults to the system
-			name and provides the pretty hostname. Only if the
-			local name needs to be different from the pretty
-			hostname, this property should be used as last
-			resort.
+				On a well configured system, this property never
+				needs to be changed since it defaults to the system
+				name and provides the pretty hostname. Only if the
+				local name needs to be different from the pretty
+				hostname, this property should be used as last
+				resort.
 	*/
 	Alias string
 
 	/*
-	Class The Bluetooth class of device.
+		Class The Bluetooth class of device.
 
-			This property represents the value that is either
-			automatically configured by DMI/ACPI information
-			or provided as static configuration.
+				This property represents the value that is either
+				automatically configured by DMI/ACPI information
+				or provided as static configuration.
 	*/
 	Class uint32
 
 	/*
-	Discoverable Switch an adapter to discoverable or non-discoverable
-			to either make it visible or hide it. This is a global
-			setting and should only be used by the settings
-			application.
+		Discoverable Switch an adapter to discoverable or non-discoverable
+				to either make it visible or hide it. This is a global
+				setting and should only be used by the settings
+				application.
 
-			If the DiscoverableTimeout is set to a non-zero
-			value then the system will set this value back to
-			false after the timer expired.
+				If the DiscoverableTimeout is set to a non-zero
+				value then the system will set this value back to
+				false after the timer expired.
 
-			In case the adapter is switched off, setting this
-			value will fail.
+				In case the adapter is switched off, setting this
+				value will fail.
 
-			When changing the Powered property the new state of
-			this property will be updated via a PropertiesChanged
-			signal.
+				When changing the Powered property the new state of
+				this property will be updated via a PropertiesChanged
+				signal.
 
-			For any new adapter this settings defaults to false.
+				For any new adapter this settings defaults to false.
 	*/
 	Discoverable bool
 
 	/*
-	DiscoverableTimeout The discoverable timeout in seconds. A value of zero
-			means that the timeout is disabled and it will stay in
-			discoverable/limited mode forever.
+		DiscoverableTimeout The discoverable timeout in seconds. A value of zero
+				means that the timeout is disabled and it will stay in
+				discoverable/limited mode forever.
 
-			The default value for the discoverable timeout should
-			be 180 seconds (3 minutes).
+				The default value for the discoverable timeout should
+				be 180 seconds (3 minutes).
 	*/
 	DiscoverableTimeout uint32
 
 	/*
-	Discovering Indicates that a device discovery procedure is active.
+		Discovering Indicates that a device discovery procedure is active.
 	*/
 	Discovering bool
 
 	/*
-	Modalias Local Device ID information in modalias format
-			used by the kernel and udev.
+		Modalias Local Device ID information in modalias format
+				used by the kernel and udev.
 	*/
 	Modalias string
 
 	/*
-	Name The Bluetooth system name (pretty hostname).
+		Name The Bluetooth system name (pretty hostname).
 
-			This property is either a static system default
-			or controlled by an external daemon providing
-			access to the pretty hostname configuration.
+				This property is either a static system default
+				or controlled by an external daemon providing
+				access to the pretty hostname configuration.
 	*/
 	Name string
 
 	/*
-	Pairable Switch an adapter to pairable or non-pairable. This is
-			a global setting and should only be used by the
-			settings application.
+		Pairable Switch an adapter to pairable or non-pairable. This is
+				a global setting and should only be used by the
+				settings application.
 
-			Note that this property only affects incoming pairing
-			requests.
+				Note that this property only affects incoming pairing
+				requests.
 
-			For any new adapter this settings defaults to true.
+				For any new adapter this settings defaults to true.
 	*/
 	Pairable bool
 
 	/*
-	PairableTimeout The pairable timeout in seconds. A value of zero
-			means that the timeout is disabled and it will stay in
-			pairable mode forever.
+		PairableTimeout The pairable timeout in seconds. A value of zero
+				means that the timeout is disabled and it will stay in
+				pairable mode forever.
 
-			The default value for pairable timeout should be
-			disabled (value 0).
+				The default value for pairable timeout should be
+				disabled (value 0).
 	*/
 	PairableTimeout uint32
 
 	/*
-	Powered Switch an adapter on or off. This will also set the
-			appropriate connectable state of the controller.
+		Powered Switch an adapter on or off. This will also set the
+				appropriate connectable state of the controller.
 
-			The value of this property is not persistent. After
-			restart or unplugging of the adapter it will reset
-			back to false.
+				The value of this property is not persistent. After
+				restart or unplugging of the adapter it will reset
+				back to false.
 	*/
 	Powered bool
 
 	/*
-	Roles List of supported roles. Possible values:
-				"central": Supports the central role.
-				"peripheral": Supports the peripheral role.
-				"central-peripheral": Supports both roles
-						      concurrently.
+		Roles List of supported roles. Possible values:
+					"central": Supports the central role.
+					"peripheral": Supports the peripheral role.
+					"central-peripheral": Supports both roles
+							      concurrently.
 	*/
 	Roles []string
 
 	/*
-	UUIDs List of 128-bit UUIDs that represents the available
-			local services.
+		UUIDs List of 128-bit UUIDs that represents the available
+				local services.
 	*/
 	UUIDs []string
-
 }
 
 //Lock access to properties
@@ -239,15 +231,10 @@ func (p *Adapter1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
-
 // SetAddress set Address value
 func (a *Adapter1) SetAddress(v string) error {
 	return a.SetProperty("Address", v)
 }
-
-
 
 // GetAddress get Address value
 func (a *Adapter1) GetAddress() (string, error) {
@@ -258,15 +245,10 @@ func (a *Adapter1) GetAddress() (string, error) {
 	return v.Value().(string), nil
 }
 
-
-
-
 // SetAddressType set AddressType value
 func (a *Adapter1) SetAddressType(v string) error {
 	return a.SetProperty("AddressType", v)
 }
-
-
 
 // GetAddressType get AddressType value
 func (a *Adapter1) GetAddressType() (string, error) {
@@ -277,15 +259,10 @@ func (a *Adapter1) GetAddressType() (string, error) {
 	return v.Value().(string), nil
 }
 
-
-
-
 // SetAlias set Alias value
 func (a *Adapter1) SetAlias(v string) error {
 	return a.SetProperty("Alias", v)
 }
-
-
 
 // GetAlias get Alias value
 func (a *Adapter1) GetAlias() (string, error) {
@@ -296,15 +273,10 @@ func (a *Adapter1) GetAlias() (string, error) {
 	return v.Value().(string), nil
 }
 
-
-
-
 // SetClass set Class value
 func (a *Adapter1) SetClass(v uint32) error {
 	return a.SetProperty("Class", v)
 }
-
-
 
 // GetClass get Class value
 func (a *Adapter1) GetClass() (uint32, error) {
@@ -315,15 +287,10 @@ func (a *Adapter1) GetClass() (uint32, error) {
 	return v.Value().(uint32), nil
 }
 
-
-
-
 // SetDiscoverable set Discoverable value
 func (a *Adapter1) SetDiscoverable(v bool) error {
 	return a.SetProperty("Discoverable", v)
 }
-
-
 
 // GetDiscoverable get Discoverable value
 func (a *Adapter1) GetDiscoverable() (bool, error) {
@@ -334,15 +301,10 @@ func (a *Adapter1) GetDiscoverable() (bool, error) {
 	return v.Value().(bool), nil
 }
 
-
-
-
 // SetDiscoverableTimeout set DiscoverableTimeout value
 func (a *Adapter1) SetDiscoverableTimeout(v uint32) error {
 	return a.SetProperty("DiscoverableTimeout", v)
 }
-
-
 
 // GetDiscoverableTimeout get DiscoverableTimeout value
 func (a *Adapter1) GetDiscoverableTimeout() (uint32, error) {
@@ -353,15 +315,10 @@ func (a *Adapter1) GetDiscoverableTimeout() (uint32, error) {
 	return v.Value().(uint32), nil
 }
 
-
-
-
 // SetDiscovering set Discovering value
 func (a *Adapter1) SetDiscovering(v bool) error {
 	return a.SetProperty("Discovering", v)
 }
-
-
 
 // GetDiscovering get Discovering value
 func (a *Adapter1) GetDiscovering() (bool, error) {
@@ -372,15 +329,10 @@ func (a *Adapter1) GetDiscovering() (bool, error) {
 	return v.Value().(bool), nil
 }
 
-
-
-
 // SetModalias set Modalias value
 func (a *Adapter1) SetModalias(v string) error {
 	return a.SetProperty("Modalias", v)
 }
-
-
 
 // GetModalias get Modalias value
 func (a *Adapter1) GetModalias() (string, error) {
@@ -391,15 +343,10 @@ func (a *Adapter1) GetModalias() (string, error) {
 	return v.Value().(string), nil
 }
 
-
-
-
 // SetName set Name value
 func (a *Adapter1) SetName(v string) error {
 	return a.SetProperty("Name", v)
 }
-
-
 
 // GetName get Name value
 func (a *Adapter1) GetName() (string, error) {
@@ -410,15 +357,10 @@ func (a *Adapter1) GetName() (string, error) {
 	return v.Value().(string), nil
 }
 
-
-
-
 // SetPairable set Pairable value
 func (a *Adapter1) SetPairable(v bool) error {
 	return a.SetProperty("Pairable", v)
 }
-
-
 
 // GetPairable get Pairable value
 func (a *Adapter1) GetPairable() (bool, error) {
@@ -429,15 +371,10 @@ func (a *Adapter1) GetPairable() (bool, error) {
 	return v.Value().(bool), nil
 }
 
-
-
-
 // SetPairableTimeout set PairableTimeout value
 func (a *Adapter1) SetPairableTimeout(v uint32) error {
 	return a.SetProperty("PairableTimeout", v)
 }
-
-
 
 // GetPairableTimeout get PairableTimeout value
 func (a *Adapter1) GetPairableTimeout() (uint32, error) {
@@ -448,15 +385,10 @@ func (a *Adapter1) GetPairableTimeout() (uint32, error) {
 	return v.Value().(uint32), nil
 }
 
-
-
-
 // SetPowered set Powered value
 func (a *Adapter1) SetPowered(v bool) error {
 	return a.SetProperty("Powered", v)
 }
-
-
 
 // GetPowered get Powered value
 func (a *Adapter1) GetPowered() (bool, error) {
@@ -467,15 +399,10 @@ func (a *Adapter1) GetPowered() (bool, error) {
 	return v.Value().(bool), nil
 }
 
-
-
-
 // SetRoles set Roles value
 func (a *Adapter1) SetRoles(v []string) error {
 	return a.SetProperty("Roles", v)
 }
-
-
 
 // GetRoles get Roles value
 func (a *Adapter1) GetRoles() ([]string, error) {
@@ -486,15 +413,10 @@ func (a *Adapter1) GetRoles() ([]string, error) {
 	return v.Value().([]string), nil
 }
 
-
-
-
 // SetUUIDs set UUIDs value
 func (a *Adapter1) SetUUIDs(v []string) error {
 	return a.SetProperty("UUIDs", v)
 }
-
-
 
 // GetUUIDs get UUIDs value
 func (a *Adapter1) GetUUIDs() ([]string, error) {
@@ -505,13 +427,9 @@ func (a *Adapter1) GetUUIDs() ([]string, error) {
 	return v.Value().([]string), nil
 }
 
-
-
 // Close the connection
 func (a *Adapter1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -560,7 +478,6 @@ func (a *Adapter1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a Adapter1Properties to map
 func (a *Adapter1Properties) ToMap() (map[string]interface{}, error) {
@@ -647,9 +564,6 @@ func (a *Adapter1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 StartDiscovery 			This method starts the device discovery session. This
 			includes an inquiry procedure and remote device name
@@ -663,9 +577,7 @@ StartDiscovery 			This method starts the device discovery session. This
 
 */
 func (a *Adapter1) StartDiscovery() error {
-	
-	return a.client.Call("StartDiscovery", 0, ).Store()
-	
+	return a.client.Call("StartDiscovery", 0).Store()
 }
 
 /*
@@ -680,9 +592,7 @@ StopDiscovery 			This method will cancel any previous StartDiscovery
 
 */
 func (a *Adapter1) StopDiscovery() error {
-	
-	return a.client.Call("StopDiscovery", 0, ).Store()
-	
+	return a.client.Call("StopDiscovery", 0).Store()
 }
 
 /*
@@ -693,9 +603,7 @@ RemoveDevice 			This removes the remote device object at the given
 
 */
 func (a *Adapter1) RemoveDevice(device dbus.ObjectPath) error {
-	
 	return a.client.Call("RemoveDevice", 0, device).Store()
-	
 }
 
 /*
@@ -785,9 +693,7 @@ SetDiscoveryFilter 			This method sets the device discovery filter for the
 
 */
 func (a *Adapter1) SetDiscoveryFilter(filter map[string]interface{}) error {
-	
 	return a.client.Call("SetDiscoveryFilter", 0, filter).Store()
-	
 }
 
 /*
@@ -797,10 +703,9 @@ GetDiscoveryFilters 			Return available filters that can be given to
 
 */
 func (a *Adapter1) GetDiscoveryFilters() ([]string, error) {
-	
-	 val0 := []string{}
-	err := a.client.Call("GetDiscoveryFilters", 0, ).Store(&val0)
-	return val0, err	
+	val0 := []string{}
+	err := a.client.Call("GetDiscoveryFilters", 0).Store(&val0)
+	return val0, err
 }
 
 /*
@@ -835,9 +740,7 @@ ConnectDevice 			This method connects to device without need of
 
 */
 func (a *Adapter1) ConnectDevice(properties map[string]interface{}) (dbus.ObjectPath, error) {
-	
 	var val0 dbus.ObjectPath
 	err := a.client.Call("ConnectDevice", 0, properties).Store(&val0)
-	return val0, err	
+	return val0, err
 }
-

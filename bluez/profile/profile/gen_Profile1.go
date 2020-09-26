@@ -2,16 +2,14 @@
 
 package profile
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
 )
 
 var Profile1Interface = "org.bluez.Profile1"
-
 
 // NewProfile1 create a new instance of Profile1
 //
@@ -28,28 +26,25 @@ func NewProfile1(servicePath string, objectPath dbus.ObjectPath) (*Profile1, err
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	return a, nil
 }
-
 
 /*
 Profile1 Profile hierarchy
 
 */
 type Profile1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*Profile1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *Profile1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
 // Profile1Properties contains the exposed properties of an interface
 type Profile1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
 }
 
 //Lock access to properties
@@ -62,11 +57,8 @@ func (p *Profile1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
 // Close the connection
 func (a *Profile1) Close() {
-	
 	a.client.Disconnect()
 }
 
@@ -116,9 +108,6 @@ func (a *Profile1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
 	return a.objectManagerSignal, cancel, nil
 }
 
-
-
-
 /*
 Release 			This method gets called when the service daemon
 			unregisters the profile. A profile can use it to do
@@ -128,9 +117,7 @@ Release 			This method gets called when the service daemon
 
 */
 func (a *Profile1) Release() error {
-	
-	return a.client.Call("Release", 0, ).Store()
-	
+	return a.client.Call("Release", 0).Store()
 }
 
 /*
@@ -144,9 +131,7 @@ NewConnection 			This method gets called when a new service level
 
 */
 func (a *Profile1) NewConnection(device dbus.ObjectPath, fd int32, fd_properties map[string]interface{}) error {
-	
 	return a.client.Call("NewConnection", 0, device, fd, fd_properties).Store()
-	
 }
 
 /*
@@ -164,8 +149,5 @@ RequestDisconnection 			This method gets called when a profile gets
 
 */
 func (a *Profile1) RequestDisconnection(device dbus.ObjectPath) error {
-	
 	return a.client.Call("RequestDisconnection", 0, device).Store()
-	
 }
-
