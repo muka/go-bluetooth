@@ -59,27 +59,33 @@ type Node1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	Addresses This property contains unicast addresses of node's elements.
+	*/
+	Addresses []uint16
+
+	/*
+	Beacon This property indicates whether the periodic beaconing is
+		enabled (true) or disabled (false).
+
+	uint8 BeaconFlags [read-only]
+
+		This property may be read at any time to determine the flag
+		field setting on sent and received beacons of the primary
+		network key.
+	*/
+	Beacon bool
+
+	/*
 	Features The dictionary that contains information about feature support.
 		The following keys are defined:
 	*/
 	Features map[string]interface{}
 
 	/*
-	LowPower Indicates support for operating in Low Power node mode
+	Friend Indicates the ability to establish a friendship with a
+			Low Power node
 	*/
-	LowPower bool
-
-	/*
-	SecondsSinceLastHeard This property may be read at any time to determine the number of
-		seconds since mesh network layer traffic was last detected on
-		this node's network.
-	*/
-	SecondsSinceLastHeard uint32
-
-	/*
-	Addresses This property contains unicast addresses of node's elements.
-	*/
-	Addresses []uint16
+	Friend bool
 
 	/*
 	IvIndex This property may be read at any time to determine the IV_Index
@@ -89,16 +95,9 @@ type Node1Properties struct {
 	IvIndex uint32
 
 	/*
-	SequenceNumber This property may be read at any time to determine the
-		sequence number.
+	LowPower Indicates support for operating in Low Power node mode
 	*/
-	SequenceNumber uint32
-
-	/*
-	Friend Indicates the ability to establish a friendship with a
-			Low Power node
-	*/
-	Friend bool
+	LowPower bool
 
 	/*
 	Proxy Indicates support for GATT proxy
@@ -115,16 +114,17 @@ type Node1Properties struct {
 	Relay bool
 
 	/*
-	Beacon This property indicates whether the periodic beaconing is
-		enabled (true) or disabled (false).
-
-	uint8 BeaconFlags [read-only]
-
-		This property may be read at any time to determine the flag
-		field setting on sent and received beacons of the primary
-		network key.
+	SecondsSinceLastHeard This property may be read at any time to determine the number of
+		seconds since mesh network layer traffic was last detected on
+		this node's network.
 	*/
-	Beacon bool
+	SecondsSinceLastHeard uint32
+
+	/*
+	SequenceNumber This property may be read at any time to determine the
+		sequence number.
+	*/
+	SequenceNumber uint32
 
 }
 
@@ -136,53 +136,6 @@ func (p *Node1Properties) Lock() {
 //Unlock access to properties
 func (p *Node1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-
-
-// GetFeatures get Features value
-func (a *Node1) GetFeatures() (map[string]interface{}, error) {
-	v, err := a.GetProperty("Features")
-	if err != nil {
-		return map[string]interface{}{}, err
-	}
-	return v.Value().(map[string]interface{}), nil
-}
-
-
-
-
-// SetLowPower set LowPower value
-func (a *Node1) SetLowPower(v bool) error {
-	return a.SetProperty("LowPower", v)
-}
-
-
-
-// GetLowPower get LowPower value
-func (a *Node1) GetLowPower() (bool, error) {
-	v, err := a.GetProperty("LowPower")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-
-
-// GetSecondsSinceLastHeard get SecondsSinceLastHeard value
-func (a *Node1) GetSecondsSinceLastHeard() (uint32, error) {
-	v, err := a.GetProperty("SecondsSinceLastHeard")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
 }
 
 
@@ -204,13 +157,13 @@ func (a *Node1) GetAddresses() ([]uint16, error) {
 
 
 
-// GetIvIndex get IvIndex value
-func (a *Node1) GetIvIndex() (uint32, error) {
-	v, err := a.GetProperty("IvIndex")
+// GetBeacon get Beacon value
+func (a *Node1) GetBeacon() (bool, error) {
+	v, err := a.GetProperty("Beacon")
 	if err != nil {
-		return uint32(0), err
+		return false, err
 	}
-	return v.Value().(uint32), nil
+	return v.Value().(bool), nil
 }
 
 
@@ -218,13 +171,13 @@ func (a *Node1) GetIvIndex() (uint32, error) {
 
 
 
-// GetSequenceNumber get SequenceNumber value
-func (a *Node1) GetSequenceNumber() (uint32, error) {
-	v, err := a.GetProperty("SequenceNumber")
+// GetFeatures get Features value
+func (a *Node1) GetFeatures() (map[string]interface{}, error) {
+	v, err := a.GetProperty("Features")
 	if err != nil {
-		return uint32(0), err
+		return map[string]interface{}{}, err
 	}
-	return v.Value().(uint32), nil
+	return v.Value().(map[string]interface{}), nil
 }
 
 
@@ -240,6 +193,39 @@ func (a *Node1) SetFriend(v bool) error {
 // GetFriend get Friend value
 func (a *Node1) GetFriend() (bool, error) {
 	v, err := a.GetProperty("Friend")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+
+
+// GetIvIndex get IvIndex value
+func (a *Node1) GetIvIndex() (uint32, error) {
+	v, err := a.GetProperty("IvIndex")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
+
+
+
+
+// SetLowPower set LowPower value
+func (a *Node1) SetLowPower(v bool) error {
+	return a.SetProperty("LowPower", v)
+}
+
+
+
+// GetLowPower get LowPower value
+func (a *Node1) GetLowPower() (bool, error) {
+	v, err := a.GetProperty("LowPower")
 	if err != nil {
 		return false, err
 	}
@@ -289,13 +275,27 @@ func (a *Node1) GetRelay() (bool, error) {
 
 
 
-// GetBeacon get Beacon value
-func (a *Node1) GetBeacon() (bool, error) {
-	v, err := a.GetProperty("Beacon")
+// GetSecondsSinceLastHeard get SecondsSinceLastHeard value
+func (a *Node1) GetSecondsSinceLastHeard() (uint32, error) {
+	v, err := a.GetProperty("SecondsSinceLastHeard")
 	if err != nil {
-		return false, err
+		return uint32(0), err
 	}
-	return v.Value().(bool), nil
+	return v.Value().(uint32), nil
+}
+
+
+
+
+
+
+// GetSequenceNumber get SequenceNumber value
+func (a *Node1) GetSequenceNumber() (uint32, error) {
+	v, err := a.GetProperty("SequenceNumber")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
 }
 
 

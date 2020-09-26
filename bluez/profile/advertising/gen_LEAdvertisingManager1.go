@@ -87,25 +87,9 @@ type LEAdvertisingManager1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	SupportedSecondaryChannels List of supported Secondary channels. Secondary
-			channels can be used to advertise with the
-			corresponding PHY.
-
-			Possible values: "1M"
-					 "2M"
-					 "Coded"
-	*/
-	SupportedSecondaryChannels []string
-
-	/*
 	ActiveInstances Number of active advertising instances.
 	*/
 	ActiveInstances byte
-
-	/*
-	SupportedInstances Number of available advertising instances.
-	*/
-	SupportedInstances byte
 
 	/*
 	SupportedIncludes List of supported system includes.
@@ -115,6 +99,22 @@ type LEAdvertisingManager1Properties struct {
 					 "local-name"
 	*/
 	SupportedIncludes []string
+
+	/*
+	SupportedInstances Number of available advertising instances.
+	*/
+	SupportedInstances byte
+
+	/*
+	SupportedSecondaryChannels List of supported Secondary channels. Secondary
+			channels can be used to advertise with the
+			corresponding PHY.
+
+			Possible values: "1M"
+					 "2M"
+					 "Coded"
+	*/
+	SupportedSecondaryChannels []string
 
 }
 
@@ -126,25 +126,6 @@ func (p *LEAdvertisingManager1Properties) Lock() {
 //Unlock access to properties
 func (p *LEAdvertisingManager1Properties) Unlock() {
 	p.lock.Unlock()
-}
-
-
-
-
-// SetSupportedSecondaryChannels set SupportedSecondaryChannels value
-func (a *LEAdvertisingManager1) SetSupportedSecondaryChannels(v []string) error {
-	return a.SetProperty("SupportedSecondaryChannels", v)
-}
-
-
-
-// GetSupportedSecondaryChannels get SupportedSecondaryChannels value
-func (a *LEAdvertisingManager1) GetSupportedSecondaryChannels() ([]string, error) {
-	v, err := a.GetProperty("SupportedSecondaryChannels")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
 }
 
 
@@ -169,6 +150,25 @@ func (a *LEAdvertisingManager1) GetActiveInstances() (byte, error) {
 
 
 
+// SetSupportedIncludes set SupportedIncludes value
+func (a *LEAdvertisingManager1) SetSupportedIncludes(v []string) error {
+	return a.SetProperty("SupportedIncludes", v)
+}
+
+
+
+// GetSupportedIncludes get SupportedIncludes value
+func (a *LEAdvertisingManager1) GetSupportedIncludes() ([]string, error) {
+	v, err := a.GetProperty("SupportedIncludes")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
+}
+
+
+
+
 // SetSupportedInstances set SupportedInstances value
 func (a *LEAdvertisingManager1) SetSupportedInstances(v byte) error {
 	return a.SetProperty("SupportedInstances", v)
@@ -188,16 +188,16 @@ func (a *LEAdvertisingManager1) GetSupportedInstances() (byte, error) {
 
 
 
-// SetSupportedIncludes set SupportedIncludes value
-func (a *LEAdvertisingManager1) SetSupportedIncludes(v []string) error {
-	return a.SetProperty("SupportedIncludes", v)
+// SetSupportedSecondaryChannels set SupportedSecondaryChannels value
+func (a *LEAdvertisingManager1) SetSupportedSecondaryChannels(v []string) error {
+	return a.SetProperty("SupportedSecondaryChannels", v)
 }
 
 
 
-// GetSupportedIncludes get SupportedIncludes value
-func (a *LEAdvertisingManager1) GetSupportedIncludes() ([]string, error) {
-	v, err := a.GetProperty("SupportedIncludes")
+// GetSupportedSecondaryChannels get SupportedSecondaryChannels value
+func (a *LEAdvertisingManager1) GetSupportedSecondaryChannels() ([]string, error) {
+	v, err := a.GetProperty("SupportedSecondaryChannels")
 	if err != nil {
 		return []string{}, err
 	}

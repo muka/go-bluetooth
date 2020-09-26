@@ -60,6 +60,12 @@ type Element1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
+	Location Location descriptor as defined in the GATT Bluetooth Namespace
+		Descriptors section of the Bluetooth SIG Assigned Numbers
+	*/
+	Location uint16
+
+	/*
 	Models An array of SIG Model Identifiers. The array may be empty.
 	*/
 	Models []uint16
@@ -73,12 +79,6 @@ type Element1Properties struct {
 	*/
 	VendorModels []VendorItem
 
-	/*
-	Location Location descriptor as defined in the GATT Bluetooth Namespace
-		Descriptors section of the Bluetooth SIG Assigned Numbers
-	*/
-	Location uint16
-
 }
 
 //Lock access to properties
@@ -89,6 +89,20 @@ func (p *Element1Properties) Lock() {
 //Unlock access to properties
 func (p *Element1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+
+
+
+
+
+// GetLocation get Location value
+func (a *Element1) GetLocation() (uint16, error) {
+	v, err := a.GetProperty("Location")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
 }
 
 
@@ -117,20 +131,6 @@ func (a *Element1) GetVendorModels() ([]VendorItem, error) {
 		return []VendorItem{}, err
 	}
 	return v.Value().([]VendorItem), nil
-}
-
-
-
-
-
-
-// GetLocation get Location value
-func (a *Element1) GetLocation() (uint16, error) {
-	v, err := a.GetProperty("Location")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
 }
 
 

@@ -66,16 +66,16 @@ type HealthChannel1Properties struct {
 	Application dbus.ObjectPath
 
 	/*
-	Type The quality of service of the data channel. ("reliable"
-			or "streaming")
-	*/
-	Type string
-
-	/*
 	Device Identifies the Remote Device that is connected with.
 			Maps with a HealthDevice object.
 	*/
 	Device dbus.ObjectPath
+
+	/*
+	Type The quality of service of the data channel. ("reliable"
+			or "streaming")
+	*/
+	Type string
 
 }
 
@@ -111,25 +111,6 @@ func (a *HealthChannel1) GetApplication() (dbus.ObjectPath, error) {
 
 
 
-// SetType set Type value
-func (a *HealthChannel1) SetType(v string) error {
-	return a.SetProperty("Type", v)
-}
-
-
-
-// GetType get Type value
-func (a *HealthChannel1) GetType() (string, error) {
-	v, err := a.GetProperty("Type")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
 // SetDevice set Device value
 func (a *HealthChannel1) SetDevice(v dbus.ObjectPath) error {
 	return a.SetProperty("Device", v)
@@ -144,6 +125,25 @@ func (a *HealthChannel1) GetDevice() (dbus.ObjectPath, error) {
 		return dbus.ObjectPath(""), err
 	}
 	return v.Value().(dbus.ObjectPath), nil
+}
+
+
+
+
+// SetType set Type value
+func (a *HealthChannel1) SetType(v string) error {
+	return a.SetProperty("Type", v)
+}
+
+
+
+// GetType get Type value
+func (a *HealthChannel1) GetType() (string, error) {
+	v, err := a.GetProperty("Type")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 

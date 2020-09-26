@@ -61,22 +61,10 @@ type GattDescriptor1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	UUID 128-bit descriptor UUID.
-	*/
-	UUID string
-
-	/*
 	Characteristic Object path of the GATT characteristic the descriptor
 			belongs to.
 	*/
 	Characteristic dbus.ObjectPath
-
-	/*
-	Value The cached value of the descriptor. This property
-			gets updated only after a successful read request, upon
-			which a PropertiesChanged signal will be emitted.
-	*/
-	Value []byte `dbus:"emit"`
 
 	/*
 	Flags Defines how the descriptor value can be used.
@@ -104,6 +92,18 @@ type GattDescriptor1Properties struct {
 	*/
 	Handle uint16
 
+	/*
+	UUID 128-bit descriptor UUID.
+	*/
+	UUID string
+
+	/*
+	Value The cached value of the descriptor. This property
+			gets updated only after a successful read request, upon
+			which a PropertiesChanged signal will be emitted.
+	*/
+	Value []byte `dbus:"emit"`
+
 }
 
 //Lock access to properties
@@ -121,20 +121,6 @@ func (p *GattDescriptor1Properties) Unlock() {
 
 
 
-// GetUUID get UUID value
-func (a *GattDescriptor1) GetUUID() (string, error) {
-	v, err := a.GetProperty("UUID")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-
-
 // GetCharacteristic get Characteristic value
 func (a *GattDescriptor1) GetCharacteristic() (dbus.ObjectPath, error) {
 	v, err := a.GetProperty("Characteristic")
@@ -142,20 +128,6 @@ func (a *GattDescriptor1) GetCharacteristic() (dbus.ObjectPath, error) {
 		return dbus.ObjectPath(""), err
 	}
 	return v.Value().(dbus.ObjectPath), nil
-}
-
-
-
-
-
-
-// GetValue get Value value
-func (a *GattDescriptor1) GetValue() ([]byte, error) {
-	v, err := a.GetProperty("Value")
-	if err != nil {
-		return []byte{}, err
-	}
-	return v.Value().([]byte), nil
 }
 
 
@@ -189,6 +161,34 @@ func (a *GattDescriptor1) GetHandle() (uint16, error) {
 		return uint16(0), err
 	}
 	return v.Value().(uint16), nil
+}
+
+
+
+
+
+
+// GetUUID get UUID value
+func (a *GattDescriptor1) GetUUID() (string, error) {
+	v, err := a.GetProperty("UUID")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+
+
+// GetValue get Value value
+func (a *GattDescriptor1) GetValue() ([]byte, error) {
+	v, err := a.GetProperty("Value")
+	if err != nil {
+		return []byte{}, err
+	}
+	return v.Value().([]byte), nil
 }
 
 

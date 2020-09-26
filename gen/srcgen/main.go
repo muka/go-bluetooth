@@ -11,7 +11,6 @@ import (
 	"github.com/muka/go-bluetooth/gen/filters"
 	"github.com/muka/go-bluetooth/gen/generator"
 	"github.com/muka/go-bluetooth/gen/util"
-	"github.com/sirupsen/logrus"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -100,7 +99,7 @@ func getBluezVersion() string {
 	return bluezVersion
 }
 
-func parseLogLevel() logrus.Level {
+func parseLogLevel() log.Level {
 	logLevel := log.DebugLevel.String()
 	if os.Getenv("LOG_LEVEL") != "" {
 		logLevel = os.Getenv("LOG_LEVEL")

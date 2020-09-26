@@ -67,6 +67,19 @@ type PhonebookAccess1Properties struct {
 	DatabaseIdentifier string
 
 	/*
+	FixedImageSize Indicate support for fixed image size.
+
+			Possible values: True if image is JPEG 300x300 pixels
+			otherwise False.
+	*/
+	FixedImageSize bool
+
+	/*
+	Folder Current folder.
+	*/
+	Folder string
+
+	/*
 	PrimaryCounter 128 bits primary version counter.
 
 			Possible values: 32-character hexadecimal such
@@ -81,19 +94,6 @@ type PhonebookAccess1Properties struct {
 			as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
 	*/
 	SecondaryCounter string
-
-	/*
-	FixedImageSize Indicate support for fixed image size.
-
-			Possible values: True if image is JPEG 300x300 pixels
-			otherwise False.
-	*/
-	FixedImageSize bool
-
-	/*
-	Folder Current folder.
-	*/
-	Folder string
 
 }
 
@@ -120,44 +120,6 @@ func (a *PhonebookAccess1) SetDatabaseIdentifier(v string) error {
 // GetDatabaseIdentifier get DatabaseIdentifier value
 func (a *PhonebookAccess1) GetDatabaseIdentifier() (string, error) {
 	v, err := a.GetProperty("DatabaseIdentifier")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-// SetPrimaryCounter set PrimaryCounter value
-func (a *PhonebookAccess1) SetPrimaryCounter(v string) error {
-	return a.SetProperty("PrimaryCounter", v)
-}
-
-
-
-// GetPrimaryCounter get PrimaryCounter value
-func (a *PhonebookAccess1) GetPrimaryCounter() (string, error) {
-	v, err := a.GetProperty("PrimaryCounter")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-// SetSecondaryCounter set SecondaryCounter value
-func (a *PhonebookAccess1) SetSecondaryCounter(v string) error {
-	return a.SetProperty("SecondaryCounter", v)
-}
-
-
-
-// GetSecondaryCounter get SecondaryCounter value
-func (a *PhonebookAccess1) GetSecondaryCounter() (string, error) {
-	v, err := a.GetProperty("SecondaryCounter")
 	if err != nil {
 		return "", err
 	}
@@ -196,6 +158,44 @@ func (a *PhonebookAccess1) SetFolder(v string) error {
 // GetFolder get Folder value
 func (a *PhonebookAccess1) GetFolder() (string, error) {
 	v, err := a.GetProperty("Folder")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+// SetPrimaryCounter set PrimaryCounter value
+func (a *PhonebookAccess1) SetPrimaryCounter(v string) error {
+	return a.SetProperty("PrimaryCounter", v)
+}
+
+
+
+// GetPrimaryCounter get PrimaryCounter value
+func (a *PhonebookAccess1) GetPrimaryCounter() (string, error) {
+	v, err := a.GetProperty("PrimaryCounter")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+
+
+
+// SetSecondaryCounter set SecondaryCounter value
+func (a *PhonebookAccess1) SetSecondaryCounter(v string) error {
+	return a.SetProperty("SecondaryCounter", v)
+}
+
+
+
+// GetSecondaryCounter get SecondaryCounter value
+func (a *PhonebookAccess1) GetSecondaryCounter() (string, error) {
+	v, err := a.GetProperty("SecondaryCounter")
 	if err != nil {
 		return "", err
 	}
