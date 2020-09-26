@@ -2,18 +2,16 @@
 
 package thermometer
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var ThermometerManager1Interface = "org.bluez.ThermometerManager1"
-
 
 // NewThermometerManager1 create a new instance of ThermometerManager1
 //
@@ -29,35 +27,31 @@ func NewThermometerManager1(objectPath dbus.ObjectPath) (*ThermometerManager1, e
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(ThermometerManager1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 ThermometerManager1 Health Thermometer Manager hierarchy
 
 */
 type ThermometerManager1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*ThermometerManager1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *ThermometerManager1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
 // ThermometerManager1Properties contains the exposed properties of an interface
 type ThermometerManager1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
 }
 
 //Lock access to properties
@@ -70,13 +64,9 @@ func (p *ThermometerManager1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
 // Close the connection
 func (a *ThermometerManager1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -125,7 +115,6 @@ func (a *ThermometerManager1) GetObjectManagerSignal() (chan *dbus.Signal, func(
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a ThermometerManager1Properties to map
 func (a *ThermometerManager1Properties) ToMap() (map[string]interface{}, error) {
@@ -212,9 +201,6 @@ func (a *ThermometerManager1) UnwatchProperties(ch chan *bluez.PropertyChanged) 
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 RegisterWatcher 			Registers a watcher to monitor scanned measurements.
 			This agent will be notified about final temperature
@@ -223,9 +209,7 @@ RegisterWatcher 			Registers a watcher to monitor scanned measurements.
 
 */
 func (a *ThermometerManager1) RegisterWatcher(agent dbus.ObjectPath) error {
-	
 	return a.client.Call("RegisterWatcher", 0, agent).Store()
-	
 }
 
 /*
@@ -233,9 +217,7 @@ UnregisterWatcher 			Unregisters a watcher.
 
 */
 func (a *ThermometerManager1) UnregisterWatcher(agent dbus.ObjectPath) error {
-	
 	return a.client.Call("UnregisterWatcher", 0, agent).Store()
-	
 }
 
 /*
@@ -246,9 +228,7 @@ EnableIntermediateMeasurement 			Enables intermediate measurement notifications
 
 */
 func (a *ThermometerManager1) EnableIntermediateMeasurement(agent dbus.ObjectPath) error {
-	
 	return a.client.Call("EnableIntermediateMeasurement", 0, agent).Store()
-	
 }
 
 /*
@@ -261,8 +241,5 @@ DisableIntermediateMeasurement 			Disables intermediate measurement notification
 
 */
 func (a *ThermometerManager1) DisableIntermediateMeasurement(agent dbus.ObjectPath) error {
-	
 	return a.client.Call("DisableIntermediateMeasurement", 0, agent).Store()
-	
 }
-

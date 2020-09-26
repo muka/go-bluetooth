@@ -2,18 +2,16 @@
 
 package gatt
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var GattService1Interface = "org.bluez.GattService1"
-
 
 // NewGattService1 create a new instance of GattService1
 //
@@ -29,17 +27,14 @@ func NewGattService1(objectPath dbus.ObjectPath) (*GattService1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(GattService1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 GattService1 Service hierarchy
@@ -53,11 +48,11 @@ properties defined in GattService1 interface.
 
 */
 type GattService1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*GattService1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *GattService1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
@@ -66,48 +61,47 @@ type GattService1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Handle Service handle. When available in the server it
-			would attempt to use to allocate into the database
-			which may fail, to auto allocate the value 0x0000
-			shall be used which will cause the allocated handle to
-			be set once registered.
-	*/
-	Handle uint16
-
-	/*
-	IsService 
-	*/
-	IsService bool `dbus:"ignore"`
-
-	/*
-	Characteristics 
+		Characteristics
 	*/
 	Characteristics []dbus.ObjectPath `dbus:"emit"`
 
 	/*
-	UUID 128-bit service UUID.
-	*/
-	UUID string
-
-	/*
-	Primary Indicates whether or not this GATT service is a
-			primary service. If false, the service is secondary.
-	*/
-	Primary bool
-
-	/*
-	Device Object path of the Bluetooth device the service
-			belongs to. Only present on services from remote
-			devices.
+		Device Object path of the Bluetooth device the service
+				belongs to. Only present on services from remote
+				devices.
 	*/
 	Device dbus.ObjectPath `dbus:"ignore=IsService"`
 
 	/*
-	Includes Array of object paths representing the included
-			services of this service.
+		Handle Service handle. When available in the server it
+				would attempt to use to allocate into the database
+				which may fail, to auto allocate the value 0x0000
+				shall be used which will cause the allocated handle to
+				be set once registered.
+	*/
+	Handle uint16
+
+	/*
+		Includes Array of object paths representing the included
+				services of this service.
 	*/
 	Includes []dbus.ObjectPath `dbus:"omitEmpty"`
 
+	/*
+		IsService
+	*/
+	IsService bool `dbus:"ignore"`
+
+	/*
+		Primary Indicates whether or not this GATT service is a
+				primary service. If false, the service is secondary.
+	*/
+	Primary bool
+
+	/*
+		UUID 128-bit service UUID.
+	*/
+	UUID string
 }
 
 //Lock access to properties
@@ -120,53 +114,10 @@ func (p *GattService1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
-
-// SetHandle set Handle value
-func (a *GattService1) SetHandle(v uint16) error {
-	return a.SetProperty("Handle", v)
-}
-
-
-
-// GetHandle get Handle value
-func (a *GattService1) GetHandle() (uint16, error) {
-	v, err := a.GetProperty("Handle")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
-}
-
-
-
-
-// SetIsService set IsService value
-func (a *GattService1) SetIsService(v bool) error {
-	return a.SetProperty("IsService", v)
-}
-
-
-
-// GetIsService get IsService value
-func (a *GattService1) GetIsService() (bool, error) {
-	v, err := a.GetProperty("IsService")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
 // SetCharacteristics set Characteristics value
 func (a *GattService1) SetCharacteristics(v []dbus.ObjectPath) error {
 	return a.SetProperty("Characteristics", v)
 }
-
-
 
 // GetCharacteristics get Characteristics value
 func (a *GattService1) GetCharacteristics() ([]dbus.ObjectPath, error) {
@@ -177,39 +128,6 @@ func (a *GattService1) GetCharacteristics() ([]dbus.ObjectPath, error) {
 	return v.Value().([]dbus.ObjectPath), nil
 }
 
-
-
-
-
-
-// GetUUID get UUID value
-func (a *GattService1) GetUUID() (string, error) {
-	v, err := a.GetProperty("UUID")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-
-
-// GetPrimary get Primary value
-func (a *GattService1) GetPrimary() (bool, error) {
-	v, err := a.GetProperty("Primary")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-
-
 // GetDevice get Device value
 func (a *GattService1) GetDevice() (dbus.ObjectPath, error) {
 	v, err := a.GetProperty("Device")
@@ -219,10 +137,19 @@ func (a *GattService1) GetDevice() (dbus.ObjectPath, error) {
 	return v.Value().(dbus.ObjectPath), nil
 }
 
+// SetHandle set Handle value
+func (a *GattService1) SetHandle(v uint16) error {
+	return a.SetProperty("Handle", v)
+}
 
-
-
-
+// GetHandle get Handle value
+func (a *GattService1) GetHandle() (uint16, error) {
+	v, err := a.GetProperty("Handle")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
 
 // GetIncludes get Includes value
 func (a *GattService1) GetIncludes() ([]dbus.ObjectPath, error) {
@@ -233,13 +160,41 @@ func (a *GattService1) GetIncludes() ([]dbus.ObjectPath, error) {
 	return v.Value().([]dbus.ObjectPath), nil
 }
 
+// SetIsService set IsService value
+func (a *GattService1) SetIsService(v bool) error {
+	return a.SetProperty("IsService", v)
+}
 
+// GetIsService get IsService value
+func (a *GattService1) GetIsService() (bool, error) {
+	v, err := a.GetProperty("IsService")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+// GetPrimary get Primary value
+func (a *GattService1) GetPrimary() (bool, error) {
+	v, err := a.GetProperty("Primary")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+// GetUUID get UUID value
+func (a *GattService1) GetUUID() (string, error) {
+	v, err := a.GetProperty("UUID")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
 
 // Close the connection
 func (a *GattService1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -288,7 +243,6 @@ func (a *GattService1) GetObjectManagerSignal() (chan *dbus.Signal, func(), erro
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a GattService1Properties to map
 func (a *GattService1Properties) ToMap() (map[string]interface{}, error) {
@@ -374,7 +328,3 @@ func (a *GattService1) WatchProperties() (chan *bluez.PropertyChanged, error) {
 func (a *GattService1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	return bluez.UnwatchProperties(a, ch)
 }
-
-
-
-

@@ -2,18 +2,16 @@
 
 package media
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var Media1Interface = "org.bluez.Media1"
-
 
 // NewMedia1 create a new instance of Media1
 //
@@ -29,35 +27,31 @@ func NewMedia1(objectPath dbus.ObjectPath) (*Media1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(Media1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 Media1 Media hierarchy
 
 */
 type Media1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*Media1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *Media1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
 // Media1Properties contains the exposed properties of an interface
 type Media1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
 }
 
 //Lock access to properties
@@ -70,13 +64,9 @@ func (p *Media1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
 // Close the connection
 func (a *Media1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -125,7 +115,6 @@ func (a *Media1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a Media1Properties to map
 func (a *Media1Properties) ToMap() (map[string]interface{}, error) {
@@ -212,9 +201,6 @@ func (a *Media1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 RegisterEndpoint 			Register a local end point to sender, the sender can
 			register as many end points as it likes.
@@ -239,9 +225,7 @@ RegisterEndpoint 			Register a local end point to sender, the sender can
 
 */
 func (a *Media1) RegisterEndpoint(endpoint dbus.ObjectPath, properties map[string]interface{}) error {
-	
 	return a.client.Call("RegisterEndpoint", 0, endpoint, properties).Store()
-	
 }
 
 /*
@@ -249,9 +233,7 @@ UnregisterEndpoint 			Unregister sender end point.
 
 */
 func (a *Media1) UnregisterEndpoint(endpoint dbus.ObjectPath) error {
-	
 	return a.client.Call("UnregisterEndpoint", 0, endpoint).Store()
-	
 }
 
 /*
@@ -268,9 +250,7 @@ RegisterPlayer 			Register a media player object to sender, the sender
 
 */
 func (a *Media1) RegisterPlayer(player dbus.ObjectPath, properties map[string]interface{}) error {
-	
 	return a.client.Call("RegisterPlayer", 0, player, properties).Store()
-	
 }
 
 /*
@@ -278,9 +258,7 @@ UnregisterPlayer 			Unregister sender media player.
 
 */
 func (a *Media1) UnregisterPlayer(player dbus.ObjectPath) error {
-	
 	return a.client.Call("UnregisterPlayer", 0, player).Store()
-	
 }
 
 /*
@@ -294,9 +272,7 @@ RegisterApplication 			Register endpoints an player objects within root
 
 */
 func (a *Media1) RegisterApplication(root dbus.ObjectPath, options map[string]interface{}) error {
-	
 	return a.client.Call("RegisterApplication", 0, root, options).Store()
-	
 }
 
 /*
@@ -309,8 +285,5 @@ UnregisterApplication 			This unregisters the services that has been
 
 */
 func (a *Media1) UnregisterApplication(application dbus.ObjectPath) error {
-	
 	return a.client.Call("UnregisterApplication", 0, application).Store()
-	
 }
-

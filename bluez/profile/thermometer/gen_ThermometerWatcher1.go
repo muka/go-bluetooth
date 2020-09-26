@@ -2,18 +2,16 @@
 
 package thermometer
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var ThermometerWatcher1Interface = "org.bluez.ThermometerWatcher1"
-
 
 // NewThermometerWatcher1 create a new instance of ThermometerWatcher1
 //
@@ -30,35 +28,31 @@ func NewThermometerWatcher1(servicePath string, objectPath dbus.ObjectPath) (*Th
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(ThermometerWatcher1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 ThermometerWatcher1 Health Thermometer Watcher hierarchy
 
 */
 type ThermometerWatcher1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*ThermometerWatcher1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *ThermometerWatcher1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
 // ThermometerWatcher1Properties contains the exposed properties of an interface
 type ThermometerWatcher1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
 }
 
 //Lock access to properties
@@ -71,13 +65,9 @@ func (p *ThermometerWatcher1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
 // Close the connection
 func (a *ThermometerWatcher1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -126,7 +116,6 @@ func (a *ThermometerWatcher1) GetObjectManagerSignal() (chan *dbus.Signal, func(
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a ThermometerWatcher1Properties to map
 func (a *ThermometerWatcher1Properties) ToMap() (map[string]interface{}, error) {
@@ -213,9 +202,6 @@ func (a *ThermometerWatcher1) UnwatchProperties(ch chan *bluez.PropertyChanged) 
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 MeasurementReceived 			This callback gets called when a measurement has been
 			scanned in the thermometer.
@@ -255,8 +241,5 @@ MeasurementReceived 			This callback gets called when a measurement has been
 
 */
 func (a *ThermometerWatcher1) MeasurementReceived(measurement map[string]interface{}) error {
-	
 	return a.client.Call("MeasurementReceived", 0, measurement).Store()
-	
 }
-

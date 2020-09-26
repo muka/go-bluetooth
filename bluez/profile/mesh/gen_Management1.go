@@ -2,18 +2,16 @@
 
 package mesh
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var Management1Interface = "org.bluez.mesh.Management1"
-
 
 // NewManagement1 create a new instance of Management1
 //
@@ -29,35 +27,31 @@ func NewManagement1(objectPath dbus.ObjectPath) (*Management1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(Management1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 Management1 Mesh Provisioning Hierarchy
 
 */
 type Management1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*Management1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *Management1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
 // Management1Properties contains the exposed properties of an interface
 type Management1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
 }
 
 //Lock access to properties
@@ -70,13 +64,9 @@ func (p *Management1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
 // Close the connection
 func (a *Management1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -125,7 +115,6 @@ func (a *Management1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a Management1Properties to map
 func (a *Management1Properties) ToMap() (map[string]interface{}, error) {
@@ -212,16 +201,17 @@ func (a *Management1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 UnprovisionedScan 		This method is used by the application that supports
 		org.bluez.mesh.Provisioner1 interface to start listening
-		(scanning) for unprovisioned devices in the area. Scanning
-		will continue for the specified number of seconds, or, if 0 is
-		specified, then continuously until UnprovisionedScanCancel() is
-		called or if AddNode() method is called.
+		(scanning) for unprovisioned devices in the area.
+		The options parameter is a dictionary with the following keys
+		defined:
+		uint16 Seconds
+			Specifies number of seconds for scanning to be active.
+			If set to 0 or if this key is not present, then the
+			scanning will continue until UnprovisionedScanCancel()
+			or AddNode() methods are called.
 		Each time a unique unprovisioned beacon is heard, the
 		ScanResult() method on the app will be called with the result.
 		PossibleErrors:
@@ -230,19 +220,15 @@ UnprovisionedScan 		This method is used by the application that supports
 			org.bluez.mesh.Error.Busy
 
 */
-func (a *Management1) UnprovisionedScan(seconds uint16) error {
-	
-	return a.client.Call("UnprovisionedScan", 0, seconds).Store()
-	
+func (a *Management1) UnprovisionedScan(options map[string]interface{}) error {
+	return a.client.Call("UnprovisionedScan", 0, options).Store()
 }
 
 /*
-UnprovisionedScanCancel 
+UnprovisionedScanCancel
 */
 func (a *Management1) UnprovisionedScanCancel() error {
-	
-	return a.client.Call("UnprovisionedScanCancel", 0, ).Store()
-	
+	return a.client.Call("UnprovisionedScanCancel", 0).Store()
 }
 
 /*
@@ -251,15 +237,16 @@ AddNode 		This method is used by the application that supports
 		unprovisioned device specified by uuid, to the Network.
 		The uuid parameter is a 16-byte array that contains Device UUID
 		of the unprovisioned device to be added to the network.
+		The options parameter is a dictionary that may contain
+		additional configuration info (currently an empty placeholder
+		for forward compatibility).
 		PossibleErrors:
 			org.bluez.mesh.Error.InvalidArguments
 			org.bluez.mesh.Error.NotAuthorized
 
 */
-func (a *Management1) AddNode(uuid []byte) error {
-	
-	return a.client.Call("AddNode", 0, uuid).Store()
-	
+func (a *Management1) AddNode(uuid []byte, options map[string]interface{}) error {
+	return a.client.Call("AddNode", 0, uuid, options).Store()
 }
 
 /*
@@ -275,9 +262,7 @@ CreateSubnet 		This method is used by the application to generate and add a new
 
 */
 func (a *Management1) CreateSubnet(net_index uint16) error {
-	
 	return a.client.Call("CreateSubnet", 0, net_index).Store()
-	
 }
 
 /*
@@ -295,9 +280,7 @@ ImportSubnet 		This method is used by the application to add a network subnet
 
 */
 func (a *Management1) ImportSubnet(net_index uint16, net_key []byte) error {
-	
 	return a.client.Call("ImportSubnet", 0, net_index, net_key).Store()
-	
 }
 
 /*
@@ -315,9 +298,7 @@ UpdateSubnet 		This method is used by the application to generate a new network
 
 */
 func (a *Management1) UpdateSubnet(net_index uint16) error {
-	
 	return a.client.Call("UpdateSubnet", 0, net_index).Store()
-	
 }
 
 /*
@@ -331,9 +312,7 @@ DeleteSubnet 		This method is used by the application that to delete a subnet.
 
 */
 func (a *Management1) DeleteSubnet(net_index uint16) error {
-	
 	return a.client.Call("DeleteSubnet", 0, net_index).Store()
-	
 }
 
 /*
@@ -363,9 +342,7 @@ SetKeyPhase 		This method is used to set the master key update phase of the
 
 */
 func (a *Management1) SetKeyPhase(net_index uint16, phase uint8) error {
-	
 	return a.client.Call("SetKeyPhase", 0, net_index, phase).Store()
-	
 }
 
 /*
@@ -384,9 +361,7 @@ CreateAppKey 		This method is used by the application to generate and add a new
 
 */
 func (a *Management1) CreateAppKey(net_index uint16, app_index uint16) error {
-	
 	return a.client.Call("CreateAppKey", 0, net_index, app_index).Store()
-	
 }
 
 /*
@@ -407,9 +382,7 @@ ImportAppKey 		This method is used by the application to add an application
 
 */
 func (a *Management1) ImportAppKey(net_index uint16, app_index uint16, app_key []byte) error {
-	
 	return a.client.Call("ImportAppKey", 0, net_index, app_index, app_key).Store()
-	
 }
 
 /*
@@ -423,13 +396,11 @@ UpdateAppKey 		This method is used by the application to generate a new
 			org.bluez.mesh.Error.Failed
 			org.bluez.mesh.Error.InvalidArguments
 			org.bluez.mesh.Error.DoesNotExist
-			org.bluez.mesh.Error.Busy
+			org.bluez.mesh.Error.InProgress
 
 */
 func (a *Management1) UpdateAppKey(app_index uint16) error {
-	
 	return a.client.Call("UpdateAppKey", 0, app_index).Store()
-	
 }
 
 /*
@@ -443,9 +414,7 @@ DeleteAppKey 		This method is used by the application to delete an application
 
 */
 func (a *Management1) DeleteAppKey(app_index uint16) error {
-	
 	return a.client.Call("DeleteAppKey", 0, app_index).Store()
-	
 }
 
 /*
@@ -466,9 +435,7 @@ ImportRemoteNode 		This method is used by the application to import a remote nod
 
 */
 func (a *Management1) ImportRemoteNode(primary uint16, count uint8, device_key []byte) error {
-	
 	return a.client.Call("ImportRemoteNode", 0, primary, count, device_key).Store()
-	
 }
 
 /*
@@ -486,8 +453,5 @@ DeleteRemoteNode 		This method is used by the application to delete a remote nod
 
 */
 func (a *Management1) DeleteRemoteNode(primary uint16, count uint8) error {
-	
 	return a.client.Call("DeleteRemoteNode", 0, primary, count).Store()
-	
 }
-

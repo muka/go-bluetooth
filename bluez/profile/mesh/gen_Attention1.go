@@ -2,18 +2,16 @@
 
 package mesh
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var Attention1Interface = "org.bluez.mesh.Attention1"
-
 
 // NewAttention1 create a new instance of Attention1
 //
@@ -30,35 +28,31 @@ func NewAttention1(servicePath string, objectPath dbus.ObjectPath) (*Attention1,
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(Attention1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 Attention1 Mesh Attention Hierarchy
 
 */
 type Attention1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*Attention1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *Attention1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
 // Attention1Properties contains the exposed properties of an interface
 type Attention1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
 }
 
 //Lock access to properties
@@ -71,13 +65,9 @@ func (p *Attention1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
 // Close the connection
 func (a *Attention1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -126,7 +116,6 @@ func (a *Attention1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error)
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a Attention1Properties to map
 func (a *Attention1Properties) ToMap() (map[string]interface{}, error) {
@@ -213,9 +202,6 @@ func (a *Attention1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 SetTimer 		The element_index parameter is the element's index within the
 		node where the health server model is hosted.
@@ -226,9 +212,7 @@ SetTimer 		The element_index parameter is the element's index within the
 
 */
 func (a *Attention1) SetTimer(element_index uint8, time uint16) error {
-	
 	return a.client.Call("SetTimer", 0, element_index, time).Store()
-	
 }
 
 /*
@@ -241,9 +225,7 @@ GetTimer 		The element parameter is the unicast address within the node
 
 */
 func (a *Attention1) GetTimer(element uint16) (uint16, error) {
-	
 	var val0 uint16
 	err := a.client.Call("GetTimer", 0, element).Store(&val0)
-	return val0, err	
+	return val0, err
 }
-

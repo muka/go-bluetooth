@@ -2,18 +2,16 @@
 
 package mesh
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var Node1Interface = "org.bluez.mesh.Node1"
-
 
 // NewNode1 create a new instance of Node1
 //
@@ -29,28 +27,25 @@ func NewNode1(objectPath dbus.ObjectPath) (*Node1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(Node1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 Node1 Mesh Node Hierarchy
 
 */
 type Node1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*Node1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *Node1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
@@ -59,73 +54,73 @@ type Node1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Features The dictionary that contains information about feature support.
-		The following keys are defined:
-	*/
-	Features map[string]interface{}
-
-	/*
-	LowPower Indicates support for operating in Low Power node mode
-	*/
-	LowPower bool
-
-	/*
-	SecondsSinceLastHeard This property may be read at any time to determine the number of
-		seconds since mesh network layer traffic was last detected on
-		this node's network.
-	*/
-	SecondsSinceLastHeard uint32
-
-	/*
-	Addresses This property contains unicast addresses of node's elements.
+		Addresses This property contains unicast addresses of node's elements.
 	*/
 	Addresses []uint16
 
 	/*
-	IvIndex This property may be read at any time to determine the IV_Index
-		that the current network is on. This information is only useful
-		for provisioning.
+		Beacon This property indicates whether the periodic beaconing is
+			enabled (true) or disabled (false).
 	*/
-	IvIndex uint32
+	Beacon bool
 
 	/*
-	SequenceNumber This property may be read at any time to determine the
-		sequence number.
+		Features The dictionary that contains information about feature support.
+			The following keys are defined:
 	*/
-	SequenceNumber uint32
+	Features map[string]interface{}
 
 	/*
-	Friend Indicates the ability to establish a friendship with a
-			Low Power node
+		Friend Indicates the ability to establish a friendship with a
+				Low Power node
 	*/
 	Friend bool
 
 	/*
-	Proxy Indicates support for GATT proxy
+		IvIndex This property may be read at any time to determine the IV_Index
+			that the current network is on. This information is only useful
+			for provisioning.
+	*/
+	IvIndex uint32
+
+	/*
+		IvUpdate When true, indicates that the network is in the middle of IV
+			Index Update procedure. This information is only useful for
+			provisioning.
+	*/
+	IvUpdate bool
+
+	/*
+		LowPower Indicates support for operating in Low Power node mode
+	*/
+	LowPower bool
+
+	/*
+		Proxy Indicates support for GATT proxy
 	*/
 	Proxy bool
 
 	/*
-	Relay Indicates support for relaying messages
+		Relay Indicates support for relaying messages
 
-	If a key is absent from the dictionary, the feature is not supported.
-	Otherwise, true means that the feature is enabled and false means that
-	the feature is disabled.
+		If a key is absent from the dictionary, the feature is not supported.
+		Otherwise, true means that the feature is enabled and false means that
+		the feature is disabled.
 	*/
 	Relay bool
 
 	/*
-	Beacon This property indicates whether the periodic beaconing is
-		enabled (true) or disabled (false).
-
-	uint8 BeaconFlags [read-only]
-
-		This property may be read at any time to determine the flag
-		field setting on sent and received beacons of the primary
-		network key.
+		SecondsSinceLastHeard This property may be read at any time to determine the number of
+			seconds since mesh network layer traffic was last detected on
+			this node's network.
 	*/
-	Beacon bool
+	SecondsSinceLastHeard uint32
 
+	/*
+		SequenceNumber This property may be read at any time to determine the
+			sequence number.
+	*/
+	SequenceNumber uint32
 }
 
 //Lock access to properties
@@ -138,58 +133,6 @@ func (p *Node1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
-
-
-
-// GetFeatures get Features value
-func (a *Node1) GetFeatures() (map[string]interface{}, error) {
-	v, err := a.GetProperty("Features")
-	if err != nil {
-		return map[string]interface{}{}, err
-	}
-	return v.Value().(map[string]interface{}), nil
-}
-
-
-
-
-// SetLowPower set LowPower value
-func (a *Node1) SetLowPower(v bool) error {
-	return a.SetProperty("LowPower", v)
-}
-
-
-
-// GetLowPower get LowPower value
-func (a *Node1) GetLowPower() (bool, error) {
-	v, err := a.GetProperty("LowPower")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-
-
-// GetSecondsSinceLastHeard get SecondsSinceLastHeard value
-func (a *Node1) GetSecondsSinceLastHeard() (uint32, error) {
-	v, err := a.GetProperty("SecondsSinceLastHeard")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
-}
-
-
-
-
-
-
 // GetAddresses get Addresses value
 func (a *Node1) GetAddresses() ([]uint16, error) {
 	v, err := a.GetProperty("Addresses")
@@ -198,96 +141,6 @@ func (a *Node1) GetAddresses() ([]uint16, error) {
 	}
 	return v.Value().([]uint16), nil
 }
-
-
-
-
-
-
-// GetIvIndex get IvIndex value
-func (a *Node1) GetIvIndex() (uint32, error) {
-	v, err := a.GetProperty("IvIndex")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
-}
-
-
-
-
-
-
-// GetSequenceNumber get SequenceNumber value
-func (a *Node1) GetSequenceNumber() (uint32, error) {
-	v, err := a.GetProperty("SequenceNumber")
-	if err != nil {
-		return uint32(0), err
-	}
-	return v.Value().(uint32), nil
-}
-
-
-
-
-// SetFriend set Friend value
-func (a *Node1) SetFriend(v bool) error {
-	return a.SetProperty("Friend", v)
-}
-
-
-
-// GetFriend get Friend value
-func (a *Node1) GetFriend() (bool, error) {
-	v, err := a.GetProperty("Friend")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-// SetProxy set Proxy value
-func (a *Node1) SetProxy(v bool) error {
-	return a.SetProperty("Proxy", v)
-}
-
-
-
-// GetProxy get Proxy value
-func (a *Node1) GetProxy() (bool, error) {
-	v, err := a.GetProperty("Proxy")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-// SetRelay set Relay value
-func (a *Node1) SetRelay(v bool) error {
-	return a.SetProperty("Relay", v)
-}
-
-
-
-// GetRelay get Relay value
-func (a *Node1) GetRelay() (bool, error) {
-	v, err := a.GetProperty("Relay")
-	if err != nil {
-		return false, err
-	}
-	return v.Value().(bool), nil
-}
-
-
-
-
-
 
 // GetBeacon get Beacon value
 func (a *Node1) GetBeacon() (bool, error) {
@@ -298,13 +151,110 @@ func (a *Node1) GetBeacon() (bool, error) {
 	return v.Value().(bool), nil
 }
 
+// GetFeatures get Features value
+func (a *Node1) GetFeatures() (map[string]interface{}, error) {
+	v, err := a.GetProperty("Features")
+	if err != nil {
+		return map[string]interface{}{}, err
+	}
+	return v.Value().(map[string]interface{}), nil
+}
 
+// SetFriend set Friend value
+func (a *Node1) SetFriend(v bool) error {
+	return a.SetProperty("Friend", v)
+}
+
+// GetFriend get Friend value
+func (a *Node1) GetFriend() (bool, error) {
+	v, err := a.GetProperty("Friend")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+// GetIvIndex get IvIndex value
+func (a *Node1) GetIvIndex() (uint32, error) {
+	v, err := a.GetProperty("IvIndex")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
+
+// GetIvUpdate get IvUpdate value
+func (a *Node1) GetIvUpdate() (bool, error) {
+	v, err := a.GetProperty("IvUpdate")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+// SetLowPower set LowPower value
+func (a *Node1) SetLowPower(v bool) error {
+	return a.SetProperty("LowPower", v)
+}
+
+// GetLowPower get LowPower value
+func (a *Node1) GetLowPower() (bool, error) {
+	v, err := a.GetProperty("LowPower")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+// SetProxy set Proxy value
+func (a *Node1) SetProxy(v bool) error {
+	return a.SetProperty("Proxy", v)
+}
+
+// GetProxy get Proxy value
+func (a *Node1) GetProxy() (bool, error) {
+	v, err := a.GetProperty("Proxy")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+// SetRelay set Relay value
+func (a *Node1) SetRelay(v bool) error {
+	return a.SetProperty("Relay", v)
+}
+
+// GetRelay get Relay value
+func (a *Node1) GetRelay() (bool, error) {
+	v, err := a.GetProperty("Relay")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+// GetSecondsSinceLastHeard get SecondsSinceLastHeard value
+func (a *Node1) GetSecondsSinceLastHeard() (uint32, error) {
+	v, err := a.GetProperty("SecondsSinceLastHeard")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
+
+// GetSequenceNumber get SequenceNumber value
+func (a *Node1) GetSequenceNumber() (uint32, error) {
+	v, err := a.GetProperty("SequenceNumber")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
 
 // Close the connection
 func (a *Node1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -353,7 +303,6 @@ func (a *Node1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a Node1Properties to map
 func (a *Node1Properties) ToMap() (map[string]interface{}, error) {
@@ -440,9 +389,6 @@ func (a *Node1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 Send 		This method is used to send a message originated by a local
 		model.
@@ -457,6 +403,12 @@ Send 		This method is used to send a message originated by a local
 		element, i.e., the application key must be bound to a model on
 		this element. Otherwise, org.bluez.mesh.Error.NotAuthorized will
 		be returned.
+		The options parameter is a dictionary with the following keys
+		defined:
+			bool ForceSegmented
+				Specifies whether to force sending of a short
+				message as one-segment payload. If not present,
+				the default setting is "false".
 		The data parameter is an outgoing message to be encypted by the
 		bluetooth-meshd daemon and sent on.
 		Possible errors:
@@ -465,10 +417,8 @@ Send 		This method is used to send a message originated by a local
 			org.bluez.mesh.Error.NotFound
 
 */
-func (a *Node1) Send(element_path dbus.ObjectPath, destination uint16, key_index uint16, data []byte) error {
-	
-	return a.client.Call("Send", 0, element_path, destination, key_index, data).Store()
-	
+func (a *Node1) Send(element_path dbus.ObjectPath, destination uint16, key_index uint16, options map[string]interface{}, data []byte) error {
+	return a.client.Call("Send", 0, element_path, destination, key_index, options, data).Store()
 }
 
 /*
@@ -487,6 +437,12 @@ DevKeySend 		This method is used to send a message originated by a local
 		device key is used.
 		The net_index parameter is the subnet index of the network on
 		which the message is to be sent.
+		The options parameter is a dictionary with the following keys
+		defined:
+			bool ForceSegmented
+				Specifies whether to force sending of a short
+				message as one-segment payload. If not present,
+				the default setting is "false".
 		The data parameter is an outgoing message to be encypted by the
 		meshd daemon and sent on.
 		Possible errors:
@@ -494,10 +450,8 @@ DevKeySend 		This method is used to send a message originated by a local
 			org.bluez.mesh.Error.NotFound
 
 */
-func (a *Node1) DevKeySend(element_path dbus.ObjectPath, destination uint16, remote bool, net_index uint16, data []byte) error {
-	
-	return a.client.Call("DevKeySend", 0, element_path, destination, remote, net_index, data).Store()
-	
+func (a *Node1) DevKeySend(element_path dbus.ObjectPath, destination uint16, remote bool, net_index uint16, options map[string]interface{}, data []byte) error {
+	return a.client.Call("DevKeySend", 0, element_path, destination, remote, net_index, options, data).Store()
 }
 
 /*
@@ -523,9 +477,7 @@ AddNetKey 		This method is used to send add or update network key originated
 
 */
 func (a *Node1) AddNetKey(element_path dbus.ObjectPath, destination uint16, subnet_index uint16, net_index uint16, update bool) error {
-	
 	return a.client.Call("AddNetKey", 0, element_path, destination, subnet_index, net_index, update).Store()
-	
 }
 
 /*
@@ -551,9 +503,7 @@ AddAppKey 		This method is used to send add or update network key originated
 
 */
 func (a *Node1) AddAppKey(element_path dbus.ObjectPath, destination uint16, app_index uint16, net_index uint16, update bool) error {
-	
 	return a.client.Call("AddAppKey", 0, element_path, destination, app_index, net_index, update).Store()
-	
 }
 
 /*
@@ -565,7 +515,20 @@ Publish 		This method is used to send a publication originated by a local
 		a collection of the application elements (see Mesh Application
 		Hierarchy section).
 		The model parameter contains a model ID, as defined by the
-		Bluetooth SIG.
+		Bluetooth SIG. If the options dictionary contains a "Vendor"
+		key, then this ID is defined by the specified vendor.
+		The options parameter is a dictionary with the following keys
+		defined:
+			bool ForceSegmented
+				Specifies whether to force sending of a short
+				message as one-segment payload. If not present,
+				the default setting is "false".
+			uint16 Vendor
+				A 16-bit Company ID as defined by the
+				Bluetooth SIG. This key should only exist when
+				publishing on a Vendor defined model.
+		The data parameter is an outgoing message to be encypted by the
+		meshd daemon and sent on.
 		Since only one Publish record may exist per element-model, the
 		destination and key_index are obtained from the Publication
 		record cached by the daemon.
@@ -574,34 +537,6 @@ Publish 		This method is used to send a publication originated by a local
 			org.bluez.mesh.Error.InvalidArguments
 
 */
-func (a *Node1) Publish(element_path dbus.ObjectPath, model uint16, data []byte) error {
-	
-	return a.client.Call("Publish", 0, element_path, model, data).Store()
-	
+func (a *Node1) Publish(element_path dbus.ObjectPath, model uint16, options map[string]interface{}, data []byte) error {
+	return a.client.Call("Publish", 0, element_path, model, options, data).Store()
 }
-
-/*
-VendorPublish 		This method is used to send a publication originated by a local
-		vendor model. If the model does not exist, or it has no
-		publication record, the method returns
-		org.bluez.mesh.Error.DoesNotExist error.
-		The element_path parameter is the object path of an element from
-		a collection of the application elements (see Mesh Application
-		Hierarchy section).
-		The vendor parameter is a 16-bit Bluetooth-assigned Company ID.
-		The model_id parameter is a 16-bit vendor-assigned Model
-		Identifier.
-		Since only one Publish record may exist per element-model, the
-		destination and key_index are obtained from the Publication
-		record cached by the daemon.
-		Possible errors:
-			org.bluez.mesh.Error.DoesNotExist
-			org.bluez.mesh.Error.InvalidArguments
-
-*/
-func (a *Node1) VendorPublish(element_path dbus.ObjectPath, vendor uint16, model_id uint16, data []byte) error {
-	
-	return a.client.Call("VendorPublish", 0, element_path, vendor, model_id, data).Store()
-	
-}
-

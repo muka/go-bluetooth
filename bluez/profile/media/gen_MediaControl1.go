@@ -2,19 +2,17 @@
 
 package media
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
-   "fmt"
+	"fmt"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var MediaControl1Interface = "org.bluez.MediaControl1"
-
 
 // NewMediaControl1 create a new instance of MediaControl1
 //
@@ -30,14 +28,12 @@ func NewMediaControl1(objectPath dbus.ObjectPath) (*MediaControl1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(MediaControl1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
 
@@ -53,28 +49,25 @@ func NewMediaControl1FromAdapterID(adapterID string) (*MediaControl1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(MediaControl1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 MediaControl1 Media Control hierarchy
 
 */
 type MediaControl1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*MediaControl1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *MediaControl1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
@@ -83,15 +76,14 @@ type MediaControl1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Connected 
+		Connected
 	*/
 	Connected bool
 
 	/*
-	Player Addressed Player object path.
+		Player Addressed Player object path.
 	*/
 	Player dbus.ObjectPath
-
 }
 
 //Lock access to properties
@@ -104,15 +96,10 @@ func (p *MediaControl1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
-
 // SetConnected set Connected value
 func (a *MediaControl1) SetConnected(v bool) error {
 	return a.SetProperty("Connected", v)
 }
-
-
 
 // GetConnected get Connected value
 func (a *MediaControl1) GetConnected() (bool, error) {
@@ -123,15 +110,10 @@ func (a *MediaControl1) GetConnected() (bool, error) {
 	return v.Value().(bool), nil
 }
 
-
-
-
 // SetPlayer set Player value
 func (a *MediaControl1) SetPlayer(v dbus.ObjectPath) error {
 	return a.SetProperty("Player", v)
 }
-
-
 
 // GetPlayer get Player value
 func (a *MediaControl1) GetPlayer() (dbus.ObjectPath, error) {
@@ -142,13 +124,9 @@ func (a *MediaControl1) GetPlayer() (dbus.ObjectPath, error) {
 	return v.Value().(dbus.ObjectPath), nil
 }
 
-
-
 // Close the connection
 func (a *MediaControl1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -197,7 +175,6 @@ func (a *MediaControl1) GetObjectManagerSignal() (chan *dbus.Signal, func(), err
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a MediaControl1Properties to map
 func (a *MediaControl1Properties) ToMap() (map[string]interface{}, error) {
@@ -284,17 +261,12 @@ func (a *MediaControl1) UnwatchProperties(ch chan *bluez.PropertyChanged) error 
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 Play 			Resume playback.
 
 */
 func (a *MediaControl1) Play() error {
-	
-	return a.client.Call("Play", 0, ).Store()
-	
+	return a.client.Call("Play", 0).Store()
 }
 
 /*
@@ -302,9 +274,7 @@ Pause 			Pause playback.
 
 */
 func (a *MediaControl1) Pause() error {
-	
-	return a.client.Call("Pause", 0, ).Store()
-	
+	return a.client.Call("Pause", 0).Store()
 }
 
 /*
@@ -312,9 +282,7 @@ Stop 			Stop playback.
 
 */
 func (a *MediaControl1) Stop() error {
-	
-	return a.client.Call("Stop", 0, ).Store()
-	
+	return a.client.Call("Stop", 0).Store()
 }
 
 /*
@@ -322,9 +290,7 @@ Next 			Next item.
 
 */
 func (a *MediaControl1) Next() error {
-	
-	return a.client.Call("Next", 0, ).Store()
-	
+	return a.client.Call("Next", 0).Store()
 }
 
 /*
@@ -332,9 +298,7 @@ Previous 			Previous item.
 
 */
 func (a *MediaControl1) Previous() error {
-	
-	return a.client.Call("Previous", 0, ).Store()
-	
+	return a.client.Call("Previous", 0).Store()
 }
 
 /*
@@ -342,9 +306,7 @@ VolumeUp 			Adjust remote volume one step up
 
 */
 func (a *MediaControl1) VolumeUp() error {
-	
-	return a.client.Call("VolumeUp", 0, ).Store()
-	
+	return a.client.Call("VolumeUp", 0).Store()
 }
 
 /*
@@ -352,9 +314,7 @@ VolumeDown 			Adjust remote volume one step down
 
 */
 func (a *MediaControl1) VolumeDown() error {
-	
-	return a.client.Call("VolumeDown", 0, ).Store()
-	
+	return a.client.Call("VolumeDown", 0).Store()
 }
 
 /*
@@ -363,9 +323,7 @@ FastForward 			Fast forward playback, this action is only stopped
 
 */
 func (a *MediaControl1) FastForward() error {
-	
-	return a.client.Call("FastForward", 0, ).Store()
-	
+	return a.client.Call("FastForward", 0).Store()
 }
 
 /*
@@ -374,8 +332,5 @@ Rewind 			Rewind playback, this action is only stopped
 
 */
 func (a *MediaControl1) Rewind() error {
-	
-	return a.client.Call("Rewind", 0, ).Store()
-	
+	return a.client.Call("Rewind", 0).Store()
 }
-

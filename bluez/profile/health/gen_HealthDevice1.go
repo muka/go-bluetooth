@@ -2,18 +2,16 @@
 
 package health
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var HealthDevice1Interface = "org.bluez.HealthDevice1"
-
 
 // NewHealthDevice1 create a new instance of HealthDevice1
 //
@@ -29,28 +27,25 @@ func NewHealthDevice1(objectPath dbus.ObjectPath) (*HealthDevice1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(HealthDevice1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 HealthDevice1 HealthDevice hierarchy
 
 */
 type HealthDevice1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*HealthDevice1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *HealthDevice1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
@@ -59,13 +54,12 @@ type HealthDevice1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	MainChannel The first reliable channel opened. It is needed by
-			upper applications in order to send specific protocol
-			data units. The first reliable can change after a
-			reconnection.
+		MainChannel The first reliable channel opened. It is needed by
+				upper applications in order to send specific protocol
+				data units. The first reliable can change after a
+				reconnection.
 	*/
 	MainChannel dbus.ObjectPath
-
 }
 
 //Lock access to properties
@@ -78,15 +72,10 @@ func (p *HealthDevice1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
-
 // SetMainChannel set MainChannel value
 func (a *HealthDevice1) SetMainChannel(v dbus.ObjectPath) error {
 	return a.SetProperty("MainChannel", v)
 }
-
-
 
 // GetMainChannel get MainChannel value
 func (a *HealthDevice1) GetMainChannel() (dbus.ObjectPath, error) {
@@ -97,13 +86,9 @@ func (a *HealthDevice1) GetMainChannel() (dbus.ObjectPath, error) {
 	return v.Value().(dbus.ObjectPath), nil
 }
 
-
-
 // Close the connection
 func (a *HealthDevice1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -152,7 +137,6 @@ func (a *HealthDevice1) GetObjectManagerSignal() (chan *dbus.Signal, func(), err
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a HealthDevice1Properties to map
 func (a *HealthDevice1Properties) ToMap() (map[string]interface{}, error) {
@@ -239,9 +223,6 @@ func (a *HealthDevice1) UnwatchProperties(ch chan *bluez.PropertyChanged) error 
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 Echo 			Sends an echo petition to the remote service. Returns
 			True if response matches with the buffer sent. If some
@@ -251,10 +232,9 @@ Echo 			Sends an echo petition to the remote service. Returns
 
 */
 func (a *HealthDevice1) Echo() (bool, error) {
-	
 	var val0 bool
-	err := a.client.Call("Echo", 0, ).Store(&val0)
-	return val0, err	
+	err := a.client.Call("Echo", 0).Store(&val0)
+	return val0, err
 }
 
 /*
@@ -268,10 +248,9 @@ CreateChannel 			Creates a new data channel.  The configuration should
 
 */
 func (a *HealthDevice1) CreateChannel(application dbus.ObjectPath, configuration string) (dbus.ObjectPath, error) {
-	
 	var val0 dbus.ObjectPath
 	err := a.client.Call("CreateChannel", 0, application, configuration).Store(&val0)
-	return val0, err	
+	return val0, err
 }
 
 /*
@@ -285,8 +264,5 @@ DestroyChannel 			Destroys the data channel object. Only the creator of
 
 */
 func (a *HealthDevice1) DestroyChannel(channel dbus.ObjectPath) error {
-	
 	return a.client.Call("DestroyChannel", 0, channel).Store()
-	
 }
-

@@ -2,18 +2,16 @@
 
 package obex
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var PhonebookAccess1Interface = "org.bluez.obex.PhonebookAccess1"
-
 
 // NewPhonebookAccess1 create a new instance of PhonebookAccess1
 //
@@ -29,28 +27,25 @@ func NewPhonebookAccess1(objectPath dbus.ObjectPath) (*PhonebookAccess1, error) 
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(PhonebookAccess1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 PhonebookAccess1 Phonebook Access hierarchy
 
 */
 type PhonebookAccess1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*PhonebookAccess1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *PhonebookAccess1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
@@ -59,42 +54,41 @@ type PhonebookAccess1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	DatabaseIdentifier 128 bits persistent database identifier.
+		DatabaseIdentifier 128 bits persistent database identifier.
 
-			Possible values: 32-character hexadecimal such
-			as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
+				Possible values: 32-character hexadecimal such
+				as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
 	*/
 	DatabaseIdentifier string
 
 	/*
-	PrimaryCounter 128 bits primary version counter.
+		FixedImageSize Indicate support for fixed image size.
 
-			Possible values: 32-character hexadecimal such
-			as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
-	*/
-	PrimaryCounter string
-
-	/*
-	SecondaryCounter 128 bits secondary version counter.
-
-			Possible values: 32-character hexadecimal such
-			as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
-	*/
-	SecondaryCounter string
-
-	/*
-	FixedImageSize Indicate support for fixed image size.
-
-			Possible values: True if image is JPEG 300x300 pixels
-			otherwise False.
+				Possible values: True if image is JPEG 300x300 pixels
+				otherwise False.
 	*/
 	FixedImageSize bool
 
 	/*
-	Folder Current folder.
+		Folder Current folder.
 	*/
 	Folder string
 
+	/*
+		PrimaryCounter 128 bits primary version counter.
+
+				Possible values: 32-character hexadecimal such
+				as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
+	*/
+	PrimaryCounter string
+
+	/*
+		SecondaryCounter 128 bits secondary version counter.
+
+				Possible values: 32-character hexadecimal such
+				as A1A2A3A4B1B2C1C2D1D2E1E2E3E4E5E6
+	*/
+	SecondaryCounter string
 }
 
 //Lock access to properties
@@ -107,15 +101,10 @@ func (p *PhonebookAccess1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
-
 // SetDatabaseIdentifier set DatabaseIdentifier value
 func (a *PhonebookAccess1) SetDatabaseIdentifier(v string) error {
 	return a.SetProperty("DatabaseIdentifier", v)
 }
-
-
 
 // GetDatabaseIdentifier get DatabaseIdentifier value
 func (a *PhonebookAccess1) GetDatabaseIdentifier() (string, error) {
@@ -126,53 +115,10 @@ func (a *PhonebookAccess1) GetDatabaseIdentifier() (string, error) {
 	return v.Value().(string), nil
 }
 
-
-
-
-// SetPrimaryCounter set PrimaryCounter value
-func (a *PhonebookAccess1) SetPrimaryCounter(v string) error {
-	return a.SetProperty("PrimaryCounter", v)
-}
-
-
-
-// GetPrimaryCounter get PrimaryCounter value
-func (a *PhonebookAccess1) GetPrimaryCounter() (string, error) {
-	v, err := a.GetProperty("PrimaryCounter")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
-// SetSecondaryCounter set SecondaryCounter value
-func (a *PhonebookAccess1) SetSecondaryCounter(v string) error {
-	return a.SetProperty("SecondaryCounter", v)
-}
-
-
-
-// GetSecondaryCounter get SecondaryCounter value
-func (a *PhonebookAccess1) GetSecondaryCounter() (string, error) {
-	v, err := a.GetProperty("SecondaryCounter")
-	if err != nil {
-		return "", err
-	}
-	return v.Value().(string), nil
-}
-
-
-
-
 // SetFixedImageSize set FixedImageSize value
 func (a *PhonebookAccess1) SetFixedImageSize(v bool) error {
 	return a.SetProperty("FixedImageSize", v)
 }
-
-
 
 // GetFixedImageSize get FixedImageSize value
 func (a *PhonebookAccess1) GetFixedImageSize() (bool, error) {
@@ -183,15 +129,10 @@ func (a *PhonebookAccess1) GetFixedImageSize() (bool, error) {
 	return v.Value().(bool), nil
 }
 
-
-
-
 // SetFolder set Folder value
 func (a *PhonebookAccess1) SetFolder(v string) error {
 	return a.SetProperty("Folder", v)
 }
-
-
 
 // GetFolder get Folder value
 func (a *PhonebookAccess1) GetFolder() (string, error) {
@@ -202,13 +143,37 @@ func (a *PhonebookAccess1) GetFolder() (string, error) {
 	return v.Value().(string), nil
 }
 
+// SetPrimaryCounter set PrimaryCounter value
+func (a *PhonebookAccess1) SetPrimaryCounter(v string) error {
+	return a.SetProperty("PrimaryCounter", v)
+}
 
+// GetPrimaryCounter get PrimaryCounter value
+func (a *PhonebookAccess1) GetPrimaryCounter() (string, error) {
+	v, err := a.GetProperty("PrimaryCounter")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
+
+// SetSecondaryCounter set SecondaryCounter value
+func (a *PhonebookAccess1) SetSecondaryCounter(v string) error {
+	return a.SetProperty("SecondaryCounter", v)
+}
+
+// GetSecondaryCounter get SecondaryCounter value
+func (a *PhonebookAccess1) GetSecondaryCounter() (string, error) {
+	v, err := a.GetProperty("SecondaryCounter")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
+}
 
 // Close the connection
 func (a *PhonebookAccess1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -257,7 +222,6 @@ func (a *PhonebookAccess1) GetObjectManagerSignal() (chan *dbus.Signal, func(), 
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a PhonebookAccess1Properties to map
 func (a *PhonebookAccess1Properties) ToMap() (map[string]interface{}, error) {
@@ -344,9 +308,6 @@ func (a *PhonebookAccess1) UnwatchProperties(ch chan *bluez.PropertyChanged) err
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 Select 			Select the phonebook object for other operations. Should
 			be call before all the other operations.
@@ -369,9 +330,7 @@ Select 			Select the phonebook object for other operations. Should
 
 */
 func (a *PhonebookAccess1) Select(location string, phonebook string) error {
-	
 	return a.client.Call("Select", 0, location, phonebook).Store()
-	
 }
 
 /*
@@ -392,11 +351,10 @@ PullAll 			Return the entire phonebook object from the PSE server
 
 */
 func (a *PhonebookAccess1) PullAll(targetfile string, filters map[string]interface{}) (dbus.ObjectPath, map[string]interface{}, error) {
-	
 	var val0 dbus.ObjectPath
-  var val1 map[string]interface{}
+	var val1 map[string]interface{}
 	err := a.client.Call("PullAll", 0, targetfile, filters).Store(&val0, &val1)
-	return val0, val1, err	
+	return val0, val1, err
 }
 
 /*
@@ -410,10 +368,9 @@ List 			Return an array of vcard-listing data where every entry
 
 */
 func (a *PhonebookAccess1) List(filters map[string]interface{}) ([]VCardItem, error) {
-	
-	 val0 := []VCardItem{}
+	val0 := []VCardItem{}
 	err := a.client.Call("List", 0, filters).Store(&val0)
-	return val0, err	
+	return val0, err
 }
 
 /*
@@ -433,11 +390,10 @@ Pull 			Given a vcard handle, retrieve the vcard in the current
 
 */
 func (a *PhonebookAccess1) Pull(vcard string, targetfile string, filters map[string]interface{}) (dbus.ObjectPath, map[string]interface{}, error) {
-	
 	var val0 dbus.ObjectPath
-  var val1 map[string]interface{}
+	var val1 map[string]interface{}
 	err := a.client.Call("Pull", 0, vcard, targetfile, filters).Store(&val0, &val1)
-	return val0, val1, err	
+	return val0, val1, err
 }
 
 /*
@@ -456,10 +412,9 @@ Search 			Search for entries matching the given condition and
 
 */
 func (a *PhonebookAccess1) Search(field string, value string, filters map[string]interface{}) ([]VCardItem, error) {
-	
-	 val0 := []VCardItem{}
+	val0 := []VCardItem{}
 	err := a.client.Call("Search", 0, field, value, filters).Store(&val0)
-	return val0, err	
+	return val0, err
 }
 
 /*
@@ -471,10 +426,9 @@ GetSize 			Return the number of entries in the selected phonebook
 
 */
 func (a *PhonebookAccess1) GetSize() (uint16, error) {
-	
 	var val0 uint16
-	err := a.client.Call("GetSize", 0, ).Store(&val0)
-	return val0, err	
+	err := a.client.Call("GetSize", 0).Store(&val0)
+	return val0, err
 }
 
 /*
@@ -485,9 +439,7 @@ UpdateVersion 			Attempt to update PrimaryCounter and SecondaryCounter.
 
 */
 func (a *PhonebookAccess1) UpdateVersion() error {
-	
-	return a.client.Call("UpdateVersion", 0, ).Store()
-	
+	return a.client.Call("UpdateVersion", 0).Store()
 }
 
 /*
@@ -497,9 +449,7 @@ ListFilterFields 			Return All Available fields that can be used in Fields
 
 */
 func (a *PhonebookAccess1) ListFilterFields() ([]string, error) {
-	
-	 val0 := []string{}
-	err := a.client.Call("ListFilterFields", 0, ).Store(&val0)
-	return val0, err	
+	val0 := []string{}
+	err := a.client.Call("ListFilterFields", 0).Store(&val0)
+	return val0, err
 }
-

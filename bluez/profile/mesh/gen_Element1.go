@@ -2,18 +2,16 @@
 
 package mesh
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var Element1Interface = "org.bluez.mesh.Element1"
-
 
 // NewElement1 create a new instance of Element1
 //
@@ -30,28 +28,25 @@ func NewElement1(servicePath string, objectPath dbus.ObjectPath) (*Element1, err
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(Element1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 Element1 Mesh Element Hierarchy
 
 */
 type Element1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*Element1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *Element1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
@@ -60,25 +55,45 @@ type Element1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Models An array of SIG Model Identifiers. The array may be empty.
-	*/
-	Models []uint16
-
-	/*
-	VendorModels An array of pairs (vendor, model ID): vendor is a 16-bit
-		Bluetooth-assigned Company ID as defined by Bluetooth SIG.
-		model ID is a 16-bit vendor-assigned Model Identifier
-
-		The array may be empty.
-	*/
-	VendorModels []VendorItem
-
-	/*
-	Location Location descriptor as defined in the GATT Bluetooth Namespace
-		Descriptors section of the Bluetooth SIG Assigned Numbers
+		Location Location descriptor as defined in the GATT Bluetooth Namespace
+			Descriptors section of the Bluetooth SIG Assigned Numbers
 	*/
 	Location uint16
 
+	/*
+		Models An array of SIG Models:
+
+				id - SIG Model Identifier
+
+				options - a dictionary that may contain additional model
+				info. The following keys are defined:
+	*/
+	Models []ConfigurationItem
+
+	/*
+		Publish supports publication mechanism
+	*/
+	Publish bool
+
+	/*
+		Subscribe supports subscription mechanism
+
+			The array may be empty.
+	*/
+	Subscribe bool
+
+	/*
+		VendorModels An array of Vendor Models:
+
+				vendor - a 16-bit Bluetooth-assigned Company ID as
+				defined by Bluetooth SIG.
+
+				id - a 16-bit vendor-assigned Model Identifier
+
+				options - a dictionary that may contain additional model
+				info. The following keys are defined:
+	*/
+	VendorModels []VendorOptionsItem
 }
 
 //Lock access to properties
@@ -91,39 +106,6 @@ func (p *Element1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
-
-
-
-// GetModels get Models value
-func (a *Element1) GetModels() ([]uint16, error) {
-	v, err := a.GetProperty("Models")
-	if err != nil {
-		return []uint16{}, err
-	}
-	return v.Value().([]uint16), nil
-}
-
-
-
-
-
-
-// GetVendorModels get VendorModels value
-func (a *Element1) GetVendorModels() ([]VendorItem, error) {
-	v, err := a.GetProperty("VendorModels")
-	if err != nil {
-		return []VendorItem{}, err
-	}
-	return v.Value().([]VendorItem), nil
-}
-
-
-
-
-
-
 // GetLocation get Location value
 func (a *Element1) GetLocation() (uint16, error) {
 	v, err := a.GetProperty("Location")
@@ -133,13 +115,55 @@ func (a *Element1) GetLocation() (uint16, error) {
 	return v.Value().(uint16), nil
 }
 
+// GetModels get Models value
+func (a *Element1) GetModels() ([]ConfigurationItem, error) {
+	v, err := a.GetProperty("Models")
+	if err != nil {
+		return []ConfigurationItem{}, err
+	}
+	return v.Value().([]ConfigurationItem), nil
+}
 
+// SetPublish set Publish value
+func (a *Element1) SetPublish(v bool) error {
+	return a.SetProperty("Publish", v)
+}
+
+// GetPublish get Publish value
+func (a *Element1) GetPublish() (bool, error) {
+	v, err := a.GetProperty("Publish")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+// SetSubscribe set Subscribe value
+func (a *Element1) SetSubscribe(v bool) error {
+	return a.SetProperty("Subscribe", v)
+}
+
+// GetSubscribe get Subscribe value
+func (a *Element1) GetSubscribe() (bool, error) {
+	v, err := a.GetProperty("Subscribe")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+// GetVendorModels get VendorModels value
+func (a *Element1) GetVendorModels() ([]VendorOptionsItem, error) {
+	v, err := a.GetProperty("VendorModels")
+	if err != nil {
+		return []VendorOptionsItem{}, err
+	}
+	return v.Value().([]VendorOptionsItem), nil
+}
 
 // Close the connection
 func (a *Element1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -188,7 +212,6 @@ func (a *Element1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a Element1Properties to map
 func (a *Element1Properties) ToMap() (map[string]interface{}, error) {
@@ -275,9 +298,6 @@ func (a *Element1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 MessageReceived 		This method is called by bluetooth-meshd daemon when a message
 		arrives addressed to the application.
@@ -298,9 +318,7 @@ MessageReceived 		This method is called by bluetooth-meshd daemon when a message
 
 */
 func (a *Element1) MessageReceived(source uint16, key_index uint16, destination dbus.Variant, data []byte) error {
-	
 	return a.client.Call("MessageReceived", 0, source, key_index, destination, data).Store()
-	
 }
 
 /*
@@ -320,9 +338,7 @@ DevKeyMessageReceived 		This method is called by meshd daemon when a message arr
 
 */
 func (a *Element1) DevKeyMessageReceived(source uint16, remote bool, net_index uint16, data []byte) error {
-	
 	return a.client.Call("DevKeyMessageReceived", 0, source, remote, net_index, data).Store()
-	
 }
 
 /*
@@ -347,8 +363,5 @@ UpdateModelConfiguration 		This method is called by bluetooth-meshd daemon when 
 
 */
 func (a *Element1) UpdateModelConfiguration(model_id uint16, config map[string]interface{}) error {
-	
 	return a.client.Call("UpdateModelConfiguration", 0, model_id, config).Store()
-	
 }
-

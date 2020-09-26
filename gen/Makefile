@@ -17,7 +17,7 @@ advertising:
 
 mesh:
 	BASEDIR=.. \
-	FILE_FILTER=advertising-api \
+	FILE_FILTER=mesh-api \
 	xAPI_FILTER="Provisioner" \
 	xMETHOD_FILTER=Attach LOG_LEVEL=trace \
 	go run ./srcgen/main.go full --debug

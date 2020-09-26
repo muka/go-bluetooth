@@ -31,7 +31,7 @@ func (g *ApiParser) log(msg string) {
 
 func (g *ApiParser) Parse(raw []byte) (*types.Api, error) {
 
-	var err error = nil
+	var err error
 	api := g.model
 
 	// title & description

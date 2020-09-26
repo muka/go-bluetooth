@@ -3,6 +3,7 @@ package generator
 import (
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 
 	"github.com/muka/go-bluetooth/gen/override"
@@ -114,6 +115,10 @@ func ApiTemplate(filename string, api *types.Api, apiGroup *types.ApiGroup) erro
 
 		props = append(props, *prop)
 	}
+
+	sort.Slice(props, func(i, j int) bool {
+		return props[i].Name < props[j].Name
+	})
 
 	methods := []types.MethodDoc{}
 	for _, m := range api.Methods {

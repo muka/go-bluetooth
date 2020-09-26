@@ -2,12 +2,14 @@ package generator
 
 import (
 	"fmt"
+	"io/ioutil"
 	"path"
 	"strings"
 
 	"github.com/muka/go-bluetooth/gen"
 	"github.com/muka/go-bluetooth/gen/util"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/tools/imports"
 )
 
 // Generate go code from the API definition
@@ -106,6 +108,16 @@ func Generate(bluezApi gen.BluezAPI, outDir string, debug bool, forceOverwrite b
 			}
 			if debug {
 				log.Tracef("Wrote %s", apiGenFilename)
+			}
+
+			code, err := imports.Process(apiGenFilename, nil, nil)
+			if err != nil {
+				log.Tracef("format code: %s: %v", apiGenFilename, err)
+			}
+
+			if err := ioutil.WriteFile(apiGenFilename, code, 0644); err != nil {
+				log.Tracef("rewrite with formatted code: %s", apiGenFilename)
+				return err
 			}
 		}
 	}

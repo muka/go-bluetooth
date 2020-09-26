@@ -2,18 +2,16 @@
 
 package thermometer
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var Thermometer1Interface = "org.bluez.Thermometer1"
-
 
 // NewThermometer1 create a new instance of Thermometer1
 //
@@ -29,28 +27,25 @@ func NewThermometer1(objectPath dbus.ObjectPath) (*Thermometer1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(Thermometer1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 Thermometer1 Health Thermometer Profile hierarchy
 
 */
 type Thermometer1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*Thermometer1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *Thermometer1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
@@ -59,33 +54,32 @@ type Thermometer1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Intermediate True if the thermometer supports intermediate
-			measurement notifications.
+		Intermediate True if the thermometer supports intermediate
+				measurement notifications.
 	*/
 	Intermediate bool
 
 	/*
-	Interval (optional) The Measurement Interval defines the time (in
-			seconds) between measurements. This interval is
-			not related to the intermediate measurements and
-			must be defined into a valid range. Setting it
-			to zero means that no periodic measurements will
-			be taken.
+		Interval (optional) The Measurement Interval defines the time (in
+				seconds) between measurements. This interval is
+				not related to the intermediate measurements and
+				must be defined into a valid range. Setting it
+				to zero means that no periodic measurements will
+				be taken.
 	*/
 	Interval uint16
 
 	/*
-	Maximum (optional) Defines the maximum value allowed for the interval
-			between periodic measurements.
+		Maximum (optional) Defines the maximum value allowed for the interval
+				between periodic measurements.
 	*/
 	Maximum uint16
 
 	/*
-	Minimum (optional) Defines the minimum value allowed for the interval
-			between periodic measurements.
+		Minimum (optional) Defines the minimum value allowed for the interval
+				between periodic measurements.
 	*/
 	Minimum uint16
-
 }
 
 //Lock access to properties
@@ -98,15 +92,10 @@ func (p *Thermometer1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
-
 // SetIntermediate set Intermediate value
 func (a *Thermometer1) SetIntermediate(v bool) error {
 	return a.SetProperty("Intermediate", v)
 }
-
-
 
 // GetIntermediate get Intermediate value
 func (a *Thermometer1) GetIntermediate() (bool, error) {
@@ -117,15 +106,10 @@ func (a *Thermometer1) GetIntermediate() (bool, error) {
 	return v.Value().(bool), nil
 }
 
-
-
-
 // SetInterval set Interval value
 func (a *Thermometer1) SetInterval(v uint16) error {
 	return a.SetProperty("Interval", v)
 }
-
-
 
 // GetInterval get Interval value
 func (a *Thermometer1) GetInterval() (uint16, error) {
@@ -136,15 +120,10 @@ func (a *Thermometer1) GetInterval() (uint16, error) {
 	return v.Value().(uint16), nil
 }
 
-
-
-
 // SetMaximum set Maximum value
 func (a *Thermometer1) SetMaximum(v uint16) error {
 	return a.SetProperty("Maximum", v)
 }
-
-
 
 // GetMaximum get Maximum value
 func (a *Thermometer1) GetMaximum() (uint16, error) {
@@ -155,15 +134,10 @@ func (a *Thermometer1) GetMaximum() (uint16, error) {
 	return v.Value().(uint16), nil
 }
 
-
-
-
 // SetMinimum set Minimum value
 func (a *Thermometer1) SetMinimum(v uint16) error {
 	return a.SetProperty("Minimum", v)
 }
-
-
 
 // GetMinimum get Minimum value
 func (a *Thermometer1) GetMinimum() (uint16, error) {
@@ -174,13 +148,9 @@ func (a *Thermometer1) GetMinimum() (uint16, error) {
 	return v.Value().(uint16), nil
 }
 
-
-
 // Close the connection
 func (a *Thermometer1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -229,7 +199,6 @@ func (a *Thermometer1) GetObjectManagerSignal() (chan *dbus.Signal, func(), erro
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a Thermometer1Properties to map
 func (a *Thermometer1Properties) ToMap() (map[string]interface{}, error) {
@@ -315,7 +284,3 @@ func (a *Thermometer1) WatchProperties() (chan *bluez.PropertyChanged, error) {
 func (a *Thermometer1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	return bluez.UnwatchProperties(a, ch)
 }
-
-
-
-

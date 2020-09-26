@@ -2,18 +2,16 @@
 
 package obex
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var MessageAccess1Interface = "org.bluez.obex.MessageAccess1"
-
 
 // NewMessageAccess1 create a new instance of MessageAccess1
 //
@@ -29,35 +27,31 @@ func NewMessageAccess1(objectPath dbus.ObjectPath) (*MessageAccess1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(MessageAccess1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 MessageAccess1 Message Access hierarchy
 
 */
 type MessageAccess1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*MessageAccess1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *MessageAccess1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
 // MessageAccess1Properties contains the exposed properties of an interface
 type MessageAccess1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
 }
 
 //Lock access to properties
@@ -70,13 +64,9 @@ func (p *MessageAccess1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
 // Close the connection
 func (a *MessageAccess1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -125,7 +115,6 @@ func (a *MessageAccess1) GetObjectManagerSignal() (chan *dbus.Signal, func(), er
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a MessageAccess1Properties to map
 func (a *MessageAccess1Properties) ToMap() (map[string]interface{}, error) {
@@ -212,9 +201,6 @@ func (a *MessageAccess1) UnwatchProperties(ch chan *bluez.PropertyChanged) error
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 SetFolder 			Set working directory for current session, *name* may
 			be the directory name or '..[/dir]'.
@@ -223,9 +209,7 @@ SetFolder 			Set working directory for current session, *name* may
 
 */
 func (a *MessageAccess1) SetFolder(name string) error {
-	
 	return a.client.Call("SetFolder", 0, name).Store()
-	
 }
 
 /*
@@ -239,10 +223,9 @@ ListFolders 			Returns a dictionary containing information about
 
 */
 func (a *MessageAccess1) ListFolders(filter map[string]interface{}) ([]map[string]interface{}, error) {
-	
-	 val0 := []map[string]interface{}{}
+	val0 := []map[string]interface{}{}
 	err := a.client.Call("ListFolders", 0, filter).Store(&val0)
-	return val0, err	
+	return val0, err
 }
 
 /*
@@ -252,10 +235,9 @@ ListFilterFields 			Return all available fields that can be used in Fields
 
 */
 func (a *MessageAccess1) ListFilterFields() ([]string, error) {
-	
-	 val0 := []string{}
-	err := a.client.Call("ListFilterFields", 0, ).Store(&val0)
-	return val0, err	
+	val0 := []string{}
+	err := a.client.Call("ListFilterFields", 0).Store(&val0)
+	return val0, err
 }
 
 /*
@@ -314,18 +296,14 @@ ListMessages 			Returns an array containing the messages found in the
 
 */
 func (a *MessageAccess1) ListMessages(folder string, filter map[string]interface{}) ([]Message, error) {
-	
-	 val0 := []Message{}
+	val0 := []Message{}
 	err := a.client.Call("ListMessages", 0, folder, filter).Store(&val0)
-	return val0, err	
+	return val0, err
 }
 
 /*
-UpdateInbox 
+UpdateInbox
 */
 func (a *MessageAccess1) UpdateInbox() error {
-	
-	return a.client.Call("UpdateInbox", 0, ).Store()
-	
+	return a.client.Call("UpdateInbox", 0).Store()
 }
-

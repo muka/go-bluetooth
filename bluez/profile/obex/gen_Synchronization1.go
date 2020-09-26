@@ -2,18 +2,16 @@
 
 package obex
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var Synchronization1Interface = "org.bluez.obex.Synchronization1"
-
 
 // NewSynchronization1 create a new instance of Synchronization1
 //
@@ -29,35 +27,31 @@ func NewSynchronization1(objectPath dbus.ObjectPath) (*Synchronization1, error) 
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(Synchronization1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 Synchronization1 Synchronization hierarchy
 
 */
 type Synchronization1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*Synchronization1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *Synchronization1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
 // Synchronization1Properties contains the exposed properties of an interface
 type Synchronization1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
 }
 
 //Lock access to properties
@@ -70,13 +64,9 @@ func (p *Synchronization1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
 // Close the connection
 func (a *Synchronization1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -125,7 +115,6 @@ func (a *Synchronization1) GetObjectManagerSignal() (chan *dbus.Signal, func(), 
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a Synchronization1Properties to map
 func (a *Synchronization1Properties) ToMap() (map[string]interface{}, error) {
@@ -212,9 +201,6 @@ func (a *Synchronization1) UnwatchProperties(ch chan *bluez.PropertyChanged) err
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 SetLocation 			Set the phonebook object store location for other
 			operations. Should be called before all the other
@@ -229,9 +215,7 @@ SetLocation 			Set the phonebook object store location for other
 
 */
 func (a *Synchronization1) SetLocation(location string) error {
-	
 	return a.client.Call("SetLocation", 0, location).Store()
-	
 }
 
 /*
@@ -249,11 +233,10 @@ GetPhonebook 			Retrieve an entire Phonebook Object store from remote
 
 */
 func (a *Synchronization1) GetPhonebook(targetfile string) (dbus.ObjectPath, map[string]interface{}, error) {
-	
 	var val0 dbus.ObjectPath
-  var val1 map[string]interface{}
+	var val1 map[string]interface{}
 	err := a.client.Call("GetPhonebook", 0, targetfile).Store(&val0, &val1)
-	return val0, val1, err	
+	return val0, val1, err
 }
 
 /*
@@ -268,10 +251,8 @@ PutPhonebook 			Send an entire Phonebook Object store to remote device.
 
 */
 func (a *Synchronization1) PutPhonebook(sourcefile string) (dbus.ObjectPath, map[string]interface{}, error) {
-	
 	var val0 dbus.ObjectPath
-  var val1 map[string]interface{}
+	var val1 map[string]interface{}
 	err := a.client.Call("PutPhonebook", 0, sourcefile).Store(&val0, &val1)
-	return val0, val1, err	
+	return val0, val1, err
 }
-

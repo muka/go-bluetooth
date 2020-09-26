@@ -2,18 +2,16 @@
 
 package mesh
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var Application1Interface = "org.bluez.mesh.Application1"
-
 
 // NewApplication1 create a new instance of Application1
 //
@@ -30,28 +28,25 @@ func NewApplication1(servicePath string, objectPath dbus.ObjectPath) (*Applicati
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(Application1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 Application1 Mesh Application Hierarchy
 
 */
 type Application1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*Application1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *Application1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
@@ -60,26 +55,25 @@ type Application1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	ProductID A 16-bit vendor-assigned product identifier
-	*/
-	ProductID uint16
-
-	/*
-	VersionID A 16-bit vendor-assigned product version identifier
-	*/
-	VersionID uint16
-
-	/*
-	CRPL A 16-bit minimum number of replay protection list entries
+		CRPL A 16-bit minimum number of replay protection list entries
 	*/
 	CRPL uint16
 
 	/*
-	CompanyID A 16-bit Bluetooth-assigned Company Identifier of the vendor as
-		defined by Bluetooth SIG
+		CompanyID A 16-bit Bluetooth-assigned Company Identifier of the vendor as
+			defined by Bluetooth SIG
 	*/
 	CompanyID uint16
 
+	/*
+		ProductID A 16-bit vendor-assigned product identifier
+	*/
+	ProductID uint16
+
+	/*
+		VersionID A 16-bit vendor-assigned product version identifier
+	*/
+	VersionID uint16
 }
 
 //Lock access to properties
@@ -92,39 +86,6 @@ func (p *Application1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
-
-
-
-// GetProductID get ProductID value
-func (a *Application1) GetProductID() (uint16, error) {
-	v, err := a.GetProperty("ProductID")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
-}
-
-
-
-
-
-
-// GetVersionID get VersionID value
-func (a *Application1) GetVersionID() (uint16, error) {
-	v, err := a.GetProperty("VersionID")
-	if err != nil {
-		return uint16(0), err
-	}
-	return v.Value().(uint16), nil
-}
-
-
-
-
-
-
 // GetCRPL get CRPL value
 func (a *Application1) GetCRPL() (uint16, error) {
 	v, err := a.GetProperty("CRPL")
@@ -133,11 +94,6 @@ func (a *Application1) GetCRPL() (uint16, error) {
 	}
 	return v.Value().(uint16), nil
 }
-
-
-
-
-
 
 // GetCompanyID get CompanyID value
 func (a *Application1) GetCompanyID() (uint16, error) {
@@ -148,13 +104,27 @@ func (a *Application1) GetCompanyID() (uint16, error) {
 	return v.Value().(uint16), nil
 }
 
+// GetProductID get ProductID value
+func (a *Application1) GetProductID() (uint16, error) {
+	v, err := a.GetProperty("ProductID")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
 
+// GetVersionID get VersionID value
+func (a *Application1) GetVersionID() (uint16, error) {
+	v, err := a.GetProperty("VersionID")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
 
 // Close the connection
 func (a *Application1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -203,7 +173,6 @@ func (a *Application1) GetObjectManagerSignal() (chan *dbus.Signal, func(), erro
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a Application1Properties to map
 func (a *Application1Properties) ToMap() (map[string]interface{}, error) {
@@ -290,9 +259,6 @@ func (a *Application1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 JoinComplete 		This method is called when the node provisioning initiated
 		by a Join() method call successfully completed.
@@ -302,12 +268,13 @@ JoinComplete 		This method is called when the node provisioning initiated
 		the network as a mesh node by calling Attach() method or
 		permanently remove the identity of the mesh node by calling
 		Leave() method.
+		If this method returns an error, the daemon will assume that the
+		application failed to preserve the token, and will remove the
+		freshly created node.
 
 */
 func (a *Application1) JoinComplete(token uint64) error {
-	
 	return a.client.Call("JoinComplete", 0, token).Store()
-	
 }
 
 /*
@@ -320,8 +287,5 @@ JoinFailed 		This method is called when the node provisioning initiated by
 
 */
 func (a *Application1) JoinFailed(reason string) error {
-	
 	return a.client.Call("JoinFailed", 0, reason).Store()
-	
 }
-

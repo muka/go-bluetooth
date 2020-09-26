@@ -2,18 +2,16 @@
 
 package obex
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var FileTransferInterface = "org.bluez.obex.FileTransfer"
-
 
 // NewFileTransfer create a new instance of FileTransfer
 //
@@ -29,35 +27,31 @@ func NewFileTransfer(objectPath dbus.ObjectPath) (*FileTransfer, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(FileTransferProperties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 FileTransfer File Transfer hierarchy
 
 */
 type FileTransfer struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*FileTransferProperties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *FileTransferProperties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
 // FileTransferProperties contains the exposed properties of an interface
 type FileTransferProperties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
 }
 
 //Lock access to properties
@@ -70,13 +64,9 @@ func (p *FileTransferProperties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
 // Close the connection
 func (a *FileTransfer) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -125,7 +115,6 @@ func (a *FileTransfer) GetObjectManagerSignal() (chan *dbus.Signal, func(), erro
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a FileTransferProperties to map
 func (a *FileTransferProperties) ToMap() (map[string]interface{}, error) {
@@ -212,9 +201,6 @@ func (a *FileTransfer) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 ChangeFolder 			Change the current folder of the remote device.
 			Possible errors: org.bluez.obex.Error.InvalidArguments
@@ -222,9 +208,7 @@ ChangeFolder 			Change the current folder of the remote device.
 
 */
 func (a *FileTransfer) ChangeFolder(folder string) error {
-	
 	return a.client.Call("ChangeFolder", 0, folder).Store()
-	
 }
 
 /*
@@ -234,9 +218,7 @@ CreateFolder 			Create a new folder in the remote device.
 
 */
 func (a *FileTransfer) CreateFolder(folder string) error {
-	
 	return a.client.Call("CreateFolder", 0, folder).Store()
-	
 }
 
 /*
@@ -256,10 +238,9 @@ ListFolder 			Returns a dictionary containing information about
 
 */
 func (a *FileTransfer) ListFolder() ([]map[string]interface{}, error) {
-	
-	 val0 := []map[string]interface{}{}
-	err := a.client.Call("ListFolder", 0, ).Store(&val0)
-	return val0, err	
+	val0 := []map[string]interface{}{}
+	err := a.client.Call("ListFolder", 0).Store(&val0)
+	return val0, err
 }
 
 /*
@@ -277,11 +258,10 @@ GetFile 			Copy the source file (from remote device) to the
 
 */
 func (a *FileTransfer) GetFile(targetfile string, sourcefile string) (dbus.ObjectPath, map[string]interface{}, error) {
-	
 	var val0 dbus.ObjectPath
-  var val1 map[string]interface{}
+	var val1 map[string]interface{}
 	err := a.client.Call("GetFile", 0, targetfile, sourcefile).Store(&val0, &val1)
-	return val0, val1, err	
+	return val0, val1, err
 }
 
 /*
@@ -297,11 +277,10 @@ PutFile 			Copy the source file (from local filesystem) to the
 
 */
 func (a *FileTransfer) PutFile(sourcefile string, targetfile string) (dbus.ObjectPath, map[string]interface{}, error) {
-	
 	var val0 dbus.ObjectPath
-  var val1 map[string]interface{}
+	var val1 map[string]interface{}
 	err := a.client.Call("PutFile", 0, sourcefile, targetfile).Store(&val0, &val1)
-	return val0, val1, err	
+	return val0, val1, err
 }
 
 /*
@@ -312,9 +291,7 @@ CopyFile 			Copy a file within the remote device from source file
 
 */
 func (a *FileTransfer) CopyFile(sourcefile string, targetfile string) error {
-	
 	return a.client.Call("CopyFile", 0, sourcefile, targetfile).Store()
-	
 }
 
 /*
@@ -325,9 +302,7 @@ MoveFile 			Move a file within the remote device from source file
 
 */
 func (a *FileTransfer) MoveFile(sourcefile string, targetfile string) error {
-	
 	return a.client.Call("MoveFile", 0, sourcefile, targetfile).Store()
-	
 }
 
 /*
@@ -337,8 +312,5 @@ Delete 			Deletes the specified file/folder.
 
 */
 func (a *FileTransfer) Delete(file string) error {
-	
 	return a.client.Call("Delete", 0, file).Store()
-	
 }
-

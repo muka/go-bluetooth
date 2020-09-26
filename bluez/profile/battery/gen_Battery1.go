@@ -2,18 +2,16 @@
 
 package battery
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var Battery1Interface = "org.bluez.Battery1"
-
 
 // NewBattery1 create a new instance of Battery1
 //
@@ -29,28 +27,25 @@ func NewBattery1(objectPath dbus.ObjectPath) (*Battery1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(Battery1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 Battery1 Battery hierarchy
 
 */
 type Battery1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*Battery1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *Battery1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
@@ -59,10 +54,9 @@ type Battery1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 
 	/*
-	Percentage The percentage of battery left as an unsigned 8-bit integer.
+		Percentage The percentage of battery left as an unsigned 8-bit integer.
 	*/
 	Percentage byte
-
 }
 
 //Lock access to properties
@@ -75,15 +69,10 @@ func (p *Battery1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
-
 // SetPercentage set Percentage value
 func (a *Battery1) SetPercentage(v byte) error {
 	return a.SetProperty("Percentage", v)
 }
-
-
 
 // GetPercentage get Percentage value
 func (a *Battery1) GetPercentage() (byte, error) {
@@ -94,13 +83,9 @@ func (a *Battery1) GetPercentage() (byte, error) {
 	return v.Value().(byte), nil
 }
 
-
-
 // Close the connection
 func (a *Battery1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -149,7 +134,6 @@ func (a *Battery1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a Battery1Properties to map
 func (a *Battery1Properties) ToMap() (map[string]interface{}, error) {
@@ -235,7 +219,3 @@ func (a *Battery1) WatchProperties() (chan *bluez.PropertyChanged, error) {
 func (a *Battery1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	return bluez.UnwatchProperties(a, ch)
 }
-
-
-
-

@@ -2,18 +2,16 @@
 
 package mesh
 
-
-
 import (
-   "sync"
-   "github.com/muka/go-bluetooth/bluez"
-   "github.com/muka/go-bluetooth/util"
-   "github.com/muka/go-bluetooth/props"
-   "github.com/godbus/dbus/v5"
+	"sync"
+
+	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
+	"github.com/muka/go-bluetooth/props"
+	"github.com/muka/go-bluetooth/util"
 )
 
 var Network1Interface = "org.bluez.mesh.Network1"
-
 
 // NewNetwork1 create a new instance of Network1
 //
@@ -29,35 +27,31 @@ func NewNetwork1() (*Network1, error) {
 			Bus:   bluez.SystemBus,
 		},
 	)
-	
 	a.Properties = new(Network1Properties)
 
 	_, err := a.GetProperties()
 	if err != nil {
 		return nil, err
 	}
-	
 	return a, nil
 }
-
 
 /*
 Network1 Mesh Network Hierarchy
 
 */
 type Network1 struct {
-	client     				*bluez.Client
-	propertiesSignal 	chan *dbus.Signal
-	objectManagerSignal chan *dbus.Signal
-	objectManager       *bluez.ObjectManager
-	Properties 				*Network1Properties
+	client                 *bluez.Client
+	propertiesSignal       chan *dbus.Signal
+	objectManagerSignal    chan *dbus.Signal
+	objectManager          *bluez.ObjectManager
+	Properties             *Network1Properties
 	watchPropertiesChannel chan *dbus.Signal
 }
 
 // Network1Properties contains the exposed properties of an interface
 type Network1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
-
 }
 
 //Lock access to properties
@@ -70,13 +64,9 @@ func (p *Network1Properties) Unlock() {
 	p.lock.Unlock()
 }
 
-
-
 // Close the connection
 func (a *Network1) Close() {
-	
 	a.unregisterPropertiesSignal()
-	
 	a.client.Disconnect()
 }
 
@@ -125,7 +115,6 @@ func (a *Network1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
 
 	return a.objectManagerSignal, cancel, nil
 }
-
 
 // ToMap convert a Network1Properties to map
 func (a *Network1Properties) ToMap() (map[string]interface{}, error) {
@@ -212,9 +201,6 @@ func (a *Network1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 	return bluez.UnwatchProperties(a, ch)
 }
 
-
-
-
 /*
 Join 		This is the first method that an application has to call to
 		become a provisioned node on a mesh network. The call will
@@ -232,24 +218,23 @@ Join 		This is the first method that an application has to call to
 		This UUID must be unique (at least from the daemon perspective),
 		therefore attempting to call this function using already
 		registered UUID results in an error.
+		When provisioning finishes, the daemon will call either
+		JoinComplete or JoinFailed method on object implementing
+		org.bluez.mesh.Application1 interface.
 		PossibleErrors:
 			org.bluez.mesh.Error.InvalidArguments
 			org.bluez.mesh.Error.AlreadyExists,
 
 */
 func (a *Network1) Join(app_root dbus.ObjectPath, uuid []byte) error {
-	
 	return a.client.Call("Join", 0, app_root, uuid).Store()
-	
 }
 
 /*
-Cancel 
+Cancel
 */
 func (a *Network1) Cancel() error {
-	
-	return a.client.Call("Cancel", 0, ).Store()
-	
+	return a.client.Call("Cancel", 0).Store()
 }
 
 /*
@@ -303,15 +288,15 @@ Attach 		This is the first method that an application must call to get
 			org.bluez.mesh.Error.InvalidArguments
 			org.bluez.mesh.Error.NotFound,
 			org.bluez.mesh.Error.AlreadyExists,
+			org.bluez.mesh.Error.Busy,
 			org.bluez.mesh.Error.Failed
 
 */
 func (a *Network1) Attach(app_root dbus.ObjectPath, token uint64) (dbus.ObjectPath, []ConfigurationItem, error) {
-	
 	var val0 dbus.ObjectPath
-   val1 := []ConfigurationItem{}
+	val1 := []ConfigurationItem{}
 	err := a.client.Call("Attach", 0, app_root, token).Store(&val0, &val1)
-	return val0, val1, err	
+	return val0, val1, err
 }
 
 /*
@@ -320,12 +305,12 @@ Leave 		This removes the configuration information about the mesh node
 		has been obtained as a result of successful Join() method call.
 		PossibleErrors:
 			org.bluez.mesh.Error.InvalidArguments
+			org.bluez.mesh.Error.NotFound
+			org.bluez.mesh.Error.Busy
 
 */
 func (a *Network1) Leave(token uint64) error {
-	
 	return a.client.Call("Leave", 0, token).Store()
-	
 }
 
 /*
@@ -345,25 +330,20 @@ CreateNetwork 		This is the first method that an application calls to become
 		This UUID must be unique (at least from the daemon perspective),
 		therefore attempting to call this function using already
 		registered UUID results in an error.
-		The returned token must be preserved by the application in
-		order to authenticate itself to the mesh daemon and attach to
-		the network as a mesh node by calling Attach() method or
-		permanently remove the identity of the mesh node by calling
-		Leave() method.
 		The other information the bluetooth-meshd daemon will preserve
 		about the initial node, is to give it the initial primary
 		unicast address (0x0001), and create and assign a net_key as the
 		primary network net_index (0x000).
+		Upon successful processing of Create() method, the daemon
+		will call JoinComplete method on object implementing
+		org.bluez.mesh.Application1.
 		PossibleErrors:
 			org.bluez.mesh.Error.InvalidArguments
 			org.bluez.mesh.Error.AlreadyExists,
 
 */
-func (a *Network1) CreateNetwork(app_root dbus.ObjectPath, uuid []byte) (uint64, error) {
-	
-	var val0 uint64
-	err := a.client.Call("CreateNetwork", 0, app_root, uuid).Store(&val0)
-	return val0, err	
+func (a *Network1) CreateNetwork(app_root dbus.ObjectPath, uuid []byte) error {
+	return a.client.Call("CreateNetwork", 0, app_root, uuid).Store()
 }
 
 /*
@@ -384,7 +364,7 @@ Import 		This method creates a local mesh node based on node
 		to.
 		The flags parameter is a dictionary containing provisioning
 		flags. Supported values are:
-			boolean IVUpdate
+			boolean IvUpdate
 				When true, indicates that the network is in the
 				middle of IV Index Update procedure.
 			boolean KeyRefresh
@@ -394,11 +374,9 @@ Import 		This method creates a local mesh node based on node
 		the network. This value is known by the provisioner.
 		The unicast parameter is the primary unicast address of the
 		imported node.
-		The returned token must be preserved by the application in
-		order to authenticate itself to the mesh daemon and attach to
-		the network as a mesh node by calling Attach() method or
-		permanently remove the identity of the mesh node by calling
-		Leave() method.
+		Upon successful processing of Import() method, the daemon will
+		call JoinComplete method on object implementing
+		org.bluez.mesh.Application1 interface.
 		PossibleErrors:
 			org.bluez.mesh.Error.InvalidArguments,
 			org.bluez.mesh.Error.AlreadyExists,
@@ -406,10 +384,6 @@ Import 		This method creates a local mesh node based on node
 			org.bluez.mesh.Error.Failed
 
 */
-func (a *Network1) Import(app_root dbus.ObjectPath, uuid []byte, dev_key []byte, net_key []byte, net_index uint16, flags map[string]interface{}, iv_index uint32, unicast uint16) (uint64, error) {
-	
-	var val0 uint64
-	err := a.client.Call("Import", 0, app_root, uuid, dev_key, net_key, net_index, flags, iv_index, unicast).Store(&val0)
-	return val0, err	
+func (a *Network1) Import(app_root dbus.ObjectPath, uuid []byte, dev_key []byte, net_key []byte, net_index uint16, flags map[string]interface{}, iv_index uint32, unicast uint16) error {
+	return a.client.Call("Import", 0, app_root, uuid, dev_key, net_key, net_index, flags, iv_index, unicast).Store()
 }
-

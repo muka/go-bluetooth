@@ -8,27 +8,27 @@ func GetPropertiesOverride(iface string) (map[string]string, bool) {
 }
 
 var PropertyTypes = map[string]map[string]string{
-	"org.bluez.Device1": map[string]string{
+	"org.bluez.Device1": {
 		"ServiceData":      "map[string]interface{}",
 		"ManufacturerData": "map[uint16]interface{}",
 	},
-	"org.bluez.GattCharacteristic1": map[string]string{
+	"org.bluez.GattCharacteristic1": {
 		"Value":          "[]byte `dbus:\"emit\"`",
 		"Descriptors":    "[]dbus.ObjectPath",
 		"WriteAcquired":  "bool `dbus:\"ignore\"`",
 		"NotifyAcquired": "bool `dbus:\"ignore\"`",
 	},
-	"org.bluez.GattDescriptor1": map[string]string{
+	"org.bluez.GattDescriptor1": {
 		"Value":          "[]byte `dbus:\"emit\"`",
 		"Characteristic": "dbus.ObjectPath",
 	},
-	"org.bluez.GattService1": map[string]string{
+	"org.bluez.GattService1": {
 		"Characteristics": "[]dbus.ObjectPath `dbus:\"emit\"`",
 		"Includes":        "[]dbus.ObjectPath `dbus:\"omitEmpty\"`",
 		"Device":          "dbus.ObjectPath `dbus:\"ignore=IsService\"`",
 		"IsService":       "bool `dbus:\"ignore\"`",
 	},
-	"org.bluez.LEAdvertisement1": map[string]string{
+	"org.bluez.LEAdvertisement1": {
 		// dbus type: (yv) dict of byte variant (array of bytes)
 		"Data": "map[byte]interface{}",
 		// dbus type: (qv) dict of uint16 variant (array of bytes)
