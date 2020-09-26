@@ -66,12 +66,6 @@ type Node1Properties struct {
 	/*
 	Beacon This property indicates whether the periodic beaconing is
 		enabled (true) or disabled (false).
-
-	uint8 BeaconFlags [read-only]
-
-		This property may be read at any time to determine the flag
-		field setting on sent and received beacons of the primary
-		network key.
 	*/
 	Beacon bool
 
@@ -93,6 +87,13 @@ type Node1Properties struct {
 		for provisioning.
 	*/
 	IvIndex uint32
+
+	/*
+	IvUpdate When true, indicates that the network is in the middle of IV
+		Index Update procedure. This information is only useful for
+		provisioning.
+	*/
+	IvUpdate bool
 
 	/*
 	LowPower Indicates support for operating in Low Power node mode
@@ -211,6 +212,20 @@ func (a *Node1) GetIvIndex() (uint32, error) {
 		return uint32(0), err
 	}
 	return v.Value().(uint32), nil
+}
+
+
+
+
+
+
+// GetIvUpdate get IvUpdate value
+func (a *Node1) GetIvUpdate() (bool, error) {
+	v, err := a.GetProperty("IvUpdate")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
 }
 
 
@@ -457,6 +472,12 @@ Send 		This method is used to send a message originated by a local
 		element, i.e., the application key must be bound to a model on
 		this element. Otherwise, org.bluez.mesh.Error.NotAuthorized will
 		be returned.
+		The options parameter is a dictionary with the following keys
+		defined:
+			bool ForceSegmented
+				Specifies whether to force sending of a short
+				message as one-segment payload. If not present,
+				the default setting is "false".
 		The data parameter is an outgoing message to be encypted by the
 		bluetooth-meshd daemon and sent on.
 		Possible errors:
@@ -465,9 +486,9 @@ Send 		This method is used to send a message originated by a local
 			org.bluez.mesh.Error.NotFound
 
 */
-func (a *Node1) Send(element_path dbus.ObjectPath, destination uint16, key_index uint16, data []byte) error {
+func (a *Node1) Send(element_path dbus.ObjectPath, destination uint16, key_index uint16, options map[string]interface{}, data []byte) error {
 	
-	return a.client.Call("Send", 0, element_path, destination, key_index, data).Store()
+	return a.client.Call("Send", 0, element_path, destination, key_index, options, data).Store()
 	
 }
 
@@ -487,6 +508,12 @@ DevKeySend 		This method is used to send a message originated by a local
 		device key is used.
 		The net_index parameter is the subnet index of the network on
 		which the message is to be sent.
+		The options parameter is a dictionary with the following keys
+		defined:
+			bool ForceSegmented
+				Specifies whether to force sending of a short
+				message as one-segment payload. If not present,
+				the default setting is "false".
 		The data parameter is an outgoing message to be encypted by the
 		meshd daemon and sent on.
 		Possible errors:
@@ -494,9 +521,9 @@ DevKeySend 		This method is used to send a message originated by a local
 			org.bluez.mesh.Error.NotFound
 
 */
-func (a *Node1) DevKeySend(element_path dbus.ObjectPath, destination uint16, remote bool, net_index uint16, data []byte) error {
+func (a *Node1) DevKeySend(element_path dbus.ObjectPath, destination uint16, remote bool, net_index uint16, options map[string]interface{}, data []byte) error {
 	
-	return a.client.Call("DevKeySend", 0, element_path, destination, remote, net_index, data).Store()
+	return a.client.Call("DevKeySend", 0, element_path, destination, remote, net_index, options, data).Store()
 	
 }
 
@@ -565,7 +592,20 @@ Publish 		This method is used to send a publication originated by a local
 		a collection of the application elements (see Mesh Application
 		Hierarchy section).
 		The model parameter contains a model ID, as defined by the
-		Bluetooth SIG.
+		Bluetooth SIG. If the options dictionary contains a "Vendor"
+		key, then this ID is defined by the specified vendor.
+		The options parameter is a dictionary with the following keys
+		defined:
+			bool ForceSegmented
+				Specifies whether to force sending of a short
+				message as one-segment payload. If not present,
+				the default setting is "false".
+			uint16 Vendor
+				A 16-bit Company ID as defined by the
+				Bluetooth SIG. This key should only exist when
+				publishing on a Vendor defined model.
+		The data parameter is an outgoing message to be encypted by the
+		meshd daemon and sent on.
 		Since only one Publish record may exist per element-model, the
 		destination and key_index are obtained from the Publication
 		record cached by the daemon.
@@ -574,34 +614,9 @@ Publish 		This method is used to send a publication originated by a local
 			org.bluez.mesh.Error.InvalidArguments
 
 */
-func (a *Node1) Publish(element_path dbus.ObjectPath, model uint16, data []byte) error {
+func (a *Node1) Publish(element_path dbus.ObjectPath, model uint16, options map[string]interface{}, data []byte) error {
 	
-	return a.client.Call("Publish", 0, element_path, model, data).Store()
-	
-}
-
-/*
-VendorPublish 		This method is used to send a publication originated by a local
-		vendor model. If the model does not exist, or it has no
-		publication record, the method returns
-		org.bluez.mesh.Error.DoesNotExist error.
-		The element_path parameter is the object path of an element from
-		a collection of the application elements (see Mesh Application
-		Hierarchy section).
-		The vendor parameter is a 16-bit Bluetooth-assigned Company ID.
-		The model_id parameter is a 16-bit vendor-assigned Model
-		Identifier.
-		Since only one Publish record may exist per element-model, the
-		destination and key_index are obtained from the Publication
-		record cached by the daemon.
-		Possible errors:
-			org.bluez.mesh.Error.DoesNotExist
-			org.bluez.mesh.Error.InvalidArguments
-
-*/
-func (a *Node1) VendorPublish(element_path dbus.ObjectPath, vendor uint16, model_id uint16, data []byte) error {
-	
-	return a.client.Call("VendorPublish", 0, element_path, vendor, model_id, data).Store()
+	return a.client.Call("Publish", 0, element_path, model, options, data).Store()
 	
 }
 

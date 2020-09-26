@@ -66,18 +66,39 @@ type Element1Properties struct {
 	Location uint16
 
 	/*
-	Models An array of SIG Model Identifiers. The array may be empty.
+	Models An array of SIG Models:
+
+			id - SIG Model Identifier
+
+			options - a dictionary that may contain additional model
+			info. The following keys are defined:
 	*/
-	Models []uint16
+	Models []ConfigurationItem
 
 	/*
-	VendorModels An array of pairs (vendor, model ID): vendor is a 16-bit
-		Bluetooth-assigned Company ID as defined by Bluetooth SIG.
-		model ID is a 16-bit vendor-assigned Model Identifier
+	Publish supports publication mechanism
+	*/
+	Publish bool
+
+	/*
+	Subscribe supports subscription mechanism
 
 		The array may be empty.
 	*/
-	VendorModels []VendorItem
+	Subscribe bool
+
+	/*
+	VendorModels An array of Vendor Models:
+
+			vendor - a 16-bit Bluetooth-assigned Company ID as
+			defined by Bluetooth SIG.
+
+			id - a 16-bit vendor-assigned Model Identifier
+
+			options - a dictionary that may contain additional model
+			info. The following keys are defined:
+	*/
+	VendorModels []VendorOptionsItem
 
 }
 
@@ -111,12 +132,50 @@ func (a *Element1) GetLocation() (uint16, error) {
 
 
 // GetModels get Models value
-func (a *Element1) GetModels() ([]uint16, error) {
+func (a *Element1) GetModels() ([]ConfigurationItem, error) {
 	v, err := a.GetProperty("Models")
 	if err != nil {
-		return []uint16{}, err
+		return []ConfigurationItem{}, err
 	}
-	return v.Value().([]uint16), nil
+	return v.Value().([]ConfigurationItem), nil
+}
+
+
+
+
+// SetPublish set Publish value
+func (a *Element1) SetPublish(v bool) error {
+	return a.SetProperty("Publish", v)
+}
+
+
+
+// GetPublish get Publish value
+func (a *Element1) GetPublish() (bool, error) {
+	v, err := a.GetProperty("Publish")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
+}
+
+
+
+
+// SetSubscribe set Subscribe value
+func (a *Element1) SetSubscribe(v bool) error {
+	return a.SetProperty("Subscribe", v)
+}
+
+
+
+// GetSubscribe get Subscribe value
+func (a *Element1) GetSubscribe() (bool, error) {
+	v, err := a.GetProperty("Subscribe")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
 }
 
 
@@ -125,12 +184,12 @@ func (a *Element1) GetModels() ([]uint16, error) {
 
 
 // GetVendorModels get VendorModels value
-func (a *Element1) GetVendorModels() ([]VendorItem, error) {
+func (a *Element1) GetVendorModels() ([]VendorOptionsItem, error) {
 	v, err := a.GetProperty("VendorModels")
 	if err != nil {
-		return []VendorItem{}, err
+		return []VendorOptionsItem{}, err
 	}
-	return v.Value().([]VendorItem), nil
+	return v.Value().([]VendorOptionsItem), nil
 }
 
 

@@ -3,8 +3,12 @@ package override
 var typesMap = map[string]string{
 	//mesh-api object node, array{byte, array{(uint16, dict)}} configuration Attach(object app_root, uint64 token)
 	"object node, array{byte, array{(uint16, dict)}} configuration": "dbus.ObjectPath, []ConfigurationItem",
+
+	"array{(uint16 id, dict caps)}": "[]ConfigurationItem",
 	// mesh-api array{(uint16, uint16)} VendorModels [read-only]
 	"array{(uint16, uint16)}": "[]VendorItem",
+
+	"array{(uint16 vendor, uint16 id, dict options)}": "[]VendorOptionsItem",
 	// obex-api array{string vcard, string name} List(dict filters)
 	"array{string vcard, string name}": "[]VCardItem",
 	// obex-api

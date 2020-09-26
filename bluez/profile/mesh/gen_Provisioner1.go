@@ -224,18 +224,21 @@ ScanResult 		The method is called from the bluetooth-meshd daemon when a
 		signal strength of the recieved unprovisioned beacon.
 		The data parameter is a variable length byte array, that may
 		have 1, 2 or 3 distinct fields contained in it including the 16
-		byte remote device UUID (always), a 32 bit mask of OOB
+		byte remote device UUID (always), a 16 bit mask of OOB
 		authentication flags (optional), and a 32 bit URI hash (if URI
 		bit set in OOB mask). Whether these fields exist or not is a
 		decision of the remote device.
+		The options parameter is a dictionary that may contain
+		additional scan result info (currently an empty placeholder for
+		forward compatibility).
 		If a beacon with a UUID that has already been reported is
 		recieved by the daemon, it will be silently discarded unless it
 		was recieved at a higher rssi power level.
 
 */
-func (a *Provisioner1) ScanResult(rssi int16, data []byte) error {
+func (a *Provisioner1) ScanResult(rssi int16, data []byte, options map[string]interface{}) error {
 	
-	return a.client.Call("ScanResult", 0, rssi, data).Store()
+	return a.client.Call("ScanResult", 0, rssi, data, options).Store()
 	
 }
 

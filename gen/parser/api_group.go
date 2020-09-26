@@ -117,10 +117,10 @@ func (g *ApiGroupParser) Parse(srcFile string) (*types.ApiGroup, error) {
 	return apiGroup, nil
 }
 
-func (g *ApiParser) parseApi(raw []byte) (*types.Api, error) {
-	apiParser := NewApiParser(g.debug, g.filter)
-	return apiParser.Parse(raw)
-}
+// func (g *ApiParser) parseApi(raw []byte) (*types.Api, error) {
+// 	apiParser := NewApiParser(g.debug, g.filter)
+// 	return apiParser.Parse(raw)
+// }
 
 func (g *ApiGroupParser) parseGroup(raw []byte) {
 

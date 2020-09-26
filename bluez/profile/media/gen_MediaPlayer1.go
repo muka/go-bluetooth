@@ -849,3 +849,47 @@ func (a *MediaPlayer1) Rewind() error {
 	
 }
 
+/*
+Press 			Press a specific key to send as passthrough command.
+			The key will be released automatically. Use Hold()
+			instead if the intention is to hold down the key.
+			Possible Errors: org.bluez.Error.InvalidArguments
+					 org.bluez.Error.NotSupported
+					 org.bluez.Error.Failed
+
+*/
+func (a *MediaPlayer1) Press(avc_key byte) error {
+	
+	return a.client.Call("Press", 0, avc_key).Store()
+	
+}
+
+/*
+Hold 			Press and hold a specific key to send as passthrough
+			command. It is your responsibility to make sure that
+			Release() is called after calling this method. The held
+			key will also be released when any other method in this
+			interface is called.
+			Possible Errors: org.bluez.Error.InvalidArguments
+					 org.bluez.Error.NotSupported
+					 org.bluez.Error.Failed
+
+*/
+func (a *MediaPlayer1) Hold(avc_key byte) error {
+	
+	return a.client.Call("Hold", 0, avc_key).Store()
+	
+}
+
+/*
+Release 			Release the previously held key invoked using Hold().
+			Possible Errors: org.bluez.Error.NotSupported
+					 org.bluez.Error.Failed
+
+*/
+func (a *MediaPlayer1) Release() error {
+	
+	return a.client.Call("Release", 0, ).Store()
+	
+}
+

@@ -69,26 +69,20 @@ func (g *PropertyParser) Parse(raw []byte) (*types.Property, error) {
 			case "readonly":
 			case "read-only":
 				flag = types.FlagReadOnly
-				break
 			case "writeonly":
 			case "write-only":
 				flag = types.FlagWriteOnly
-				break
 			case "readwrite":
 			case "read-write":
 			case "read/write":
 				flag = types.FlagReadWrite
-				break
 			case "experimental":
 			case "Experimental":
 				flag = types.FlagExperimental
-				break
 			case "optional":
 				flag = types.FlagOptional
-				break
 			default:
 				log.Warnf("Unknown flag %s", f)
-				break
 			}
 
 			if flag > 0 {
@@ -110,6 +104,11 @@ func (g *PropertyParser) Parse(raw []byte) (*types.Property, error) {
 	}
 
 	name = strings.Replace(name, " \t\n", "", -1)
+
+	// theese bastards fucks up with properties names
+	if nameParts := strings.Split(name, " "); len(nameParts) > 1 {
+		name = nameParts[0]
+	}
 
 	property.Type = string(matches2[0][1])
 	property.Name = name

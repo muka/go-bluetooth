@@ -8,6 +8,12 @@ type VendorItem struct {
 	ModelID uint16
 }
 
+//VendorItem array{(uint16, uint16, dict)}
+type VendorOptionsItem struct {
+	VendorItem
+	Options map[string]interface{}
+}
+
 // ModelConfig
 type ModelConfig struct {
 	Bindings          []uint16

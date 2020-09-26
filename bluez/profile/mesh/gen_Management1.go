@@ -218,10 +218,14 @@ func (a *Management1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 /*
 UnprovisionedScan 		This method is used by the application that supports
 		org.bluez.mesh.Provisioner1 interface to start listening
-		(scanning) for unprovisioned devices in the area. Scanning
-		will continue for the specified number of seconds, or, if 0 is
-		specified, then continuously until UnprovisionedScanCancel() is
-		called or if AddNode() method is called.
+		(scanning) for unprovisioned devices in the area.
+		The options parameter is a dictionary with the following keys
+		defined:
+		uint16 Seconds
+			Specifies number of seconds for scanning to be active.
+			If set to 0 or if this key is not present, then the
+			scanning will continue until UnprovisionedScanCancel()
+			or AddNode() methods are called.
 		Each time a unique unprovisioned beacon is heard, the
 		ScanResult() method on the app will be called with the result.
 		PossibleErrors:
@@ -230,9 +234,9 @@ UnprovisionedScan 		This method is used by the application that supports
 			org.bluez.mesh.Error.Busy
 
 */
-func (a *Management1) UnprovisionedScan(seconds uint16) error {
+func (a *Management1) UnprovisionedScan(options map[string]interface{}) error {
 	
-	return a.client.Call("UnprovisionedScan", 0, seconds).Store()
+	return a.client.Call("UnprovisionedScan", 0, options).Store()
 	
 }
 
@@ -251,14 +255,17 @@ AddNode 		This method is used by the application that supports
 		unprovisioned device specified by uuid, to the Network.
 		The uuid parameter is a 16-byte array that contains Device UUID
 		of the unprovisioned device to be added to the network.
+		The options parameter is a dictionary that may contain
+		additional configuration info (currently an empty placeholder
+		for forward compatibility).
 		PossibleErrors:
 			org.bluez.mesh.Error.InvalidArguments
 			org.bluez.mesh.Error.NotAuthorized
 
 */
-func (a *Management1) AddNode(uuid []byte) error {
+func (a *Management1) AddNode(uuid []byte, options map[string]interface{}) error {
 	
-	return a.client.Call("AddNode", 0, uuid).Store()
+	return a.client.Call("AddNode", 0, uuid, options).Store()
 	
 }
 
@@ -423,7 +430,7 @@ UpdateAppKey 		This method is used by the application to generate a new
 			org.bluez.mesh.Error.Failed
 			org.bluez.mesh.Error.InvalidArguments
 			org.bluez.mesh.Error.DoesNotExist
-			org.bluez.mesh.Error.Busy
+			org.bluez.mesh.Error.InProgress
 
 */
 func (a *Management1) UpdateAppKey(app_index uint16) error {

@@ -302,6 +302,9 @@ JoinComplete 		This method is called when the node provisioning initiated
 		the network as a mesh node by calling Attach() method or
 		permanently remove the identity of the mesh node by calling
 		Leave() method.
+		If this method returns an error, the daemon will assume that the
+		application failed to preserve the token, and will remove the
+		freshly created node.
 
 */
 func (a *Application1) JoinComplete(token uint64) error {

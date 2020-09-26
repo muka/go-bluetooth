@@ -228,6 +228,12 @@ type Device1Properties struct {
 	*/
 	UUIDs []string
 
+	/*
+	WakeAllowed If set to true this device will be allowed to wake the
+			host from system suspend.
+	*/
+	WakeAllowed bool
+
 }
 
 //Lock access to properties
@@ -656,6 +662,25 @@ func (a *Device1) GetUUIDs() ([]string, error) {
 		return []string{}, err
 	}
 	return v.Value().([]string), nil
+}
+
+
+
+
+// SetWakeAllowed set WakeAllowed value
+func (a *Device1) SetWakeAllowed(v bool) error {
+	return a.SetProperty("WakeAllowed", v)
+}
+
+
+
+// GetWakeAllowed get WakeAllowed value
+func (a *Device1) GetWakeAllowed() (bool, error) {
+	v, err := a.GetProperty("WakeAllowed")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
 }
 
 

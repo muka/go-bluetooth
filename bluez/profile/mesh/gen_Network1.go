@@ -232,6 +232,9 @@ Join 		This is the first method that an application has to call to
 		This UUID must be unique (at least from the daemon perspective),
 		therefore attempting to call this function using already
 		registered UUID results in an error.
+		When provisioning finishes, the daemon will call either
+		JoinComplete or JoinFailed method on object implementing
+		org.bluez.mesh.Application1 interface.
 		PossibleErrors:
 			org.bluez.mesh.Error.InvalidArguments
 			org.bluez.mesh.Error.AlreadyExists,
@@ -303,6 +306,7 @@ Attach 		This is the first method that an application must call to get
 			org.bluez.mesh.Error.InvalidArguments
 			org.bluez.mesh.Error.NotFound,
 			org.bluez.mesh.Error.AlreadyExists,
+			org.bluez.mesh.Error.Busy,
 			org.bluez.mesh.Error.Failed
 
 */
@@ -320,6 +324,8 @@ Leave 		This removes the configuration information about the mesh node
 		has been obtained as a result of successful Join() method call.
 		PossibleErrors:
 			org.bluez.mesh.Error.InvalidArguments
+			org.bluez.mesh.Error.NotFound
+			org.bluez.mesh.Error.Busy
 
 */
 func (a *Network1) Leave(token uint64) error {
@@ -345,25 +351,22 @@ CreateNetwork 		This is the first method that an application calls to become
 		This UUID must be unique (at least from the daemon perspective),
 		therefore attempting to call this function using already
 		registered UUID results in an error.
-		The returned token must be preserved by the application in
-		order to authenticate itself to the mesh daemon and attach to
-		the network as a mesh node by calling Attach() method or
-		permanently remove the identity of the mesh node by calling
-		Leave() method.
 		The other information the bluetooth-meshd daemon will preserve
 		about the initial node, is to give it the initial primary
 		unicast address (0x0001), and create and assign a net_key as the
 		primary network net_index (0x000).
+		Upon successful processing of Create() method, the daemon
+		will call JoinComplete method on object implementing
+		org.bluez.mesh.Application1.
 		PossibleErrors:
 			org.bluez.mesh.Error.InvalidArguments
 			org.bluez.mesh.Error.AlreadyExists,
 
 */
-func (a *Network1) CreateNetwork(app_root dbus.ObjectPath, uuid []byte) (uint64, error) {
+func (a *Network1) CreateNetwork(app_root dbus.ObjectPath, uuid []byte) error {
 	
-	var val0 uint64
-	err := a.client.Call("CreateNetwork", 0, app_root, uuid).Store(&val0)
-	return val0, err	
+	return a.client.Call("CreateNetwork", 0, app_root, uuid).Store()
+	
 }
 
 /*
@@ -384,7 +387,7 @@ Import 		This method creates a local mesh node based on node
 		to.
 		The flags parameter is a dictionary containing provisioning
 		flags. Supported values are:
-			boolean IVUpdate
+			boolean IvUpdate
 				When true, indicates that the network is in the
 				middle of IV Index Update procedure.
 			boolean KeyRefresh
@@ -394,11 +397,9 @@ Import 		This method creates a local mesh node based on node
 		the network. This value is known by the provisioner.
 		The unicast parameter is the primary unicast address of the
 		imported node.
-		The returned token must be preserved by the application in
-		order to authenticate itself to the mesh daemon and attach to
-		the network as a mesh node by calling Attach() method or
-		permanently remove the identity of the mesh node by calling
-		Leave() method.
+		Upon successful processing of Import() method, the daemon will
+		call JoinComplete method on object implementing
+		org.bluez.mesh.Application1 interface.
 		PossibleErrors:
 			org.bluez.mesh.Error.InvalidArguments,
 			org.bluez.mesh.Error.AlreadyExists,
@@ -406,10 +407,9 @@ Import 		This method creates a local mesh node based on node
 			org.bluez.mesh.Error.Failed
 
 */
-func (a *Network1) Import(app_root dbus.ObjectPath, uuid []byte, dev_key []byte, net_key []byte, net_index uint16, flags map[string]interface{}, iv_index uint32, unicast uint16) (uint64, error) {
+func (a *Network1) Import(app_root dbus.ObjectPath, uuid []byte, dev_key []byte, net_key []byte, net_index uint16, flags map[string]interface{}, iv_index uint32, unicast uint16) error {
 	
-	var val0 uint64
-	err := a.client.Call("Import", 0, app_root, uuid, dev_key, net_key, net_index, flags, iv_index, unicast).Store(&val0)
-	return val0, err	
+	return a.client.Call("Import", 0, app_root, uuid, dev_key, net_key, net_index, flags, iv_index, unicast).Store()
+	
 }
 

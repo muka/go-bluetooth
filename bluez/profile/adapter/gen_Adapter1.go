@@ -213,6 +213,15 @@ type Adapter1Properties struct {
 	Powered bool
 
 	/*
+	Roles List of supported roles. Possible values:
+				"central": Supports the central role.
+				"peripheral": Supports the peripheral role.
+				"central-peripheral": Supports both roles
+						      concurrently.
+	*/
+	Roles []string
+
+	/*
 	UUIDs List of 128-bit UUIDs that represents the available
 			local services.
 	*/
@@ -456,6 +465,25 @@ func (a *Adapter1) GetPowered() (bool, error) {
 		return false, err
 	}
 	return v.Value().(bool), nil
+}
+
+
+
+
+// SetRoles set Roles value
+func (a *Adapter1) SetRoles(v []string) error {
+	return a.SetProperty("Roles", v)
+}
+
+
+
+// GetRoles get Roles value
+func (a *Adapter1) GetRoles() ([]string, error) {
+	v, err := a.GetProperty("Roles")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
 }
 
 
@@ -723,6 +751,17 @@ SetDiscoveryFilter 			This method sets the device discovery filter for the
 				Make adapter discoverable while discovering,
 				if the adapter is already discoverable setting
 				this filter won't do anything.
+			string Pattern (Default: none)
+				Discover devices where the pattern matches
+				either the prefix of the address or
+				device name which is convenient way to limited
+				the number of device objects created during a
+				discovery.
+				When set disregards device discoverable flags.
+				Note: The pattern matching is ignored if there
+				are other client that don't set any pattern as
+				it work as a logical OR, also setting empty
+				string "" pattern will match any device found.
 			When discovery filter is set, Device objects will be
 			created as new devices with matching criteria are
 			discovered regardless of they are connectable or

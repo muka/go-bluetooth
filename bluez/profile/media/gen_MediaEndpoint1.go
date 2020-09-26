@@ -97,6 +97,11 @@ type MediaEndpoint1Properties struct {
 	Codec byte
 
 	/*
+	DelayReporting Indicates if endpoint supports Delay Reporting.
+	*/
+	DelayReporting bool
+
+	/*
 	Device Device object which the endpoint is belongs to.
 	*/
 	Device dbus.ObjectPath
@@ -154,6 +159,25 @@ func (a *MediaEndpoint1) GetCodec() (byte, error) {
 		return byte(0), err
 	}
 	return v.Value().(byte), nil
+}
+
+
+
+
+// SetDelayReporting set DelayReporting value
+func (a *MediaEndpoint1) SetDelayReporting(v bool) error {
+	return a.SetProperty("DelayReporting", v)
+}
+
+
+
+// GetDelayReporting get DelayReporting value
+func (a *MediaEndpoint1) GetDelayReporting() (bool, error) {
+	v, err := a.GetProperty("DelayReporting")
+	if err != nil {
+		return false, err
+	}
+	return v.Value().(bool), nil
 }
 
 
