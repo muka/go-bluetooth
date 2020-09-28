@@ -21,6 +21,11 @@ High level features supported:
 - [x] Beaconing send & receive (iBeacon and Eddystone)
 - [x] Mesh API support (since v5.53)
 
+## Todo
+
+- [ ] Generate dbus-compatible XML from documentation
+- [ ] Generate mock service to test the library against
+
 ## Running examples
 
 Examples are available in `_examples` folder.
