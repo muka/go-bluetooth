@@ -28,6 +28,12 @@ func WatchProperties(wprop WatchableClient) (chan *PropertyChanged, error) {
 	ch := make(chan *PropertyChanged)
 
 	go (func() {
+		defer func() {
+			if err := recover(); err != nil {
+				log.Warnf("Recovering from panic in SetWatchPropertiesChannel: %s", err)
+			}
+		}()
+
 		for {
 
 			if channel == nil {
@@ -92,6 +98,11 @@ func WatchProperties(wprop WatchableClient) (chan *PropertyChanged, error) {
 }
 
 func UnwatchProperties(wprop WatchableClient, ch chan *PropertyChanged) error {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Warnf("Recovering from panic in UnwatchProperties: %s", err)
+		}
+	}()
 	if wprop.GetWatchPropertiesChannel() != nil {
 		wprop.GetWatchPropertiesChannel() <- nil
 		err := wprop.Client().Unregister(wprop.Path(), PropertiesInterface, wprop.GetWatchPropertiesChannel())

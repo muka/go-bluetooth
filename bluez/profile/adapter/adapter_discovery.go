@@ -35,6 +35,16 @@ func (a *Adapter1) OnDeviceDiscovered() (chan *DeviceDiscovered, func(), error) 
 	)
 
 	go func() {
+		// Recover from panic on write to closed channel which happens
+		// very often when there's too many BLE advertisements to process
+		// in timly manner by bluez+dbus and advertising reports come in
+		// after scanning was stopped
+		defer func() {
+			if err := recover(); err != nil {
+				log.Warnf("Recovering from panic: %s", err)
+			}
+		}()
+
 		for v := range signal {
 
 			if v == nil {
