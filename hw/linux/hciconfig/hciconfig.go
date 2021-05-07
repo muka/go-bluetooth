@@ -1,6 +1,7 @@
 package hciconfig
 
 import (
+	"errors"
 	"strings"
 
 	"github.com/muka/go-bluetooth/hw/linux/cmd"
@@ -12,6 +13,10 @@ func GetAdapters() ([]HCIConfigResult, error) {
 	out, err := cmd.Exec("hciconfig")
 	if err != nil {
 		return nil, err
+	}
+
+	if len(out) == 0 {
+		return nil, errors.New("hciconfig provided no response")
 	}
 
 	list := []HCIConfigResult{}
