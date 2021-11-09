@@ -68,6 +68,16 @@ func (c *Client) Call(method string, flags dbus.Flags, args ...interface{}) *dbu
 	return c.dbusObject.Call(methodPath, flags, args...)
 }
 
+//GetConnection returns the Dbus connection
+func (c *Client) GetConnection() *dbus.Conn {
+	return c.conn
+}
+
+//GetDbusObject returns the Dbus object
+func (c *Client) GetDbusObject() dbus.BusObject {
+	return c.dbusObject
+}
+
 //GetProperty return a property value
 func (c *Client) GetProperty(p string) (dbus.Variant, error) {
 	if !c.isConnected() {
