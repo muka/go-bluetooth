@@ -169,6 +169,12 @@ type Device1Properties struct {
 	*/
 	Modalias string
 
+	/* 
+		MTU Maximum Transmission Unit determines how much data can be 
+				sent in a single write
+	*/
+	MTU uint16
+
 	/*
 		Name The Bluetooth remote name. This value can not be
 				changed. Use the Alias property instead.
@@ -434,6 +440,20 @@ func (a *Device1) GetModalias() (string, error) {
 		return "", err
 	}
 	return v.Value().(string), nil
+}
+
+// SetMTU set MTU value
+func (a *Device1) SetMTU(v uint16) error {
+	return a.SetProperty("MTU", v)
+}
+
+// GetMTU get MTU value
+func (a *Device1) GetMTU() (uint16, error) {
+	v, err := a.GetProperty("MTU")
+	if err != nil {
+		return 0, err
+	}
+	return v.Value().(uint16), nil
 }
 
 // SetName set Name value
