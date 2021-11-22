@@ -57,6 +57,16 @@ type Battery1Properties struct {
 		Percentage The percentage of battery left as an unsigned 8-bit integer.
 	*/
 	Percentage byte
+
+	/*
+		Source Describes where the battery information comes from
+				This property is informational only and may be useful
+				for debugging purposes.
+				Providers from BatteryProvider1 may make use of this
+				property to indicate where the battery report comes from
+				(e.g. "HFP 1.7", "HID", or the profile UUID).
+	*/
+	Source string
 }
 
 //Lock access to properties
@@ -81,6 +91,20 @@ func (a *Battery1) GetPercentage() (byte, error) {
 		return byte(0), err
 	}
 	return v.Value().(byte), nil
+}
+
+// SetSource set Source value
+func (a *Battery1) SetSource(v string) error {
+	return a.SetProperty("Source", v)
+}
+
+// GetSource get Source value
+func (a *Battery1) GetSource() (string, error) {
+	v, err := a.GetProperty("Source")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 // Close the connection

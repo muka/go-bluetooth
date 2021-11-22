@@ -85,6 +85,53 @@ type LEAdvertisingManager1Properties struct {
 	ActiveInstances byte
 
 	/*
+		MaxAdvLen Max advertising data length
+	*/
+	MaxAdvLen byte
+
+	/*
+		MaxScnRspLen Max advertising scan response length
+	*/
+	MaxScnRspLen byte
+
+	/*
+		MaxTxPower Max advertising tx power (dBm)
+	*/
+	MaxTxPower int16
+
+	/*
+		MinTxPower Min advertising tx power (dBm)
+	*/
+	MinTxPower int16
+
+	/*
+		SupportedCapabilities Enumerates Advertising-related controller capabilities
+				useful to the client.
+
+				Possible Values:
+	*/
+	SupportedCapabilities map[string]interface{}
+
+	/*
+		SupportedFeatures List of supported platform features. If no features
+				are available on the platform, the SupportedFeatures
+				array will be empty.
+
+				Possible values: "CanSetTxPower"
+
+							Indicates whether platform can
+							specify tx power on each
+							advertising instance.
+
+						 "HardwareOffload"
+
+							Indicates whether multiple
+							advertising will be offloaded
+							to the controller.
+	*/
+	SupportedFeatures []string
+
+	/*
 		SupportedIncludes List of supported system includes.
 
 				Possible values: "tx-power"
@@ -132,6 +179,90 @@ func (a *LEAdvertisingManager1) GetActiveInstances() (byte, error) {
 		return byte(0), err
 	}
 	return v.Value().(byte), nil
+}
+
+// SetMaxAdvLen set MaxAdvLen value
+func (a *LEAdvertisingManager1) SetMaxAdvLen(v byte) error {
+	return a.SetProperty("MaxAdvLen", v)
+}
+
+// GetMaxAdvLen get MaxAdvLen value
+func (a *LEAdvertisingManager1) GetMaxAdvLen() (byte, error) {
+	v, err := a.GetProperty("MaxAdvLen")
+	if err != nil {
+		return byte(0), err
+	}
+	return v.Value().(byte), nil
+}
+
+// SetMaxScnRspLen set MaxScnRspLen value
+func (a *LEAdvertisingManager1) SetMaxScnRspLen(v byte) error {
+	return a.SetProperty("MaxScnRspLen", v)
+}
+
+// GetMaxScnRspLen get MaxScnRspLen value
+func (a *LEAdvertisingManager1) GetMaxScnRspLen() (byte, error) {
+	v, err := a.GetProperty("MaxScnRspLen")
+	if err != nil {
+		return byte(0), err
+	}
+	return v.Value().(byte), nil
+}
+
+// SetMaxTxPower set MaxTxPower value
+func (a *LEAdvertisingManager1) SetMaxTxPower(v int16) error {
+	return a.SetProperty("MaxTxPower", v)
+}
+
+// GetMaxTxPower get MaxTxPower value
+func (a *LEAdvertisingManager1) GetMaxTxPower() (int16, error) {
+	v, err := a.GetProperty("MaxTxPower")
+	if err != nil {
+		return int16(0), err
+	}
+	return v.Value().(int16), nil
+}
+
+// SetMinTxPower set MinTxPower value
+func (a *LEAdvertisingManager1) SetMinTxPower(v int16) error {
+	return a.SetProperty("MinTxPower", v)
+}
+
+// GetMinTxPower get MinTxPower value
+func (a *LEAdvertisingManager1) GetMinTxPower() (int16, error) {
+	v, err := a.GetProperty("MinTxPower")
+	if err != nil {
+		return int16(0), err
+	}
+	return v.Value().(int16), nil
+}
+
+// SetSupportedCapabilities set SupportedCapabilities value
+func (a *LEAdvertisingManager1) SetSupportedCapabilities(v map[string]interface{}) error {
+	return a.SetProperty("SupportedCapabilities", v)
+}
+
+// GetSupportedCapabilities get SupportedCapabilities value
+func (a *LEAdvertisingManager1) GetSupportedCapabilities() (map[string]interface{}, error) {
+	v, err := a.GetProperty("SupportedCapabilities")
+	if err != nil {
+		return map[string]interface{}{}, err
+	}
+	return v.Value().(map[string]interface{}), nil
+}
+
+// SetSupportedFeatures set SupportedFeatures value
+func (a *LEAdvertisingManager1) SetSupportedFeatures(v []string) error {
+	return a.SetProperty("SupportedFeatures", v)
+}
+
+// GetSupportedFeatures get SupportedFeatures value
+func (a *LEAdvertisingManager1) GetSupportedFeatures() ([]string, error) {
+	v, err := a.GetProperty("SupportedFeatures")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
 }
 
 // SetSupportedIncludes set SupportedIncludes value

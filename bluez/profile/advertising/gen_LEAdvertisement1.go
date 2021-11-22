@@ -137,6 +137,24 @@ type LEAdvertisement1Properties struct {
 	ManufacturerData map[uint16]interface{}
 
 	/*
+		MaxInterval Maximum advertising interval to be used by the
+				advertising set, in milliseconds. Acceptable values
+				are in the range [20ms, 10,485s]. If the provided
+				MinInterval is larger than the provided MaxInterval,
+				the registration will return failure.
+	*/
+	MaxInterval uint32
+
+	/*
+		MinInterval Minimum advertising interval to be used by the
+				advertising set, in milliseconds. Acceptable values
+				are in the range [20ms, 10,485s]. If the provided
+				MinInterval is larger than the provided MaxInterval,
+				the registration will return failure.
+	*/
+	MinInterval uint32
+
+	/*
 		SecondaryChannel Secondary channel to be used. Primary channel is
 				always set to "1M" except when "Coded" is set.
 
@@ -169,6 +187,15 @@ type LEAdvertisement1Properties struct {
 				the lifetime of the advertisement.
 	*/
 	Timeout uint16
+
+	/*
+		TxPower Requested transmission power of this advertising set.
+				The provided value is used only if the "CanSetTxPower"
+				feature is enabled on the Advertising Manager. The
+				provided value must be in range [-127 to +20], where
+				units are in dBm.
+	*/
+	TxPower int16
 
 	/*
 		Type Determines the type of advertising packet requested.
@@ -300,6 +327,34 @@ func (a *LEAdvertisement1) GetManufacturerData() (map[string]interface{}, error)
 	return v.Value().(map[string]interface{}), nil
 }
 
+// SetMaxInterval set MaxInterval value
+func (a *LEAdvertisement1) SetMaxInterval(v uint32) error {
+	return a.SetProperty("MaxInterval", v)
+}
+
+// GetMaxInterval get MaxInterval value
+func (a *LEAdvertisement1) GetMaxInterval() (uint32, error) {
+	v, err := a.GetProperty("MaxInterval")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
+
+// SetMinInterval set MinInterval value
+func (a *LEAdvertisement1) SetMinInterval(v uint32) error {
+	return a.SetProperty("MinInterval", v)
+}
+
+// GetMinInterval get MinInterval value
+func (a *LEAdvertisement1) GetMinInterval() (uint32, error) {
+	v, err := a.GetProperty("MinInterval")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
+
 // SetSecondaryChannel set SecondaryChannel value
 func (a *LEAdvertisement1) SetSecondaryChannel(v string) error {
 	return a.SetProperty("SecondaryChannel", v)
@@ -368,6 +423,20 @@ func (a *LEAdvertisement1) GetTimeout() (uint16, error) {
 		return uint16(0), err
 	}
 	return v.Value().(uint16), nil
+}
+
+// SetTxPower set TxPower value
+func (a *LEAdvertisement1) SetTxPower(v int16) error {
+	return a.SetProperty("TxPower", v)
+}
+
+// GetTxPower get TxPower value
+func (a *LEAdvertisement1) GetTxPower() (int16, error) {
+	v, err := a.GetProperty("TxPower")
+	if err != nil {
+		return int16(0), err
+	}
+	return v.Value().(int16), nil
 }
 
 // SetType set Type value

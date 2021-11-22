@@ -217,7 +217,8 @@ Join 		This is the first method that an application has to call to
 		The uuid parameter is a 16-byte array that contains Device UUID.
 		This UUID must be unique (at least from the daemon perspective),
 		therefore attempting to call this function using already
-		registered UUID results in an error.
+		registered UUID results in an error. The composition of the UUID
+		octets must be in compliance with RFC 4122.
 		When provisioning finishes, the daemon will call either
 		JoinComplete or JoinFailed method on object implementing
 		org.bluez.mesh.Application1 interface.
@@ -329,7 +330,8 @@ CreateNetwork 		This is the first method that an application calls to become
 		The uuid parameter is a 16-byte array that contains Device UUID.
 		This UUID must be unique (at least from the daemon perspective),
 		therefore attempting to call this function using already
-		registered UUID results in an error.
+		registered UUID results in an error. The composition of the UUID
+		octets must be in compliance with RFC 4122.
 		The other information the bluetooth-meshd daemon will preserve
 		about the initial node, is to give it the initial primary
 		unicast address (0x0001), and create and assign a net_key as the
@@ -355,7 +357,8 @@ Import 		This method creates a local mesh node based on node
 		The uuid parameter is a 16-byte array that contains Device UUID.
 		This UUID must be unique (at least from the daemon perspective),
 		therefore attempting to call this function using already
-		registered UUID results in an error.
+		registered UUID results in an error. The composition of the UUID
+		octets must be in compliance with RFC 4122.
 		The dev_key parameter is the 16-byte value of the dev key of
 		the imported mesh node.
 		Remaining parameters correspond to provisioning data:
