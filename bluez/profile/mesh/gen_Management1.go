@@ -316,7 +316,7 @@ func (a *Management1) DeleteSubnet(net_index uint16) error {
 }
 
 /*
-SetKeyPhase 		This method is used to set the master key update phase of the
+SetKeyPhase 		This method is used to set the flooding key update phase of the
 		given subnet. When finalizing the procedure, it is important
 		to CompleteAppKeyUpdate() on all app keys that have been
 		updated during the procedure prior to setting phase 3.
@@ -454,4 +454,13 @@ DeleteRemoteNode 		This method is used by the application to delete a remote nod
 */
 func (a *Management1) DeleteRemoteNode(primary uint16, count uint8) error {
 	return a.client.Call("DeleteRemoteNode", 0, primary, count).Store()
+}
+
+/*
+ExportKeys
+*/
+func (a *Management1) ExportKeys() (map[string]interface{}, error) {
+	var val0 map[string]interface{}
+	err := a.client.Call("ExportKeys", 0).Store(&val0)
+	return val0, err
 }

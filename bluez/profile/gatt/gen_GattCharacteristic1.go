@@ -65,7 +65,14 @@ type GattCharacteristic1Properties struct {
 		Flags Defines how the characteristic value can be used. See
 				Core spec "Table 3.5: Characteristic Properties bit
 				field", and "Table 3.8: Characteristic Extended
-				Properties bit field". Allowed values:
+				Properties bit field".
+
+				The "x-notify" and "x-indicate" flags restrict access
+				to notifications and indications by imposing write
+				restrictions on a characteristic's client
+				characteristic configuration descriptor.
+
+				Allowed values:
 
 					"broadcast"
 					"read"
@@ -79,10 +86,16 @@ type GattCharacteristic1Properties struct {
 					"writable-auxiliaries"
 					"encrypt-read"
 					"encrypt-write"
+					"encrypt-notify" (Server only)
+					"encrypt-indicate" (Server only)
 					"encrypt-authenticated-read"
 					"encrypt-authenticated-write"
+					"encrypt-authenticated-notify" (Server only)
+					"encrypt-authenticated-indicate" (Server only)
 					"secure-read" (Server only)
 					"secure-write" (Server only)
+					"secure-notify" (Server only)
+					"secure-indicate" (Server only)
 					"authorize"
 	*/
 	Flags []string
@@ -95,6 +108,13 @@ type GattCharacteristic1Properties struct {
 				be set once registered.
 	*/
 	Handle uint16
+
+	/*
+		MTU Characteristic MTU, this is valid both for ReadValue
+				and WriteValue but either method can use long
+				procedures when supported.
+	*/
+	MTU uint16
 
 	/*
 		NotifyAcquired True, if this characteristic has been acquired by any
@@ -187,6 +207,15 @@ func (a *GattCharacteristic1) SetHandle(v uint16) error {
 // GetHandle get Handle value
 func (a *GattCharacteristic1) GetHandle() (uint16, error) {
 	v, err := a.GetProperty("Handle")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
+
+// GetMTU get MTU value
+func (a *GattCharacteristic1) GetMTU() (uint16, error) {
+	v, err := a.GetProperty("MTU")
 	if err != nil {
 		return uint16(0), err
 	}
@@ -506,6 +535,7 @@ StartNotify 			Starts a notification session from this characteristic
 			Possible Errors: org.bluez.Error.Failed
 					 org.bluez.Error.NotPermitted
 					 org.bluez.Error.InProgress
+					 org.bluez.Error.NotConnected
 					 org.bluez.Error.NotSupported
 
 */
