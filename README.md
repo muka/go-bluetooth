@@ -65,8 +65,8 @@ Generated code has `gen_` prefix. If an API file exists with the same filename b
 
 The library is tested with
 
-- golang `1.14.1`
-- bluez bluetooth `v5.50`, `v5.54`
+- golang `1.17.5`
+- bluez bluetooth `v5.50`, `v5.54`, `v5.60`
 
 ### Development notes
 
