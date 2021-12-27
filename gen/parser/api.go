@@ -69,8 +69,9 @@ func (g *ApiParser) Parse(raw []byte) (*types.Api, error) {
 	re = regexp.MustCompile(`Service[ \t]*((?s).+)\nInterface[ \t]*((?s).+)\nObject path[ \t]*((?s).+?)\n\n`)
 	matches = re.FindSubmatchIndex(raw)
 
+	g.model = api
 	api.Service = string(raw[matches[2]:matches[3]])
-	api.Interface = string(raw[matches[4]:matches[5]])
+	api.Interface = strings.Replace(string(raw[matches[4]:matches[5]]), " [experimental]", "", -1)
 	api.ObjectPath = string(raw[matches[6]:matches[7]])
 
 	if g.debug {
@@ -98,8 +99,6 @@ func (g *ApiParser) Parse(raw []byte) (*types.Api, error) {
 		return api, err
 	}
 	api.Signals = signals
-
-	g.model = api
 
 	return api, nil
 }

@@ -87,6 +87,7 @@ func Generate(bluezApi gen.BluezAPI, outDir string, debug bool, forceOverwrite b
 
 			pts := strings.Split(api.Interface, ".")
 			apiBaseName := pts[len(pts)-1]
+			apiBaseName = strings.Replace(apiBaseName, " [experimental]", "", -1)
 
 			apiFilename := path.Join(dirpath, fmt.Sprintf("%s.go", apiBaseName))
 			apiGenFilename := path.Join(dirpath, fmt.Sprintf("gen_%s.go", apiBaseName))

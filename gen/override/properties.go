@@ -38,4 +38,8 @@ var PropertyTypes = map[string]map[string]string{
 		// SecondaryChannel, if set on 5.54 cause a parsing exception
 		"SecondaryChannel": "string `dbus:\"omitEmpty\"`",
 	},
+	"org.bluez.AdvertisementMonitor1": {
+		// array{(uint8, uint8, array{byte})}
+		"Patterns": "[]Pattern",
+	},
 }

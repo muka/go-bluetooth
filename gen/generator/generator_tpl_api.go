@@ -61,31 +61,49 @@ func ApiTemplate(filename string, api *types.Api, apiGroup *types.ApiGroup) erro
 		prop.Property.Type = castType(p.Type)
 		prop.RawType = getRawType(prop.Property.Type)
 
-		// log.Debugf("RAWTYPE %s %s = %s", api.Interface, prop.Name, prop.Property.Type)
+		prop.RawTypeInitializer, err = getRawTypeInitializer(prop.Property.Type)
+		if err != nil {
+			log.Errorf("%s %s: %s", api.Interface, prop.Name, err)
+		}
 
-		prop.RawTypeInitializer = getRawTypeInitializer(prop.Property.Type)
 		propsList[prop.Name] = &prop
 	}
 
 	propertiesOverride, found := override.GetPropertiesOverride(api.Interface)
 	if found {
+		log.Debugf("Found overrides %s", api.Interface)
 		for propName, propType := range propertiesOverride {
 
 			var prop *types.PropertyDoc
+
 			if _, ok := propsList[propName]; ok {
+
 				prop = propsList[propName]
+				log.Debugf("\tUsing overridden property %s", propName)
+
+				rawTypeInitializer, err := getRawTypeInitializer(prop.Property.Type)
+				if err != nil {
+					log.Errorf("Override %s %s: %s", api.Interface, prop.Name, err)
+				}
+
 				prop.RawType = getRawType(prop.Property.Type)
-				prop.RawTypeInitializer = getRawTypeInitializer(prop.Property.Type)
+				prop.RawTypeInitializer = rawTypeInitializer
 				prop.Property.Type = propType
 				// log.Debugf("props --> %s %s", propName, propType)
 			} else {
+
+				rawTypeInitializer, err := getRawTypeInitializer(propType)
+				if err != nil {
+					log.Errorf("Override %s %s: %s", api.Interface, prop.Name, err)
+				}
+
 				prop = &types.PropertyDoc{
 					Property: &types.Property{
 						Name: propName,
 						Type: propType,
 					},
 					RawType:            getRawType(propType),
-					RawTypeInitializer: getRawTypeInitializer(propType),
+					RawTypeInitializer: rawTypeInitializer,
 				}
 				propsList[propName] = prop
 			}

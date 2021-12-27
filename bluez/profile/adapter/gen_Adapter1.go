@@ -159,12 +159,6 @@ type Adapter1Properties struct {
 	Discovering bool
 
 	/*
-		ExperimentalFeatures List of 128-bit UUIDs that represents the experimental
-				features currently enabled.
-	*/
-	ExperimentalFeatures []string
-
-	/*
 		Modalias Local Device ID information in modalias format
 				used by the kernel and udev.
 	*/
@@ -333,20 +327,6 @@ func (a *Adapter1) GetDiscovering() (bool, error) {
 		return false, err
 	}
 	return v.Value().(bool), nil
-}
-
-// SetExperimentalFeatures set ExperimentalFeatures value
-func (a *Adapter1) SetExperimentalFeatures(v []string) error {
-	return a.SetProperty("ExperimentalFeatures", v)
-}
-
-// GetExperimentalFeatures get ExperimentalFeatures value
-func (a *Adapter1) GetExperimentalFeatures() ([]string, error) {
-	v, err := a.GetProperty("ExperimentalFeatures")
-	if err != nil {
-		return []string{}, err
-	}
-	return v.Value().([]string), nil
 }
 
 // SetModalias set Modalias value

@@ -21,6 +21,11 @@ var typesMap = map[string]string{
 	"array{objects, properties}": "[]Item",
 	// media-api fd, uint16, uint16 Acquire()
 	"fd, uint16, uint16": "dbus.UnixFD, uint16, uint16",
+	// advertisement_monitor array{(uint8, uint8, array{byte})} Patterns [read-only, optional]
+	"array{(uint8, uint8, array{byte})}": "[]Pattern",
+	// advertisement_monitor Uint/Int with uppercase
+	"Uint16": "uint16",
+	"Int16":  "int16",
 }
 
 //MapType map a raw type literal otherwise difficult to parse

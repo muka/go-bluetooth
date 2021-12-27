@@ -63,6 +63,7 @@ func prepareDocs(src string, skipFirstComment bool, leftpad int) string {
 func getApiPackage(apiGroup *types.ApiGroup) string {
 	apiName := strings.Replace(apiGroup.FileName, "-api.txt", "", -1)
 	apiName = strings.Replace(apiName, "-", "_", -1)
+	apiName = strings.Replace(apiName, " [experimental]", "", -1)
 	return apiName
 }
 

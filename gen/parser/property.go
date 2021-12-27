@@ -9,7 +9,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-const propBaseRegexp = `(bool|boolean|byte|string|int16|uint16|uint16_t|uint32|dict|object|array\{.*?) ([A-Z].+?)`
+const propBaseRegexp = `(bool|boolean|byte|string|[i|I]nt16|[U|u]int16|uint16_t|uint32|dict|object|array\{.*?) ([A-Z].+?)`
 
 type PropertyParser struct {
 	model *types.Property
@@ -18,10 +18,11 @@ type PropertyParser struct {
 
 // NewPropertyParser
 func NewPropertyParser(debug bool) PropertyParser {
-	return PropertyParser{
+	p := PropertyParser{
 		model: new(types.Property),
 		debug: debug,
 	}
+	return p
 }
 
 func (g *PropertyParser) Parse(raw []byte) (*types.Property, error) {
@@ -43,7 +44,7 @@ func (g *PropertyParser) Parse(raw []byte) (*types.Property, error) {
 
 	if len(matches2) == 0 {
 		log.Debugf("prop raw -> %s", raw)
-		return property, errors.New("No property found")
+		return property, errors.New("no property found")
 	}
 
 	flags := []types.Flag{}

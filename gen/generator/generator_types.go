@@ -9,7 +9,7 @@ import (
 )
 
 func toType(t string) string {
-	switch strings.Trim(t, " \t\r\n") {
+	switch strings.ToLower(strings.Trim(t, " \t\r\n")) {
 	case "boolean":
 		return "bool"
 	case "int16":
@@ -126,41 +126,48 @@ func getRawType(t string) string {
 }
 
 // getRawTypeInitializer return field initializer
-func getRawTypeInitializer(t string) string {
+func getRawTypeInitializer(t string) (string, error) {
 	t = getRawType(t)
 
+	var checkType = func(text string, match string) bool {
+		minlen := len(match)
+		return len(text) >= minlen && strings.ToLower(t[:minlen]) == match
+	}
+
 	// array
-	if len(t) >= 2 && t[:2] == "[]" {
-		return t + "{}"
+	if checkType(t, "[]") {
+		return t + "{}", nil
 	}
 	// map
-	if len(t) >= 3 && t[:3] == "map" {
-		return t + "{}"
+	if checkType(t, "map") {
+		return t + "{}", nil
 	}
 	// int*
-	if len(t) >= 3 && t[:3] == "int" {
-		return t + "(0)"
+	if checkType(t, "int") {
+		return t + "(0)", nil
 	}
 	// uint*
-	if len(t) >= 4 && t[:4] == "uint" {
-		return t + "(0)"
+	if checkType(t, "uint") {
+		return t + "(0)", nil
 	}
 	// float*
-	if len(t) >= 5 && t[:5] == "float" {
-		return t + "(0.0)"
+	if checkType(t, "float") {
+		return t + "(0.0)", nil
 	}
 
 	switch t {
 	case "bool":
-		return "false"
+		return "false", nil
 	case "string":
-		return "\"\""
+		return "\"\"", nil
 	case "byte":
-		return "byte(0)"
+		return "byte(0)", nil
 		// return "[]uint8{}"
 	case "dbus.ObjectPath":
-		return "dbus.ObjectPath(\"\")"
-	default:
-		panic(fmt.Sprintf("Unknown type: %s", t))
+		return "dbus.ObjectPath(\"\")", nil
+	case "dbus.objectpath":
+		return "dbus.ObjectPath(\"\")", nil
 	}
+
+	return "", fmt.Errorf("unknown type: %s", t)
 }

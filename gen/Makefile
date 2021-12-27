@@ -21,3 +21,10 @@ mesh:
 	xAPI_FILTER="Provisioner" \
 	xMETHOD_FILTER=Attach LOG_LEVEL=trace \
 	go run ./srcgen/main.go full --debug
+
+advertisement-monitor:
+	BASEDIR=.. \
+	FILE_FILTER=advertisement-monitor-api \
+	xAPI_FILTER="Provisioner" \
+	xMETHOD_FILTER=Attach LOG_LEVEL=trace \
+	go run ./srcgen/main.go full --debug
