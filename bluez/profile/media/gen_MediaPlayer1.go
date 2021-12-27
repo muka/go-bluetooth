@@ -183,7 +183,7 @@ type MediaPlayer1Properties struct {
 
 				Possible values:
 	*/
-	Track map[string]interface{}
+	Track Track
 
 	/*
 		TrackNumber Track number

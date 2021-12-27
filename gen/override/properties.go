@@ -42,4 +42,7 @@ var PropertyTypes = map[string]map[string]string{
 		// array{(uint8, uint8, array{byte})}
 		"Patterns": "[]Pattern",
 	},
+	"org.bluez.MediaPlayer1": {
+		"Track": "Track",
+	},
 }
