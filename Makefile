@@ -1,7 +1,7 @@
 
 .PHONY: gen
 
-BLUEZ_VERSION ?= 5.60
+BLUEZ_VERSION ?= 5.62
 FILTER ?=
 
 DOCKER_PARAMS :=  --privileged -it --rm \
