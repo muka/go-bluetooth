@@ -26,6 +26,12 @@ High level features supported:
 - [ ] Generate dbus-compatible XML from documentation
 - [ ] Generate mock service to test the library against
 
+## Using this library
+
+- [TinyGo bluetooth](https://github.com/tinygo-org/bluetooth)
+
+Want to add your project? Please, add it to the [README.md](https://github.com/muka/go-bluetooth/edit/master/README.md) and open a PR!
+
 ## Running examples
 
 Examples are available in `_examples` folder.
