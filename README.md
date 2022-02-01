@@ -29,6 +29,7 @@ High level features supported:
 ## Using this library
 
 - [TinyGo bluetooth](https://github.com/tinygo-org/bluetooth)
+- [pi-wifi](https://github.com/muka/pi-wifi)
 
 Want to add your project? Please, add it to the [README.md](https://github.com/muka/go-bluetooth/edit/master/README.md) and open a PR!
 
