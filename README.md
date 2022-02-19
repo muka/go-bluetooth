@@ -7,6 +7,19 @@ Go bluetooth API for Linux-based Bluez DBus interface.
 
 <img style="float:right" align="center" width="70" src="./gopher.png">
 
+## Bluez API versioning
+
+The version on master tracks Ubuntu bluetoothd version. There are dedicated branches with various version
+
+- [bluez 5.50](https://github.com/muka/go-bluetooth/tree/bluez/5.50)
+- [bluez 5.53](https://github.com/muka/go-bluetooth/tree/bluez/5.53)
+- [bluez 5.54](https://github.com/muka/go-bluetooth/tree/bluez/5.54)
+- [bluez 5.55](https://github.com/muka/go-bluetooth/tree/bluez/5.55)
+- [bluez 5.60](https://github.com/muka/go-bluetooth/tree/bluez/5.60)
+- [bluez 5.62](https://github.com/muka/go-bluetooth/tree/bluez/5.62)
+- [bluez 5.63](https://github.com/muka/go-bluetooth/tree/bluez/5.63)
+
+
 ## Features
 
 The library is a wrapper to the Bluez DBus API and some high level API to ease the interaction.
