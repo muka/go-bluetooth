@@ -8,11 +8,11 @@
 
 ## Bluez API versioning
 
-The version on master tracks Ubuntu bluetoothd version. There are dedicated branches with various version
+The version on master tracks Ubuntu bluetoothd version (v5.60). There are dedicated branches/tags with various version
 
 - [bluez 5.60](https://github.com/muka/go-bluetooth) (current)
-- [bluez 5.62](https://github.com/muka/go-bluetooth/tree/bluez/5.62)
-- [bluez 5.63](https://github.com/muka/go-bluetooth/tree/bluez/5.63)
+- [bluez 5.62](https://github.com/muka/go-bluetooth/tree/bluez-5.62)
+- [bluez 5.63](https://github.com/muka/go-bluetooth/tree/bluez-5.63)
 
 See branches for available legacy versions.
 
