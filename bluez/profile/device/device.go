@@ -76,12 +76,12 @@ func (d *Device1) GetDescriptorList() ([]dbus.ObjectPath, error) {
 			continue
 		}
 
-		charPos := strings.Index(spath, "char")
+		charPos := strings.Index(spath, "desc")
 		if charPos == -1 {
 			continue
 		}
 
-		if strings.Contains(spath[charPos:], "desc") {
+		if strings.Contains(spath[charPos:], "char") {
 			continue
 		}
 
