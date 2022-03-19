@@ -4,6 +4,7 @@ import (
 	"github.com/godbus/dbus/v5"
 	"github.com/muka/go-bluetooth/api"
 	"github.com/muka/go-bluetooth/bluez/profile/adapter"
+	"github.com/muka/go-bluetooth/bluez/profile/advertising"
 	"github.com/muka/go-bluetooth/bluez/profile/agent"
 )
 
@@ -35,4 +36,8 @@ func (app *App) DBusObjectManager() *api.DBusObjectManager {
 
 func (app *App) SetName(name string) {
 	app.advertisement.LocalName = name
+}
+
+func (app *App) SetLEAdvertisement(adv *advertising.LEAdvertisement1Properties) {
+	app.advertisement = adv
 }
