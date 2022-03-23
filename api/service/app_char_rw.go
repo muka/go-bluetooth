@@ -16,6 +16,7 @@ func (s *Char) Confirm() *dbus.Error {
 
 // StartNotify Starts a notification session from this characteristic
 // if it supports value notifications or indications.
+// Calls a notification callback to send a start signal
 //
 // Possible Errors: org.bluez.Error.Failed
 // 		 org.bluez.Error.NotPermitted
@@ -23,6 +24,16 @@ func (s *Char) Confirm() *dbus.Error {
 // 		 org.bluez.Error.NotSupported
 func (s *Char) StartNotify() *dbus.Error {
 	log.Debug("Char.StartNotify")
+	if s.notifyCallback != nil {
+		log.Trace("Used notify callback")
+
+		err := s.notifyCallback(s, true)
+		if err != nil {
+			return dbus.MakeFailedError(err)
+		}
+	} else {
+		log.Trace("Nothing to notify")
+	}
 	return nil
 }
 
@@ -30,10 +41,20 @@ func (s *Char) StartNotify() *dbus.Error {
 // transaction. Note that notifications from a
 // characteristic are shared between sessions thus
 // calling StopNotify will release a single session.
+// Calls a notification callback to send a stop signal
 //
 // Possible Errors: org.bluez.Error.Failed
 func (s *Char) StopNotify() *dbus.Error {
 	log.Debug("Char.StopNotify")
+	if s.notifyCallback != nil {
+		log.Trace("Used notify callback")
+		err := s.notifyCallback(s, false)
+		if err != nil {
+			return dbus.MakeFailedError(err)
+		}
+	} else {
+		log.Trace("Nothing to notify")
+	}
 	return nil
 }
 

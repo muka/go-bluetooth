@@ -12,6 +12,7 @@ import (
 
 type CharReadCallback func(c *Char, options map[string]interface{}) ([]byte, error)
 type CharWriteCallback func(c *Char, value []byte) ([]byte, error)
+type CharNotifyCallback func(c *Char, notify bool) error
 
 type Char struct {
 	UUID    string
@@ -24,8 +25,9 @@ type Char struct {
 	Properties *gatt.GattCharacteristic1Properties
 	iprops     *api.DBusProperties
 
-	readCallback  CharReadCallback
-	writeCallback CharWriteCallback
+	readCallback   CharReadCallback
+	writeCallback  CharWriteCallback
+	notifyCallback CharNotifyCallback
 }
 
 func (s *Char) Path() dbus.ObjectPath {
@@ -158,5 +160,11 @@ func (s *Char) OnRead(fx CharReadCallback) *Char {
 // OnWrite Set the Write callback, called when a client attempt to write
 func (s *Char) OnWrite(fx CharWriteCallback) *Char {
 	s.writeCallback = fx
+	return s
+}
+
+// OnNotify Set the Notify callback, called when a client attempt to start/stop notifications for a characteristic
+func (s *Char) OnNotify(fx CharNotifyCallback) *Char {
+	s.notifyCallback = fx
 	return s
 }
