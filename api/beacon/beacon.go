@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/godbus/dbus/v5"
+	"github.com/muka/go-bluetooth/bluez"
 	"github.com/muka/go-bluetooth/bluez/profile/advertising"
 	"github.com/muka/go-bluetooth/bluez/profile/device"
 )
@@ -19,12 +20,13 @@ const (
 )
 
 type Beacon struct {
-	Name      string
-	iBeacon   BeaconIBeacon
-	eddystone BeaconEddystone
-	props     *advertising.LEAdvertisement1Properties
-	Type      BeaconType
-	Device    *device.Device1
+	Name        string
+	iBeacon     BeaconIBeacon
+	eddystone   BeaconEddystone
+	props       *advertising.LEAdvertisement1Properties
+	Type        BeaconType
+	Device      *device.Device1
+	propchanged chan *bluez.PropertyChanged
 }
 
 func NewBeacon(dev *device.Device1) (Beacon, error) {
@@ -47,8 +49,8 @@ func (b *Beacon) IsIBeacon() bool {
 
 // WatchDeviceChanges watch for properties changes
 func (b *Beacon) WatchDeviceChanges(ctx context.Context) (chan bool, error) {
-
-	propchanged, err := b.Device.WatchProperties()
+	var err error
+	b.propchanged, err = b.Device.WatchProperties()
 	if err != nil {
 		return nil, err
 	}
@@ -58,7 +60,7 @@ func (b *Beacon) WatchDeviceChanges(ctx context.Context) (chan bool, error) {
 	go func() {
 		for {
 			select {
-			case changed := <-propchanged:
+			case changed := <-b.propchanged:
 
 				if changed == nil {
 					ctx.Done()
@@ -71,7 +73,7 @@ func (b *Beacon) WatchDeviceChanges(ctx context.Context) (chan bool, error) {
 
 				break
 			case <-ctx.Done():
-				propchanged <- nil
+				b.propchanged <- nil
 				close(ch)
 				break
 			}
@@ -79,6 +81,15 @@ func (b *Beacon) WatchDeviceChanges(ctx context.Context) (chan bool, error) {
 	}()
 
 	return ch, nil
+}
+
+func (b *Beacon) UnwatchDeviceChanges() error {
+	err := b.Device.UnwatchProperties(b.propchanged)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // GetEddystone return eddystone beacon information
@@ -107,7 +118,6 @@ func (b *Beacon) GetFrames() []byte {
 
 // Load beacon information if available
 func (b *Beacon) Parse() bool {
-
 	if b.Device != nil {
 
 		props := b.Device.Properties
