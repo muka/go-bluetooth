@@ -159,6 +159,12 @@ type Adapter1Properties struct {
 	Discovering bool
 
 	/*
+		ExperimentalFeatures List of 128-bit UUIDs that represents the experimental
+				features currently enabled.
+	*/
+	ExperimentalFeatures []string
+
+	/*
 		Modalias Local Device ID information in modalias format
 				used by the kernel and udev.
 	*/
@@ -327,6 +333,20 @@ func (a *Adapter1) GetDiscovering() (bool, error) {
 		return false, err
 	}
 	return v.Value().(bool), nil
+}
+
+// SetExperimentalFeatures set ExperimentalFeatures value
+func (a *Adapter1) SetExperimentalFeatures(v []string) error {
+	return a.SetProperty("ExperimentalFeatures", v)
+}
+
+// GetExperimentalFeatures get ExperimentalFeatures value
+func (a *Adapter1) GetExperimentalFeatures() ([]string, error) {
+	v, err := a.GetProperty("ExperimentalFeatures")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
 }
 
 // SetModalias set Modalias value
@@ -572,6 +592,8 @@ StartDiscovery 			This method starts the device discovery session. This
 			This process will start creating Device objects as
 			new devices are discovered.
 			During discovery RSSI delta-threshold is imposed.
+			Each client can request a single device discovery session
+			per adapter.
 			Possible errors: org.bluez.Error.NotReady
 					 org.bluez.Error.Failed
 					 org.bluez.Error.InProgress
@@ -586,7 +608,8 @@ StopDiscovery 			This method will cancel any previous StartDiscovery
 			transaction.
 			Note that a discovery procedure is shared between all
 			discovery sessions thus calling StopDiscovery will only
-			release a single session.
+			release a single session and discovery will stop when
+			all sessions from all clients have finished.
 			Possible errors: org.bluez.Error.NotReady
 					 org.bluez.Error.Failed
 					 org.bluez.Error.NotAuthorized
