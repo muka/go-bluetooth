@@ -167,6 +167,8 @@ func getRawTypeInitializer(t string) (string, error) {
 		return "dbus.ObjectPath(\"\")", nil
 	case "dbus.objectpath":
 		return "dbus.ObjectPath(\"\")", nil
+	case "Track":
+		return "Track{}", nil
 	}
 
 	return "", fmt.Errorf("unknown type: %s", t)
