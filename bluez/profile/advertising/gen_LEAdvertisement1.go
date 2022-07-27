@@ -238,7 +238,7 @@ func (a *LEAdvertisement1) SetData(v map[byte]interface{}) error {
 func (a *LEAdvertisement1) GetData() (map[byte]interface{}, error) {
 	v, err := a.GetProperty("Data")
 	if err != nil {
-		return map[string]interface{}{}, err
+		return map[byte]interface{}{}, err
 	}
 	return v.Value().(map[byte]interface{}), nil
 }
@@ -322,7 +322,7 @@ func (a *LEAdvertisement1) SetManufacturerData(v map[uint16]interface{}) error {
 func (a *LEAdvertisement1) GetManufacturerData() (map[uint16]interface{}, error) {
 	v, err := a.GetProperty("ManufacturerData")
 	if err != nil {
-		return map[string]interface{}{}, err
+		return map[uint16]interface{}{}, err
 	}
 	return v.Value().(map[uint16]interface{}), nil
 }

@@ -474,7 +474,7 @@ func (a *MediaPlayer1) SetTrack(v Track) error {
 func (a *MediaPlayer1) GetTrack() (Track, error) {
 	v, err := a.GetProperty("Track")
 	if err != nil {
-		return map[string]interface{}{}, err
+		return Track{}, err
 	}
 	return v.Value().(Track), nil
 }

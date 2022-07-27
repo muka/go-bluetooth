@@ -417,7 +417,7 @@ func (a *Device1) SetManufacturerData(v map[uint16]interface{}) error {
 func (a *Device1) GetManufacturerData() (map[uint16]interface{}, error) {
 	v, err := a.GetProperty("ManufacturerData")
 	if err != nil {
-		return map[string]interface{}{}, err
+		return map[uint16]interface{}{}, err
 	}
 	return v.Value().(map[uint16]interface{}), nil
 }
