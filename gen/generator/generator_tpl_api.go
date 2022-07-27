@@ -86,10 +86,10 @@ func ApiTemplate(filename string, api *types.Api, apiGroup *types.ApiGroup) erro
 					log.Errorf("Override %s %s: %s", api.Interface, prop.Name, err)
 				}
 
-				prop.RawType = getRawType(prop.Property.Type)
 				prop.RawTypeInitializer = rawTypeInitializer
 				prop.Property.Type = propType
-				// log.Debugf("props --> %s %s", propName, propType)
+				prop.RawType = getRawType(prop.Property.Type)
+				//log.Debugf("props --> %s %s", propName, propType)
 			} else {
 
 				rawTypeInitializer, err := getRawTypeInitializer(propType)
