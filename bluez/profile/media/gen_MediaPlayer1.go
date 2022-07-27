@@ -466,17 +466,17 @@ func (a *MediaPlayer1) GetTitle() (string, error) {
 }
 
 // SetTrack set Track value
-func (a *MediaPlayer1) SetTrack(v map[string]interface{}) error {
+func (a *MediaPlayer1) SetTrack(v Track) error {
 	return a.SetProperty("Track", v)
 }
 
 // GetTrack get Track value
-func (a *MediaPlayer1) GetTrack() (map[string]interface{}, error) {
+func (a *MediaPlayer1) GetTrack() (Track, error) {
 	v, err := a.GetProperty("Track")
 	if err != nil {
-		return map[string]interface{}{}, err
+		return Track{}, err
 	}
-	return v.Value().(map[string]interface{}), nil
+	return v.Value().(Track), nil
 }
 
 // SetTrackNumber set TrackNumber value

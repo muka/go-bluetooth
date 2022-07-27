@@ -409,17 +409,17 @@ func (a *Device1) GetLegacyPairing() (bool, error) {
 }
 
 // SetManufacturerData set ManufacturerData value
-func (a *Device1) SetManufacturerData(v map[string]interface{}) error {
+func (a *Device1) SetManufacturerData(v map[uint16]interface{}) error {
 	return a.SetProperty("ManufacturerData", v)
 }
 
 // GetManufacturerData get ManufacturerData value
-func (a *Device1) GetManufacturerData() (map[string]interface{}, error) {
+func (a *Device1) GetManufacturerData() (map[uint16]interface{}, error) {
 	v, err := a.GetProperty("ManufacturerData")
 	if err != nil {
-		return map[string]interface{}{}, err
+		return map[uint16]interface{}{}, err
 	}
-	return v.Value().(map[string]interface{}), nil
+	return v.Value().(map[uint16]interface{}), nil
 }
 
 // SetModalias set Modalias value

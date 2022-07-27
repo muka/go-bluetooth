@@ -81,15 +81,15 @@ func ApiTemplate(filename string, api *types.Api, apiGroup *types.ApiGroup) erro
 				prop = propsList[propName]
 				log.Debugf("\tUsing overridden property %s", propName)
 
+				prop.Property.Type = propType
 				rawTypeInitializer, err := getRawTypeInitializer(prop.Property.Type)
 				if err != nil {
 					log.Errorf("Override %s %s: %s", api.Interface, prop.Name, err)
 				}
 
-				prop.RawType = getRawType(prop.Property.Type)
 				prop.RawTypeInitializer = rawTypeInitializer
-				prop.Property.Type = propType
-				// log.Debugf("props --> %s %s", propName, propType)
+				prop.RawType = getRawType(prop.Property.Type)
+				//log.Debugf("props --> %s %s", propName, propType)
 			} else {
 
 				rawTypeInitializer, err := getRawTypeInitializer(propType)
