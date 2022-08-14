@@ -68,7 +68,7 @@ func mapStructField(obj interface{}, name string, value dbus.Variant) error {
 	structFieldValue := structValue.FieldByName(name)
 
 	if !structFieldValue.IsValid() {
-		return fmt.Errorf("Field not found: %s", name)
+		return nil
 	}
 
 	if !structFieldValue.CanSet() {
