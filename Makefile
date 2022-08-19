@@ -89,3 +89,6 @@ bluez-5.60/gen:
 
 bluez-5.64/gen:
 	BLUEZ_VERSION=5.64 make gen/clean gen
+
+bluez-5.65/gen:
+	BLUEZ_VERSION=5.65 make gen/clean gen
