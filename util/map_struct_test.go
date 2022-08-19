@@ -22,6 +22,7 @@ func TestStructToMap(t *testing.T) {
 
 	map1 := map[string]dbus.Variant{
 		"ManufacturerData": dbus.MakeVariant(val1),
+		"Foo":              dbus.MakeVariant(val1),
 	}
 
 	err := MapToStruct(&struct1, map1)

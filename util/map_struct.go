@@ -68,11 +68,12 @@ func mapStructField(obj interface{}, name string, value dbus.Variant) error {
 	structFieldValue := structValue.FieldByName(name)
 
 	if !structFieldValue.IsValid() {
+		log.Warnf("MapToStruct: invalid field detected %s", name)
 		return nil
 	}
 
 	if !structFieldValue.CanSet() {
-		return fmt.Errorf("Cannot set value for: %s", name)
+		return fmt.Errorf("cannot set value for: %s", name)
 	}
 
 	structFieldType := structFieldValue.Type()
