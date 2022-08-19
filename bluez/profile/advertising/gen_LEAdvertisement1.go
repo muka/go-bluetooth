@@ -104,9 +104,9 @@ type LEAdvertisement1Properties struct {
 	DiscoverableTimeout uint16
 
 	/*
-		Duration Duration of the advertisement in seconds. If there are
-				other applications advertising no duration is set the
-				default is 2 seconds.
+		Duration Rotation duration of the advertisement in seconds. If
+				there are other applications advertising no duration is
+				set the default is 2 seconds.
 	*/
 	Duration uint16
 
