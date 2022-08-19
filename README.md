@@ -10,7 +10,7 @@
 
 The version on master tracks Ubuntu bluetoothd version (v5.64). There are dedicated branches/tags with various version
 
-- [bluez 5.60](https://github.com/muka/go-bluetooth) (current)
+- [bluez 5.60](https://github.com/muka/go-bluetooth)
 - [bluez 5.62](https://github.com/muka/go-bluetooth/tree/bluez-5.62)
 - [bluez 5.63](https://github.com/muka/go-bluetooth/tree/bluez-5.63)
 - [bluez 5.64](https://github.com/muka/go-bluetooth/tree/bluez-5.64)
