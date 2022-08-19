@@ -8,13 +8,15 @@
 
 ## Bluez API versioning
 
-The version on master tracks Ubuntu bluetoothd version (v5.60). There are dedicated branches/tags with various version
+The version on master tracks Ubuntu bluetoothd version (v5.64). There are dedicated branches/tags with various version
 
 - [bluez 5.60](https://github.com/muka/go-bluetooth) (current)
 - [bluez 5.62](https://github.com/muka/go-bluetooth/tree/bluez-5.62)
 - [bluez 5.63](https://github.com/muka/go-bluetooth/tree/bluez-5.63)
+- [bluez 5.64](https://github.com/muka/go-bluetooth/tree/bluez-5.64)
+- [bluez 5.65](https://github.com/muka/go-bluetooth/tree/bluez-5.65)
 
-See branches for available legacy versions.
+See branches for available versions.
 
 ## Features
 
@@ -67,6 +69,14 @@ go run main.go discovery
   ```
 
 ## Code generation
+
+To generate code for a new version of bluez use the command
+
+`BLUEZ_VERSION=5.65 make gen/clean gen`
+
+Change to a version available in bluez. Note that generated code may be broken or incomplete and the generation script may need fine tuning.
+
+### How generation works
 
 The code structure follow this pattern:
 
