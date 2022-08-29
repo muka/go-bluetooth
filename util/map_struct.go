@@ -96,7 +96,7 @@ func mapStructField(obj interface{}, name string, value dbus.Variant) error {
 		mapKey := val.Type().Key()
 
 		if mapKey.Kind() != structKey.Kind() {
-			return fmt.Errorf("Field %s: map key mismatchig values object=%s props=%s", name, structKey.Kind(), mapKey.Kind())
+			return fmt.Errorf("Field %s: map key mismatching values object=%s props=%s", name, structKey.Kind(), mapKey.Kind())
 		}
 
 		// Assign value if signture is map[*]interface{}
