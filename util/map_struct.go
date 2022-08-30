@@ -68,7 +68,7 @@ func mapStructField(obj interface{}, name string, value dbus.Variant) error {
 	structFieldValue := structValue.FieldByName(name)
 
 	if !structFieldValue.IsValid() {
-		log.Warnf("MapToStruct: invalid field detected %s", name)
+		log.Warnf("MapToStruct: invalid field detected %T.%s", obj, name)
 		return nil
 	}
 
