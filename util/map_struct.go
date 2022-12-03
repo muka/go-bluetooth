@@ -89,6 +89,21 @@ func mapStructField(obj interface{}, name string, value dbus.Variant) error {
 
 	if val.Type().Kind() == reflect.Map {
 
+		if structFieldType.Kind() == reflect.Struct ||
+			(structFieldType.Kind() == reflect.Pointer && structFieldType.Elem().Kind() == reflect.Struct) {
+
+			variantMap, ok := value.Value().(map[string]dbus.Variant)
+			if ok {
+				if structFieldType.Kind() == reflect.Pointer {
+					if structFieldValue.IsZero() {
+						return fmt.Errorf("Pointer field %s: uninitialized", name)
+					}
+					return MapToStruct(structFieldValue.Interface(), variantMap)
+				}
+				return MapToStruct(structFieldValue.Addr().Interface(), variantMap)
+			}
+		}
+
 		structVal := structFieldType.Elem()
 		structKey := structFieldType.Key()
 
@@ -99,7 +114,7 @@ func mapStructField(obj interface{}, name string, value dbus.Variant) error {
 			return fmt.Errorf("Field %s: map key mismatching values object=%s props=%s", name, structKey.Kind(), mapKey.Kind())
 		}
 
-		// Assign value if signture is map[*]interface{}
+		// Assign value if signature is map[*]interface{}
 		if structVal.Kind() == reflect.Interface {
 
 			val1MapType := reflect.MapOf(structKey, structVal)
@@ -122,7 +137,7 @@ func mapStructField(obj interface{}, name string, value dbus.Variant) error {
 	return fmt.Errorf("Mismatching types for field=%s object=%s props=%s", name, structFieldType, val.Type())
 }
 
-// MapToStruct converts a map[string]interface{} to a struct
+// MapToStruct converts a map[string]dbus.Variant to a struct
 func MapToStruct(s interface{}, m map[string]dbus.Variant) error {
 	for k, v := range m {
 		err := mapStructField(s, k, v)
