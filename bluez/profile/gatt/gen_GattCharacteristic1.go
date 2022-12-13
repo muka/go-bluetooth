@@ -420,12 +420,13 @@ ReadValue 			Issues a request to read the value of the
 			Possible options: "offset": uint16 offset
 					  "mtu": Exchanged MTU (Server only)
 					  "device": Object Device (Server only)
-			Possible Errors: org.bluez.Error.Failed
+			Possible Errors: org.bluez.Error.Failed(string ecode)
 					 org.bluez.Error.InProgress
 					 org.bluez.Error.NotPermitted
 					 org.bluez.Error.NotAuthorized
 					 org.bluez.Error.InvalidOffset
 					 org.bluez.Error.NotSupported
+			Possible Error Code: string 0x80 - 0x9f
 
 */
 func (a *GattCharacteristic1) ReadValue(options map[string]interface{}) ([]byte, error) {
@@ -450,12 +451,13 @@ WriteValue 			Issues a request to write the value of the
 					  "prepare-authorize": True if prepare
 							       authorization
 							       request
-			Possible Errors: org.bluez.Error.Failed
+			Possible Errors: org.bluez.Error.Failed(string ecode)
 					 org.bluez.Error.InProgress
 					 org.bluez.Error.NotPermitted
 					 org.bluez.Error.InvalidValueLength
 					 org.bluez.Error.NotAuthorized
 					 org.bluez.Error.NotSupported
+			Possible Error Code: string 0x80 - 0x9f
 
 */
 func (a *GattCharacteristic1) WriteValue(value []byte, options map[string]interface{}) error {

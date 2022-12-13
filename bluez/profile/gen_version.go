@@ -2,4 +2,4 @@
 
 package profile
 
-const Version = 5.64
+const Version = 5.66

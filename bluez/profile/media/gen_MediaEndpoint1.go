@@ -90,6 +90,11 @@ type MediaEndpoint1Properties struct {
 	Codec byte
 
 	/*
+		Context Indicates endpoint available audio context.
+	*/
+	Context uint16
+
+	/*
 		DelayReporting Indicates if endpoint supports Delay Reporting.
 	*/
 	DelayReporting bool
@@ -98,6 +103,47 @@ type MediaEndpoint1Properties struct {
 		Device Device object which the endpoint is belongs to.
 	*/
 	Device dbus.ObjectPath
+
+	/*
+		Framing Indicates endpoint support framing.
+	*/
+	Framing byte
+
+	/*
+		Location Indicates endpoint supported locations.
+	*/
+	Location uint32
+
+	/*
+		MaximumLatency Indicates endpoint maximum latency.
+
+			uint32_t MinimumDelay [ISO only]
+
+				Indicates endpoint minimum presentation delay.
+
+			uint32_t MaximumDelay [ISO only]
+
+				Indicates endpoint maximum presentation delay.
+
+			uint32_t PreferredMinimumDelay [ISO only]
+
+				Indicates endpoint preferred minimum presentation delay.
+
+			uint32_t PreferredMinimumDelay [ISO only]
+
+				Indicates endpoint preferred minimum presentation delay.
+	*/
+	MaximumLatency uint16
+
+	/*
+		PHY Indicates endpoint supported PHY.
+	*/
+	PHY byte
+
+	/*
+		SupportedContext Indicates endpoint supported audio context.
+	*/
+	SupportedContext uint16
 
 	/*
 		UUID UUID of the profile which the endpoint is for.
@@ -143,6 +189,20 @@ func (a *MediaEndpoint1) GetCodec() (byte, error) {
 	return v.Value().(byte), nil
 }
 
+// SetContext set Context value
+func (a *MediaEndpoint1) SetContext(v uint16) error {
+	return a.SetProperty("Context", v)
+}
+
+// GetContext get Context value
+func (a *MediaEndpoint1) GetContext() (uint16, error) {
+	v, err := a.GetProperty("Context")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
+
 // SetDelayReporting set DelayReporting value
 func (a *MediaEndpoint1) SetDelayReporting(v bool) error {
 	return a.SetProperty("DelayReporting", v)
@@ -169,6 +229,76 @@ func (a *MediaEndpoint1) GetDevice() (dbus.ObjectPath, error) {
 		return dbus.ObjectPath(""), err
 	}
 	return v.Value().(dbus.ObjectPath), nil
+}
+
+// SetFraming set Framing value
+func (a *MediaEndpoint1) SetFraming(v byte) error {
+	return a.SetProperty("Framing", v)
+}
+
+// GetFraming get Framing value
+func (a *MediaEndpoint1) GetFraming() (byte, error) {
+	v, err := a.GetProperty("Framing")
+	if err != nil {
+		return byte(0), err
+	}
+	return v.Value().(byte), nil
+}
+
+// SetLocation set Location value
+func (a *MediaEndpoint1) SetLocation(v uint32) error {
+	return a.SetProperty("Location", v)
+}
+
+// GetLocation get Location value
+func (a *MediaEndpoint1) GetLocation() (uint32, error) {
+	v, err := a.GetProperty("Location")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
+
+// SetMaximumLatency set MaximumLatency value
+func (a *MediaEndpoint1) SetMaximumLatency(v uint16) error {
+	return a.SetProperty("MaximumLatency", v)
+}
+
+// GetMaximumLatency get MaximumLatency value
+func (a *MediaEndpoint1) GetMaximumLatency() (uint16, error) {
+	v, err := a.GetProperty("MaximumLatency")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
+}
+
+// SetPHY set PHY value
+func (a *MediaEndpoint1) SetPHY(v byte) error {
+	return a.SetProperty("PHY", v)
+}
+
+// GetPHY get PHY value
+func (a *MediaEndpoint1) GetPHY() (byte, error) {
+	v, err := a.GetProperty("PHY")
+	if err != nil {
+		return byte(0), err
+	}
+	return v.Value().(byte), nil
+}
+
+// SetSupportedContext set SupportedContext value
+func (a *MediaEndpoint1) SetSupportedContext(v uint16) error {
+	return a.SetProperty("SupportedContext", v)
+}
+
+// GetSupportedContext get SupportedContext value
+func (a *MediaEndpoint1) GetSupportedContext() (uint16, error) {
+	v, err := a.GetProperty("SupportedContext")
+	if err != nil {
+		return uint16(0), err
+	}
+	return v.Value().(uint16), nil
 }
 
 // SetUUID set UUID value
@@ -327,7 +457,18 @@ SetConfiguration 			Set configuration for the transport.
 			For client role transport must be set with a server
 			endpoint oject which will be configured and the
 			properties must contain the following properties:
-				array{byte} Capabilities
+				array{byte} Capabilities [Mandatory]
+				array{byte} Metadata [ISO only]
+				byte CIG [ISO only]
+				byte CIS [ISO only]
+				uint32 Interval [ISO only]
+				bool Framing [ISO only]
+				string PHY [ISO only]
+				uint16 SDU [ISO only]
+				byte Retransmissions [ISO only]
+				uint16 Latency [ISO only]
+				uint32 Delay [ISO only]
+				uint8 TargetLatency [ISO Latency]
 
 */
 func (a *MediaEndpoint1) SetConfiguration(transport dbus.ObjectPath, properties map[string]interface{}) error {
@@ -347,6 +488,25 @@ SelectConfiguration 			Select preferable configuration from the supported
 func (a *MediaEndpoint1) SelectConfiguration(capabilities []byte) ([]byte, error) {
 	val0 := []byte{}
 	err := a.client.Call("SelectConfiguration", 0, capabilities).Store(&val0)
+	return val0, err
+}
+
+/*
+SelectProperties 			Select preferable properties from the supported
+			properties:
+				object Endpoint [ISO only]
+				Refer to SetConfiguration for the list of
+					other possible properties.
+			Returns propeties which can be used to setup
+			a transport.
+			Note: There is no need to cache the selected
+			properties since on success the configuration is
+			send back as parameter of SetConfiguration.
+
+*/
+func (a *MediaEndpoint1) SelectProperties(properties map[string]interface{}) (map[string]interface{}, error) {
+	var val0 map[string]interface{}
+	err := a.client.Call("SelectProperties", 0, properties).Store(&val0)
 	return val0, err
 }
 

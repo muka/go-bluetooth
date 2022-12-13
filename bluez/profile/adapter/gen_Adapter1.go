@@ -202,6 +202,22 @@ type Adapter1Properties struct {
 	PairableTimeout uint32
 
 	/*
+		PowerState The power state of an adapter.
+
+				The power state will show whether the adapter is
+				turning off, or turning on, as well as being on
+				or off.
+
+				Possible values:
+					"on" - powered on
+					"off" - powered off
+					"off-enabling" - transitioning from "off" to "on"
+					"on-disabling" - transitioning from "on" to "off"
+					"off-blocked" - blocked by rfkill
+	*/
+	PowerState string
+
+	/*
 		Powered Switch an adapter on or off. This will also set the
 				appropriate connectable state of the controller.
 
@@ -403,6 +419,20 @@ func (a *Adapter1) GetPairableTimeout() (uint32, error) {
 		return uint32(0), err
 	}
 	return v.Value().(uint32), nil
+}
+
+// SetPowerState set PowerState value
+func (a *Adapter1) SetPowerState(v string) error {
+	return a.SetProperty("PowerState", v)
+}
+
+// GetPowerState get PowerState value
+func (a *Adapter1) GetPowerState() (string, error) {
+	v, err := a.GetProperty("PowerState")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 // SetPowered set Powered value

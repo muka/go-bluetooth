@@ -52,6 +52,12 @@ type Media1 struct {
 // Media1Properties contains the exposed properties of an interface
 type Media1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
+
+	/*
+		SupportedUUIDs List of 128-bit UUIDs that represents the supported
+				Endpoint registration.
+	*/
+	SupportedUUIDs []string
 }
 
 //Lock access to properties
@@ -62,6 +68,20 @@ func (p *Media1Properties) Lock() {
 //Unlock access to properties
 func (p *Media1Properties) Unlock() {
 	p.lock.Unlock()
+}
+
+// SetSupportedUUIDs set SupportedUUIDs value
+func (a *Media1) SetSupportedUUIDs(v []string) error {
+	return a.SetProperty("SupportedUUIDs", v)
+}
+
+// GetSupportedUUIDs get SupportedUUIDs value
+func (a *Media1) GetSupportedUUIDs() ([]string, error) {
+	v, err := a.GetProperty("SupportedUUIDs")
+	if err != nil {
+		return []string{}, err
+	}
+	return v.Value().([]string), nil
 }
 
 // Close the connection
@@ -210,6 +230,8 @@ RegisterEndpoint 			Register a local end point to sender, the sender can
 				string UUID:
 					UUID of the profile which the endpoint
 					is for.
+					UUID must be in the list of
+					SupportedUUIDS.
 				byte Codec:
 					Assigned number of codec that the
 					endpoint implements. The values should
