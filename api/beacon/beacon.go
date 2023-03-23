@@ -73,7 +73,6 @@ func (b *Beacon) WatchDeviceChanges(ctx context.Context) (chan bool, error) {
 
 				break
 			case <-ctx.Done():
-				b.propchanged <- nil
 				close(ch)
 				break
 			}
