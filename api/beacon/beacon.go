@@ -58,12 +58,12 @@ func (b *Beacon) WatchDeviceChanges(ctx context.Context) (chan bool, error) {
 	ch := make(chan bool)
 
 	go func() {
+		defer close(ch)
 		for {
 			select {
 			case changed := <-b.propchanged:
 
 				if changed == nil {
-					ctx.Done()
 					return
 				}
 
@@ -71,11 +71,8 @@ func (b *Beacon) WatchDeviceChanges(ctx context.Context) (chan bool, error) {
 					ch <- b.Parse()
 				}
 
-				break
 			case <-ctx.Done():
 				b.propchanged <- nil
-				close(ch)
-				break
 			}
 		}
 	}()
