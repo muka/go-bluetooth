@@ -5,7 +5,6 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/Masterminds/sprig/v3"
 	"github.com/muka/go-bluetooth/gen/types"
 )
 
@@ -14,7 +13,6 @@ var _tplFS embed.FS
 
 var tpl = template.Must(
 	template.New("").
-		Funcs(sprig.TxtFuncMap()).
 		ParseFS(_tplFS, "tpl/*.tpl"),
 )
 
