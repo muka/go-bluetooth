@@ -84,31 +84,32 @@ must be available on the root service path. An example application hierarchy
 containing two separate GATT services may look like this:
 
 -> /com/example
-  |   - org.freedesktop.DBus.ObjectManager
-  |
-  -> /com/example/service0
-  | |   - org.freedesktop.DBus.Properties
-  | |   - org.bluez.GattService1
-  | |
-  | -> /com/example/service0/char0
-  | |     - org.freedesktop.DBus.Properties
-  | |     - org.bluez.GattCharacteristic1
-  | |
-  | -> /com/example/service0/char1
-  |   |   - org.freedesktop.DBus.Properties
-  |   |   - org.bluez.GattCharacteristic1
-  |   |
-  |   -> /com/example/service0/char1/desc0
-  |       - org.freedesktop.DBus.Properties
-  |       - org.bluez.GattDescriptor1
-  |
-  -> /com/example/service1
-    |   - org.freedesktop.DBus.Properties
-    |   - org.bluez.GattService1
-    |
-    -> /com/example/service1/char0
-        - org.freedesktop.DBus.Properties
-        - org.bluez.GattCharacteristic1
+
+	|   - org.freedesktop.DBus.ObjectManager
+	|
+	-> /com/example/service0
+	| |   - org.freedesktop.DBus.Properties
+	| |   - org.bluez.GattService1
+	| |
+	| -> /com/example/service0/char0
+	| |     - org.freedesktop.DBus.Properties
+	| |     - org.bluez.GattCharacteristic1
+	| |
+	| -> /com/example/service0/char1
+	|   |   - org.freedesktop.DBus.Properties
+	|   |   - org.bluez.GattCharacteristic1
+	|   |
+	|   -> /com/example/service0/char1/desc0
+	|       - org.freedesktop.DBus.Properties
+	|       - org.bluez.GattDescriptor1
+	|
+	-> /com/example/service1
+	  |   - org.freedesktop.DBus.Properties
+	  |   - org.bluez.GattService1
+	  |
+	  -> /com/example/service1/char0
+	      - org.freedesktop.DBus.Properties
+	      - org.bluez.GattCharacteristic1
 
 When a service is registered, BlueZ will automatically obtain information about
 all objects using the service's Object Manager. Once a service has been
@@ -119,14 +120,12 @@ all of its registered services will be automatically unregistered.
 InterfacesAdded signals will be ignored.
 
 Examples:
-	- Client
-		test/example-gatt-client
-		client/bluetoothctl
-	- Server
-		test/example-gatt-server
-		tools/gatt-service
-
-
+  - Client
+    test/example-gatt-client
+    client/bluetoothctl
+  - Server
+    test/example-gatt-server
+    tools/gatt-service
 */
 type GattManager1 struct {
 	client                 *bluez.Client
@@ -142,12 +141,12 @@ type GattManager1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *GattManager1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *GattManager1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -290,28 +289,30 @@ func (a *GattManager1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 }
 
 /*
-RegisterApplication 			Registers a local GATT services hierarchy as described
-			above (GATT Server) and/or GATT profiles (GATT Client).
-			The application object path together with the D-Bus
-			system bus connection ID define the identification of
-			the application registering a GATT based
-			service or profile.
-			Possible errors: org.bluez.Error.InvalidArguments
-					 org.bluez.Error.AlreadyExists
+RegisterApplication
 
+	Registers a local GATT services hierarchy as described
+	above (GATT Server) and/or GATT profiles (GATT Client).
+	The application object path together with the D-Bus
+	system bus connection ID define the identification of
+	the application registering a GATT based
+	service or profile.
+	Possible errors: org.bluez.Error.InvalidArguments
+			 org.bluez.Error.AlreadyExists
 */
 func (a *GattManager1) RegisterApplication(application dbus.ObjectPath, options map[string]interface{}) error {
 	return a.client.Call("RegisterApplication", 0, application, options).Store()
 }
 
 /*
-UnregisterApplication 			This unregisters the services that has been
-			previously registered. The object path parameter
-			must match the same value that has been used
-			on registration.
-			Possible errors: org.bluez.Error.InvalidArguments
-					 org.bluez.Error.DoesNotExist
+UnregisterApplication
 
+	This unregisters the services that has been
+	previously registered. The object path parameter
+	must match the same value that has been used
+	on registration.
+	Possible errors: org.bluez.Error.InvalidArguments
+			 org.bluez.Error.DoesNotExist
 */
 func (a *GattManager1) UnregisterApplication(application dbus.ObjectPath) error {
 	return a.client.Call("UnregisterApplication", 0, application).Store()

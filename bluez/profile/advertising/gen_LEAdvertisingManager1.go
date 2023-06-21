@@ -64,7 +64,6 @@ LEAdvertisingManager1 LE Advertising Manager hierarchy
 The Advertising Manager allows external applications to register Advertisement
 Data which should be broadcast to devices.  Advertisement Data elements must
 follow the API for LE Advertisement Data described above.
-
 */
 type LEAdvertisingManager1 struct {
 	client                 *bluez.Client
@@ -157,12 +156,12 @@ type LEAdvertisingManager1Properties struct {
 	SupportedSecondaryChannels []string
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *LEAdvertisingManager1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *LEAdvertisingManager1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -445,36 +444,38 @@ func (a *LEAdvertisingManager1) UnwatchProperties(ch chan *bluez.PropertyChanged
 }
 
 /*
-RegisterAdvertisement 			Registers an advertisement object to be sent over the LE
-			Advertising channel.  The service must be exported
-			under interface LEAdvertisement1.
-			InvalidArguments error indicates that the object has
-			invalid or conflicting properties.
-			InvalidLength error indicates that the data
-			provided generates a data packet which is too long.
-			The properties of this object are parsed when it is
-			registered, and any changes are ignored.
-			If the same object is registered twice it will result in
-			an AlreadyExists error.
-			If the maximum number of advertisement instances is
-			reached it will result in NotPermitted error.
-			Possible errors: org.bluez.Error.InvalidArguments
-					 org.bluez.Error.AlreadyExists
-					 org.bluez.Error.InvalidLength
-					 org.bluez.Error.NotPermitted
+RegisterAdvertisement
 
+	Registers an advertisement object to be sent over the LE
+	Advertising channel.  The service must be exported
+	under interface LEAdvertisement1.
+	InvalidArguments error indicates that the object has
+	invalid or conflicting properties.
+	InvalidLength error indicates that the data
+	provided generates a data packet which is too long.
+	The properties of this object are parsed when it is
+	registered, and any changes are ignored.
+	If the same object is registered twice it will result in
+	an AlreadyExists error.
+	If the maximum number of advertisement instances is
+	reached it will result in NotPermitted error.
+	Possible errors: org.bluez.Error.InvalidArguments
+			 org.bluez.Error.AlreadyExists
+			 org.bluez.Error.InvalidLength
+			 org.bluez.Error.NotPermitted
 */
 func (a *LEAdvertisingManager1) RegisterAdvertisement(advertisement dbus.ObjectPath, options map[string]interface{}) error {
 	return a.client.Call("RegisterAdvertisement", 0, advertisement, options).Store()
 }
 
 /*
-UnregisterAdvertisement 			This unregisters an advertisement that has been
-			previously registered.  The object path parameter must
-			match the same value that has been used on registration.
-			Possible errors: org.bluez.Error.InvalidArguments
-					 org.bluez.Error.DoesNotExist
+UnregisterAdvertisement
 
+	This unregisters an advertisement that has been
+	previously registered.  The object path parameter must
+	match the same value that has been used on registration.
+	Possible errors: org.bluez.Error.InvalidArguments
+			 org.bluez.Error.DoesNotExist
 */
 func (a *LEAdvertisingManager1) UnregisterAdvertisement(advertisement dbus.ObjectPath) error {
 	return a.client.Call("UnregisterAdvertisement", 0, advertisement).Store()

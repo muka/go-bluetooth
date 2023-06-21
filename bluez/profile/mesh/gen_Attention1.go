@@ -39,7 +39,6 @@ func NewAttention1(servicePath string, objectPath dbus.ObjectPath) (*Attention1,
 
 /*
 Attention1 Mesh Attention Hierarchy
-
 */
 type Attention1 struct {
 	client                 *bluez.Client
@@ -55,12 +54,12 @@ type Attention1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *Attention1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *Attention1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -203,26 +202,28 @@ func (a *Attention1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 }
 
 /*
-SetTimer 		The element_index parameter is the element's index within the
-		node where the health server model is hosted.
-		The time parameter indicates how many seconds the attention
-		state shall be on.
-		PossibleErrors:
-			org.bluez.mesh.Error.NotSupported
+SetTimer
 
+	The element_index parameter is the element's index within the
+	node where the health server model is hosted.
+	The time parameter indicates how many seconds the attention
+	state shall be on.
+	PossibleErrors:
+		org.bluez.mesh.Error.NotSupported
 */
 func (a *Attention1) SetTimer(element_index uint8, time uint16) error {
 	return a.client.Call("SetTimer", 0, element_index, time).Store()
 }
 
 /*
-GetTimer 		The element parameter is the unicast address within the node
-		where the health server model is hosted.
-		Returns the number of seconds for how long the attention action
-		remains staying on.
-		PossibleErrors:
-			org.bluez.mesh.Error.NotSupported
+GetTimer
 
+	The element parameter is the unicast address within the node
+	where the health server model is hosted.
+	Returns the number of seconds for how long the attention action
+	remains staying on.
+	PossibleErrors:
+		org.bluez.mesh.Error.NotSupported
 */
 func (a *Attention1) GetTimer(element uint16) (uint16, error) {
 	var val0 uint16

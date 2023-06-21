@@ -39,7 +39,6 @@ func NewProvisionAgent1(servicePath string, objectPath dbus.ObjectPath) (*Provis
 
 /*
 ProvisionAgent1 Provisioning Agent Hierarchy
-
 */
 type ProvisionAgent1 struct {
 	client                 *bluez.Client
@@ -95,12 +94,12 @@ type ProvisionAgent1Properties struct {
 	URI string
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *ProvisionAgent1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *ProvisionAgent1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -270,17 +269,18 @@ func (a *ProvisionAgent1) UnwatchProperties(ch chan *bluez.PropertyChanged) erro
 }
 
 /*
-PrivateKey 		This method is called during provisioning if the Provisioner
-		has requested Out-Of-Band ECC key exchange. The Private key is
-		returned to the Daemon, and the Public Key is delivered to the
-		remote Provisioner using a method that does not involve the
-		Bluetooth Mesh system. The Private Key returned must be 32
-		octets in size, or the Provisioning procedure will fail and be
-		canceled.
-		This function will only be called if the Provisioner has
-		requested pre-determined keys to be exchanged Out-of-Band, and
-		the local role is Unprovisioned device.
+PrivateKey
 
+	This method is called during provisioning if the Provisioner
+	has requested Out-Of-Band ECC key exchange. The Private key is
+	returned to the Daemon, and the Public Key is delivered to the
+	remote Provisioner using a method that does not involve the
+	Bluetooth Mesh system. The Private Key returned must be 32
+	octets in size, or the Provisioning procedure will fail and be
+	canceled.
+	This function will only be called if the Provisioner has
+	requested pre-determined keys to be exchanged Out-of-Band, and
+	the local role is Unprovisioned device.
 */
 func (a *ProvisionAgent1) PrivateKey() ([]byte, error) {
 	val0 := []byte{}
@@ -289,16 +289,17 @@ func (a *ProvisionAgent1) PrivateKey() ([]byte, error) {
 }
 
 /*
-PublicKey 		This method is called during provisioning if the local device is
-		the Provisioner, and is requestng Out-Of-Band ECC key exchange.
-		The Public key is returned to the Daemon that is the matched
-		pair of the Private key of the remote device. The Public Key
-		returned must be 64 octets in size, or the Provisioning
-		procedure will fail and be canceled.
-		This function will only be called if the Provisioner has
-		requested pre-determined keys to be exchanged Out-of-Band, and
-		the local role is Provisioner.
+PublicKey
 
+	This method is called during provisioning if the local device is
+	the Provisioner, and is requestng Out-Of-Band ECC key exchange.
+	The Public key is returned to the Daemon that is the matched
+	pair of the Private key of the remote device. The Public Key
+	returned must be 64 octets in size, or the Provisioning
+	procedure will fail and be canceled.
+	This function will only be called if the Provisioner has
+	requested pre-determined keys to be exchanged Out-of-Band, and
+	the local role is Provisioner.
 */
 func (a *ProvisionAgent1) PublicKey() ([]byte, error) {
 	val0 := []byte{}
@@ -307,49 +308,52 @@ func (a *ProvisionAgent1) PublicKey() ([]byte, error) {
 }
 
 /*
-DisplayString 		This method is called when the Daemon has something important
-		for the Agent to Display, but does not require any additional
-		input locally. For instance: "Enter "ABCDE" on remote device".
+DisplayString
 
+	This method is called when the Daemon has something important
+	for the Agent to Display, but does not require any additional
+	input locally. For instance: "Enter "ABCDE" on remote device".
 */
 func (a *ProvisionAgent1) DisplayString(value string) error {
 	return a.client.Call("DisplayString", 0, value).Store()
 }
 
 /*
-DisplayNumeric 		This method is called when the Daemon has something important
-		for the Agent to Display, but does not require any additional
-		input locally. For instance: "Enter 14939264 on remote device".
-		The type parameter indicates the display method. Allowed values
-		are:
-			"blink" - Locally blink LED
-			"beep" - Locally make a noise
-			"vibrate" - Locally vibrate
-			"out-numeric" - Display value to enter remotely
-			"push" - Request pushes on remote button
-			"twist" - Request twists on remote knob
-		The number parameter is the specific value represented by the
-		Prompt.
+DisplayNumeric
 
+	This method is called when the Daemon has something important
+	for the Agent to Display, but does not require any additional
+	input locally. For instance: "Enter 14939264 on remote device".
+	The type parameter indicates the display method. Allowed values
+	are:
+		"blink" - Locally blink LED
+		"beep" - Locally make a noise
+		"vibrate" - Locally vibrate
+		"out-numeric" - Display value to enter remotely
+		"push" - Request pushes on remote button
+		"twist" - Request twists on remote knob
+	The number parameter is the specific value represented by the
+	Prompt.
 */
 func (a *ProvisionAgent1) DisplayNumeric(type1 string, number uint32) error {
 	return a.client.Call("DisplayNumeric", 0, type1, number).Store()
 }
 
 /*
-PromptNumeric 		This method is called when the Daemon requests the user to
-		enter a decimal value between 1-99999999.
-		The type parameter indicates the input method. Allowed values
-		are:
-			"blink" - Enter times remote LED blinked
-			"beep" - Enter times remote device beeped
-			"vibrate" - Enter times remote device vibrated
-			"in-numeric" - Enter remotely displayed value
-			"push" - Push local button remotely requested times
-			"twist" - Twist local knob remotely requested times
-		This agent should prompt the user for specific input. For
-		instance: "Enter value being displayed by remote device".
+PromptNumeric
 
+	This method is called when the Daemon requests the user to
+	enter a decimal value between 1-99999999.
+	The type parameter indicates the input method. Allowed values
+	are:
+		"blink" - Enter times remote LED blinked
+		"beep" - Enter times remote device beeped
+		"vibrate" - Enter times remote device vibrated
+		"in-numeric" - Enter remotely displayed value
+		"push" - Push local button remotely requested times
+		"twist" - Twist local knob remotely requested times
+	This agent should prompt the user for specific input. For
+	instance: "Enter value being displayed by remote device".
 */
 func (a *ProvisionAgent1) PromptNumeric(type1 string) (uint32, error) {
 	var val0 uint32
@@ -358,18 +362,19 @@ func (a *ProvisionAgent1) PromptNumeric(type1 string) (uint32, error) {
 }
 
 /*
-PromptStatic 		This method is called when the Daemon requires a 16 octet byte
-		array, as an Out-of-Band authentication.
-		The type parameter indicates the input method. Allowed values
-		are:
-			"static-oob" - return 16 octet array
-			"in-alpha" - return 16 octet alpha array
-		The Static data returned must be 16 octets in size, or the
-		Provisioning procedure will fail and be canceled. If input type
-		is "in-alpha", the printable characters should be
-		left-justified, with trailing 0x00 octets filling the remaining
-		bytes.
+PromptStatic
 
+	This method is called when the Daemon requires a 16 octet byte
+	array, as an Out-of-Band authentication.
+	The type parameter indicates the input method. Allowed values
+	are:
+		"static-oob" - return 16 octet array
+		"in-alpha" - return 16 octet alpha array
+	The Static data returned must be 16 octets in size, or the
+	Provisioning procedure will fail and be canceled. If input type
+	is "in-alpha", the printable characters should be
+	left-justified, with trailing 0x00 octets filling the remaining
+	bytes.
 */
 func (a *ProvisionAgent1) PromptStatic(type1 string) ([]byte, error) {
 	val0 := []byte{}
@@ -378,10 +383,11 @@ func (a *ProvisionAgent1) PromptStatic(type1 string) ([]byte, error) {
 }
 
 /*
-Cancel 		This method gets called by the daemon to cancel any existing
-		Agent Requests. When called, any pending user input should be
-		canceled, and any display requests removed.
+Cancel
 
+	This method gets called by the daemon to cancel any existing
+	Agent Requests. When called, any pending user input should be
+	canceled, and any display requests removed.
 */
 func (a *ProvisionAgent1) Cancel() error {
 	return a.client.Call("Cancel", 0).Store()

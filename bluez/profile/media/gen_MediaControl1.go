@@ -60,7 +60,6 @@ func NewMediaControl1FromAdapterID(adapterID string) (*MediaControl1, error) {
 
 /*
 MediaControl1 Media Control hierarchy
-
 */
 type MediaControl1 struct {
 	client                 *bluez.Client
@@ -86,12 +85,12 @@ type MediaControl1Properties struct {
 	Player dbus.ObjectPath
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *MediaControl1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *MediaControl1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -262,74 +261,83 @@ func (a *MediaControl1) UnwatchProperties(ch chan *bluez.PropertyChanged) error 
 }
 
 /*
-Play 			Resume playback.
+Play
 
+	Resume playback.
 */
 func (a *MediaControl1) Play() error {
 	return a.client.Call("Play", 0).Store()
 }
 
 /*
-Pause 			Pause playback.
+Pause
 
+	Pause playback.
 */
 func (a *MediaControl1) Pause() error {
 	return a.client.Call("Pause", 0).Store()
 }
 
 /*
-Stop 			Stop playback.
+Stop
 
+	Stop playback.
 */
 func (a *MediaControl1) Stop() error {
 	return a.client.Call("Stop", 0).Store()
 }
 
 /*
-Next 			Next item.
+Next
 
+	Next item.
 */
 func (a *MediaControl1) Next() error {
 	return a.client.Call("Next", 0).Store()
 }
 
 /*
-Previous 			Previous item.
+Previous
 
+	Previous item.
 */
 func (a *MediaControl1) Previous() error {
 	return a.client.Call("Previous", 0).Store()
 }
 
 /*
-VolumeUp 			Adjust remote volume one step up
+VolumeUp
 
+	Adjust remote volume one step up
 */
 func (a *MediaControl1) VolumeUp() error {
 	return a.client.Call("VolumeUp", 0).Store()
 }
 
 /*
-VolumeDown 			Adjust remote volume one step down
+VolumeDown
 
+	Adjust remote volume one step down
 */
 func (a *MediaControl1) VolumeDown() error {
 	return a.client.Call("VolumeDown", 0).Store()
 }
 
 /*
-FastForward 			Fast forward playback, this action is only stopped
-			when another method in this interface is called.
+FastForward
 
+	Fast forward playback, this action is only stopped
+	when another method in this interface is called.
 */
 func (a *MediaControl1) FastForward() error {
 	return a.client.Call("FastForward", 0).Store()
 }
 
 /*
-Rewind 			Rewind playback, this action is only stopped
-			when another method in this interface is called.
+Rewind
 
+	Rewind playback, this action is only stopped
+	when another method in this interface is called.
 */
 func (a *MediaControl1) Rewind() error {
 	return a.client.Call("Rewind", 0).Store()

@@ -38,7 +38,6 @@ func NewMessage1(objectPath dbus.ObjectPath) (*Message1, error) {
 
 /*
 Message1 Message hierarchy
-
 */
 type Message1 struct {
 	client                 *bluez.Client
@@ -139,12 +138,12 @@ type Message1Properties struct {
 	Type string
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *Message1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *Message1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -497,17 +496,18 @@ func (a *Message1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 }
 
 /*
-Get 			Download message and store it in the target file.
-			If an empty target file is given, a temporary file
-			will be automatically generated.
-			The returned path represents the newly created transfer,
-			which should be used to find out if the content has been
-			successfully transferred or if the operation fails.
-			The properties of this transfer are also returned along
-			with the object path, to avoid a call to GetProperties.
-			Possible errors: org.bluez.obex.Error.InvalidArguments
-					 org.bluez.obex.Error.Failed
+Get
 
+	Download message and store it in the target file.
+	If an empty target file is given, a temporary file
+	will be automatically generated.
+	The returned path represents the newly created transfer,
+	which should be used to find out if the content has been
+	successfully transferred or if the operation fails.
+	The properties of this transfer are also returned along
+	with the object path, to avoid a call to GetProperties.
+	Possible errors: org.bluez.obex.Error.InvalidArguments
+			 org.bluez.obex.Error.Failed
 */
 func (a *Message1) Get(targetfile string, attachment bool) (dbus.ObjectPath, map[string]interface{}, error) {
 	var val0 dbus.ObjectPath

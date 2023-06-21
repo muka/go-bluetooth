@@ -8,7 +8,6 @@ import (
 )
 
 func TestCastType(t *testing.T) {
-
 	log.SetLevel(log.DebugLevel)
 
 	typedef := "object"
@@ -24,5 +23,4 @@ func TestCastType(t *testing.T) {
 	if res != "[]dbus.ObjectPath, string" {
 		t.Fatal(fmt.Sprintf("%s != %s", typedef, res))
 	}
-
 }

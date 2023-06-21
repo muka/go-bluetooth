@@ -38,7 +38,6 @@ func NewNode1(objectPath dbus.ObjectPath) (*Node1, error) {
 
 /*
 Node1 Mesh Node Hierarchy
-
 */
 type Node1 struct {
 	client                 *bluez.Client
@@ -123,12 +122,12 @@ type Node1Properties struct {
 	SequenceNumber uint32
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *Node1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *Node1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -390,152 +389,157 @@ func (a *Node1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 }
 
 /*
-Send 		This method is used to send a message originated by a local
-		model.
-		The element_path parameter is the object path of an element from
-		a collection of the application elements (see Mesh Application
-		Hierarchy section).
-		The destination parameter contains the destination address. This
-		destination must be a uint16 to a unicast address, or a well
-		known group address.
-		The key_index parameter determines which application key to use
-		for encrypting the message. The key_index must be valid for that
-		element, i.e., the application key must be bound to a model on
-		this element. Otherwise, org.bluez.mesh.Error.NotAuthorized will
-		be returned.
-		The options parameter is a dictionary with the following keys
-		defined:
-			bool ForceSegmented
-				Specifies whether to force sending of a short
-				message as one-segment payload. If not present,
-				the default setting is "false".
-		The data parameter is an outgoing message to be encypted by the
-		bluetooth-meshd daemon and sent on.
-		Possible errors:
-			org.bluez.mesh.Error.NotAuthorized
-			org.bluez.mesh.Error.InvalidArguments
-			org.bluez.mesh.Error.NotFound
+Send
 
+	This method is used to send a message originated by a local
+	model.
+	The element_path parameter is the object path of an element from
+	a collection of the application elements (see Mesh Application
+	Hierarchy section).
+	The destination parameter contains the destination address. This
+	destination must be a uint16 to a unicast address, or a well
+	known group address.
+	The key_index parameter determines which application key to use
+	for encrypting the message. The key_index must be valid for that
+	element, i.e., the application key must be bound to a model on
+	this element. Otherwise, org.bluez.mesh.Error.NotAuthorized will
+	be returned.
+	The options parameter is a dictionary with the following keys
+	defined:
+		bool ForceSegmented
+			Specifies whether to force sending of a short
+			message as one-segment payload. If not present,
+			the default setting is "false".
+	The data parameter is an outgoing message to be encypted by the
+	bluetooth-meshd daemon and sent on.
+	Possible errors:
+		org.bluez.mesh.Error.NotAuthorized
+		org.bluez.mesh.Error.InvalidArguments
+		org.bluez.mesh.Error.NotFound
 */
 func (a *Node1) Send(element_path dbus.ObjectPath, destination uint16, key_index uint16, options map[string]interface{}, data []byte) error {
 	return a.client.Call("Send", 0, element_path, destination, key_index, options, data).Store()
 }
 
 /*
-DevKeySend 		This method is used to send a message originated by a local
-		model encoded with the device key of the remote node.
-		The element_path parameter is the object path of an element from
-		a collection of the application elements (see Mesh Application
-		Hierarchy section).
-		The destination parameter contains the destination address. This
-		destination must be a uint16 to a unicast address, or a well
-		known group address.
-		The remote parameter, if true, looks up the device key by the
-		destination address in the key database to encrypt the message.
-		If remote is true, but requested key does not exist, a NotFound
-		error will be returned. If set to false, the local node's
-		device key is used.
-		The net_index parameter is the subnet index of the network on
-		which the message is to be sent.
-		The options parameter is a dictionary with the following keys
-		defined:
-			bool ForceSegmented
-				Specifies whether to force sending of a short
-				message as one-segment payload. If not present,
-				the default setting is "false".
-		The data parameter is an outgoing message to be encypted by the
-		meshd daemon and sent on.
-		Possible errors:
-			org.bluez.mesh.Error.InvalidArguments
-			org.bluez.mesh.Error.NotFound
+DevKeySend
 
+	This method is used to send a message originated by a local
+	model encoded with the device key of the remote node.
+	The element_path parameter is the object path of an element from
+	a collection of the application elements (see Mesh Application
+	Hierarchy section).
+	The destination parameter contains the destination address. This
+	destination must be a uint16 to a unicast address, or a well
+	known group address.
+	The remote parameter, if true, looks up the device key by the
+	destination address in the key database to encrypt the message.
+	If remote is true, but requested key does not exist, a NotFound
+	error will be returned. If set to false, the local node's
+	device key is used.
+	The net_index parameter is the subnet index of the network on
+	which the message is to be sent.
+	The options parameter is a dictionary with the following keys
+	defined:
+		bool ForceSegmented
+			Specifies whether to force sending of a short
+			message as one-segment payload. If not present,
+			the default setting is "false".
+	The data parameter is an outgoing message to be encypted by the
+	meshd daemon and sent on.
+	Possible errors:
+		org.bluez.mesh.Error.InvalidArguments
+		org.bluez.mesh.Error.NotFound
 */
 func (a *Node1) DevKeySend(element_path dbus.ObjectPath, destination uint16, remote bool, net_index uint16, options map[string]interface{}, data []byte) error {
 	return a.client.Call("DevKeySend", 0, element_path, destination, remote, net_index, options, data).Store()
 }
 
 /*
-AddNetKey 		This method is used to send add or update network key originated
-		by the local configuration client to a remote configuration
-		server.
-		The element_path parameter is the object path of an element from
-		a collection of the application elements (see Mesh Application
-		Hierarchy section).
-		The destination parameter contains the destination address. This
-		destination must be a uint16 to a nodes primary unicast address.
-		The subnet_index parameter refers to the subnet index of the
-		network that is being added or updated. This key must exist in
-		the local key database.
-		The net_index parameter is the subnet index of the network on
-		which the message is to be sent.
-		The update parameter indicates if this is an addition or an
-		update. If true, the subnet key must be in the phase 1 state of
-		the key update procedure.
-		Possible errors:
-			org.bluez.mesh.Error.InvalidArguments
-			org.bluez.mesh.Error.NotFound
+AddNetKey
 
+	This method is used to send add or update network key originated
+	by the local configuration client to a remote configuration
+	server.
+	The element_path parameter is the object path of an element from
+	a collection of the application elements (see Mesh Application
+	Hierarchy section).
+	The destination parameter contains the destination address. This
+	destination must be a uint16 to a nodes primary unicast address.
+	The subnet_index parameter refers to the subnet index of the
+	network that is being added or updated. This key must exist in
+	the local key database.
+	The net_index parameter is the subnet index of the network on
+	which the message is to be sent.
+	The update parameter indicates if this is an addition or an
+	update. If true, the subnet key must be in the phase 1 state of
+	the key update procedure.
+	Possible errors:
+		org.bluez.mesh.Error.InvalidArguments
+		org.bluez.mesh.Error.NotFound
 */
 func (a *Node1) AddNetKey(element_path dbus.ObjectPath, destination uint16, subnet_index uint16, net_index uint16, update bool) error {
 	return a.client.Call("AddNetKey", 0, element_path, destination, subnet_index, net_index, update).Store()
 }
 
 /*
-AddAppKey 		This method is used to send add or update network key originated
-		by the local configuration client to a remote configuration
-		server.
-		The element_path parameter is the object path of an element from
-		a collection of the application elements (see Mesh Application
-		Hierarchy section).
-		The destination parameter contains the destination address. This
-		destination must be a uint16 to a nodes primary unicast address.
-		The app_index parameter refers to the application key which is
-		being added or updated. This key must exist in the local key
-		database.
-		The net_index parameter is the subnet index of the network on
-		which the message is to be sent.
-		The update parameter indicates if this is an addition or an
-		update. If true, the subnet key must be in the phase 1 state of
-		the key update procedure.
-		Possible errors:
-			org.bluez.mesh.Error.InvalidArguments
-			org.bluez.mesh.Error.NotFound
+AddAppKey
 
+	This method is used to send add or update network key originated
+	by the local configuration client to a remote configuration
+	server.
+	The element_path parameter is the object path of an element from
+	a collection of the application elements (see Mesh Application
+	Hierarchy section).
+	The destination parameter contains the destination address. This
+	destination must be a uint16 to a nodes primary unicast address.
+	The app_index parameter refers to the application key which is
+	being added or updated. This key must exist in the local key
+	database.
+	The net_index parameter is the subnet index of the network on
+	which the message is to be sent.
+	The update parameter indicates if this is an addition or an
+	update. If true, the subnet key must be in the phase 1 state of
+	the key update procedure.
+	Possible errors:
+		org.bluez.mesh.Error.InvalidArguments
+		org.bluez.mesh.Error.NotFound
 */
 func (a *Node1) AddAppKey(element_path dbus.ObjectPath, destination uint16, app_index uint16, net_index uint16, update bool) error {
 	return a.client.Call("AddAppKey", 0, element_path, destination, app_index, net_index, update).Store()
 }
 
 /*
-Publish 		This method is used to send a publication originated by a local
-		model. If the model does not exist, or it has no publication
-		record, the method returns org.bluez.mesh.Error.DoesNotExist
-		error.
-		The element_path parameter is the object path of an element from
-		a collection of the application elements (see Mesh Application
-		Hierarchy section).
-		The model parameter contains a model ID, as defined by the
-		Bluetooth SIG. If the options dictionary contains a "Vendor"
-		key, then this ID is defined by the specified vendor.
-		The options parameter is a dictionary with the following keys
-		defined:
-			bool ForceSegmented
-				Specifies whether to force sending of a short
-				message as one-segment payload. If not present,
-				the default setting is "false".
-			uint16 Vendor
-				A 16-bit Company ID as defined by the
-				Bluetooth SIG. This key should only exist when
-				publishing on a Vendor defined model.
-		The data parameter is an outgoing message to be encypted by the
-		meshd daemon and sent on.
-		Since only one Publish record may exist per element-model, the
-		destination and key_index are obtained from the Publication
-		record cached by the daemon.
-		Possible errors:
-			org.bluez.mesh.Error.DoesNotExist
-			org.bluez.mesh.Error.InvalidArguments
+Publish
 
+	This method is used to send a publication originated by a local
+	model. If the model does not exist, or it has no publication
+	record, the method returns org.bluez.mesh.Error.DoesNotExist
+	error.
+	The element_path parameter is the object path of an element from
+	a collection of the application elements (see Mesh Application
+	Hierarchy section).
+	The model parameter contains a model ID, as defined by the
+	Bluetooth SIG. If the options dictionary contains a "Vendor"
+	key, then this ID is defined by the specified vendor.
+	The options parameter is a dictionary with the following keys
+	defined:
+		bool ForceSegmented
+			Specifies whether to force sending of a short
+			message as one-segment payload. If not present,
+			the default setting is "false".
+		uint16 Vendor
+			A 16-bit Company ID as defined by the
+			Bluetooth SIG. This key should only exist when
+			publishing on a Vendor defined model.
+	The data parameter is an outgoing message to be encypted by the
+	meshd daemon and sent on.
+	Since only one Publish record may exist per element-model, the
+	destination and key_index are obtained from the Publication
+	record cached by the daemon.
+	Possible errors:
+		org.bluez.mesh.Error.DoesNotExist
+		org.bluez.mesh.Error.InvalidArguments
 */
 func (a *Node1) Publish(element_path dbus.ObjectPath, model uint16, options map[string]interface{}, data []byte) error {
 	return a.client.Call("Publish", 0, element_path, model, options, data).Store()

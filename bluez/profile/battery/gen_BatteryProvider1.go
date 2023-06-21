@@ -39,7 +39,6 @@ func NewBatteryProvider1(servicePath string, objectPath dbus.ObjectPath) (*Batte
 
 /*
 BatteryProvider1 Battery Provider hierarchy
-
 */
 type BatteryProvider1 struct {
 	client                 *bluez.Client
@@ -60,12 +59,12 @@ type BatteryProvider1Properties struct {
 	Device dbus.ObjectPath
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *BatteryProvider1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *BatteryProvider1Properties) Unlock() {
 	p.lock.Unlock()
 }

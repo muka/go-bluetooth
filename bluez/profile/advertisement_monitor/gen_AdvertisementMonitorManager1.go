@@ -38,7 +38,6 @@ func NewAdvertisementMonitorManager1(objectPath dbus.ObjectPath) (*Advertisement
 
 /*
 AdvertisementMonitorManager1 Advertisement Monitor Manager hierarchy
-
 */
 type AdvertisementMonitorManager1 struct {
 	client                 *bluez.Client
@@ -83,12 +82,12 @@ type AdvertisementMonitorManager1Properties struct {
 	SupportedMonitorTypes []string
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *AdvertisementMonitorManager1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *AdvertisementMonitorManager1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -249,37 +248,39 @@ func (a *AdvertisementMonitorManager1) UnwatchProperties(ch chan *bluez.Property
 }
 
 /*
-RegisterMonitor 			This registers the root path of a hierarchy of
-			advertisement monitors.
-			The application object path together with the D-Bus
-			system bus connection ID define the identification of
-			the application registering advertisement monitors.
-			Once a root path is registered by a client via this
-			method, the client can freely expose/unexpose
-			advertisement monitors without re-registering the root
-			path again. After use, the client should call
-			UnregisterMonitor() method to invalidate the
-			advertisement monitors.
-			Possible errors: org.bluez.Error.InvalidArguments
-					 org.bluez.Error.AlreadyExists
-					 org.bluez.Error.Failed
+RegisterMonitor
 
+	This registers the root path of a hierarchy of
+	advertisement monitors.
+	The application object path together with the D-Bus
+	system bus connection ID define the identification of
+	the application registering advertisement monitors.
+	Once a root path is registered by a client via this
+	method, the client can freely expose/unexpose
+	advertisement monitors without re-registering the root
+	path again. After use, the client should call
+	UnregisterMonitor() method to invalidate the
+	advertisement monitors.
+	Possible errors: org.bluez.Error.InvalidArguments
+			 org.bluez.Error.AlreadyExists
+			 org.bluez.Error.Failed
 */
 func (a *AdvertisementMonitorManager1) RegisterMonitor(application dbus.ObjectPath) error {
 	return a.client.Call("RegisterMonitor", 0, application).Store()
 }
 
 /*
-UnregisterMonitor 			This unregisters a hierarchy of advertisement monitors
-			that has been previously registered. The object path
-			parameter must match the same value that has been used
-			on registration. Upon unregistration, the advertisement
-			monitor(s) should expect to receive Release() method as
-			the signal that the advertisement monitor(s) has been
-			deactivated.
-			Possible errors: org.bluez.Error.InvalidArguments
-					 org.bluez.Error.DoesNotExist
+UnregisterMonitor
 
+	This unregisters a hierarchy of advertisement monitors
+	that has been previously registered. The object path
+	parameter must match the same value that has been used
+	on registration. Upon unregistration, the advertisement
+	monitor(s) should expect to receive Release() method as
+	the signal that the advertisement monitor(s) has been
+	deactivated.
+	Possible errors: org.bluez.Error.InvalidArguments
+			 org.bluez.Error.DoesNotExist
 */
 func (a *AdvertisementMonitorManager1) UnregisterMonitor(application dbus.ObjectPath) error {
 	return a.client.Call("UnregisterMonitor", 0, application).Store()

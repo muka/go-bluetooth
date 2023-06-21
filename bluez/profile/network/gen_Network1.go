@@ -38,7 +38,6 @@ func NewNetwork1(objectPath dbus.ObjectPath) (*Network1, error) {
 
 /*
 Network1 Network hierarchy
-
 */
 type Network1 struct {
 	client                 *bluez.Client
@@ -69,12 +68,12 @@ type Network1Properties struct {
 	UUID string
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *Network1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *Network1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -259,18 +258,19 @@ func (a *Network1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 }
 
 /*
-Connect 			Connect to the network device and return the network
-			interface name. Examples of the interface name are
-			bnep0, bnep1 etc.
-			uuid can be either one of "gn", "panu" or "nap" (case
-			insensitive) or a traditional string representation of
-			UUID or a hexadecimal number.
-			The connection will be closed and network device
-			released either upon calling Disconnect() or when
-			the client disappears from the message bus.
-			Possible errors: org.bluez.Error.AlreadyConnected
-					 org.bluez.Error.ConnectionAttemptFailed
+Connect
 
+	Connect to the network device and return the network
+	interface name. Examples of the interface name are
+	bnep0, bnep1 etc.
+	uuid can be either one of "gn", "panu" or "nap" (case
+	insensitive) or a traditional string representation of
+	UUID or a hexadecimal number.
+	The connection will be closed and network device
+	released either upon calling Disconnect() or when
+	the client disappears from the message bus.
+	Possible errors: org.bluez.Error.AlreadyConnected
+			 org.bluez.Error.ConnectionAttemptFailed
 */
 func (a *Network1) Connect(uuid string) (string, error) {
 	var val0 string
@@ -279,11 +279,12 @@ func (a *Network1) Connect(uuid string) (string, error) {
 }
 
 /*
-Disconnect 			Disconnect from the network device.
-			To abort a connection attempt in case of errors or
-			timeouts in the client it is fine to call this method.
-			Possible errors: org.bluez.Error.Failed
+Disconnect
 
+	Disconnect from the network device.
+	To abort a connection attempt in case of errors or
+	timeouts in the client it is fine to call this method.
+	Possible errors: org.bluez.Error.Failed
 */
 func (a *Network1) Disconnect() error {
 	return a.client.Call("Disconnect", 0).Store()

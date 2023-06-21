@@ -38,7 +38,6 @@ func NewAgentManager1() (*AgentManager1, error) {
 
 /*
 AgentManager1 Agent Manager hierarchy
-
 */
 type AgentManager1 struct {
 	client                 *bluez.Client
@@ -54,12 +53,12 @@ type AgentManager1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *AgentManager1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *AgentManager1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -202,22 +201,24 @@ func (a *AgentManager1) UnwatchProperties(ch chan *bluez.PropertyChanged) error 
 }
 
 /*
-RegisterAgent 			Register an agent to request authorization of
-			the user to accept/reject objects. Object push
-			service needs to authorize each received object.
-			Possible errors: org.bluez.obex.Error.AlreadyExists
+RegisterAgent
 
+	Register an agent to request authorization of
+	the user to accept/reject objects. Object push
+	service needs to authorize each received object.
+	Possible errors: org.bluez.obex.Error.AlreadyExists
 */
 func (a *AgentManager1) RegisterAgent(agent dbus.ObjectPath) error {
 	return a.client.Call("RegisterAgent", 0, agent).Store()
 }
 
 /*
-UnregisterAgent 			This unregisters the agent that has been previously
-			registered. The object path parameter must match the
-			same value that has been used on registration.
-			Possible errors: org.bluez.obex.Error.DoesNotExist
+UnregisterAgent
 
+	This unregisters the agent that has been previously
+	registered. The object path parameter must match the
+	same value that has been used on registration.
+	Possible errors: org.bluez.obex.Error.DoesNotExist
 */
 func (a *AgentManager1) UnregisterAgent(agent dbus.ObjectPath) error {
 	return a.client.Call("UnregisterAgent", 0, agent).Store()

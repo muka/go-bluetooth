@@ -9,10 +9,9 @@ import (
 )
 
 func RootTemplate(filename string, api *types.ApiGroup) error {
-
 	fw, err := os.Create(filename)
 	if err != nil {
-		return fmt.Errorf("create file: %s", err)
+		return fmt.Errorf("create file: %w", err)
 	}
 
 	apidoc := types.ApiGroupDoc{
@@ -25,7 +24,7 @@ func RootTemplate(filename string, api *types.ApiGroup) error {
 	tmpl := loadtpl("root")
 	err = tmpl.Execute(fw, apidoc)
 	if err != nil {
-		return fmt.Errorf("write tpl: %s", err)
+		return fmt.Errorf("write tpl: %w", err)
 	}
 
 	// log.Debugf("Created %s", filename)
@@ -33,10 +32,9 @@ func RootTemplate(filename string, api *types.ApiGroup) error {
 }
 
 func ErrorsTemplate(filename string, apis []*types.ApiGroup) error {
-
 	fw, err := os.Create(filename)
 	if err != nil {
-		return fmt.Errorf("create file: %s", err)
+		return fmt.Errorf("create file: %w", err)
 	}
 
 	errors := []string{}
@@ -72,7 +70,7 @@ func ErrorsTemplate(filename string, apis []*types.ApiGroup) error {
 	tmpl := loadtpl("errors")
 	err = tmpl.Execute(fw, errorsList)
 	if err != nil {
-		return fmt.Errorf("tpl write: %s", err)
+		return fmt.Errorf("tpl write: %w", err)
 	}
 
 	// log.Debugf("Created %s", filename)
@@ -80,10 +78,9 @@ func ErrorsTemplate(filename string, apis []*types.ApiGroup) error {
 }
 
 func InterfacesTemplate(filename string, apis []types.ApiGroup) error {
-
 	fw, err := os.Create(filename)
 	if err != nil {
-		return fmt.Errorf("create file: %s", err)
+		return fmt.Errorf("create file: %w", err)
 	}
 
 	interfaces := []types.InterfaceDoc{}
@@ -116,7 +113,7 @@ func InterfacesTemplate(filename string, apis []types.ApiGroup) error {
 	tmpl := loadtpl("interfaces")
 	err = tmpl.Execute(fw, ifaces)
 	if err != nil {
-		return fmt.Errorf("tpl write: %s", err)
+		return fmt.Errorf("tpl write: %w", err)
 	}
 
 	// log.Debugf("Created %s", filename)

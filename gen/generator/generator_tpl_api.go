@@ -12,7 +12,6 @@ import (
 )
 
 func ApiTemplate(filename string, api *types.Api, apiGroup *types.ApiGroup) error {
-
 	fw, err := os.Create(filename)
 	if err != nil {
 		return fmt.Errorf("create file: %s", err)
@@ -89,7 +88,7 @@ func ApiTemplate(filename string, api *types.Api, apiGroup *types.ApiGroup) erro
 
 				prop.RawTypeInitializer = rawTypeInitializer
 				prop.RawType = getRawType(prop.Property.Type)
-				//log.Debugf("props --> %s %s", propName, propType)
+				// log.Debugf("props --> %s %s", propName, propType)
 			} else {
 
 				rawTypeInitializer, err := getRawTypeInitializer(propType)

@@ -44,7 +44,6 @@ parameters.  Properties which are not present will not be included in the
 data.  Required advertisement data types will always be included.
 All UUIDs are 128-bit versions in the API, and 16 or 32-bit
 versions of the same UUID will be used in the advertising data as appropriate.
-
 */
 type LEAdvertisement1 struct {
 	client                 *bluez.Client
@@ -205,12 +204,12 @@ type LEAdvertisement1Properties struct {
 	Type string
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *LEAdvertisement1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *LEAdvertisement1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -591,12 +590,13 @@ func (a *LEAdvertisement1) UnwatchProperties(ch chan *bluez.PropertyChanged) err
 }
 
 /*
-Release 			This method gets called when the service daemon
-			removes the Advertisement. A client can use it to do
-			cleanup tasks. There is no need to call
-			UnregisterAdvertisement because when this method gets
-			called it has already been unregistered.
+Release
 
+	This method gets called when the service daemon
+	removes the Advertisement. A client can use it to do
+	cleanup tasks. There is no need to call
+	UnregisterAdvertisement because when this method gets
+	called it has already been unregistered.
 */
 func (a *LEAdvertisement1) Release() error {
 	return a.client.Call("Release", 0).Store()

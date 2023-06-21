@@ -1,17 +1,24 @@
 package generator
 
 import (
-	"fmt"
-	"os"
+	"embed"
 	"strings"
 	"text/template"
 
+	"github.com/Masterminds/sprig/v3"
 	"github.com/muka/go-bluetooth/gen/types"
 )
 
-var TplPath = "gen/generator/tpl/%s.go.tpl"
+//go:embed tpl/*.tpl
+var _tplFS embed.FS
 
-//rename variable name to avoid collision with Go languages
+var tpl = template.Must(
+	template.New("").
+		Funcs(sprig.TxtFuncMap()).
+		ParseFS(_tplFS, "tpl/*.tpl"),
+)
+
+// rename variable name to avoid collision with Go languages
 func renameReserved(varname string) string {
 	switch varname {
 	case "type":
@@ -21,20 +28,12 @@ func renameReserved(varname string) string {
 	}
 }
 
-func getBaseDir() string {
-	baseDir := os.Getenv("BASEDIR")
-	if baseDir == "" {
-		baseDir = "."
-	}
-	return baseDir
-}
-
-func getTplPath() string {
-	return fmt.Sprintf("%s/%s", getBaseDir(), TplPath)
-}
-
 func loadtpl(name string) *template.Template {
-	return template.Must(template.ParseFiles(fmt.Sprintf(getTplPath(), name)))
+	res := tpl.Lookup(name + ".go.tpl")
+	if res == nil {
+		panic("not found template with name " + name)
+	}
+	return res
 }
 
 func prepareDocs(src string, skipFirstComment bool, leftpad int) string {

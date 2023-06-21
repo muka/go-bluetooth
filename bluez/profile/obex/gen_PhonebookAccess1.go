@@ -38,7 +38,6 @@ func NewPhonebookAccess1(objectPath dbus.ObjectPath) (*PhonebookAccess1, error) 
 
 /*
 PhonebookAccess1 Phonebook Access hierarchy
-
 */
 type PhonebookAccess1 struct {
 	client                 *bluez.Client
@@ -91,12 +90,12 @@ type PhonebookAccess1Properties struct {
 	SecondaryCounter string
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *PhonebookAccess1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *PhonebookAccess1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -309,46 +308,48 @@ func (a *PhonebookAccess1) UnwatchProperties(ch chan *bluez.PropertyChanged) err
 }
 
 /*
-Select 			Select the phonebook object for other operations. Should
-			be call before all the other operations.
-			location : Where the phonebook is stored, possible
-			inputs :
-				"int" ( "internal" which is default )
-				"sim" ( "sim1" )
-				"sim2"
-				...
-			phonebook : Possible inputs :
-				"pb" :	phonebook for the saved contacts
-				"ich":	incoming call history
-				"och":	outgoing call history
-				"mch":	missing call history
-				"cch":	combination of ich och mch
-				"spd":	speed dials entry ( only for "internal" )
-				"fav":	favorites entry ( only for "internal" )
-			Possible errors: org.bluez.obex.Error.InvalidArguments
-					 org.bluez.obex.Error.Failed
+Select
 
+	Select the phonebook object for other operations. Should
+	be call before all the other operations.
+	location : Where the phonebook is stored, possible
+	inputs :
+		"int" ( "internal" which is default )
+		"sim" ( "sim1" )
+		"sim2"
+		...
+	phonebook : Possible inputs :
+		"pb" :	phonebook for the saved contacts
+		"ich":	incoming call history
+		"och":	outgoing call history
+		"mch":	missing call history
+		"cch":	combination of ich och mch
+		"spd":	speed dials entry ( only for "internal" )
+		"fav":	favorites entry ( only for "internal" )
+	Possible errors: org.bluez.obex.Error.InvalidArguments
+			 org.bluez.obex.Error.Failed
 */
 func (a *PhonebookAccess1) Select(location string, phonebook string) error {
 	return a.client.Call("Select", 0, location, phonebook).Store()
 }
 
 /*
-PullAll 			Return the entire phonebook object from the PSE server
-			in plain string with vcard format, and store it in
-			a local file.
-			If an empty target file is given, a name will be
-			automatically calculated for the temporary file.
-			The returned path represents the newly created transfer,
-			which should be used to find out if the content has been
-			successfully transferred or if the operation fails.
-			The properties of this transfer are also returned along
-			with the object path, to avoid a call to GetProperties.
-			Possible filters: Format, Order, Offset, MaxCount and
-			Fields
-			Possible errors: org.bluez.obex.Error.InvalidArguments
-					org.bluez.obex.Forbidden
+PullAll
 
+	Return the entire phonebook object from the PSE server
+	in plain string with vcard format, and store it in
+	a local file.
+	If an empty target file is given, a name will be
+	automatically calculated for the temporary file.
+	The returned path represents the newly created transfer,
+	which should be used to find out if the content has been
+	successfully transferred or if the operation fails.
+	The properties of this transfer are also returned along
+	with the object path, to avoid a call to GetProperties.
+	Possible filters: Format, Order, Offset, MaxCount and
+	Fields
+	Possible errors: org.bluez.obex.Error.InvalidArguments
+			org.bluez.obex.Forbidden
 */
 func (a *PhonebookAccess1) PullAll(targetfile string, filters map[string]interface{}) (dbus.ObjectPath, map[string]interface{}, error) {
 	var val0 dbus.ObjectPath
@@ -358,14 +359,15 @@ func (a *PhonebookAccess1) PullAll(targetfile string, filters map[string]interfa
 }
 
 /*
-List 			Return an array of vcard-listing data where every entry
-			consists of a pair of strings containing the vcard
-			handle and the contact name. For example:
-				"1.vcf" : "John"
-			Possible filters: Order, Offset and MaxCount
-			Possible errors: org.bluez.obex.Error.InvalidArguments
-					 org.bluez.obex.Forbidden
+List
 
+	Return an array of vcard-listing data where every entry
+	consists of a pair of strings containing the vcard
+	handle and the contact name. For example:
+		"1.vcf" : "John"
+	Possible filters: Order, Offset and MaxCount
+	Possible errors: org.bluez.obex.Error.InvalidArguments
+			 org.bluez.obex.Forbidden
 */
 func (a *PhonebookAccess1) List(filters map[string]interface{}) ([]VCardItem, error) {
 	val0 := []VCardItem{}
@@ -374,20 +376,21 @@ func (a *PhonebookAccess1) List(filters map[string]interface{}) ([]VCardItem, er
 }
 
 /*
-Pull 			Given a vcard handle, retrieve the vcard in the current
-			phonebook object and store it in a local file.
-			If an empty target file is given, a name will be
-			automatically calculated for the temporary file.
-			The returned path represents the newly created transfer,
-			which should be used to find out if the content has been
-			successfully transferred or if the operation fails.
-			The properties of this transfer are also returned along
-			with the object path, to avoid a call to GetProperties.
-			Possbile filters: Format and Fields
-			Possible errors: org.bluez.obex.Error.InvalidArguments
-					 org.bluez.obex.Error.Forbidden
-					 org.bluez.obex.Error.Failed
+Pull
 
+	Given a vcard handle, retrieve the vcard in the current
+	phonebook object and store it in a local file.
+	If an empty target file is given, a name will be
+	automatically calculated for the temporary file.
+	The returned path represents the newly created transfer,
+	which should be used to find out if the content has been
+	successfully transferred or if the operation fails.
+	The properties of this transfer are also returned along
+	with the object path, to avoid a call to GetProperties.
+	Possbile filters: Format and Fields
+	Possible errors: org.bluez.obex.Error.InvalidArguments
+			 org.bluez.obex.Error.Forbidden
+			 org.bluez.obex.Error.Failed
 */
 func (a *PhonebookAccess1) Pull(vcard string, targetfile string, filters map[string]interface{}) (dbus.ObjectPath, map[string]interface{}, error) {
 	var val0 dbus.ObjectPath
@@ -397,19 +400,20 @@ func (a *PhonebookAccess1) Pull(vcard string, targetfile string, filters map[str
 }
 
 /*
-Search 			Search for entries matching the given condition and
-			return an array of vcard-listing data where every entry
-			consists of a pair of strings containing the vcard
-			handle and the contact name.
-			vcard : name paired string match the search condition.
-			field : the field in the vcard to search with
-				{ "name" (default) | "number" | "sound" }
-			value : the string value to search for
-			Possible filters: Order, Offset and MaxCount
-			Possible errors: org.bluez.obex.Error.InvalidArguments
-					 org.bluez.obex.Error.Forbidden
-					 org.bluez.obex.Error.Failed
+Search
 
+	Search for entries matching the given condition and
+	return an array of vcard-listing data where every entry
+	consists of a pair of strings containing the vcard
+	handle and the contact name.
+	vcard : name paired string match the search condition.
+	field : the field in the vcard to search with
+		{ "name" (default) | "number" | "sound" }
+	value : the string value to search for
+	Possible filters: Order, Offset and MaxCount
+	Possible errors: org.bluez.obex.Error.InvalidArguments
+			 org.bluez.obex.Error.Forbidden
+			 org.bluez.obex.Error.Failed
 */
 func (a *PhonebookAccess1) Search(field string, value string, filters map[string]interface{}) ([]VCardItem, error) {
 	val0 := []VCardItem{}
@@ -418,12 +422,13 @@ func (a *PhonebookAccess1) Search(field string, value string, filters map[string
 }
 
 /*
-GetSize 			Return the number of entries in the selected phonebook
-			object that are actually used (i.e. indexes that
-			correspond to non-NULL entries).
-			Possible errors: org.bluez.obex.Error.Forbidden
-					 org.bluez.obex.Error.Failed
+GetSize
 
+	Return the number of entries in the selected phonebook
+	object that are actually used (i.e. indexes that
+	correspond to non-NULL entries).
+	Possible errors: org.bluez.obex.Error.Forbidden
+			 org.bluez.obex.Error.Failed
 */
 func (a *PhonebookAccess1) GetSize() (uint16, error) {
 	var val0 uint16
@@ -432,21 +437,23 @@ func (a *PhonebookAccess1) GetSize() (uint16, error) {
 }
 
 /*
-UpdateVersion 			Attempt to update PrimaryCounter and SecondaryCounter.
-			Possible errors: org.bluez.obex.Error.NotSupported
-					 org.bluez.obex.Error.Forbidden
-					 org.bluez.obex.Error.Failed
+UpdateVersion
 
+	Attempt to update PrimaryCounter and SecondaryCounter.
+	Possible errors: org.bluez.obex.Error.NotSupported
+			 org.bluez.obex.Error.Forbidden
+			 org.bluez.obex.Error.Failed
 */
 func (a *PhonebookAccess1) UpdateVersion() error {
 	return a.client.Call("UpdateVersion", 0).Store()
 }
 
 /*
-ListFilterFields 			Return All Available fields that can be used in Fields
-			filter.
-			Possible errors: None
+ListFilterFields
 
+	Return All Available fields that can be used in Fields
+	filter.
+	Possible errors: None
 */
 func (a *PhonebookAccess1) ListFilterFields() ([]string, error) {
 	val0 := []string{}

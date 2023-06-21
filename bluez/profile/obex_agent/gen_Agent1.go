@@ -39,7 +39,6 @@ func NewAgent1(servicePath string, objectPath dbus.ObjectPath) (*Agent1, error) 
 
 /*
 Agent1 Agent hierarchy
-
 */
 type Agent1 struct {
 	client                 *bluez.Client
@@ -55,12 +54,12 @@ type Agent1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *Agent1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *Agent1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -203,27 +202,29 @@ func (a *Agent1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 }
 
 /*
-Release 			This method gets called when the service daemon
-			unregisters the agent. An agent can use it to do
-			cleanup tasks. There is no need to unregister the
-			agent, because when this method gets called it has
-			already been unregistered.
+Release
 
+	This method gets called when the service daemon
+	unregisters the agent. An agent can use it to do
+	cleanup tasks. There is no need to unregister the
+	agent, because when this method gets called it has
+	already been unregistered.
 */
 func (a *Agent1) Release() error {
 	return a.client.Call("Release", 0).Store()
 }
 
 /*
-AuthorizePush 			This method gets called when the service daemon
-			needs to accept/reject a Bluetooth object push request.
-			Returns the full path (including the filename) where
-			the object shall be stored. The tranfer object will
-			contain a Filename property that contains the default
-			location and name that can be returned.
-			Possible errors: org.bluez.obex.Error.Rejected
-			                 org.bluez.obex.Error.Canceled
+AuthorizePush
 
+	This method gets called when the service daemon
+	needs to accept/reject a Bluetooth object push request.
+	Returns the full path (including the filename) where
+	the object shall be stored. The tranfer object will
+	contain a Filename property that contains the default
+	location and name that can be returned.
+	Possible errors: org.bluez.obex.Error.Rejected
+	                 org.bluez.obex.Error.Canceled
 */
 func (a *Agent1) AuthorizePush(transfer dbus.ObjectPath) (string, error) {
 	var val0 string
@@ -232,10 +233,11 @@ func (a *Agent1) AuthorizePush(transfer dbus.ObjectPath) (string, error) {
 }
 
 /*
-Cancel 			This method gets called to indicate that the agent
-			request failed before a reply was returned. It cancels
-			the previous request.
+Cancel
 
+	This method gets called to indicate that the agent
+	request failed before a reply was returned. It cancels
+	the previous request.
 */
 func (a *Agent1) Cancel() error {
 	return a.client.Call("Cancel", 0).Store()

@@ -61,7 +61,6 @@ func listCastType(typedef string) string {
 }
 
 func castType(rawtype string) string {
-
 	if rawtype == "" {
 		return ""
 	}
@@ -72,7 +71,7 @@ func castType(rawtype string) string {
 
 	typedef := listCastType(rawtype)
 
-	//eg. array{string} or array{string, foo}
+	// eg. array{string} or array{string, foo}
 	re := regexp.MustCompile(`array\{([a-zA-Z0-9, ()]+)\}`)
 	matches := re.FindSubmatch([]byte(rawtype))
 	// log.Warnf("submatch -> %s", matches)
@@ -81,7 +80,7 @@ func castType(rawtype string) string {
 		subtype := string(matches[1])
 		subtype = listCastType(subtype)
 
-		//special case 1 (obex): `array{string vcard, string name}`
+		// special case 1 (obex): `array{string vcard, string name}`
 		pts := strings.Split(subtype, ", ")
 		pts2 := []string{}
 		for _, pt := range pts {
@@ -129,7 +128,7 @@ func getRawType(t string) string {
 func getRawTypeInitializer(t string) (string, error) {
 	t = getRawType(t)
 
-	var checkType = func(text string, match string) bool {
+	checkType := func(text string, match string) bool {
 		minlen := len(match)
 		return len(text) >= minlen && strings.ToLower(t[:minlen]) == match
 	}

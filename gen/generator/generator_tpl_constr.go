@@ -16,7 +16,6 @@ func isDefaultService(s string) bool {
 }
 
 func createConstructors(api *types.Api) []types.Constructor {
-
 	// log.Debugf("-------------------------------------- %s", api.Interface)
 
 	constructors := []types.Constructor{}
@@ -59,12 +58,9 @@ func createConstructors(api *types.Api) []types.Constructor {
 	}
 
 	if overrides, hasOverride := override.GetConstructorsOverrides(api.Interface); hasOverride {
-
 		for _, coverride := range overrides {
-
 			// add new constructors which take an adapter as arg
 			if coverride.AdapterAsArgument {
-
 				for _, c1 := range constructors {
 					// log.Debugf("------ oveerride %+v", c1)
 
@@ -78,11 +74,8 @@ func createConstructors(api *types.Api) []types.Constructor {
 					}
 					constructors = append(constructors, c)
 				}
-
 			}
-
 		}
-
 	}
 
 	// log.Debugf("constructors %++v", constructors)
@@ -91,7 +84,6 @@ func createConstructors(api *types.Api) []types.Constructor {
 }
 
 func inspectServiceName(serviceName string, constructors []types.Constructor) []types.Constructor {
-
 	// log.Debugf("ObjectPath %s", api.ObjectPath)
 	// log.Debugf("Interface %s", api.Interface)
 
@@ -101,7 +93,6 @@ func inspectServiceName(serviceName string, constructors []types.Constructor) []
 	}
 
 	if !isDefaultService(apiService) {
-
 		// log.Debugf("Service %s", apiService)
 
 		// case 1
@@ -163,7 +154,6 @@ func inspectServiceName(serviceName string, constructors []types.Constructor) []
 }
 
 func inspectObjectPath(objectPath string, constructors []types.Constructor) []types.Constructor {
-
 	constructors2 := []types.Constructor{}
 
 	// log.Debugf("%d %s", len(constructors), objectPath)

@@ -62,7 +62,6 @@ func NewMediaFolder1Controller(objectPath dbus.ObjectPath) (*MediaFolder1, error
 
 /*
 MediaFolder1 MediaFolder1 hierarchy
-
 */
 type MediaFolder1 struct {
 	client                 *bluez.Client
@@ -125,12 +124,12 @@ type MediaFolder1Properties struct {
 	Start uint32
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *MediaFolder1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *MediaFolder1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -343,12 +342,13 @@ func (a *MediaFolder1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 }
 
 /*
-Search 			Return a folder object containing the search result.
-			To list the items found use the folder object returned
-			and pass to ChangeFolder.
-			Possible Errors: org.bluez.Error.NotSupported
-					 org.bluez.Error.Failed
+Search
 
+	Return a folder object containing the search result.
+	To list the items found use the folder object returned
+	and pass to ChangeFolder.
+	Possible Errors: org.bluez.Error.NotSupported
+			 org.bluez.Error.Failed
 */
 func (a *MediaFolder1) Search(value string, filter map[string]interface{}) (dbus.ObjectPath, error) {
 	var val0 dbus.ObjectPath
@@ -357,11 +357,12 @@ func (a *MediaFolder1) Search(value string, filter map[string]interface{}) (dbus
 }
 
 /*
-ListItems 			Return a list of items found
-			Possible Errors: org.bluez.Error.InvalidArguments
-					 org.bluez.Error.NotSupported
-					 org.bluez.Error.Failed
+ListItems
 
+	Return a list of items found
+	Possible Errors: org.bluez.Error.InvalidArguments
+			 org.bluez.Error.NotSupported
+			 org.bluez.Error.Failed
 */
 func (a *MediaFolder1) ListItems(filter map[string]interface{}) ([]Item, error) {
 	val0 := []Item{}
@@ -370,15 +371,16 @@ func (a *MediaFolder1) ListItems(filter map[string]interface{}) ([]Item, error) 
 }
 
 /*
-ChangeFolder 			Change current folder.
-			Note: By changing folder the items of previous folder
-			might be destroyed and have to be listed again, the
-			exception is NowPlaying folder which should be always
-			present while the player is active.
-			Possible Errors: org.bluez.Error.InvalidArguments
-					 org.bluez.Error.NotSupported
-					 org.bluez.Error.Failed
+ChangeFolder
 
+	Change current folder.
+	Note: By changing folder the items of previous folder
+	might be destroyed and have to be listed again, the
+	exception is NowPlaying folder which should be always
+	present while the player is active.
+	Possible Errors: org.bluez.Error.InvalidArguments
+			 org.bluez.Error.NotSupported
+			 org.bluez.Error.Failed
 */
 func (a *MediaFolder1) ChangeFolder(folder dbus.ObjectPath) error {
 	return a.client.Call("ChangeFolder", 0, folder).Store()

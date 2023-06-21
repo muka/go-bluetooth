@@ -11,8 +11,6 @@ import (
 )
 
 func TestGenerate(t *testing.T) {
-
-	TplPath = "../../gen/generator/tpl/%s.go.tpl"
 	outdir := "../../test/out"
 
 	bluezApi, err := gen.Parse("../../src/bluez/doc", []filters.Filter{}, false)
@@ -36,5 +34,4 @@ func TestGenerate(t *testing.T) {
 
 	assert.DirExists(t, outdir)
 	assert.DirExists(t, fmt.Sprintf("%s/profile/adapter", outdir))
-
 }

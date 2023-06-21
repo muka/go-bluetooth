@@ -31,7 +31,6 @@ func NewProfile1(servicePath string, objectPath dbus.ObjectPath) (*Profile1, err
 
 /*
 Profile1 Profile hierarchy
-
 */
 type Profile1 struct {
 	client                 *bluez.Client
@@ -47,12 +46,12 @@ type Profile1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *Profile1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *Profile1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -109,44 +108,47 @@ func (a *Profile1) GetObjectManagerSignal() (chan *dbus.Signal, func(), error) {
 }
 
 /*
-Release 			This method gets called when the service daemon
-			unregisters the profile. A profile can use it to do
-			cleanup tasks. There is no need to unregister the
-			profile, because when this method gets called it has
-			already been unregistered.
+Release
 
+	This method gets called when the service daemon
+	unregisters the profile. A profile can use it to do
+	cleanup tasks. There is no need to unregister the
+	profile, because when this method gets called it has
+	already been unregistered.
 */
 func (a *Profile1) Release() error {
 	return a.client.Call("Release", 0).Store()
 }
 
 /*
-NewConnection 			This method gets called when a new service level
-			connection has been made and authorized.
-			Common fd_properties:
-			uint16 Version		Profile version (optional)
-			uint16 Features		Profile features (optional)
-			Possible errors: org.bluez.Error.Rejected
-			                 org.bluez.Error.Canceled
+NewConnection
 
+	This method gets called when a new service level
+	connection has been made and authorized.
+	Common fd_properties:
+	uint16 Version		Profile version (optional)
+	uint16 Features		Profile features (optional)
+	Possible errors: org.bluez.Error.Rejected
+	                 org.bluez.Error.Canceled
 */
 func (a *Profile1) NewConnection(device dbus.ObjectPath, fd int32, fd_properties map[string]interface{}) error {
 	return a.client.Call("NewConnection", 0, device, fd, fd_properties).Store()
 }
 
 /*
-RequestDisconnection 			This method gets called when a profile gets
-			disconnected.
-			The file descriptor is no longer owned by the service
-			daemon and the profile implementation needs to take
-			care of cleaning up all connections.
-			If multiple file descriptors are indicated via
-			NewConnection, it is expected that all of them
-			are disconnected before returning from this
-			method call.
-			Possible errors: org.bluez.Error.Rejected
-			                 org.bluez.Error.Canceled
+RequestDisconnection
 
+	This method gets called when a profile gets
+	disconnected.
+	The file descriptor is no longer owned by the service
+	daemon and the profile implementation needs to take
+	care of cleaning up all connections.
+	If multiple file descriptors are indicated via
+	NewConnection, it is expected that all of them
+	are disconnected before returning from this
+	method call.
+	Possible errors: org.bluez.Error.Rejected
+	                 org.bluez.Error.Canceled
 */
 func (a *Profile1) RequestDisconnection(device dbus.ObjectPath) error {
 	return a.client.Call("RequestDisconnection", 0, device).Store()

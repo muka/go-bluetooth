@@ -38,7 +38,6 @@ func NewAdvertisementMonitor1(objectPath dbus.ObjectPath) (*AdvertisementMonitor
 
 /*
 AdvertisementMonitor1 Advertisement Monitor hierarchy
-
 */
 type AdvertisementMonitor1 struct {
 	client                 *bluez.Client
@@ -137,12 +136,12 @@ type AdvertisementMonitor1Properties struct {
 	Type string
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *AdvertisementMonitor1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *AdvertisementMonitor1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -348,42 +347,46 @@ func (a *AdvertisementMonitor1) UnwatchProperties(ch chan *bluez.PropertyChanged
 }
 
 /*
-Release 			This gets called as a signal for a client to perform
-			clean-up when (1)a monitor cannot be activated after it
-			was exposed or (2)a monitor has been deactivated.
+Release
 
+	This gets called as a signal for a client to perform
+	clean-up when (1)a monitor cannot be activated after it
+	was exposed or (2)a monitor has been deactivated.
 */
 func (a *AdvertisementMonitor1) Release() error {
 	return a.client.Call("Release", 0).Store()
 }
 
 /*
-Activate 			After a monitor was exposed, this gets called as a
-			signal for client to get acknowledged when a monitor
-			has been activated, so the client can expect to receive
-			calls on DeviceFound() or DeviceLost().
+Activate
 
+	After a monitor was exposed, this gets called as a
+	signal for client to get acknowledged when a monitor
+	has been activated, so the client can expect to receive
+	calls on DeviceFound() or DeviceLost().
 */
 func (a *AdvertisementMonitor1) Activate() error {
 	return a.client.Call("Activate", 0).Store()
 }
 
 /*
-DeviceFound 			This gets called to notify the client of finding the
-			targeted device. Once receiving the call, the client
-			should start to monitor the corresponding device to
-			retrieve the changes on RSSI and advertisement content.
+DeviceFound
 
+	This gets called to notify the client of finding the
+	targeted device. Once receiving the call, the client
+	should start to monitor the corresponding device to
+	retrieve the changes on RSSI and advertisement content.
 */
 func (a *AdvertisementMonitor1) DeviceFound(device dbus.ObjectPath) error {
 	return a.client.Call("DeviceFound", 0, device).Store()
 }
 
 /*
-DeviceLost 			This gets called to notify the client of losing the
-			targeted device. Once receiving this call, the client
-			should stop monitoring the corresponding device.
+DeviceLost
 
+	This gets called to notify the client of losing the
+	targeted device. Once receiving this call, the client
+	should stop monitoring the corresponding device.
 */
 func (a *AdvertisementMonitor1) DeviceLost(device dbus.ObjectPath) error {
 	return a.client.Call("DeviceLost", 0, device).Store()
