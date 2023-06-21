@@ -39,7 +39,6 @@ func NewApplication1(servicePath string, objectPath dbus.ObjectPath) (*Applicati
 
 /*
 Application1 Mesh Application Hierarchy
-
 */
 type Application1 struct {
 	client                 *bluez.Client
@@ -76,12 +75,12 @@ type Application1Properties struct {
 	VersionID uint16
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *Application1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *Application1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -260,31 +259,33 @@ func (a *Application1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 }
 
 /*
-JoinComplete 		This method is called when the node provisioning initiated
-		by a Join() method call successfully completed.
-		The token parameter serves as a unique identifier of the
-		particular node. The token must be preserved by the application
-		in order to authenticate itself to the mesh daemon and attach to
-		the network as a mesh node by calling Attach() method or
-		permanently remove the identity of the mesh node by calling
-		Leave() method.
-		If this method returns an error, the daemon will assume that the
-		application failed to preserve the token, and will remove the
-		freshly created node.
+JoinComplete
 
+	This method is called when the node provisioning initiated
+	by a Join() method call successfully completed.
+	The token parameter serves as a unique identifier of the
+	particular node. The token must be preserved by the application
+	in order to authenticate itself to the mesh daemon and attach to
+	the network as a mesh node by calling Attach() method or
+	permanently remove the identity of the mesh node by calling
+	Leave() method.
+	If this method returns an error, the daemon will assume that the
+	application failed to preserve the token, and will remove the
+	freshly created node.
 */
 func (a *Application1) JoinComplete(token uint64) error {
 	return a.client.Call("JoinComplete", 0, token).Store()
 }
 
 /*
-JoinFailed 		This method is called when the node provisioning initiated by
-		Join() has failed.
-		The reason parameter identifies the reason for provisioning
-		failure. The defined values are: "timeout", "bad-pdu",
-		"confirmation-failed", "out-of-resources", "decryption-error",
-		"unexpected-error", "cannot-assign-addresses".
+JoinFailed
 
+	This method is called when the node provisioning initiated by
+	Join() has failed.
+	The reason parameter identifies the reason for provisioning
+	failure. The defined values are: "timeout", "bad-pdu",
+	"confirmation-failed", "out-of-resources", "decryption-error",
+	"unexpected-error", "cannot-assign-addresses".
 */
 func (a *Application1) JoinFailed(reason string) error {
 	return a.client.Call("JoinFailed", 0, reason).Store()

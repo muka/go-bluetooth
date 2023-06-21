@@ -38,7 +38,6 @@ func NewMediaTransport1(objectPath dbus.ObjectPath) (*MediaTransport1, error) {
 
 /*
 MediaTransport1 MediaTransport1 hierarchy
-
 */
 type MediaTransport1 struct {
 	client                 *bluez.Client
@@ -85,6 +84,22 @@ type MediaTransport1Properties struct {
 	Endpoint dbus.ObjectPath
 
 	/*
+		Links Linked transport objects which the transport is
+				associated with.
+	*/
+	Links []dbus.ObjectPath
+
+	/*
+		Location Indicates transport Audio Location.
+	*/
+	Location uint32
+
+	/*
+		Metadata Indicates transport Metadata.
+	*/
+	Metadata []byte
+
+	/*
 		State Indicates the state of the transport. Possible
 				values are:
 					"idle": not streaming
@@ -108,12 +123,12 @@ type MediaTransport1Properties struct {
 	Volume uint16
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *MediaTransport1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *MediaTransport1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -186,6 +201,48 @@ func (a *MediaTransport1) GetEndpoint() (dbus.ObjectPath, error) {
 		return dbus.ObjectPath(""), err
 	}
 	return v.Value().(dbus.ObjectPath), nil
+}
+
+// SetLinks set Links value
+func (a *MediaTransport1) SetLinks(v []dbus.ObjectPath) error {
+	return a.SetProperty("Links", v)
+}
+
+// GetLinks get Links value
+func (a *MediaTransport1) GetLinks() ([]dbus.ObjectPath, error) {
+	v, err := a.GetProperty("Links")
+	if err != nil {
+		return []dbus.ObjectPath{}, err
+	}
+	return v.Value().([]dbus.ObjectPath), nil
+}
+
+// SetLocation set Location value
+func (a *MediaTransport1) SetLocation(v uint32) error {
+	return a.SetProperty("Location", v)
+}
+
+// GetLocation get Location value
+func (a *MediaTransport1) GetLocation() (uint32, error) {
+	v, err := a.GetProperty("Location")
+	if err != nil {
+		return uint32(0), err
+	}
+	return v.Value().(uint32), nil
+}
+
+// SetMetadata set Metadata value
+func (a *MediaTransport1) SetMetadata(v []byte) error {
+	return a.SetProperty("Metadata", v)
+}
+
+// GetMetadata get Metadata value
+func (a *MediaTransport1) GetMetadata() ([]byte, error) {
+	v, err := a.GetProperty("Metadata")
+	if err != nil {
+		return []byte{}, err
+	}
+	return v.Value().([]byte), nil
 }
 
 // SetState set State value
@@ -368,11 +425,12 @@ func (a *MediaTransport1) UnwatchProperties(ch chan *bluez.PropertyChanged) erro
 }
 
 /*
-Acquire 			Acquire transport file descriptor and the MTU for read
-			and write respectively.
-			Possible Errors: org.bluez.Error.NotAuthorized
-					 org.bluez.Error.Failed
+Acquire
 
+	Acquire transport file descriptor and the MTU for read
+	and write respectively.
+	Possible Errors: org.bluez.Error.NotAuthorized
+			 org.bluez.Error.Failed
 */
 func (a *MediaTransport1) Acquire() (dbus.UnixFD, uint16, uint16, error) {
 	var val0 dbus.UnixFD
@@ -383,15 +441,16 @@ func (a *MediaTransport1) Acquire() (dbus.UnixFD, uint16, uint16, error) {
 }
 
 /*
-TryAcquire 			Acquire transport file descriptor only if the transport
-			is in "pending" state at the time the message is
-			received by BlueZ. Otherwise no request will be sent
-			to the remote device and the function will just fail
-			with org.bluez.Error.NotAvailable.
-			Possible Errors: org.bluez.Error.NotAuthorized
-					 org.bluez.Error.Failed
-					 org.bluez.Error.NotAvailable
+TryAcquire
 
+	Acquire transport file descriptor only if the transport
+	is in "pending" state at the time the message is
+	received by BlueZ. Otherwise no request will be sent
+	to the remote device and the function will just fail
+	with org.bluez.Error.NotAvailable.
+	Possible Errors: org.bluez.Error.NotAuthorized
+			 org.bluez.Error.Failed
+			 org.bluez.Error.NotAvailable
 */
 func (a *MediaTransport1) TryAcquire() (dbus.UnixFD, uint16, uint16, error) {
 	var val0 dbus.UnixFD
@@ -402,8 +461,9 @@ func (a *MediaTransport1) TryAcquire() (dbus.UnixFD, uint16, uint16, error) {
 }
 
 /*
-Release 			Releases file descriptor.
+Release
 
+	Releases file descriptor.
 */
 func (a *MediaTransport1) Release() error {
 	return a.client.Call("Release", 0).Store()

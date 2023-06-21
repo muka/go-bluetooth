@@ -1,7 +1,7 @@
 
 .PHONY: gen
 
-BLUEZ_VERSION ?= 5.60
+BLUEZ_VERSION ?= 5.66
 FILTER ?=
 
 DOCKER_PARAMS :=  --privileged -it --rm \
@@ -12,6 +12,7 @@ DOCKER_PARAMS :=  --privileged -it --rm \
 	-v /var/lib/bluetooth:/var/lib/bluetooth \
 	opny/bluez-${BLUEZ_VERSION}
 
+.NOPARALLEL:
 all: bluez/checkout gen/clean gen/run
 
 bluez/init:
@@ -92,3 +93,6 @@ bluez-5.64/gen:
 
 bluez-5.65/gen:
 	BLUEZ_VERSION=5.65 make gen/clean gen
+
+bluez-5.66/gen:
+	BLUEZ_VERSION=5.66 make gen/clean gen

@@ -38,7 +38,6 @@ func NewAdminPolicySet1(objectPath dbus.ObjectPath) (*AdminPolicySet1, error) {
 
 /*
 AdminPolicySet1 Admin Policy Set hierarchy
-
 */
 type AdminPolicySet1 struct {
 	client                 *bluez.Client
@@ -54,12 +53,12 @@ type AdminPolicySet1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *AdminPolicySet1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *AdminPolicySet1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -202,19 +201,20 @@ func (a *AdminPolicySet1) UnwatchProperties(ch chan *bluez.PropertyChanged) erro
 }
 
 /*
-SetServiceAllowList 			This method sets the service allowlist by specifying
-			service UUIDs.
-			When SetServiceAllowList is called, bluez will block
-			incoming and outgoing connections to the service not in
-			UUIDs for all of the clients.
-			Any subsequent calls to this method will supersede any
-			previously set allowlist values.  Calling this method
-			with an empty array will allow any service UUIDs to be
-			used.
-			The default value is an empty array.
-			Possible errors: org.bluez.Error.InvalidArguments
-					 org.bluez.Error.Failed
+SetServiceAllowList
 
+	This method sets the service allowlist by specifying
+	service UUIDs.
+	When SetServiceAllowList is called, bluez will block
+	incoming and outgoing connections to the service not in
+	UUIDs for all of the clients.
+	Any subsequent calls to this method will supersede any
+	previously set allowlist values.  Calling this method
+	with an empty array will allow any service UUIDs to be
+	used.
+	The default value is an empty array.
+	Possible errors: org.bluez.Error.InvalidArguments
+			 org.bluez.Error.Failed
 */
 func (a *AdminPolicySet1) SetServiceAllowList(UUIDs []string) error {
 	return a.client.Call("SetServiceAllowList", 0, UUIDs).Store()

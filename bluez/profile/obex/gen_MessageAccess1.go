@@ -38,7 +38,6 @@ func NewMessageAccess1(objectPath dbus.ObjectPath) (*MessageAccess1, error) {
 
 /*
 MessageAccess1 Message Access hierarchy
-
 */
 type MessageAccess1 struct {
 	client                 *bluez.Client
@@ -54,12 +53,12 @@ type MessageAccess1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *MessageAccess1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *MessageAccess1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -202,25 +201,27 @@ func (a *MessageAccess1) UnwatchProperties(ch chan *bluez.PropertyChanged) error
 }
 
 /*
-SetFolder 			Set working directory for current session, *name* may
-			be the directory name or '..[/dir]'.
-			Possible errors: org.bluez.obex.Error.InvalidArguments
-					 org.bluez.obex.Error.Failed
+SetFolder
 
+	Set working directory for current session, *name* may
+	be the directory name or '..[/dir]'.
+	Possible errors: org.bluez.obex.Error.InvalidArguments
+			 org.bluez.obex.Error.Failed
 */
 func (a *MessageAccess1) SetFolder(name string) error {
 	return a.client.Call("SetFolder", 0, name).Store()
 }
 
 /*
-ListFolders 			Returns a dictionary containing information about
-			the current folder content.
-			The following keys are defined:
-				string Name : Folder name
-			Possible filters: Offset and MaxCount
-			Possible errors: org.bluez.obex.Error.InvalidArguments
-					 org.bluez.obex.Error.Failed
+ListFolders
 
+	Returns a dictionary containing information about
+	the current folder content.
+	The following keys are defined:
+		string Name : Folder name
+	Possible filters: Offset and MaxCount
+	Possible errors: org.bluez.obex.Error.InvalidArguments
+			 org.bluez.obex.Error.Failed
 */
 func (a *MessageAccess1) ListFolders(filter map[string]interface{}) ([]map[string]interface{}, error) {
 	val0 := []map[string]interface{}{}
@@ -229,10 +230,11 @@ func (a *MessageAccess1) ListFolders(filter map[string]interface{}) ([]map[strin
 }
 
 /*
-ListFilterFields 			Return all available fields that can be used in Fields
-			filter.
-			Possible errors: None
+ListFilterFields
 
+	Return all available fields that can be used in Fields
+	filter.
+	Possible errors: None
 */
 func (a *MessageAccess1) ListFilterFields() ([]string, error) {
 	val0 := []string{}
@@ -241,59 +243,60 @@ func (a *MessageAccess1) ListFilterFields() ([]string, error) {
 }
 
 /*
-ListMessages 			Returns an array containing the messages found in the
-			given subfolder of the current folder, or in the
-			current folder if folder is empty.
-			Possible Filters: Offset, MaxCount, SubjectLength, Fields,
-			Type, PeriodStart, PeriodEnd, Status, Recipient, Sender,
-			Priority
-			Each message is represented by an object path followed
-			by a dictionary of the properties.
-			Properties:
-				string Subject:
-					Message subject
-				string Timestamp:
-					Message timestamp
-				string Sender:
-					Message sender name
-				string SenderAddress:
-					Message sender address
-				string ReplyTo:
-					Message Reply-To address
-				string Recipient:
-					Message recipient name
-				string RecipientAddress:
-					Message recipient address
-				string Type:
-					Message type
-					Possible values: "email", "sms-gsm",
-					"sms-cdma" and "mms"
-				uint64 Size:
-					Message size in bytes
-				boolean Text:
-					Message text flag
-					Specifies whether message has textual
-					content or is binary only
-				string Status:
-					Message status
-					Possible values for received messages:
-					"complete", "fractioned", "notification"
-					Possible values for sent messages:
-					"delivery-success", "sending-success",
-					"delivery-failure", "sending-failure"
-				uint64 AttachmentSize:
-					Message overall attachment size in bytes
-				boolean Priority:
-					Message priority flag
-				boolean Read:
-					Message read flag
-				boolean Sent:
-					Message sent flag
-				boolean Protected:
-					Message protected flag
-			Possible errors: org.bluez.obex.Error.InvalidArguments
-					 org.bluez.obex.Error.Failed
+ListMessages
 
+	Returns an array containing the messages found in the
+	given subfolder of the current folder, or in the
+	current folder if folder is empty.
+	Possible Filters: Offset, MaxCount, SubjectLength, Fields,
+	Type, PeriodStart, PeriodEnd, Status, Recipient, Sender,
+	Priority
+	Each message is represented by an object path followed
+	by a dictionary of the properties.
+	Properties:
+		string Subject:
+			Message subject
+		string Timestamp:
+			Message timestamp
+		string Sender:
+			Message sender name
+		string SenderAddress:
+			Message sender address
+		string ReplyTo:
+			Message Reply-To address
+		string Recipient:
+			Message recipient name
+		string RecipientAddress:
+			Message recipient address
+		string Type:
+			Message type
+			Possible values: "email", "sms-gsm",
+			"sms-cdma" and "mms"
+		uint64 Size:
+			Message size in bytes
+		boolean Text:
+			Message text flag
+			Specifies whether message has textual
+			content or is binary only
+		string Status:
+			Message status
+			Possible values for received messages:
+			"complete", "fractioned", "notification"
+			Possible values for sent messages:
+			"delivery-success", "sending-success",
+			"delivery-failure", "sending-failure"
+		uint64 AttachmentSize:
+			Message overall attachment size in bytes
+		boolean Priority:
+			Message priority flag
+		boolean Read:
+			Message read flag
+		boolean Sent:
+			Message sent flag
+		boolean Protected:
+			Message protected flag
+	Possible errors: org.bluez.obex.Error.InvalidArguments
+			 org.bluez.obex.Error.Failed
 */
 func (a *MessageAccess1) ListMessages(folder string, filter map[string]interface{}) ([]Message, error) {
 	val0 := []Message{}

@@ -38,7 +38,6 @@ func NewSimAccess1(objectPath dbus.ObjectPath) (*SimAccess1, error) {
 
 /*
 SimAccess1 Sim Access Profile hierarchy
-
 */
 type SimAccess1 struct {
 	client                 *bluez.Client
@@ -59,12 +58,12 @@ type SimAccess1Properties struct {
 	Connected bool
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *SimAccess1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *SimAccess1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -221,9 +220,10 @@ func (a *SimAccess1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 }
 
 /*
-Disconnect 			Disconnects SAP client from the server.
-			Possible errors: org.bluez.Error.Failed
+Disconnect
 
+	Disconnects SAP client from the server.
+	Possible errors: org.bluez.Error.Failed
 */
 func (a *SimAccess1) Disconnect() error {
 	return a.client.Call("Disconnect", 0).Store()

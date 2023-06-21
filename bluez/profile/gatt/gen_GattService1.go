@@ -45,7 +45,6 @@ is freely definable.
 External applications implementing local services must register the services
 using GattManager1 registration method and must implement the methods and
 properties defined in GattService1 interface.
-
 */
 type GattService1 struct {
 	client                 *bluez.Client
@@ -104,12 +103,12 @@ type GattService1Properties struct {
 	UUID string
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *GattService1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *GattService1Properties) Unlock() {
 	p.lock.Unlock()
 }

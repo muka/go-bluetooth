@@ -39,7 +39,6 @@ func NewThermometerWatcher1(servicePath string, objectPath dbus.ObjectPath) (*Th
 
 /*
 ThermometerWatcher1 Health Thermometer Watcher hierarchy
-
 */
 type ThermometerWatcher1 struct {
 	client                 *bluez.Client
@@ -55,12 +54,12 @@ type ThermometerWatcher1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *ThermometerWatcher1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *ThermometerWatcher1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -203,42 +202,43 @@ func (a *ThermometerWatcher1) UnwatchProperties(ch chan *bluez.PropertyChanged) 
 }
 
 /*
-MeasurementReceived 			This callback gets called when a measurement has been
-			scanned in the thermometer.
-			Measurement:
-				int16 Exponent:
-				int32 Mantissa:
-					Exponent and Mantissa values as
-					extracted from float value defined by
-					IEEE-11073-20601.
-					Measurement value is calculated as
-					(Mantissa) * (10^Exponent)
-					For special cases Exponent is
-					set to 0 and Mantissa is set to
-					one of following values:
-					+(2^23 - 1)	NaN (invalid or
-							missing data)
-					-(2^23)		NRes
-					+(2^23 - 2)	+Infinity
-					-(2^23 - 2)	-Infinity
-				string Unit:
-					Possible values: "celsius" or
-							"fahrenheit"
-				uint64 Time (optional):
-					Time of measurement, if
-					supported by device.
-					Expressed in seconds since epoch.
-				string Type (optional):
-					Only present if measurement type
-					is known.
-					Possible values: "armpit", "body",
-						"ear", "finger", "intestines",
-						"mouth", "rectum", "toe",
-						"tympanum"
-				string Measurement:
-					Possible values: "final" or
-							"intermediate"
+MeasurementReceived
 
+	This callback gets called when a measurement has been
+	scanned in the thermometer.
+	Measurement:
+		int16 Exponent:
+		int32 Mantissa:
+			Exponent and Mantissa values as
+			extracted from float value defined by
+			IEEE-11073-20601.
+			Measurement value is calculated as
+			(Mantissa) * (10^Exponent)
+			For special cases Exponent is
+			set to 0 and Mantissa is set to
+			one of following values:
+			+(2^23 - 1)	NaN (invalid or
+					missing data)
+			-(2^23)		NRes
+			+(2^23 - 2)	+Infinity
+			-(2^23 - 2)	-Infinity
+		string Unit:
+			Possible values: "celsius" or
+					"fahrenheit"
+		uint64 Time (optional):
+			Time of measurement, if
+			supported by device.
+			Expressed in seconds since epoch.
+		string Type (optional):
+			Only present if measurement type
+			is known.
+			Possible values: "armpit", "body",
+				"ear", "finger", "intestines",
+				"mouth", "rectum", "toe",
+				"tympanum"
+		string Measurement:
+			Possible values: "final" or
+					"intermediate"
 */
 func (a *ThermometerWatcher1) MeasurementReceived(measurement map[string]interface{}) error {
 	return a.client.Call("MeasurementReceived", 0, measurement).Store()

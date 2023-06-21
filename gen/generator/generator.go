@@ -14,7 +14,6 @@ import (
 
 // Generate go code from the API definition
 func Generate(bluezApi gen.BluezAPI, outDir string, debug bool, forceOverwrite bool) error {
-
 	apiGroups := bluezApi.Api
 
 	err := util.Mkdir(outDir)
@@ -116,7 +115,7 @@ func Generate(bluezApi gen.BluezAPI, outDir string, debug bool, forceOverwrite b
 				log.Tracef("format code: %s: %v", apiGenFilename, err)
 			}
 
-			if err := ioutil.WriteFile(apiGenFilename, code, 0644); err != nil {
+			if err := ioutil.WriteFile(apiGenFilename, code, 0o644); err != nil {
 				log.Tracef("rewrite with formatted code: %s", apiGenFilename)
 				return err
 			}

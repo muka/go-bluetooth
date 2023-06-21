@@ -44,7 +44,6 @@ Local profile (GATT client) instance. By registering this type of object
 an application effectively indicates support for a specific GATT profile
 and requests automatic connections to be established to devices
 supporting it.
-
 */
 type GattProfile1 struct {
 	client                 *bluez.Client
@@ -65,12 +64,12 @@ type GattProfile1Properties struct {
 	UUIDs []string
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *GattProfile1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *GattProfile1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -222,12 +221,13 @@ func (a *GattProfile1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 }
 
 /*
-Release 			This method gets called when the service daemon
-			unregisters the profile. The profile can use it to
-			do cleanup tasks. There is no need to unregister the
-			profile, because when this method gets called it has
-			already been unregistered.
+Release
 
+	This method gets called when the service daemon
+	unregisters the profile. The profile can use it to
+	do cleanup tasks. There is no need to unregister the
+	profile, because when this method gets called it has
+	already been unregistered.
 */
 func (a *GattProfile1) Release() error {
 	return a.client.Call("Release", 0).Store()

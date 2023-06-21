@@ -38,7 +38,6 @@ func NewHealthManager1() (*HealthManager1, error) {
 
 /*
 HealthManager1 HealthManager hierarchy
-
 */
 type HealthManager1 struct {
 	client                 *bluez.Client
@@ -54,12 +53,12 @@ type HealthManager1Properties struct {
 	lock sync.RWMutex `dbus:"ignore"`
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *HealthManager1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *HealthManager1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -202,22 +201,23 @@ func (a *HealthManager1) UnwatchProperties(ch chan *bluez.PropertyChanged) error
 }
 
 /*
-CreateApplication 			Returns the path of the new registered application.
-			Application will be closed by the call or implicitly
-			when the programs leaves the bus.
-			config:
-				uint16 DataType:
-					Mandatory
-				string Role:
-					Mandatory. Possible values: "source",
-									"sink"
-				string Description:
-					Optional
-				ChannelType:
-					Optional, just for sources. Possible
-					values: "reliable", "streaming"
-			Possible Errors: org.bluez.Error.InvalidArguments
+CreateApplication
 
+	Returns the path of the new registered application.
+	Application will be closed by the call or implicitly
+	when the programs leaves the bus.
+	config:
+		uint16 DataType:
+			Mandatory
+		string Role:
+			Mandatory. Possible values: "source",
+							"sink"
+		string Description:
+			Optional
+		ChannelType:
+			Optional, just for sources. Possible
+			values: "reliable", "streaming"
+	Possible Errors: org.bluez.Error.InvalidArguments
 */
 func (a *HealthManager1) CreateApplication(config map[string]interface{}) (dbus.ObjectPath, error) {
 	var val0 dbus.ObjectPath
@@ -226,14 +226,15 @@ func (a *HealthManager1) CreateApplication(config map[string]interface{}) (dbus.
 }
 
 /*
-DestroyApplication 			Closes the HDP application identified by the object
-			path. Also application will be closed if the process
-			that started it leaves the bus. Only the creator of the
-			application will be able to destroy it.
-			Possible errors: org.bluez.Error.InvalidArguments
-					 org.bluez.Error.NotFound
-					 org.bluez.Error.NotAllowed
+DestroyApplication
 
+	Closes the HDP application identified by the object
+	path. Also application will be closed if the process
+	that started it leaves the bus. Only the creator of the
+	application will be able to destroy it.
+	Possible errors: org.bluez.Error.InvalidArguments
+			 org.bluez.Error.NotFound
+			 org.bluez.Error.NotAllowed
 */
 func (a *HealthManager1) DestroyApplication(application dbus.ObjectPath) error {
 	return a.client.Call("DestroyApplication", 0, application).Store()

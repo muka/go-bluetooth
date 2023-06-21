@@ -38,7 +38,6 @@ func NewAdminPolicyStatus1(objectPath dbus.ObjectPath) (*AdminPolicyStatus1, err
 
 /*
 AdminPolicyStatus1 Admin Policy Status hierarchy
-
 */
 type AdminPolicyStatus1 struct {
 	client                 *bluez.Client
@@ -59,12 +58,12 @@ type AdminPolicyStatus1Properties struct {
 	ServiceAllowList []string
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *AdminPolicyStatus1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *AdminPolicyStatus1Properties) Unlock() {
 	p.lock.Unlock()
 }

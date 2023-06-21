@@ -236,7 +236,8 @@ func (a *{{.InterfaceName}}) UnwatchProperties(ch chan *bluez.PropertyChanged) e
 {{- range .Methods}}
 
 /*
-{{.Name}} {{.Docs}}
+{{.Name}}
+{{.Docs}}
 */
 func (a *{{$InterfaceName}}) {{.Name}}({{.ArgsList}}) {{.Method.ReturnType}} {
 	{{- if .SingleReturn}}

@@ -38,7 +38,6 @@ func NewHealthDevice1(objectPath dbus.ObjectPath) (*HealthDevice1, error) {
 
 /*
 HealthDevice1 HealthDevice hierarchy
-
 */
 type HealthDevice1 struct {
 	client                 *bluez.Client
@@ -62,12 +61,12 @@ type HealthDevice1Properties struct {
 	MainChannel dbus.ObjectPath
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *HealthDevice1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *HealthDevice1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -224,12 +223,13 @@ func (a *HealthDevice1) UnwatchProperties(ch chan *bluez.PropertyChanged) error 
 }
 
 /*
-Echo 			Sends an echo petition to the remote service. Returns
-			True if response matches with the buffer sent. If some
-			error is detected False value is returned.
-			Possible errors: org.bluez.Error.InvalidArguments
-					 org.bluez.Error.OutOfRange
+Echo
 
+	Sends an echo petition to the remote service. Returns
+	True if response matches with the buffer sent. If some
+	error is detected False value is returned.
+	Possible errors: org.bluez.Error.InvalidArguments
+			 org.bluez.Error.OutOfRange
 */
 func (a *HealthDevice1) Echo() (bool, error) {
 	var val0 bool
@@ -238,14 +238,15 @@ func (a *HealthDevice1) Echo() (bool, error) {
 }
 
 /*
-CreateChannel 			Creates a new data channel.  The configuration should
-			indicate the channel quality of service using one of
-			this values "reliable", "streaming", "any".
-			Returns the object path that identifies the data
-			channel that is already connected.
-			Possible errors: org.bluez.Error.InvalidArguments
-					 org.bluez.Error.HealthError
+CreateChannel
 
+	Creates a new data channel.  The configuration should
+	indicate the channel quality of service using one of
+	this values "reliable", "streaming", "any".
+	Returns the object path that identifies the data
+	channel that is already connected.
+	Possible errors: org.bluez.Error.InvalidArguments
+			 org.bluez.Error.HealthError
 */
 func (a *HealthDevice1) CreateChannel(application dbus.ObjectPath, configuration string) (dbus.ObjectPath, error) {
 	var val0 dbus.ObjectPath
@@ -254,14 +255,15 @@ func (a *HealthDevice1) CreateChannel(application dbus.ObjectPath, configuration
 }
 
 /*
-DestroyChannel 			Destroys the data channel object. Only the creator of
-			the channel or the creator of the HealthApplication
-			that received the data channel will be able to destroy
-			it.
-			Possible errors: org.bluez.Error.InvalidArguments
-					 org.bluez.Error.NotFound
-				         org.bluez.Error.NotAllowed
+DestroyChannel
 
+	Destroys the data channel object. Only the creator of
+	the channel or the creator of the HealthApplication
+	that received the data channel will be able to destroy
+	it.
+	Possible errors: org.bluez.Error.InvalidArguments
+			 org.bluez.Error.NotFound
+		         org.bluez.Error.NotAllowed
 */
 func (a *HealthDevice1) DestroyChannel(channel dbus.ObjectPath) error {
 	return a.client.Call("DestroyChannel", 0, channel).Store()

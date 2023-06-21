@@ -60,7 +60,6 @@ func NewAdapter1FromAdapterID(adapterID string) (*Adapter1, error) {
 
 /*
 Adapter1 Adapter hierarchy
-
 */
 type Adapter1 struct {
 	client                 *bluez.Client
@@ -202,6 +201,22 @@ type Adapter1Properties struct {
 	PairableTimeout uint32
 
 	/*
+		PowerState The power state of an adapter.
+
+				The power state will show whether the adapter is
+				turning off, or turning on, as well as being on
+				or off.
+
+				Possible values:
+					"on" - powered on
+					"off" - powered off
+					"off-enabling" - transitioning from "off" to "on"
+					"on-disabling" - transitioning from "on" to "off"
+					"off-blocked" - blocked by rfkill
+	*/
+	PowerState string
+
+	/*
 		Powered Switch an adapter on or off. This will also set the
 				appropriate connectable state of the controller.
 
@@ -227,12 +242,12 @@ type Adapter1Properties struct {
 	UUIDs []string
 }
 
-//Lock access to properties
+// Lock access to properties
 func (p *Adapter1Properties) Lock() {
 	p.lock.Lock()
 }
 
-//Unlock access to properties
+// Unlock access to properties
 func (p *Adapter1Properties) Unlock() {
 	p.lock.Unlock()
 }
@@ -403,6 +418,20 @@ func (a *Adapter1) GetPairableTimeout() (uint32, error) {
 		return uint32(0), err
 	}
 	return v.Value().(uint32), nil
+}
+
+// SetPowerState set PowerState value
+func (a *Adapter1) SetPowerState(v string) error {
+	return a.SetProperty("PowerState", v)
+}
+
+// GetPowerState get PowerState value
+func (a *Adapter1) GetPowerState() (string, error) {
+	v, err := a.GetProperty("PowerState")
+	if err != nil {
+		return "", err
+	}
+	return v.Value().(string), nil
 }
 
 // SetPowered set Powered value
@@ -585,146 +614,151 @@ func (a *Adapter1) UnwatchProperties(ch chan *bluez.PropertyChanged) error {
 }
 
 /*
-StartDiscovery 			This method starts the device discovery session. This
-			includes an inquiry procedure and remote device name
-			resolving. Use StopDiscovery to release the sessions
-			acquired.
-			This process will start creating Device objects as
-			new devices are discovered.
-			During discovery RSSI delta-threshold is imposed.
-			Each client can request a single device discovery session
-			per adapter.
-			Possible errors: org.bluez.Error.NotReady
-					 org.bluez.Error.Failed
-					 org.bluez.Error.InProgress
+StartDiscovery
 
+	This method starts the device discovery session. This
+	includes an inquiry procedure and remote device name
+	resolving. Use StopDiscovery to release the sessions
+	acquired.
+	This process will start creating Device objects as
+	new devices are discovered.
+	During discovery RSSI delta-threshold is imposed.
+	Each client can request a single device discovery session
+	per adapter.
+	Possible errors: org.bluez.Error.NotReady
+			 org.bluez.Error.Failed
+			 org.bluez.Error.InProgress
 */
 func (a *Adapter1) StartDiscovery() error {
 	return a.client.Call("StartDiscovery", 0).Store()
 }
 
 /*
-StopDiscovery 			This method will cancel any previous StartDiscovery
-			transaction.
-			Note that a discovery procedure is shared between all
-			discovery sessions thus calling StopDiscovery will only
-			release a single session and discovery will stop when
-			all sessions from all clients have finished.
-			Possible errors: org.bluez.Error.NotReady
-					 org.bluez.Error.Failed
-					 org.bluez.Error.NotAuthorized
+StopDiscovery
 
+	This method will cancel any previous StartDiscovery
+	transaction.
+	Note that a discovery procedure is shared between all
+	discovery sessions thus calling StopDiscovery will only
+	release a single session and discovery will stop when
+	all sessions from all clients have finished.
+	Possible errors: org.bluez.Error.NotReady
+			 org.bluez.Error.Failed
+			 org.bluez.Error.NotAuthorized
 */
 func (a *Adapter1) StopDiscovery() error {
 	return a.client.Call("StopDiscovery", 0).Store()
 }
 
 /*
-RemoveDevice 			This removes the remote device object at the given
-			path. It will remove also the pairing information.
-			Possible errors: org.bluez.Error.InvalidArguments
-					 org.bluez.Error.Failed
+RemoveDevice
 
+	This removes the remote device object at the given
+	path. It will remove also the pairing information.
+	Possible errors: org.bluez.Error.InvalidArguments
+			 org.bluez.Error.Failed
 */
 func (a *Adapter1) RemoveDevice(device dbus.ObjectPath) error {
 	return a.client.Call("RemoveDevice", 0, device).Store()
 }
 
 /*
-SetDiscoveryFilter 			This method sets the device discovery filter for the
-			caller. When this method is called with no filter
-			parameter, filter is removed.
-			Parameters that may be set in the filter dictionary
-			include the following:
-			array{string} UUIDs
-				Filter by service UUIDs, empty means match
-				_any_ UUID.
-				When a remote device is found that advertises
-				any UUID from UUIDs, it will be reported if:
-				- Pathloss and RSSI are both empty.
-				- only Pathloss param is set, device advertise
-				  TX pwer, and computed pathloss is less than
-				  Pathloss param.
-				- only RSSI param is set, and received RSSI is
-				  higher than RSSI param.
-			int16 RSSI
-				RSSI threshold value.
-				PropertiesChanged signals will be emitted
-				for already existing Device objects, with
-				updated RSSI value. If one or more discovery
-				filters have been set, the RSSI delta-threshold,
-				that is imposed by StartDiscovery by default,
-				will not be applied.
-			uint16 Pathloss
-				Pathloss threshold value.
-				PropertiesChanged signals will be emitted
-				for already existing Device objects, with
-				updated Pathloss value.
-			string Transport (Default "auto")
-				Transport parameter determines the type of
-				scan.
-				Possible values:
-					"auto"	- interleaved scan
-					"bredr"	- BR/EDR inquiry
-					"le"	- LE scan only
-				If "le" or "bredr" Transport is requested,
-				and the controller doesn't support it,
-				org.bluez.Error.Failed error will be returned.
-				If "auto" transport is requested, scan will use
-				LE, BREDR, or both, depending on what's
-				currently enabled on the controller.
-			bool DuplicateData (Default: true)
-				Disables duplicate detection of advertisement
-				data.
-				When enabled PropertiesChanged signals will be
-				generated for either ManufacturerData and
-				ServiceData everytime they are discovered.
-			bool Discoverable (Default: false)
-				Make adapter discoverable while discovering,
-				if the adapter is already discoverable setting
-				this filter won't do anything.
-			string Pattern (Default: none)
-				Discover devices where the pattern matches
-				either the prefix of the address or
-				device name which is convenient way to limited
-				the number of device objects created during a
-				discovery.
-				When set disregards device discoverable flags.
-				Note: The pattern matching is ignored if there
-				are other client that don't set any pattern as
-				it work as a logical OR, also setting empty
-				string "" pattern will match any device found.
-			When discovery filter is set, Device objects will be
-			created as new devices with matching criteria are
-			discovered regardless of they are connectable or
-			discoverable which enables listening to
-			non-connectable and non-discoverable devices.
-			When multiple clients call SetDiscoveryFilter, their
-			filters are internally merged, and notifications about
-			new devices are sent to all clients. Therefore, each
-			client must check that device updates actually match
-			its filter.
-			When SetDiscoveryFilter is called multiple times by the
-			same client, last filter passed will be active for
-			given client.
-			SetDiscoveryFilter can be called before StartDiscovery.
-			It is useful when client will create first discovery
-			session, to ensure that proper scan will be started
-			right after call to StartDiscovery.
-			Possible errors: org.bluez.Error.NotReady
-					 org.bluez.Error.NotSupported
-					 org.bluez.Error.Failed
+SetDiscoveryFilter
 
+	This method sets the device discovery filter for the
+	caller. When this method is called with no filter
+	parameter, filter is removed.
+	Parameters that may be set in the filter dictionary
+	include the following:
+	array{string} UUIDs
+		Filter by service UUIDs, empty means match
+		_any_ UUID.
+		When a remote device is found that advertises
+		any UUID from UUIDs, it will be reported if:
+		- Pathloss and RSSI are both empty.
+		- only Pathloss param is set, device advertise
+		  TX pwer, and computed pathloss is less than
+		  Pathloss param.
+		- only RSSI param is set, and received RSSI is
+		  higher than RSSI param.
+	int16 RSSI
+		RSSI threshold value.
+		PropertiesChanged signals will be emitted
+		for already existing Device objects, with
+		updated RSSI value. If one or more discovery
+		filters have been set, the RSSI delta-threshold,
+		that is imposed by StartDiscovery by default,
+		will not be applied.
+	uint16 Pathloss
+		Pathloss threshold value.
+		PropertiesChanged signals will be emitted
+		for already existing Device objects, with
+		updated Pathloss value.
+	string Transport (Default "auto")
+		Transport parameter determines the type of
+		scan.
+		Possible values:
+			"auto"	- interleaved scan
+			"bredr"	- BR/EDR inquiry
+			"le"	- LE scan only
+		If "le" or "bredr" Transport is requested,
+		and the controller doesn't support it,
+		org.bluez.Error.Failed error will be returned.
+		If "auto" transport is requested, scan will use
+		LE, BREDR, or both, depending on what's
+		currently enabled on the controller.
+	bool DuplicateData (Default: true)
+		Disables duplicate detection of advertisement
+		data.
+		When enabled PropertiesChanged signals will be
+		generated for either ManufacturerData and
+		ServiceData everytime they are discovered.
+	bool Discoverable (Default: false)
+		Make adapter discoverable while discovering,
+		if the adapter is already discoverable setting
+		this filter won't do anything.
+	string Pattern (Default: none)
+		Discover devices where the pattern matches
+		either the prefix of the address or
+		device name which is convenient way to limited
+		the number of device objects created during a
+		discovery.
+		When set disregards device discoverable flags.
+		Note: The pattern matching is ignored if there
+		are other client that don't set any pattern as
+		it work as a logical OR, also setting empty
+		string "" pattern will match any device found.
+	When discovery filter is set, Device objects will be
+	created as new devices with matching criteria are
+	discovered regardless of they are connectable or
+	discoverable which enables listening to
+	non-connectable and non-discoverable devices.
+	When multiple clients call SetDiscoveryFilter, their
+	filters are internally merged, and notifications about
+	new devices are sent to all clients. Therefore, each
+	client must check that device updates actually match
+	its filter.
+	When SetDiscoveryFilter is called multiple times by the
+	same client, last filter passed will be active for
+	given client.
+	SetDiscoveryFilter can be called before StartDiscovery.
+	It is useful when client will create first discovery
+	session, to ensure that proper scan will be started
+	right after call to StartDiscovery.
+	Possible errors: org.bluez.Error.NotReady
+			 org.bluez.Error.NotSupported
+			 org.bluez.Error.Failed
 */
 func (a *Adapter1) SetDiscoveryFilter(filter map[string]interface{}) error {
 	return a.client.Call("SetDiscoveryFilter", 0, filter).Store()
 }
 
 /*
-GetDiscoveryFilters 			Return available filters that can be given to
-			SetDiscoveryFilter.
-			Possible errors: None
+GetDiscoveryFilters
 
+	Return available filters that can be given to
+	SetDiscoveryFilter.
+	Possible errors: None
 */
 func (a *Adapter1) GetDiscoveryFilters() ([]string, error) {
 	val0 := []string{}
@@ -733,35 +767,36 @@ func (a *Adapter1) GetDiscoveryFilters() ([]string, error) {
 }
 
 /*
-ConnectDevice 			This method connects to device without need of
-			performing General Discovery. Connection mechanism is
-			similar to Connect method from Device1 interface with
-			exception that this method returns success when physical
-			connection is established. After this method returns,
-			services discovery will continue and any supported
-			profile will be connected. There is no need for calling
-			Connect on Device1 after this call. If connection was
-			successful this method returns object path to created
-			device object.
-			Parameters that may be set in the filter dictionary
-			include the following:
-			string Address
-				The Bluetooth device address of the remote
-				device. This parameter is mandatory.
-			string AddressType
-				The Bluetooth device Address Type. This is
-				address type that should be used for initial
-				connection. If this parameter is not present
-				BR/EDR device is created.
-				Possible values:
-					"public" - Public address
-					"random" - Random address
-			Possible errors: org.bluez.Error.InvalidArguments
-					 org.bluez.Error.AlreadyExists
-					 org.bluez.Error.NotSupported
-					 org.bluez.Error.NotReady
-					 org.bluez.Error.Failed
+ConnectDevice
 
+	This method connects to device without need of
+	performing General Discovery. Connection mechanism is
+	similar to Connect method from Device1 interface with
+	exception that this method returns success when physical
+	connection is established. After this method returns,
+	services discovery will continue and any supported
+	profile will be connected. There is no need for calling
+	Connect on Device1 after this call. If connection was
+	successful this method returns object path to created
+	device object.
+	Parameters that may be set in the filter dictionary
+	include the following:
+	string Address
+		The Bluetooth device address of the remote
+		device. This parameter is mandatory.
+	string AddressType
+		The Bluetooth device Address Type. This is
+		address type that should be used for initial
+		connection. If this parameter is not present
+		BR/EDR device is created.
+		Possible values:
+			"public" - Public address
+			"random" - Random address
+	Possible errors: org.bluez.Error.InvalidArguments
+			 org.bluez.Error.AlreadyExists
+			 org.bluez.Error.NotSupported
+			 org.bluez.Error.NotReady
+			 org.bluez.Error.Failed
 */
 func (a *Adapter1) ConnectDevice(properties map[string]interface{}) (dbus.ObjectPath, error) {
 	var val0 dbus.ObjectPath
