@@ -121,11 +121,12 @@ func (app *App) init() error {
 
 // GenerateUUID generate a 128bit UUID
 func (app *App) GenerateUUID(uuidVal string) string {
-	base := app.Options.UUID
-	if len(uuidVal) == 8 {
-		base = ""
-	}
-	return base + uuidVal + app.Options.UUIDSuffix
+	// base := app.Options.UUID
+	// if len(uuidVal) == 8 {
+	// 	base = ""
+	// }
+	// return base + uuidVal + app.Options.UUIDSuffix
+	return uuidVal + app.Options.UUIDSuffix
 }
 
 // GetAdapter return the adapter in use
