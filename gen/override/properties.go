@@ -11,6 +11,7 @@ var PropertyTypes = map[string]map[string]string{
 	"org.bluez.Device1": {
 		"ServiceData":      "map[string]interface{}",
 		"ManufacturerData": "map[uint16]interface{}",
+		"Sets":             "[]SetsItem",
 	},
 	"org.bluez.GattCharacteristic1": {
 		"Value":          "[]byte `dbus:\"emit\"`",
