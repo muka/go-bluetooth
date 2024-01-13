@@ -64,8 +64,13 @@ func ErrorsTemplate(filename string, apis []*types.ApiGroup) error {
 	}
 
 	for i, err := range errors {
+		base := err[strings.LastIndex(err, ".")+1:]
+		if strings.Contains(err, "obex") {
+			base = "Obex" + base
+		}
 		errorsList.List[i] = types.BluezError{
-			Name: strings.Replace(err, "org.bluez.Error.", "", 1),
+			Name: err,
+			Base: base,
 		}
 	}
 
