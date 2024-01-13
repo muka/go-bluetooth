@@ -30,7 +30,6 @@ func ListFiles(dir string) ([]string, error) {
 	}
 
 	err := filepath.Walk(dir, func(path string, info os.FileInfo, err error) error {
-
 		if info.IsDir() {
 			return nil
 		}
@@ -39,7 +38,7 @@ func ListFiles(dir string) ([]string, error) {
 			return nil
 		}
 
-		if !strings.HasSuffix(path, "-api.txt") {
+		if !strings.HasSuffix(path, "-api.txt") && !strings.HasPrefix(filepath.Base(path), "org.bluez.") {
 			return nil
 		}
 
@@ -81,7 +80,7 @@ func Exists(name string) bool {
 	return true
 }
 
-//GetGitVersion return the docs git version
+// GetGitVersion return the docs git version
 func GetGitVersion(docsDir string) (string, error) {
 	cmd := exec.Command("git", "describe")
 	cmd.Dir = docsDir
