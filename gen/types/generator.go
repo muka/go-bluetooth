@@ -2,6 +2,7 @@ package types
 
 type BluezError struct {
 	Name  string
+	Base  string
 	Error string
 }
 

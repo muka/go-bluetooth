@@ -8,10 +8,10 @@ import (
 
 var (
 {{- range .List }}
-	// {{.Name}} map to org.bluez.Error.{{.Name}}
-	Err{{.Name}} = dbus.Error{
-		Name: "org.bluez.Error.{{.Name}}",
-		Body: []interface{}{"{{.Name}}"},
+	// {{.Base}} map to {{.Name}}
+	Err{{.Base}} = dbus.Error{
+		Name: "{{.Name}}",
+		Body: []interface{}{"{{.Base}}"},
 	}
 {{- end }}
 )

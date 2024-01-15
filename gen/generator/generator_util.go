@@ -6,12 +6,13 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/muka/go-bluetooth/gen/override"
 	"github.com/muka/go-bluetooth/gen/types"
 )
 
 var TplPath = "gen/generator/tpl/%s.go.tpl"
 
-//rename variable name to avoid collision with Go languages
+// rename variable name to avoid collision with Go languages
 func renameReserved(varname string) string {
 	switch varname {
 	case "type":
@@ -61,9 +62,17 @@ func prepareDocs(src string, skipFirstComment bool, leftpad int) string {
 }
 
 func getApiPackage(apiGroup *types.ApiGroup) string {
-	apiName := strings.Replace(apiGroup.FileName, "-api.txt", "", -1)
-	apiName = strings.Replace(apiName, "-", "_", -1)
-	apiName = strings.Replace(apiName, " [experimental]", "", -1)
+	apiName, ok := override.MapFile(apiGroup.FileName)
+	if !ok {
+		apiName = apiGroup.FileName
+	}
+	apiName = strings.ReplaceAll(apiName, "-api.txt", "")
+	apiName = strings.ReplaceAll(apiName, "_api.txt", "")
+	apiName = strings.ReplaceAll(apiName, "org.bluez.", "")
+	apiName = strings.ReplaceAll(apiName, ".rst", "")
+	apiName = strings.ReplaceAll(apiName, "-", "_")
+	apiName = strings.ReplaceAll(apiName, " [experimental]", "")
+	apiName = strings.ToLower(apiName)
 	return apiName
 }
 
