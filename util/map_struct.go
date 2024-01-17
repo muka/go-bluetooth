@@ -90,11 +90,11 @@ func mapStructField(obj interface{}, name string, value dbus.Variant) error {
 	if val.Type().Kind() == reflect.Map {
 
 		if structFieldType.Kind() == reflect.Struct ||
-			(structFieldType.Kind() == reflect.Pointer && structFieldType.Elem().Kind() == reflect.Struct) {
+			(structFieldType.Kind() == reflect.Ptr && structFieldType.Elem().Kind() == reflect.Struct) {
 
 			variantMap, ok := value.Value().(map[string]dbus.Variant)
 			if ok {
-				if structFieldType.Kind() == reflect.Pointer {
+				if structFieldType.Kind() == reflect.Ptr {
 					if structFieldValue.IsZero() {
 						return fmt.Errorf("Pointer field %s: uninitialized", name)
 					}
