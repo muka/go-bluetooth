@@ -1,7 +1,9 @@
-
 # go-bluetooth
 
-<img style="float:right" width="70" src="./gopher.png"> Go bluetooth API for Linux-based Bluez DBus interface.
+##  ARCHIVED REPOSITORY
+
+After some years, I am not maintaining nor using this repo anymore. If someone is interested maintaining or expanding it, let's talk. 
+
 
 [![GoDoc](https://godoc.org/github.com/muka/go-bluetooth?status.svg)](https://godoc.org/github.com/muka/go-bluetooth)
 
