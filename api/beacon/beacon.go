@@ -68,7 +68,10 @@ func (b *Beacon) WatchDeviceChanges(ctx context.Context) (chan bool, error) {
 				}
 
 				if changed.Name == "ManufacturerData" || changed.Name == "ServiceData" {
-					ch <- b.Parse()
+					select {
+					case ch <- b.Parse():
+					default:
+					}
 				}
 
 				break
